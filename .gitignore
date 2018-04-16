@@ -1,5 +1,8 @@
 # ignore objects and archives, anywhere in the tree.
-    *.[oa]
+*.[oa]
 
 # Ignore data files
-    *.root
+*.root
+
+# Ignore testing filelist
+testFileList.txt
