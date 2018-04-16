@@ -74,9 +74,10 @@ DijetAnalyzer::~DijetAnalyzer(){
  * Main analysis loop
  *
  *  Arguments:
+ *    bool runLocal = True: Search files locally. False: Search files from grid.
  *    int debugLevel = Amount of debug messages printed out. 0 = none, 1 = some, 2 = all.
  */
-void DijetAnalyzer::RunAnalysis(int debugLevel){
+void DijetAnalyzer::RunAnalysis(bool runLocal, int debugLevel){
   
   TFile *inputFile;
   ForestReader *treeReader = new ForestReader();
@@ -119,6 +120,10 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
   double jetPt = 0;
   double dphi = 0;
   
+  // File name helper variables
+  TString currentFile;
+  TString prefix = "root://cmsxrootd.fnal.gov//";
+  
   // Fillers for THnSparses
   double filler2D[2];
   double filler3D[3];
@@ -126,9 +131,30 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
   // Loop over files
   for(int iFile = 0; iFile < (int) fFileNames.size(); iFile++) {
     
-    inputFile = TFile::Open(fFileNames.at(iFile));
-    treeReader->ReadForestFromFile(inputFile);
+    // Find the filename
+    currentFile = fFileNames.at(iFile);
+    if(!runLocal) currentFile.Prepend(prefix);  // If not running locally, we need to give xrootd path
     
+    // Open the file and check that everything goes fine
+    inputFile = TFile::Open(currentFile);
+
+    // Check that the file exists
+    if(!inputFile){
+      cout << "Warning! Could not open the file: " << currentFile.Data() << endl;
+      continue;
+    }
+    
+    // Check that the file is not zombie
+    if(inputFile->IsZombie()){
+      cout << "Warning! The following file is a zombie: " << currentFile.Data() << endl;
+      continue;
+    }
+    
+    // Debug message, if wanted
+    if(debugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
+    
+    // If file is good, read the forest from the file
+    treeReader->ReadForestFromFile(inputFile);
     nEvents = treeReader->GetNEvents();
     
     // Event loop

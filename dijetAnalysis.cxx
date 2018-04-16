@@ -4,6 +4,11 @@
 #include <stdlib.h>   // Standard utility libraries
 #include <assert.h>   // Standard c++ debugging tool. Terminates the program if expression given evaluates to 0.
 #include <vector>     // C++ vector class
+#include <sstream>    // Libraries for checking boolean input
+#include <string>     // Libraries for checking boolean input
+#include <iomanip>    // Libraries for checking boolean input
+#include <algorithm>  // Libraries for checking boolean input
+#include <cctype>     // Libraries for checking boolean input
 
 // Includes from Root
 //#include <TROOT.h>    // Not sure if needed...
@@ -59,6 +64,17 @@ void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, in
 }
 
 /*
+ *  Convert string to boolean value
+ */
+bool checkBool(string str) {
+  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+  std::istringstream is(str);
+  bool b;
+  is >> std::boolalpha >> b;
+  return b;
+}
+
+/*
  *  Main program
  *
  *  Command line arguments:
@@ -69,17 +85,18 @@ int main(int argc, char **argv) {
   
   //==== Read arguments =====
   //TROOT root("nanoDST","nanoDST analysis");  // I do not really know what this does.
-  if ( argc<4 ) {
+  if ( argc<5 ) {
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout<<"+ Usage of the macro: " << endl;
-    cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] <debugLevel>"<<endl;
+    cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] <debugLevel> <runLocal>"<<endl;
     cout<<"+  fileNameFile: Text file containing the list of files used in the analysis." <<endl;
     cout<<"+  configurationCard: Card file with binning and cut information for the analysis." <<endl;
     cout<<"+  outputFileName: .root file to which the histograms are written." <<endl;
     cout<<"+  debugLevel: Amount of debug messages shown. 0 = none, 1 = some, 2 = all." <<endl;
+    cout<<"+  runLocal: True: Search input files from local machine. False (default): Search input files from root." << endl;
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout << endl << endl;
-    assert(0);
+    exit(1);
   }
 
   // First argument is the file list and second the debug level
@@ -88,6 +105,8 @@ int main(int argc, char **argv) {
   TString outputFileName = argv[3];
   int debugLevel = 0;
   if(argc >= 5) debugLevel = atoi(argv[4]);
+  bool runLocal = false;
+  if(argc >= 6) runLocal = checkBool(argv[5]);
   
   // Read the card
   ConfigurationCard *dijetCard = new ConfigurationCard(cardName);
@@ -106,7 +125,7 @@ int main(int argc, char **argv) {
   
   // Run the analysis over the list of files
   DijetAnalyzer *jetAnalysis = new DijetAnalyzer(fileNameVector, dijetCard);
-  jetAnalysis->RunAnalysis(debugLevel);
+  jetAnalysis->RunAnalysis(runLocal,debugLevel);
   histograms = jetAnalysis->GetHistograms();
   
   // Write the histograms and card to file
