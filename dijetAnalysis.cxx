@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout<<"+ Usage of the macro: " << endl;
     cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] <debugLevel> <runLocal>"<<endl;
-    cout<<"+  fileNameFile: Text file containing the list of files used in the analysis." <<endl;
+    cout<<"+  fileNameFile: Text file containing the list of files used in the analysis. For crab analysis a job id should be given here." <<endl;
     cout<<"+  configurationCard: Card file with binning and cut information for the analysis." <<endl;
     cout<<"+  outputFileName: .root file to which the histograms are written." <<endl;
     cout<<"+  debugLevel: Amount of debug messages shown. 0 = none, 1 = some, 2 = all." <<endl;
@@ -99,14 +99,23 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  // First argument is the file list and second the debug level
-  TString fileNameFile = argv[1];
+  // First, check if we are supposed to run locally or on crab
+  bool runLocal = false;
+  if(argc >= 6) runLocal = checkBool(argv[5]);
+  
+  // Find the file list name depending on if we run locally or on crab
+  TString fileNameFile;
+  if(runLocal){
+    fileNameFile = argv[1];
+  } else {
+    fileNameFile = Form("job_input_file_list_%d.txt",atoi(argv[1]));
+  }
+  
+  // Read the other command line arguments
   const char *cardName = argv[2];
   TString outputFileName = argv[3];
   int debugLevel = 0;
   if(argc >= 5) debugLevel = atoi(argv[4]);
-  bool runLocal = false;
-  if(argc >= 6) runLocal = checkBool(argv[5]);
   
   // Read the card
   ConfigurationCard *dijetCard = new ConfigurationCard(cardName);
