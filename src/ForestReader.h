@@ -23,7 +23,7 @@ using namespace std;
 class ForestReader{
   
 private:
-  static const int fnMaxJet = 50;
+  static const int fnMaxJet = 60;
   
 public:
   

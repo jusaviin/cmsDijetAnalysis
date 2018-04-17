@@ -4,8 +4,8 @@
 EtaCut 1.6         # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0   # Region accepted when searching for dijet events
 MaxPtCut 300       # Maximum pT of a leading jet accepted in the analysis
-MinPtCut 60        # Minimum pT of a leading jet accepted in the analysis
-SubleadingPtCut 25 # Minimum pT of a subleading jet accepted in the analysis
+MinPtCut 120       # Minimum pT of a leading jet accepted in the analysis
+SubleadingPtCut 50 # Minimum pT of a subleading jet accepted in the analysis
 DeltaPhiCut 2.6179939 # Minimum deltaPhi between leading and subleading jet, 5 Pi / 6
 
 # Cuts for event selection

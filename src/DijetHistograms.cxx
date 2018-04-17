@@ -152,15 +152,15 @@ void DijetHistograms::CreateHistograms(){
   fhDijetAsymmetry = new THnSparseD("dijetAsymmetry","dijetAsymmetry",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhDijetAsymmetry->Sumw2();
   
   // Leading jet pT
-  nBins2D[0] = 75;          // nBins for leading jet pT
+  nBins2D[0] = 150;         // nBins for leading jet pT
   lowBinBorder2D[0] = 0;    // low bin border for leading jet pT
-  highBinBorder2D[0] = 150; // high bin border for leading jet pT
+  highBinBorder2D[0] = 300; // high bin border for leading jet pT
   fhLeadingJetPt = new THnSparseD("leadingJetPt","leadingJetPt",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhLeadingJetPt->Sumw2();
   
   // Subleading jet pT
-  nBins2D[0] = 75;          // nBins for subleading jet pT
+  nBins2D[0] = 150;         // nBins for subleading jet pT
   lowBinBorder2D[0] = 0;    // low bin border for subleading jet pT
-  highBinBorder2D[0] = 150; // high bin border for subleading jet pT
+  highBinBorder2D[0] = 300; // high bin border for subleading jet pT
   fhSubleadingJetPt = new THnSparseD("subleadingJetPt","subleadingJetPt",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhSubleadingJetPt->Sumw2();
   
   // ========= THnSparse histograms with centrality as the third axis =========
@@ -180,12 +180,12 @@ void DijetHistograms::CreateHistograms(){
   fhDijetAsymmetryVsDphi = new THnSparseD("dijetAsymmetryVsDphi","dijetAsymmetryVsDphi",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhDijetAsymmetryVsDphi->Sumw2();
   
   // Leading jet pT versus subleading jet pT
-  nBins3D[0] = 75;           // nBins for leading jet pT
+  nBins3D[0] = 150;           // nBins for leading jet pT
   lowBinBorder3D[0] = 0;     // low bin border for leading jet pT
-  highBinBorder3D[0] = 150;  // high bin border for leading jet pT
-  nBins3D[1] = 55;           // nBins for subleading jet pT
+  highBinBorder3D[0] = 300;  // high bin border for leading jet pT
+  nBins3D[1] = 150;          // nBins for subleading jet pT
   lowBinBorder3D[1] = 0;     // low bin border for subleading jet pT
-  highBinBorder3D[1] = 150;  // high bin border for subleading jet pT
+  highBinBorder3D[1] = 300;  // high bin border for subleading jet pT
   fhDijetLeadingVsSubleadingPt = new THnSparseD("dijetLeadingSubleadingPt","dijetLeadingSubleadingPt",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhDijetLeadingVsSubleadingPt->Sumw2();
   
   
