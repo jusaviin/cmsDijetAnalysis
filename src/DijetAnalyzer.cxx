@@ -261,8 +261,12 @@ void DijetAnalyzer::RunAnalysis(bool runLocal, int debugLevel){
       }
     } // Event loop
     
+    // Close the input file after the event has been read
+    inputFile->Close();
+    
   } // File loop
   
+  delete treeReader;  // Delete the created tree reader after the analysis is done
 }
 
 /*
