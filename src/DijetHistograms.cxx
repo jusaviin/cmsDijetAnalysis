@@ -127,7 +127,7 @@ void DijetHistograms::CreateHistograms(){
   // ======== Plain TH1 histograms ========
   
   fhVertexZ = new TH1D("vertexZ","vertexZ",80,-20,20); fhVertexZ->Sumw2();
-  fhEvents = new TH1D("nEvents","nEvents",10,-0.5,9.5); fhEvents->Sumw2();
+  fhEvents = new TH1D("nEvents","nEvents",knEventTypes,-0.5,knEventTypes-0.5); fhEvents->Sumw2();
   fhCentrality = new TH1D("centrality","centrality",101,-1,100); fhCentrality->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
@@ -198,7 +198,7 @@ void DijetHistograms::CreateHistograms(){
 /*
  * Write the histograms to file
  */
-void DijetHistograms::Write(){
+void DijetHistograms::Write() const{
   
   // Write the histograms to file
   fhVertexZ->Write();
@@ -216,7 +216,7 @@ void DijetHistograms::Write(){
 /*
  * Write the histograms to a given file
  */
-void DijetHistograms::Write(TString outputFileName){
+void DijetHistograms::Write(TString outputFileName) const{
   
   // Define the output file
   TFile *outputFile = new TFile(outputFileName, "RECREATE");

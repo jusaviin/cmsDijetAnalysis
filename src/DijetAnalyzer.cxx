@@ -269,6 +269,6 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
 /*
  * Getter for dijet histograms
  */
-DijetHistograms* DijetAnalyzer::GetHistograms(){
+DijetHistograms* DijetAnalyzer::GetHistograms() const{
   return fHistograms;
 }

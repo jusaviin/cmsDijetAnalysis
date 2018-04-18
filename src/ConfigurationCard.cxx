@@ -47,7 +47,7 @@ ConfigurationCard::~ConfigurationCard(){
 }
 
 
-unsigned int ConfigurationCard::GetTVectorIndex(TString keyword, int tol){
+unsigned int ConfigurationCard::GetTVectorIndex(TString keyword, int tol) const{
   
   // Returns fIndex of a TVector according to its position in std::hash_map
   
@@ -79,7 +79,7 @@ unsigned int ConfigurationCard::GetTVectorIndex(TString keyword, int tol){
 /*
  * Get the size of the vector corresponding to keyword
  */
-int ConfigurationCard::GetN(TString keyword){
+int ConfigurationCard::GetN(TString keyword) const{
   //returns size of TVector
   unsigned int findex = GetTVectorIndex(keyword);
   return (int) fValuesVector[findex].GetNrows();
@@ -88,7 +88,7 @@ int ConfigurationCard::GetN(TString keyword){
 /*
  * Get the number of bins corresponding to keyword
  */
-int ConfigurationCard::GetNBin(TString keyword){
+int ConfigurationCard::GetNBin(TString keyword) const{
   return GetN(keyword)-1;
 }
 
@@ -103,7 +103,7 @@ TVector *  ConfigurationCard::GetVector(TString keyword ){
 /*
  * Get the vector component corresponding to a keyword and index in vector
  */
-float ConfigurationCard::Get(TString keyword, int VectorComponent){
+float ConfigurationCard::Get(TString keyword, int VectorComponent) const{
   //returns VectorComponent Component of  fValuesVector TVector for given keyword
   int findex = GetTVectorIndex(keyword);
   if(0<=VectorComponent && VectorComponent<GetNwithIndex(findex)){
@@ -118,7 +118,7 @@ float ConfigurationCard::Get(TString keyword, int VectorComponent){
 /*
  * Get a string corresponding to keyword
  */
-TString ConfigurationCard::GetStr(TString keyword){
+TString ConfigurationCard::GetStr(TString keyword) const{
   int findex = GetTVectorIndex(keyword, 1);
   if( findex < 0  ) return TString("");
   return fValueString[findex];
@@ -127,7 +127,7 @@ TString ConfigurationCard::GetStr(TString keyword){
 /*
  * Get a bin index for a value in keyword
  */
-int ConfigurationCard::GetBin(TString keyword, double value){
+int ConfigurationCard::GetBin(TString keyword, double value) const{
   
   // First find the dimension of vector and check that it is reasonable
   int dimension = GetN(keyword);
@@ -264,7 +264,7 @@ void ConfigurationCard::ReadInputLine( const char *buffer ){
 /*
  * Print the card to console
  */
-void ConfigurationCard::PrintOut(){
+void ConfigurationCard::PrintOut() const{
   // echo
   cout<<endl<<"======== "<<fCardName<<" ========="<<endl;
   for(unsigned int i=0; i<fValuesVector.size();i++){
@@ -278,7 +278,7 @@ void ConfigurationCard::PrintOut(){
 }
 
 
-void ConfigurationCard::WriteCard(TDirectory *file){
+void ConfigurationCard::WriteCard(TDirectory *file) const{
   // write
   cout<<endl<<"====== Writing into file ========="<<endl;
   

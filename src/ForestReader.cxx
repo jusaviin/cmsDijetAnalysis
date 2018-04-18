@@ -112,42 +112,42 @@ void ForestReader::ReadForestFromFile(TFile *inputFile){
 /*
  * Load an event to memory
  */
-void ForestReader::GetEvent(int nEvent){
+void ForestReader::GetEvent(int nEvent) const{
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
 }
 
 // Getter for number of events in the tree
-int ForestReader::GetNEvents(){
+int ForestReader::GetNEvents() const{
   return fJetPtBranch->GetEntries();
 }
 
 // Getter for jet pT
-float ForestReader::GetJetPt(int iJet){
+float ForestReader::GetJetPt(int iJet) const{
   return fJetPtArray[iJet];
 }
 
 // Getter for jet phi
-float ForestReader::GetJetPhi(int iJet){
+float ForestReader::GetJetPhi(int iJet) const{
   return fJetPhiArray[iJet];
 }
 
 // Getter for jet eta
-float ForestReader::GetJetEta(int iJet){
+float ForestReader::GetJetEta(int iJet) const{
   return fJetEtaArray[iJet];
 }
 
 // Getter for number of jets in an event
-int ForestReader::GetNJets(){
+int ForestReader::GetNJets() const{
   return fnJets;
 }
 
 // Getter for vertex z position
-float ForestReader::GetVz(){
+float ForestReader::GetVz() const{
   return fVertexZ;
 }
 
 // Getter for centrality. For some reason CMS normalizes centrality from 0 to 200, thus division by 2.
-float ForestReader::GetCentrality(){
+float ForestReader::GetCentrality() const{
   return fCentrality/2.0;
 }

@@ -26,7 +26,7 @@ public:
   
   // Methods
   void RunAnalysis(int debugLevel);  // Run the dijet analysis
-  DijetHistograms* GetHistograms();  // Getter for histograms
+  DijetHistograms* GetHistograms() const;  // Getter for histograms
   
 private:
   

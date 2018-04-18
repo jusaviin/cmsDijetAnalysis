@@ -34,19 +34,19 @@ public:
   ForestReader& operator=(const ForestReader& obj); // Equal sign operator
   
   // Methods
-  void GetEvent(int nEvent);                   // Get the nth event in tree
-  int GetNEvents();                            // Get the number of events
+  void GetEvent(int nEvent) const;             // Get the nth event in tree
+  int GetNEvents() const;                      // Get the number of events
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
   
   // Getters for leaves for heavy ion tree
-  float GetVz();              // Getter for vertex z position
-  float GetCentrality();      // Getter for centrality
+  float GetVz() const;              // Getter for vertex z position
+  float GetCentrality() const;      // Getter for centrality
   
   // Getters for leaves for jet tree
-  float GetJetPt(int iJet);   // Getter for jet pT
-  float GetJetPhi(int iJet);  // Getter for jet phi
-  float GetJetEta(int iJet);  // Getter for jet eta
-  int GetNJets();             // Getter for number of jets
+  float GetJetPt(int iJet) const;   // Getter for jet pT
+  float GetJetPhi(int iJet) const;  // Getter for jet phi
+  float GetJetEta(int iJet) const;  // Getter for jet eta
+  int GetNJets() const;             // Getter for number of jets
   
 private:
   

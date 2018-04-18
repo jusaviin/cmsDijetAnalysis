@@ -27,8 +27,8 @@ public:
   
   // Methods
   void CreateHistograms();                   // Create all histograms
-  void Write();                              // Write the histograms to a file that is opened somewhere else
-  void Write(TString outputFileName);        // Write the histograms to a file
+  void Write() const;                              // Write the histograms to a file that is opened somewhere else
+  void Write(TString outputFileName) const;        // Write the histograms to a file
   void SetCard(ConfigurationCard *newCard);  // Set a new configuration card for the histogram class
   
   // Histograms defined public to allow easier access to them. Should not be abused

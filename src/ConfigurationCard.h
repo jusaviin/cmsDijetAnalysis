@@ -39,21 +39,21 @@ public:
 
   void AddToKeyTable( TString key, int index );
 
-  float  Get(TString keyword, int VectorComponent=0); //get TVector component 
-  TString  GetStr(TString keyword ); //get TVector component 
-  TVector* GetVector( TString keyword );
-  int GetN(TString keyword);       //get TVector dimension
-  int GetBin(TString keyword, double value);  // Find the bin for value from keyword vector
-  int GetNBin(TString keyword);   // Get number of bins related to keyword
-  void PrintOut();
-  void WriteCard(TDirectory *file);
+  float  Get(TString keyword, int VectorComponent=0) const; //get TVector component
+  TString  GetStr(TString keyword ) const; //get TVector component
+  TVector* GetVector( TString keyword ) ;
+  int GetN(TString keyword) const;       //get TVector dimension
+  int GetBin(TString keyword, double value) const;  // Find the bin for value from keyword vector
+  int GetNBin(TString keyword) const;   // Get number of bins related to keyword
+  void PrintOut() const;
+  void WriteCard(TDirectory *file) const;
   void ReadInputLine( const char* buffer );
 
 protected:
   
   void    ReadInputCard();
-  int     GetNwithIndex(int i){ return fValuesVector[i].GetNrows(); }
-  unsigned int GetTVectorIndex(TString keyword, int tol=0);
+  int     GetNwithIndex(int i) const{ return fValuesVector[i].GetNrows(); }
+  unsigned int GetTVectorIndex(TString keyword, int tol=0) const;
 
   //====   D a t a    M e m b e r s  ========
 
