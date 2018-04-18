@@ -15,6 +15,9 @@ class DijetHistograms{
   
 public:
   
+  // Enumeration for event types to event histogram
+  enum enumEventTypes {kAll, kVzCut, kDijet, knEventTypes};
+  
   // Constructors and destructor
   DijetHistograms(); // Default constructor
   DijetHistograms(ConfigurationCard *newCard); // Custom constructor
@@ -40,9 +43,12 @@ public:
   THnSparseD *fhDijetAsymmetryVsDphi;       // Asymmetry vs. deltaPhi
   THnSparseD *fhDijetLeadingVsSubleadingPt; // Leading jet pT vs. subleading jet pT
   
+  // Enumeration
+  
 private:
   
   ConfigurationCard *fCard;    // Card for binning info
+  const TString kEventTypeStrings[knEventTypes] = {"All", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
   
 };
 

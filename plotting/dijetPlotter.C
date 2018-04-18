@@ -36,11 +36,6 @@ void dijetPlotter(TString inputFileName = "../dijetSpectraTest_1.root"){
   THnSparseD *aDijetLeadingVsSubleadingPt = (THnSparseD*) inputFile->Get("dijetLeadingSubleadingPt");
   TH2D *hDijetLeadingVsSubleadingPt = aDijetLeadingVsSubleadingPt->Projection(1,0);
   
-  // Modify the style of the histograms
-  hEvents->GetXaxis()->SetBinLabel(1,"All");
-  hEvents->GetXaxis()->SetBinLabel(2,"vz cut");
-  hEvents->GetXaxis()->SetBinLabel(3,"Dijet");
-  
   // Finally, draw the histograms
   JDrawer *drawer = new JDrawer();
   
@@ -49,8 +44,8 @@ void dijetPlotter(TString inputFileName = "../dijetSpectraTest_1.root"){
   drawer->DrawHistogram(hEvents,"Event class","Number of events", " ");
   drawer->DrawHistogram(hCentrality,"Centrality percentile","N"," ");
   drawer->DrawHistogram(hDijetDphi,"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
-  drawer->DrawHistogram(hLeadingJetPt,"p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)","Leading jets");
-  drawer->DrawHistogram(hSubleadingJetPt,"p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)","Subleading jets");
+  drawer->DrawHistogram(hLeadingJetPt,"Leading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
+  drawer->DrawHistogram(hSubleadingJetPt,"Subleading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
   
   // Draw 2D histograms
   drawer->SetRightMargin(0.1);

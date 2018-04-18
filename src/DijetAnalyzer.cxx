@@ -163,13 +163,13 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
       // Get vz and centrality information from all events
       vz = treeReader->GetVz();
       centrality = treeReader->GetCentrality();
-      fHistograms->fhVertexZ->Fill(vz);     // z vertex distribution from all events
-      fHistograms->fhEvents->Fill(1);       // All the events looped over
-      fHistograms->fhCentrality->Fill(centrality);   // Centrality filled from all events
+      fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
+      fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
+      fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
       
       // Apply the vz cut
       if(TMath::Abs(vz) > vzCut) continue;
-      fHistograms->fhEvents->Fill(2);       // Events with z vertex within accepteble range
+      fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);  // Events with z vertex within accepteble range
       
       // Reset dijet flags
       twoJetsFound = false;
@@ -221,7 +221,7 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
       
       // If a dijet is found, fill some information to fHistograms
       if(dijetFound){
-        fHistograms->fhEvents->Fill(3);
+        fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
         
         // Put the centralities to fillers
         filler2D[1] = centrality;

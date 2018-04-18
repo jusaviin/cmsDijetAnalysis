@@ -10,7 +10,6 @@
 // Own includes
 #include "DijetHistograms.h"
 
-
 /*
  * Default constructor
  */
@@ -128,8 +127,13 @@ void DijetHistograms::CreateHistograms(){
   // ======== Plain TH1 histograms ========
   
   fhVertexZ = new TH1D("vertexZ","vertexZ",80,-20,20); fhVertexZ->Sumw2();
-  fhEvents = new TH1D("nEvents","nEvents",10,0.5,10.5); fhEvents->Sumw2();
+  fhEvents = new TH1D("nEvents","nEvents",10,-0.5,9.5); fhEvents->Sumw2();
   fhCentrality = new TH1D("centrality","centrality",101,-1,100); fhCentrality->Sumw2();
+  
+  // For the event histogram, label each bin corresponding to an event cut
+  for(int i = 0; i < knEventTypes; i++){
+    fhEvents->GetXaxis()->SetBinLabel(i+1,kEventTypeStrings[i]);
+  }
   
   // ======== THnSparse histograms with centrality as the second axis =========
   
