@@ -112,8 +112,11 @@ bool checkBool(string str) {
  *  Main program
  *
  *  Command line arguments:
- *  argv[1] = List of files to be analyzed, given in text file
- *  argv[2] = Debugging level. 0 = none, 1 = some, 2 = all.
+ *  argv[1] = List of files to be analyzed, given in text file. For crab analysis a job ID instead.
+ *  argv[2] = Card file with binning and cut information for the analysis
+ *  argv[3] = .root file to which the histograms are written
+ *  argv[4] = Debugging level. 0 = none, 1 = some, 2 = all.
+ *  argv[5] = True: Search input files from local machine. False (default): Search input files from grid with xrootd
  */
 int main(int argc, char **argv) {
   
@@ -127,7 +130,7 @@ int main(int argc, char **argv) {
     cout<<"+  configurationCard: Card file with binning and cut information for the analysis." <<endl;
     cout<<"+  outputFileName: .root file to which the histograms are written." <<endl;
     cout<<"+  debugLevel: Amount of debug messages shown. 0 = none, 1 = some, 2 = all." <<endl;
-    cout<<"+  runLocal: True: Search input files from local machine. False (default): Search input files from root." << endl;
+    cout<<"+  runLocal: True: Search input files from local machine. False (default): Search input files from grid with xrootd." << endl;
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout << endl << endl;
     exit(1);
