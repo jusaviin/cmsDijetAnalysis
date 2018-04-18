@@ -175,10 +175,30 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
       twoJetsFound = false;
       dijetFound = false;
       
-      // Search for leading jet
+      // Search for leading jet and fill histograms for all jets within the eta vut
       for(int jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
         jetPt = treeReader->GetJetPt(jetIndex);
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= searchetacut) continue;
+        
+        // Fill the histograms for all jets within eta range
+        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) < etacut){
+          
+          // Fill the all jets pT histogram
+          filler2D[0] = jetPt;
+          filler2D[1] = centrality;
+          fHistograms->fhAnyJetPt->Fill(filler2D);
+          
+          // Fill the all jets eta histogram
+          filler3D[0] = treeReader->GetJetEta(jetIndex);
+          filler3D[1] = centrality;
+          filler3D[2] = jetPt;
+          fHistograms->fhAnyJetEta->Fill(filler3D);
+          
+          // Fill the all jets phi histogram
+          filler3D[0] = treeReader->GetJetPhi(jetIndex);
+          fHistograms->fhAnyJetPhi->Fill(filler3D);
+        }
+        
         if(jetPt <= leadingjetcut) continue;
         if(jetPt > leadingPt){
           leadingPt = jetPt;
@@ -213,7 +233,7 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
         if((treeReader->GetJetPt(highestIndex) >= pTmaxcut) ||
            (treeReader->GetJetPt(highestIndex) <= pTmincut) ||
            (TMath::Abs(treeReader->GetJetEta(highestIndex)) >= etacut) ||
-           (TMath::Abs(treeReader->GetJetEta(highestIndex)) >= etacut)||
+           (TMath::Abs(treeReader->GetJetEta(secondHighestIndex)) >= etacut)||
            (TMath::Abs(dphi) <= dphicut)){
           dijetFound = false;
         }
@@ -255,6 +275,29 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
         filler3D[0] = treeReader->GetJetPt(highestIndex);
         filler3D[1] = treeReader->GetJetPt(secondHighestIndex);
         fHistograms->fhDijetLeadingVsSubleadingPt->Fill(filler3D);
+        
+        // Change the common filler info for eta and phi histograms for leading jet
+        filler3D[1] = centrality;
+        filler3D[2] = treeReader->GetJetPt(highestIndex);
+        
+        // Fill the leading jet phi histogram
+        filler3D[0] = treeReader->GetJetPhi(highestIndex);
+        fHistograms->fhLeadingJetPhi->Fill(filler3D);
+        
+        // Fill the leading jet eta histogram
+        filler3D[0] = treeReader->GetJetEta(highestIndex);
+        fHistograms->fhLeadingJetEta->Fill(filler3D);
+        
+        // Change the common filler info for eta and phi histograms for subleading jet
+        filler3D[2] = treeReader->GetJetPt(secondHighestIndex);
+        
+        // Fill the leading jet phi histogram
+        filler3D[0] = treeReader->GetJetPhi(secondHighestIndex);
+        fHistograms->fhSubleadingJetPhi->Fill(filler3D);
+        
+        // Fill the leading jet eta histogram
+        filler3D[0] = treeReader->GetJetEta(secondHighestIndex);
+        fHistograms->fhSubleadingJetEta->Fill(filler3D);
       }
     } // Event loop
     

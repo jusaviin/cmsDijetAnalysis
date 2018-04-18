@@ -27,12 +27,11 @@ public:
   
   // Methods
   void CreateHistograms();                   // Create all histograms
-  void Write() const;                              // Write the histograms to a file that is opened somewhere else
-  void Write(TString outputFileName) const;        // Write the histograms to a file
+  void Write() const;                        // Write the histograms to a file that is opened somewhere else
+  void Write(TString outputFileName) const;  // Write the histograms to a file
   void SetCard(ConfigurationCard *newCard);  // Set a new configuration card for the histogram class
   
   // Histograms defined public to allow easier access to them. Should not be abused
-  
   TH1D *fhVertexZ;                          // Vertex z-position
   TH1D *fhEvents;                           // Number of events. Bin 1 = all. Bin 2 = good vz bin. Bin 3 = Dijet found.
   TH1D *fhCentrality;                       // Centrality information. -0.5 for pp or PYTHIA.
@@ -40,10 +39,16 @@ public:
   THnSparseD *fhDijetAsymmetry;             // Asymmetry in dijet events
   THnSparseD *fhLeadingJetPt;               // pT for the leading jet
   THnSparseD *fhSubleadingJetPt;            // pT for the subleading jet
+  THnSparseD *fhAnyJetPt;                   // pT for all jets
+  THnSparseD *fhLeadingJetPhi;              // phi for the leading jet
+  THnSparseD *fhSubleadingJetPhi;           // phi for the subleading jet
+  THnSparseD *fhAnyJetPhi;                  // phi for all jets
+  THnSparseD *fhLeadingJetEta;              // eta for the leading jet
+  THnSparseD *fhSubleadingJetEta;           // eta for the subleading jet
+  THnSparseD *fhAnyJetEta;                  // eta for all jets
   THnSparseD *fhDijetAsymmetryVsDphi;       // Asymmetry vs. deltaPhi
   THnSparseD *fhDijetLeadingVsSubleadingPt; // Leading jet pT vs. subleading jet pT
-  
-  // Enumeration
+
   
 private:
   
