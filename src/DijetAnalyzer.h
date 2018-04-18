@@ -25,7 +25,7 @@ public:
   DijetAnalyzer& operator=(const DijetAnalyzer& obj); // Equal sign operator
   
   // Methods
-  void RunAnalysis(bool runLocal, int debugLevel);  // Run the dijet analysis
+  void RunAnalysis(int debugLevel);  // Run the dijet analysis
   DijetHistograms* GetHistograms();  // Getter for histograms
   
 private:

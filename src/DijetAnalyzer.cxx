@@ -74,10 +74,9 @@ DijetAnalyzer::~DijetAnalyzer(){
  * Main analysis loop
  *
  *  Arguments:
- *    bool runLocal = True: Search files locally. False: Search files from grid.
  *    int debugLevel = Amount of debug messages printed out. 0 = none, 1 = some, 2 = all.
  */
-void DijetAnalyzer::RunAnalysis(bool runLocal, int debugLevel){
+void DijetAnalyzer::RunAnalysis(int debugLevel){
   
   TFile *inputFile;
   ForestReader *treeReader = new ForestReader();
@@ -122,7 +121,6 @@ void DijetAnalyzer::RunAnalysis(bool runLocal, int debugLevel){
   
   // File name helper variables
   TString currentFile;
-  TString prefix = "root://cmsxrootd.fnal.gov//";
   
   // Fillers for THnSparses
   double filler2D[2];
@@ -133,7 +131,6 @@ void DijetAnalyzer::RunAnalysis(bool runLocal, int debugLevel){
     
     // Find the filename
     currentFile = fFileNames.at(iFile);
-    if(!runLocal) currentFile.Prepend(prefix);  // If not running locally, we need to give xrootd path
     
     // Open the file and check that everything goes fine
     inputFile = TFile::Open(currentFile);

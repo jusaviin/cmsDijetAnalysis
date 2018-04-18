@@ -16,6 +16,8 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TMath.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 // Own includes
 #include "src/DijetAnalyzer.h"
@@ -31,9 +33,11 @@ using namespace std;
  *    std::vector<TString> &fileNameVector = Vector filled with filenames found in the file
  *    TString fileNameFile = Text file containing one analysis file name in each line
  *    int debug = Level of debug messages shown
+ *    bool runLocal = True: Local run mode. False: Crab run mode
  */
-void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, int debug)
+void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, int debug, bool runLocal)
 {
+  
   // Set up the file names file for reading
   ifstream file_stream(fileNameFile);
   std::string line;
@@ -49,12 +53,42 @@ void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, in
     while( !file_stream.eof() ) {
       getline(file_stream, line);
       if( debug > 0) std::cout << lineNumber << ": " << line << std::endl;
-      TString tstring_line(line);
+      TString lineString(line);
       
       // Put all non-empty lines to file names vector
-      if( tstring_line.CompareTo("", TString::kExact) != 0 ) fileNameVector.push_back(tstring_line);
+      if( lineString.CompareTo("", TString::kExact) != 0 ) {
+        
+        if(runLocal){
+          // For local running, it is assumed that the file name is directly the centents of the line
+          fileNameVector.push_back(lineString);
+          
+        } else {
+          // For crab running, the line will have format ["file1", "file2", ... , "fileN"]
+          TObjArray *fileNameArray = lineString.Tokenize(" ");  // Tokenize the string from every ' ' character
+          int numberOfFiles = fileNameArray->GetEntries();
+          TObjString *currentFileNameObject;
+          TString currentFileName;
+          for(int i = 0; i < numberOfFiles; i++){   // Loop over all the files in the array
+            currentFileNameObject = (TObjString *)fileNameArray->At(i);
+            currentFileName = currentFileNameObject->String();
+            
+            // Strip unwanted characters
+            currentFileName.Remove(TString::kBoth,'['); // Remove possible parantheses
+            currentFileName.Remove(TString::kBoth,']'); // Remove possible parantheses
+            currentFileName.Remove(TString::kBoth,','); // Remove commas
+            currentFileName.Remove(TString::kBoth,'"'); // Remove quotation marks
+            
+            // After stripping characters not belonging to the file name, we can add the file to list
+            currentFileName.Prepend("root://cmsxrootd.fnal.gov//");  // If not running locally, we need to give xrootd path
+            fileNameVector.push_back(currentFileName);
+          }
+        }
+        
+      } // Empty line if
+      
+      
       lineNumber++;
-    }
+    } // Loop over lines in the file
     
   // If cannot read the file, give error and end program
   } else {
@@ -127,14 +161,14 @@ int main(int argc, char **argv) {
   // Read the file names used for the analysis to a vector
   std::vector<TString> fileNameVector;
   fileNameVector.clear();
-  ReadFileList(fileNameVector,fileNameFile,debugLevel);
+  ReadFileList(fileNameVector,fileNameFile,debugLevel,runLocal);
   
   // Variable for histograms in the analysis
   DijetHistograms *histograms;
   
   // Run the analysis over the list of files
   DijetAnalyzer *jetAnalysis = new DijetAnalyzer(fileNameVector, dijetCard);
-  jetAnalysis->RunAnalysis(runLocal,debugLevel);
+  jetAnalysis->RunAnalysis(debugLevel);
   histograms = jetAnalysis->GetHistograms();
   
   // Write the histograms and card to file
