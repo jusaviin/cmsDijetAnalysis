@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
   
   //==== Read arguments =====
   //TROOT root("nanoDST","nanoDST analysis");  // I do not really know what this does.
-  if ( argc<5 ) {
+  if ( argc<4 ) {
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout<<"+ Usage of the macro: " << endl;
     cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] <runLocal>"<<endl;
