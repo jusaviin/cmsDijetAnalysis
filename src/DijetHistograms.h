@@ -16,7 +16,7 @@ class DijetHistograms{
 public:
   
   // Enumeration for event types to event histogram
-  enum enumEventTypes {kAll, kVzCut, kDijet, knEventTypes};
+  enum enumEventTypes {kAll, kPrimaryVertex, kHBHENoise, kCollisionEventSelection, kBeamScraping, kCaloJet, kVzCut, kDijet, knEventTypes};
   
   // Constructors and destructor
   DijetHistograms(); // Default constructor
@@ -53,7 +53,7 @@ public:
 private:
   
   ConfigurationCard *fCard;    // Card for binning info
-  const TString kEventTypeStrings[knEventTypes] = {"All", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
+  const TString kEventTypeStrings[knEventTypes] = {"All", "PrimVertex", "HBHENoise", "CollEvtSel", "BeamScrape", "CaloJet", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
   
 };
 

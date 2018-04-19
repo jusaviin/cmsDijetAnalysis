@@ -25,14 +25,14 @@ public:
   DijetAnalyzer& operator=(const DijetAnalyzer& obj); // Equal sign operator
   
   // Methods
-  void RunAnalysis(int debugLevel);  // Run the dijet analysis
+  void RunAnalysis();                      // Run the dijet analysis
   DijetHistograms* GetHistograms() const;  // Getter for histograms
   
 private:
   
-  std::vector<TString> fFileNames;
-  ConfigurationCard *fCard;
-  DijetHistograms *fHistograms;
+  std::vector<TString> fFileNames;   // Vector for all the files to loop over
+  ConfigurationCard *fCard;          // Configuration card for the analysis
+  DijetHistograms *fHistograms;      // Filled histograms
 
 };
 

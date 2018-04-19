@@ -115,8 +115,7 @@ bool checkBool(string str) {
  *  argv[1] = List of files to be analyzed, given in text file. For crab analysis a job ID instead.
  *  argv[2] = Card file with binning and cut information for the analysis
  *  argv[3] = .root file to which the histograms are written
- *  argv[4] = Debugging level. 0 = none, 1 = some, 2 = all.
- *  argv[5] = True: Search input files from local machine. False (default): Search input files from grid with xrootd
+ *  argv[4] = True: Search input files from local machine. False (default): Search input files from grid with xrootd
  */
 int main(int argc, char **argv) {
   
@@ -125,11 +124,10 @@ int main(int argc, char **argv) {
   if ( argc<5 ) {
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout<<"+ Usage of the macro: " << endl;
-    cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] <debugLevel> <runLocal>"<<endl;
+    cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] <runLocal>"<<endl;
     cout<<"+  fileNameFile: Text file containing the list of files used in the analysis. For crab analysis a job id should be given here." <<endl;
     cout<<"+  configurationCard: Card file with binning and cut information for the analysis." <<endl;
     cout<<"+  outputFileName: .root file to which the histograms are written." <<endl;
-    cout<<"+  debugLevel: Amount of debug messages shown. 0 = none, 1 = some, 2 = all." <<endl;
     cout<<"+  runLocal: True: Search input files from local machine. False (default): Search input files from grid with xrootd." << endl;
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout << endl << endl;
@@ -138,7 +136,7 @@ int main(int argc, char **argv) {
 
   // First, check if we are supposed to run locally or on crab
   bool runLocal = false;
-  if(argc >= 6) runLocal = checkBool(argv[5]);
+  if(argc >= 5) runLocal = checkBool(argv[4]);
   
   // Find the file list name depending on if we run locally or on crab
   TString fileNameFile;
@@ -151,11 +149,10 @@ int main(int argc, char **argv) {
   // Read the other command line arguments
   const char *cardName = argv[2];
   TString outputFileName = argv[3];
-  int debugLevel = 0;
-  if(argc >= 5) debugLevel = atoi(argv[4]);
   
   // Read the card
   ConfigurationCard *dijetCard = new ConfigurationCard(cardName);
+  int debugLevel = dijetCard->Get("DebugLevel");
   if(debugLevel > 0){
     dijetCard->PrintOut();
     cout << endl;
@@ -171,7 +168,7 @@ int main(int argc, char **argv) {
   
   // Run the analysis over the list of files
   DijetAnalyzer *jetAnalysis = new DijetAnalyzer(fileNameVector, dijetCard);
-  jetAnalysis->RunAnalysis(debugLevel);
+  jetAnalysis->RunAnalysis();
   histograms = jetAnalysis->GetHistograms();
   
   // Write the histograms and card to file

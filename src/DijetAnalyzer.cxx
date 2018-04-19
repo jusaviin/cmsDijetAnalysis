@@ -72,14 +72,11 @@ DijetAnalyzer::~DijetAnalyzer(){
 
 /*
  * Main analysis loop
- *
- *  Arguments:
- *    int debugLevel = Amount of debug messages printed out. 0 = none, 1 = some, 2 = all.
  */
-void DijetAnalyzer::RunAnalysis(int debugLevel){
+void DijetAnalyzer::RunAnalysis(){
   
   TFile *inputFile;
-  ForestReader *treeReader = new ForestReader();
+  ForestReader *treeReader = new ForestReader(fCard->Get("DataType"));
   
   //****************************************
   //        Event selection cuts
@@ -94,9 +91,9 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
   const double etacut = fCard->Get("EtaCut");
   const double searchetacut = fCard->Get("SearchEtaCut");
   const double pTmaxcut = fCard->Get("MaxPtCut");
-  const double pTmincut = fCard->Get("MinPtCut");      // Original 120
-  const double leadingjetcut = fCard->Get("MinPtCut");  // Original 120
-  const double subleadingjetcut = fCard->Get("SubleadingPtCut"); // Original 50
+  const double pTmincut = fCard->Get("MinPtCut");
+  const double leadingjetcut = fCard->Get("MinPtCut");
+  const double subleadingjetcut = fCard->Get("SubleadingPtCut");
   const double dphicut = fCard->Get("DeltaPhiCut");
   
   //****************************************
@@ -125,6 +122,9 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
   // Fillers for THnSparses
   double filler2D[2];
   double filler3D[3];
+  
+  // Amount of debugging messages
+  int debugLevel = fCard->Get("DebugLevel");
   
   // Loop over files
   for(int iFile = 0; iFile < (int) fFileNames.size(); iFile++) {
@@ -167,9 +167,33 @@ void DijetAnalyzer::RunAnalysis(int debugLevel){
       fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
       fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
       
-      // Apply the vz cut
+      //  ===== Apply all the event quality cuts =====
+      
+      // Cut for primary vertex. Only applied for data.
+      if(treeReader->GetPrimaryVertexFilterBit() == 0) continue;
+      fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
+      
+      // Cut for HB/HE noise. Only applied for data.
+      if(treeReader->GetHBHENoiseFilterBit() == 0) continue;
+      fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
+      
+      // Cut for collision event selection. Only applied for PbPb data.
+      if(treeReader->GetCollisionEventSelectionFilterBit() == 0) continue;
+      fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
+      
+      // Cut for beam scraping. Only applied for pp data.
+      if(treeReader->GetBeamScrapingFilterBit() == 0) continue;
+      fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
+      
+      // Cut for calirimeter jet quality. Only applied for data.
+      if(treeReader->GetCaloJetFilterBit() == 0) continue;
+      fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
+      
+      // Cut for vertex z-position
       if(TMath::Abs(vz) > vzCut) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);  // Events with z vertex within accepteble range
+      fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);
+      
+      // ===== Event quality cuts applied =====
       
       // Reset dijet flags
       twoJetsFound = false;

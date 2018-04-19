@@ -178,7 +178,7 @@ void DijetHistograms::CreateHistograms(){
   double maxVz = 20;
   int nVzBins = 80;
   
-  // Arrays for creating THnSpares
+  // Arrays for creating THnSparses
   int nBins2D[2]; int nBins3D[3];
   double lowBinBorder2D[2]; double lowBinBorder3D[3];
   double highBinBorder2D[2]; double highBinBorder3D[3];

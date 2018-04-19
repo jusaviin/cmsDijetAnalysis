@@ -1,5 +1,8 @@
 # Configuration card for leading-subleading jet analysis
 
+# Data type for the analysis
+DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
+
 # Cuts for dijets
 EtaCut 1.6         # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0   # Region accepted when searching for dijet events
@@ -10,3 +13,6 @@ DeltaPhiCut 2.6179939 # Minimum deltaPhi between leading and subleading jet, 5 P
 
 # Cuts for event selection
 ZVertexCut 15      # Maximum vz value for accepted tracks
+
+# Debug
+DebugLevel 2   # 0 = No debug messages, 1 = Some debug messages, 2 = All debug messages
