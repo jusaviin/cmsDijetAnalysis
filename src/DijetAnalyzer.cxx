@@ -195,9 +195,13 @@ void DijetAnalyzer::RunAnalysis(){
       
       // ===== Event quality cuts applied =====
       
-      // Reset dijet flags
+      // Reset the variables used in dijet finding
       twoJetsFound = false;
       dijetFound = false;
+      highestIndex = -1;
+      secondHighestIndex = -1;
+      leadingPt = 0;
+      subleadingPt = 0;
       
       // Search for leading jet and fill histograms for all jets within the eta vut
       for(int jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
