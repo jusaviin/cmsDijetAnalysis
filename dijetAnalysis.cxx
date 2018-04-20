@@ -11,7 +11,6 @@
 #include <cctype>     // Libraries for checking boolean input
 
 // Includes from Root
-//#include <TROOT.h>    // Not sure if needed...
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -120,7 +119,6 @@ bool checkBool(string str) {
 int main(int argc, char **argv) {
   
   //==== Read arguments =====
-  //TROOT root("nanoDST","nanoDST analysis");  // I do not really know what this does.
   if ( argc<4 ) {
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout<<"+ Usage of the macro: " << endl;

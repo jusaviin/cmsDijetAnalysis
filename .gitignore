@@ -2,6 +2,7 @@
 *.[oa]
 
 # Ignore data files
+data
 *.root
 
 # Ignore testing filelist
