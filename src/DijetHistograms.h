@@ -35,19 +35,19 @@ public:
   TH1D *fhVertexZ;                          // Vertex z-position
   TH1D *fhEvents;                           // Number of events. Bin 1 = all. Bin 2 = good vz bin. Bin 3 = Dijet found.
   TH1D *fhCentrality;                       // Centrality information. -0.5 for pp or PYTHIA.
-  THnSparseD *fhDijetDphi;                  // deltaPhi for dijet events
-  THnSparseD *fhDijetAsymmetry;             // Asymmetry in dijet events
-  THnSparseD *fhLeadingJetPt;               // pT for the leading jet
-  THnSparseD *fhSubleadingJetPt;            // pT for the subleading jet
-  THnSparseD *fhAnyJetPt;                   // pT for all jets
-  THnSparseD *fhLeadingJetPhi;              // phi for the leading jet
-  THnSparseD *fhSubleadingJetPhi;           // phi for the subleading jet
-  THnSparseD *fhAnyJetPhi;                  // phi for all jets
-  THnSparseD *fhLeadingJetEta;              // eta for the leading jet
-  THnSparseD *fhSubleadingJetEta;           // eta for the subleading jet
-  THnSparseD *fhAnyJetEta;                  // eta for all jets
-  THnSparseD *fhDijetAsymmetryVsDphi;       // Asymmetry vs. deltaPhi
-  THnSparseD *fhDijetLeadingVsSubleadingPt; // Leading jet pT vs. subleading jet pT
+  THnSparseD *fhDijetDphi;                  // deltaPhi for dijet events  Axes: [dPhi][cent]
+  THnSparseD *fhDijetAsymmetry;             // Asymmetry in dijet events  Axes: [Ajj][cent]
+  THnSparseD *fhLeadingJetPt;               // pT for the leading jet     Axes: [pT][cent]
+  THnSparseD *fhSubleadingJetPt;            // pT for the subleading jet  Axes: [pT][cent]
+  THnSparseD *fhAnyJetPt;                   // pT for all jets            Axes: [pT][cent]
+  THnSparseD *fhLeadingJetPhi;              // phi for the leading jet    Axes: [phi][cent][pT]
+  THnSparseD *fhSubleadingJetPhi;           // phi for the subleading jet Axes: [phi][cent][pT]
+  THnSparseD *fhAnyJetPhi;                  // phi for all jets           Axes: [phi][cent][pT]
+  THnSparseD *fhLeadingJetEta;              // eta for the leading jet    Axes: [eta][cent][pT]
+  THnSparseD *fhSubleadingJetEta;           // eta for the subleading jet Axes: [eta][cent][pT]
+  THnSparseD *fhAnyJetEta;                  // eta for all jets           Axes: [eta][cent][pT]
+  THnSparseD *fhDijetAsymmetryVsDphi;       // Asymmetry vs. deltaPhi     Axes: [Ajj][dPhi][cent]
+  THnSparseD *fhDijetLeadingVsSubleadingPt; // Leading jet pT vs. subleading jet pT Axes: [pT][pT][cent]
 
   
 private:
