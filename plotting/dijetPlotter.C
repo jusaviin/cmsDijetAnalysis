@@ -62,11 +62,11 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   bool drawTwoDimensionalHistograms = true;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   
-  // Define binning to project out from THnSparses
-  const int nCentralityBins = 1;
-  double centralityBinBorders[nCentralityBins+1] = {-0.5,100};
+  // Define binning to project out from THnSparses. For pp centrality binning is automatically disabled.
+  const int nCentralityBins = 4;
+  double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};
   int centralityBinIndices[nCentralityBins+1] = {0};
   
   // Choose which centrality bins to draw
@@ -84,8 +84,15 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   // First, load the histograms from the file
   TFile *inputFile = TFile::Open(inputFileName);
   
-  // Load the card from the file
+  // Load the card from the file and read the collision system
   DijetCard *card = new DijetCard(inputFile);
+  TString collisionSystem = card->GetDataType();
+  
+  // Remove centrality selection from pp data
+  if(collisionSystem.Contains("pp")){
+    lastDrawnCentralityBin = 0;
+    centralityBinBorders[0] = -0.5;
+  }
   
   // Vertex z position
   TH1D *hVertexZ = (TH1D*) inputFile->Get("vertexZ");
@@ -121,10 +128,11 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   int lowerCentralityBin = 0;
   int higherCentralityBin = 0;
   
-  for(int iCentralityBin = 0; iCentralityBin < nCentralityBins; iCentralityBin++){
+  // Load only the bins that are drawn
+  for(int iCentralityBin = 0; iCentralityBin <= lastDrawnCentralityBin; iCentralityBin++){
     
     // Select the bin indices
-    if(iCentralityBin == nCentralityBins-1) duplicateRemover = 0;
+    if(iCentralityBin == lastDrawnCentralityBin) duplicateRemover = 0;
     lowerCentralityBin = centralityBinIndices[iCentralityBin];
     higherCentralityBin = centralityBinIndices[iCentralityBin+1]+duplicateRemover;
     
@@ -155,8 +163,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   // Pointer for legend in figures
   TLegend *legend;
   
-  // Read the system name from the card
-  TString collisionSystem = card->GetDataType();
+  // Prepare system name information and strings for centrality
   TString systemAndEnergy = Form("%s 5.02 TeV",collisionSystem.Data());
   TString compactSystemAndEnergy = systemAndEnergy;
   compactSystemAndEnergy.ReplaceAll(" ","");
