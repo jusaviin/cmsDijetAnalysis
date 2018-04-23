@@ -1,5 +1,6 @@
 // Own includes
 #include "JDrawer.h"
+#include "DijetCard.h"
 
 /*
  * Extract a 2D histogram from a given centrality bin from THnSparseD
@@ -53,16 +54,16 @@ void dijetPlotter(TString inputFileName = "../dijetSpectraTest_1.root"){
   // =========== Configuration ============
   
   // Choose which figure sets to draw
-  bool drawEventInformation = true;
-  bool drawDijetHistograms = true;
-  bool drawJetPtHistograms = true;
-  bool drawJetPhiHistograms = true;
-  bool drawJetEtaHistograms = true;
+  bool drawEventInformation = false;
+  bool drawDijetHistograms = false;
+  bool drawJetPtHistograms = false;
+  bool drawJetPhiHistograms = false;
+  bool drawJetEtaHistograms = false;
   bool drawTwoDimensionalHistograms = true;
   
   // Define binning to project out from THnSparses
-  const int nCentralityBins = 1;
-  double centralityBinBorders[nCentralityBins+1] = {-0.5,100};
+  const int nCentralityBins = 4;
+  double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};
   int centralityBinIndices[nCentralityBins+1] = {0};
   
   // Choose which centrality bins to draw
@@ -79,6 +80,9 @@ void dijetPlotter(TString inputFileName = "../dijetSpectraTest_1.root"){
   
   // First, load the histograms from the file
   TFile *inputFile = TFile::Open(inputFileName);
+  
+  // Load the card from the file
+  DijetCard *card = new DijetCard(inputFile);
   
   // Vertex z position
   TH1D *hVertexZ = (TH1D*) inputFile->Get("vertexZ");
@@ -145,42 +149,127 @@ void dijetPlotter(TString inputFileName = "../dijetSpectraTest_1.root"){
   JDrawer *drawer = new JDrawer();
   gStyle->SetPalette(kRainBow);
   
+  // Pointer for legend in figures
+  TLegend *legend;
+  
+  // Read the system name from the card
+  TString collisionSystem = card->GetDataType();
+  TString systemAndEnergy = Form("%s 5.02 TeV",collisionSystem.Data());
+  TString centralityString;
+  
   // Draw event information histograms
   if(drawEventInformation){
     drawer->DrawHistogram(hVertexZ,"v_{z} (cm)","#frac{dN}{dv_{z}}  (1/cm)"," ");
+    legend = new TLegend(0.62,0.75,0.82,0.9);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+    legend->Draw();
+    
     drawer->DrawHistogram(hEvents,"Event class","Number of events", " ");
+    legend = new TLegend(0.17,0.22,0.37,0.37);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+    legend->Draw();
+    
     drawer->DrawHistogram(hCentrality,"Centrality percentile","N"," ");
+    legend = new TLegend(0.62,0.75,0.82,0.9);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+    legend->Draw();
   }
   
   for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
     
     drawer->SetRightMargin(0.06);
+    centralityString = Form("Cent: %.0f-%.0f%%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
     
     // Draw dijet histograms
     if(drawDijetHistograms){
       drawer->DrawHistogram(hDijetDphi[iCentrality],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hDijetDphi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hDijetAsymmetry[iCentrality],"A_{jj}","#frac{dN}{dA_{jj}}"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hDijetAsymmetry[iCentrality],centralityString.Data(),"");
+      legend->Draw();
     }
     
     // Draw pT histograms for jets
     if(drawJetPtHistograms){
       drawer->DrawHistogram(hLeadingJetPt[iCentrality],"Leading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetPt[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hSubleadingJetPt[iCentrality],"Subleading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetPt[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hAnyJetPt[iCentrality],"Any jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetPt[iCentrality],centralityString.Data(),"");
+      legend->Draw();
     }
     
     // Draw phi histograms for jets
     if(drawJetPhiHistograms){
       drawer->DrawHistogram(hLeadingJetPhi[iCentrality],"Leading jet #varphi","#frac{dN}{d#varphi}"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hSubleadingJetPhi[iCentrality],"Subleading jet #varphi","#frac{dN}{d#varphi}"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hAnyJetPhi[iCentrality],"Any jet #varphi","#frac{dN}{d#varphi}"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
     }
     
     // Draw eta histograms for jets
-    if(drawJetPhiHistograms){
+    if(drawJetEtaHistograms){
       drawer->DrawHistogram(hLeadingJetEta[iCentrality],"Leading jet #eta","#frac{dN}{d#eta}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetEta[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hSubleadingJetEta[iCentrality],"Subleading jet #eta","#frac{dN}{d#eta}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetEta[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hAnyJetEta[iCentrality],"Any jet #eta","#frac{dN}{d#eta}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetEta[iCentrality],centralityString.Data(),"");
+      legend->Draw();
     }
     
     // Draw 2D histograms
@@ -188,7 +277,18 @@ void dijetPlotter(TString inputFileName = "../dijetSpectraTest_1.root"){
     
     if(drawTwoDimensionalHistograms){
       drawer->DrawHistogram(hDijetAsymmetryVsDphi[iCentrality],"#Delta#varphi","A_{jj}"," ","colz");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hDijetAsymmetryVsDphi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
       drawer->DrawHistogram(hDijetLeadingVsSubleadingPt[iCentrality],"Leading jet p_{T}","Subleading jet p_{T}"," ","colz");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hDijetLeadingVsSubleadingPt[iCentrality],centralityString.Data(),"");
+      legend->Draw();
     }
   }
 }
