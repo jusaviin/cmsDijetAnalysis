@@ -32,23 +32,12 @@ public:
   void SetCard(ConfigurationCard *newCard);  // Set a new configuration card for the histogram class
   
   // Histograms defined public to allow easier access to them. Should not be abused
-  TH1D *fhVertexZ;                          // Vertex z-position
-  TH1D *fhEvents;                           // Number of events. Bin 1 = all. Bin 2 = good vz bin. Bin 3 = Dijet found.
-  TH1D *fhCentrality;                       // Centrality information. -0.5 for pp or PYTHIA.
-  THnSparseD *fhDijetDphi;                  // deltaPhi for dijet events  Axes: [dPhi][cent]
-  THnSparseD *fhDijetAsymmetry;             // Asymmetry in dijet events  Axes: [Ajj][cent]
-  THnSparseD *fhLeadingJetPt;               // pT for the leading jet     Axes: [pT][cent]
-  THnSparseD *fhSubleadingJetPt;            // pT for the subleading jet  Axes: [pT][cent]
-  THnSparseD *fhAnyJetPt;                   // pT for all jets            Axes: [pT][cent]
-  THnSparseD *fhLeadingJetPhi;              // phi for the leading jet    Axes: [phi][cent][pT]
-  THnSparseD *fhSubleadingJetPhi;           // phi for the subleading jet Axes: [phi][cent][pT]
-  THnSparseD *fhAnyJetPhi;                  // phi for all jets           Axes: [phi][cent][pT]
-  THnSparseD *fhLeadingJetEta;              // eta for the leading jet    Axes: [eta][cent][pT]
-  THnSparseD *fhSubleadingJetEta;           // eta for the subleading jet Axes: [eta][cent][pT]
-  THnSparseD *fhAnyJetEta;                  // eta for all jets           Axes: [eta][cent][pT]
-  THnSparseD *fhDijetAsymmetryVsDphi;       // Asymmetry vs. deltaPhi     Axes: [Ajj][dPhi][cent]
-  THnSparseD *fhDijetLeadingVsSubleadingPt; // Leading jet pT vs. subleading jet pT Axes: [pT][pT][cent]
-
+  // Notation in comments: l = leading jet, s = subleading jet
+  TH1D *fhVertexZ;      // Vertex z-position
+  TH1D *fhEvents;       // Number of events. Bin 1 = all. Bin 2 = good vz bin. Bin 3 = Dijet found.
+  TH1D *fhCentrality;   // Centrality information. -0.5 for pp or PYTHIA.
+  THnSparse *fhDijet;   // Dijet information. Axes: [l-pT][l-phi][l-eta][s-pT][s-phi][s-eta][dphi][Ajj][cent]
+  THnSparse *fhAnyJet;  // Any jet information. Axes: [jet pT][jet phi][jet eta][cent]
   
 private:
   

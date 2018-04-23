@@ -120,8 +120,8 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentFile;
   
   // Fillers for THnSparses
-  double filler2D[2];
-  double filler3D[3];
+  double fillerAnyJet[4];
+  double fillerDijet[9];
   
   // Amount of debugging messages
   int debugLevel = fCard->Get("DebugLevel");
@@ -208,23 +208,16 @@ void DijetAnalyzer::RunAnalysis(){
         jetPt = treeReader->GetJetPt(jetIndex);
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= searchetacut) continue;
         
-        // Fill the histograms for all jets within eta range
+        // Fill the histogram for all jets within eta range
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) < etacut){
           
-          // Fill the all jets pT histogram
-          filler2D[0] = jetPt;
-          filler2D[1] = centrality;
-          fHistograms->fhAnyJetPt->Fill(filler2D);
+          // Fill the axes in correct order
+          fillerAnyJet[0] = jetPt;                             // Axis 0 = any jet pT
+          fillerAnyJet[1] = treeReader->GetJetPhi(jetIndex);   // Axis 1 = any jet phi
+          fillerAnyJet[2] = treeReader->GetJetEta(jetIndex);   // Axis 2 = any jet eta
+          fillerAnyJet[3] = centrality;                        // Axis 3 = centrality
+          fHistograms->fhAnyJet->Fill(fillerAnyJet);           // Fill the data point to histogram
           
-          // Fill the all jets eta histogram
-          filler3D[0] = treeReader->GetJetEta(jetIndex);
-          filler3D[1] = centrality;
-          filler3D[2] = jetPt;
-          fHistograms->fhAnyJetEta->Fill(filler3D);
-          
-          // Fill the all jets phi histogram
-          filler3D[0] = treeReader->GetJetPhi(jetIndex);
-          fHistograms->fhAnyJetPhi->Fill(filler3D);
         }
         
         if(jetPt <= leadingjetcut) continue;
@@ -271,61 +264,21 @@ void DijetAnalyzer::RunAnalysis(){
       if(dijetFound){
         fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
         
-        // Put the centralities to fillers
-        filler2D[1] = centrality;
-        filler3D[2] = centrality;
-        
-        // Fill dijet deltaPhi histogram
-        filler2D[0] = fabs(dphi);
-        fHistograms->fhDijetDphi->Fill(filler2D);
-        
         // Calculate the asymmetry
         Aj = (treeReader->GetJetPt(highestIndex) - treeReader->GetJetPt(secondHighestIndex))/(treeReader->GetJetPt(highestIndex) + treeReader->GetJetPt(secondHighestIndex));
         
-        // Fill the asymmetry histogram
-        filler2D[0] = Aj;
-        fHistograms->fhDijetAsymmetry->Fill(filler2D);
-        
-        // Fill the aymmetry versus delta phi histogram
-        filler3D[0] = fabs(dphi);
-        filler3D[1] = Aj;
-        fHistograms->fhDijetAsymmetryVsDphi->Fill(filler3D);
-        
-        // Fill the leading jet pT histogram
-        filler2D[0] = treeReader->GetJetPt(highestIndex);
-        fHistograms->fhLeadingJetPt->Fill(filler2D);
-        
-        // Fill the subleading jet pT histogram
-        filler2D[0] = treeReader->GetJetPt(secondHighestIndex);
-        fHistograms->fhSubleadingJetPt->Fill(filler2D);
-        
-        // Fill the histogram for leading jet pT versus subleading jet pT
-        filler3D[0] = treeReader->GetJetPt(highestIndex);
-        filler3D[1] = treeReader->GetJetPt(secondHighestIndex);
-        fHistograms->fhDijetLeadingVsSubleadingPt->Fill(filler3D);
-        
-        // Change the common filler info for eta and phi histograms for leading jet
-        filler3D[1] = centrality;
-        filler3D[2] = treeReader->GetJetPt(highestIndex);
-        
-        // Fill the leading jet phi histogram
-        filler3D[0] = treeReader->GetJetPhi(highestIndex);
-        fHistograms->fhLeadingJetPhi->Fill(filler3D);
-        
-        // Fill the leading jet eta histogram
-        filler3D[0] = treeReader->GetJetEta(highestIndex);
-        fHistograms->fhLeadingJetEta->Fill(filler3D);
-        
-        // Change the common filler info for eta and phi histograms for subleading jet
-        filler3D[2] = treeReader->GetJetPt(secondHighestIndex);
-        
-        // Fill the leading jet phi histogram
-        filler3D[0] = treeReader->GetJetPhi(secondHighestIndex);
-        fHistograms->fhSubleadingJetPhi->Fill(filler3D);
-        
-        // Fill the leading jet eta histogram
-        filler3D[0] = treeReader->GetJetEta(secondHighestIndex);
-        fHistograms->fhSubleadingJetEta->Fill(filler3D);
+        // Fill the dijet histogram axes in correct order
+        fillerDijet[0] = treeReader->GetJetPt(highestIndex);        // Axis 0: Leading jet pT
+        fillerDijet[1] = treeReader->GetJetPhi(highestIndex);       // Axis 1: Leading jet phi
+        fillerDijet[2] = treeReader->GetJetEta(highestIndex);       // Axis 2: Leading jet eta
+        fillerDijet[3] = treeReader->GetJetPt(secondHighestIndex);  // Axis 3: Subleading jet pT
+        fillerDijet[4] = treeReader->GetJetPhi(secondHighestIndex); // Axis 4: Subleading jet phi
+        fillerDijet[5] = treeReader->GetJetEta(secondHighestIndex); // Axis 5: Subleading jet eta
+        fillerDijet[6] = fabs(dphi);                                // Axis 6: deltaPhi
+        fillerDijet[7] = Aj;                                        // Axis 7: Asymmetry
+        fillerDijet[8] = centrality;                                // Axis 8: Centrality
+        fHistograms->fhDijet->Fill(fillerDijet);                    // Fill the data point to dijet histogram
+
       }
     } // Event loop
     

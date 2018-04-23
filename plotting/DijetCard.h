@@ -17,8 +17,8 @@ private:
   TString fDataTypeString;   // Total number of eta gaps in the analysis
   
   void FindDataTypeString(){
-    TString dataTypes[4] = {"pp","PbPb","pp MC","PbPb MC"};
-    if(fDataType < 0 || fDataType > 3){
+    TString dataTypes[5] = {"pp","PbPb","pp MC","PbPb MC","localTest"};
+    if(fDataType < 0 || fDataType > 4){
       fDataTypeString = "Unknown";
       return;
     }

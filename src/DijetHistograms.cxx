@@ -17,19 +17,8 @@ DijetHistograms::DijetHistograms() :
   fhVertexZ(0),
   fhEvents(0),
   fhCentrality(0),
-  fhDijetDphi(0),
-  fhDijetAsymmetry(0),
-  fhLeadingJetPt(0),
-  fhSubleadingJetPt(0),
-  fhAnyJetPt(0),
-  fhLeadingJetPhi(0),
-  fhSubleadingJetPhi(0),
-  fhAnyJetPhi(0),
-  fhLeadingJetEta(0),
-  fhSubleadingJetEta(0),
-  fhAnyJetEta(0),
-  fhDijetAsymmetryVsDphi(0),
-  fhDijetLeadingVsSubleadingPt(0),
+  fhDijet(0),
+  fhAnyJet(0),
   fCard(0)
 {
   // Default constructor
@@ -42,19 +31,8 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhVertexZ(0),
   fhEvents(0),
   fhCentrality(0),
-  fhDijetDphi(0),
-  fhDijetAsymmetry(0),
-  fhLeadingJetPt(0),
-  fhSubleadingJetPt(0),
-  fhAnyJetPt(0),
-  fhLeadingJetPhi(0),
-  fhSubleadingJetPhi(0),
-  fhAnyJetPhi(0),
-  fhLeadingJetEta(0),
-  fhSubleadingJetEta(0),
-  fhAnyJetEta(0),
-  fhDijetAsymmetryVsDphi(0),
-  fhDijetLeadingVsSubleadingPt(0),
+  fhDijet(0),
+  fhAnyJet(0),
   fCard(newCard)
 {
   // Custom constructor
@@ -67,19 +45,8 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhVertexZ(in.fhVertexZ),
   fhEvents(in.fhEvents),
   fhCentrality(in.fhCentrality),
-  fhDijetDphi(in.fhDijetDphi),
-  fhDijetAsymmetry(in.fhDijetAsymmetry),
-  fhLeadingJetPt(in.fhLeadingJetPt),
-  fhSubleadingJetPt(in.fhSubleadingJetPt),
-  fhAnyJetPt(in.fhAnyJetPt),
-  fhLeadingJetPhi(in.fhLeadingJetPhi),
-  fhSubleadingJetPhi(in.fhSubleadingJetPhi),
-  fhAnyJetPhi(in.fhAnyJetPhi),
-  fhLeadingJetEta(in.fhLeadingJetEta),
-  fhSubleadingJetEta(in.fhSubleadingJetEta),
-  fhAnyJetEta(in.fhAnyJetEta),
-  fhDijetAsymmetryVsDphi(in.fhDijetAsymmetryVsDphi),
-  fhDijetLeadingVsSubleadingPt(in.fhDijetLeadingVsSubleadingPt),
+  fhDijet(in.fhDijet),
+  fhAnyJet(in.fhAnyJet),
   fCard(in.fCard)
 {
   // Copy constructor
@@ -96,19 +63,8 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhVertexZ = in.fhVertexZ;
   fhEvents = in.fhEvents;
   fhCentrality = in.fhCentrality;
-  fhDijetDphi = in.fhDijetDphi;
-  fhDijetAsymmetry = in.fhDijetAsymmetry;
-  fhLeadingJetPt = in.fhLeadingJetPt;
-  fhSubleadingJetPt = in.fhSubleadingJetPt;
-  fhAnyJetPt = in.fhAnyJetPt;
-  fhLeadingJetPhi = in.fhLeadingJetPhi;
-  fhSubleadingJetPhi = in.fhSubleadingJetPhi;
-  fhAnyJetPhi = in.fhAnyJetPhi;
-  fhLeadingJetEta = in.fhLeadingJetEta;
-  fhSubleadingJetEta = in.fhSubleadingJetEta;
-  fhAnyJetEta = in.fhAnyJetEta;
-  fhDijetAsymmetryVsDphi = in.fhDijetAsymmetryVsDphi;
-  fhDijetLeadingVsSubleadingPt = in.fhDijetLeadingVsSubleadingPt;
+  fhDijet = in.fhDijet;
+  fhAnyJet = in.fhAnyJet;
   fCard = in.fCard;
   
   return *this;
@@ -122,19 +78,8 @@ DijetHistograms::~DijetHistograms(){
   delete fhVertexZ;
   delete fhEvents;
   delete fhCentrality;
-  delete fhDijetDphi;
-  delete fhDijetAsymmetry;
-  delete fhLeadingJetPt;
-  delete fhSubleadingJetPt;
-  delete fhAnyJetPt;
-  delete fhLeadingJetPhi;
-  delete fhSubleadingJetPhi;
-  delete fhAnyJetPhi;
-  delete fhLeadingJetEta;
-  delete fhSubleadingJetEta;
-  delete fhAnyJetEta;
-  delete fhDijetAsymmetryVsDphi;
-  delete fhDijetLeadingVsSubleadingPt;
+  delete fhDijet;
+  delete fhAnyJet;
 }
 
 /*
@@ -179,9 +124,11 @@ void DijetHistograms::CreateHistograms(){
   int nVzBins = 80;
   
   // Arrays for creating THnSparses
-  int nBins2D[2]; int nBins3D[3];
-  double lowBinBorder2D[2]; double lowBinBorder3D[3];
-  double highBinBorder2D[2]; double highBinBorder3D[3];
+  const int dimensionDijet = 9;
+  const int dimensionAnyJet = 4;
+  int nBinsDijet[dimensionDijet]; int nBinsAnyjet[dimensionAnyJet];
+  double lowBinBorderDijet[dimensionDijet]; double lowBinBorderAnyJet[dimensionAnyJet];
+  double highBinBorderDijet[dimensionDijet]; double highBinBorderAnyJet[dimensionAnyJet];
   
   // ======== Plain TH1 histograms ========
   
@@ -194,105 +141,80 @@ void DijetHistograms::CreateHistograms(){
     fhEvents->GetXaxis()->SetBinLabel(i+1,kEventTypeStrings[i]);
   }
   
-  // ======== THnSparse histograms with centrality as the second axis =========
+  // ======== THnSparse histograms for dijets ========
   
-  // Fill in the centrality information common for all histograms
-  nBins2D[1] = nCentralityBins;       // nBins for centrality
-  lowBinBorder2D[1] = minCentrality;  // low bin border for centrality
-  highBinBorder2D[1] = maxCentrality; // high bin border for centrality
+  // Axis 0 for the dijet histogram: leading jet pT
+  nBinsDijet[0] = nPtBins;         // nBins for leading jet pT
+  lowBinBorderDijet[0] = minPt;    // low bin border for leading jet pT
+  highBinBorderDijet[0] = maxPt;   // high bin border for leading jet pT
   
-  // Create the histograms
-  // Dijet deltaPhi
-  nBins2D[0] = nDeltaPhiBins;       // nBins for deltaPhi
-  lowBinBorder2D[0] = minDeltaPhi;  // low bin border for deltaPhi
-  highBinBorder2D[0] = maxDeltaPhi; // high bin border for deltaPhi
-  fhDijetDphi = new THnSparseD("dijetDphi","dijetDphi",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhDijetDphi->Sumw2();
+  // Axis 1 for the dijet histogram: leading jet phi
+  nBinsDijet[1] = nPhiBins;        // nBins for leading jet phi
+  lowBinBorderDijet[1] = minPhi;   // low bin border for leading jet phi
+  highBinBorderDijet[1] = maxPhi;  // high bin border for leading jet phi
   
-  // Dijet astymmetry
-  nBins2D[0] = nAsymmetryBins;         // nBins for asymmetry
-  lowBinBorder2D[0] = minAsymmetry;    // low bin border for asymmetry
-  highBinBorder2D[0] = maxAsymmetry;   // high bin border for asymmetry
-  fhDijetAsymmetry = new THnSparseD("dijetAsymmetry","dijetAsymmetry",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhDijetAsymmetry->Sumw2();
+  // Axis 2 for the dijet histogram: leading jet eta
+  nBinsDijet[2] = nEtaBins;        // nBins for leading jet eta
+  lowBinBorderDijet[2] = minEta;   // low bin border for leading jet eta
+  highBinBorderDijet[2] = maxEta;  // high bin border for leading jet eta
   
-  // Different jet pT histograms
-  nBins2D[0] = nPtBins;         // nBins for jet pT
-  lowBinBorder2D[0] = minPt;    // low bin border for jet pT
-  highBinBorder2D[0] = maxPt;   // high bin border for jet pT
+  // Axis 3 for the dijet histogram: subleading jet pT
+  nBinsDijet[3] = nPtBins;         // nBins for subleading jet pT
+  lowBinBorderDijet[3] = minPt;    // low bin border for subleading jet pT
+  highBinBorderDijet[3] = maxPt;   // high bin border for subleading jet pT
   
-  // Leading jet pT
-  fhLeadingJetPt = new THnSparseD("leadingJetPt","leadingJetPt",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhLeadingJetPt->Sumw2();
+  // Axis 4 for the dijet histogram: subleading jet phi
+  nBinsDijet[4] = nPhiBins;        // nBins for subleading jet phi
+  lowBinBorderDijet[4] = minPhi;   // low bin border for subleading jet phi
+  highBinBorderDijet[4] = maxPhi;  // high bin border for subleading jet phi
   
-  // Subleading jet pT
-  fhSubleadingJetPt = new THnSparseD("subleadingJetPt","subleadingJetPt",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhSubleadingJetPt->Sumw2();
+  // Axis 5 for the dijet histogram: subleading jet eta
+  nBinsDijet[5] = nEtaBins;        // nBins for subleading jet eta
+  lowBinBorderDijet[5] = minEta;   // low bin border for subleading jet eta
+  highBinBorderDijet[5] = maxEta;  // high bin border for subleading jet eta
   
-  // All jets pT
-  fhAnyJetPt = new THnSparseD("anyJetPt","anyJetPt",2,nBins2D,lowBinBorder2D,highBinBorder2D); fhAnyJetPt->Sumw2();
+  // Axis 6 for the dijet histogram: deltaPhi
+  nBinsDijet[6] = nDeltaPhiBins;       // nBins for deltaPhi
+  lowBinBorderDijet[6] = minDeltaPhi;  // low bin border for deltaPhi
+  highBinBorderDijet[6] = maxDeltaPhi; // high bin border for deltaPhi
   
-  // ======= THnSparse histograms with centrality as the second axis and pT as the third axis =======
+  // Axis 7 for the dijet histogram: asymmetry
+  nBinsDijet[7] = nAsymmetryBins;         // nBins for asymmetry
+  lowBinBorderDijet[7] = minAsymmetry;    // low bin border for asymmetry
+  highBinBorderDijet[7] = maxAsymmetry;   // high bin border for asymmetry
   
-  // Fill in the centrality information common for all histograms
-  nBins3D[1] = nCentralityBins;        // nBins for centrality
-  lowBinBorder3D[1] = minCentrality;   // low bin border for centrality
-  highBinBorder3D[1] = maxCentrality;  // high bin border for centrality
+  // Axis 8 for the dijet histogram: centrality
+  nBinsDijet[8] = nCentralityBins;       // nBins for centrality
+  lowBinBorderDijet[8] = minCentrality;  // low bin border for centrality
+  highBinBorderDijet[8] = maxCentrality; // high bin border for centrality
   
-  // Fill in the pT information common for all histograms
-  nBins3D[2] = nPtBins;        // nBins for jet pT
-  lowBinBorder3D[2] = minPt;   // low bin border for jet pT
-  highBinBorder3D[2] = maxPt;  // high bin border for jet pT
+  // Create the dijet histogram using the above binning information
+  fhDijet = new THnSparseD("dijet","dijet",dimensionDijet,nBinsDijet,lowBinBorderDijet,highBinBorderDijet); fhDijet->Sumw2();
   
-  // Different jet phi histograms
-  nBins3D[0] = nPhiBins;        // nBins for jet phi
-  lowBinBorder3D[0] = minPhi;   // low bin border for jet phi
-  highBinBorder3D[0] = maxPhi;  // high bin border for jet phi
+  // ======== THnSparse histograms for all jets ========
   
-  // Leading jet phi
-  fhLeadingJetPhi = new THnSparseD("leadingJetPhi","leadingJetPhi",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhLeadingJetPhi->Sumw2();
+  // Axis 0 for the dijet histogram: leading jet pT
+  nBinsAnyjet[0] = nPtBins;         // nBins for any jet pT
+  lowBinBorderAnyJet[0] = minPt;    // low bin border for any jet pT
+  highBinBorderAnyJet[0] = maxPt;   // high bin border for any jet pT
   
-  // Subleading jet phi
-  fhSubleadingJetPhi = new THnSparseD("subleadingJetPhi","subleadingJetPhi",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhSubleadingJetPhi->Sumw2();
+  // Axis 1 for the dijet histogram: leading jet phi
+  nBinsAnyjet[1] = nPhiBins;        // nBins for any jet phi
+  lowBinBorderAnyJet[1] = minPhi;   // low bin border for any jet phi
+  highBinBorderAnyJet[1] = maxPhi;  // high bin border for any jet phi
   
-  // All jets phi
-  fhAnyJetPhi = new THnSparseD("anyJetPhi","anyJetPhi",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhAnyJetPhi->Sumw2();
+  // Axis 2 for the dijet histogram: leading jet eta
+  nBinsAnyjet[2] = nEtaBins;        // nBins for any jet eta
+  lowBinBorderAnyJet[2] = minEta;   // low bin border for any jet eta
+  highBinBorderAnyJet[2] = maxEta;  // high bin border for any jet eta
   
-  // Different jet eta histograms
-  nBins3D[0] = nEtaBins;        // nBins for jet eta
-  lowBinBorder3D[0] = minEta;   // low bin border for jet eta
-  highBinBorder3D[0] = maxEta;  // high bin border for jet eta
+  // Axis 3 for the dijet histogram: centrality
+  nBinsAnyjet[3] = nCentralityBins;       // nBins for centrality
+  lowBinBorderAnyJet[3] = minCentrality;  // low bin border for centrality
+  highBinBorderAnyJet[3] = maxCentrality; // high bin border for centrality
   
-  // Leading jet phi
-  fhLeadingJetEta = new THnSparseD("leadingJetEta","leadingJetEta",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhLeadingJetEta->Sumw2();
-  
-  // Subleading jet phi
-  fhSubleadingJetEta = new THnSparseD("subleadingJetEta","subleadingJetEta",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhSubleadingJetEta->Sumw2();
-  
-  // All jets phi
-  fhAnyJetEta = new THnSparseD("anyJetEta","anyJetEta",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhAnyJetEta->Sumw2();
-  
-  // ========= THnSparse histograms with centrality as the third axis =========
-  
-  // Fill in the centrality information common for all histograms
-  nBins3D[2] = nCentralityBins;        // nBins for centrality
-  lowBinBorder3D[2] = minCentrality;   // low bin border for centrality
-  highBinBorder3D[2] = maxCentrality;  // high bin border for centrality
-  
-  // Dijet asymmetry versus delta phi
-  nBins3D[0] = nDeltaPhiBins;         // nBins for deltaPhi
-  lowBinBorder3D[0] = minDeltaPhi;    // low bin border for deltaPhi
-  highBinBorder3D[0] = maxDeltaPhi;   // high bin border for deltaPhi
-  nBins3D[1] = nAsymmetryBins;        // nBins for asymmetry
-  lowBinBorder3D[1] = minAsymmetry;   // low bin border for asymmetry
-  highBinBorder3D[1] = maxAsymmetry;  // high bin border for asymmetry
-  fhDijetAsymmetryVsDphi = new THnSparseD("dijetAsymmetryVsDphi","dijetAsymmetryVsDphi",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhDijetAsymmetryVsDphi->Sumw2();
-  
-  // Leading jet pT versus subleading jet pT
-  nBins3D[0] = nPtBins;          // nBins for leading jet pT
-  lowBinBorder3D[0] = minPt;     // low bin border for leading jet pT
-  highBinBorder3D[0] = maxPt;    // high bin border for leading jet pT
-  nBins3D[1] = nPtBins;          // nBins for subleading jet pT
-  lowBinBorder3D[1] = minPt;     // low bin border for subleading jet pT
-  highBinBorder3D[1] = maxPt;    // high bin border for subleading jet pT
-  fhDijetLeadingVsSubleadingPt = new THnSparseD("dijetLeadingSubleadingPt","dijetLeadingSubleadingPt",3,nBins3D,lowBinBorder3D,highBinBorder3D); fhDijetLeadingVsSubleadingPt->Sumw2();
-  
+  // Create the histogram for all jets using the above binning information
+  fhAnyJet = new THnSparseD("anyJet","anyJet",dimensionAnyJet,nBinsAnyjet,lowBinBorderAnyJet,highBinBorderAnyJet); fhAnyJet->Sumw2();
   
 }
 
@@ -305,19 +227,8 @@ void DijetHistograms::Write() const{
   fhVertexZ->Write();
   fhEvents->Write();
   fhCentrality->Write();
-  fhDijetDphi->Write();
-  fhDijetAsymmetry->Write();
-  fhLeadingJetPt->Write();
-  fhSubleadingJetPt->Write();
-  fhAnyJetPt->Write();
-  fhLeadingJetPhi->Write();
-  fhSubleadingJetPhi->Write();
-  fhAnyJetPhi->Write();
-  fhLeadingJetEta->Write();
-  fhSubleadingJetEta->Write();
-  fhAnyJetEta->Write();
-  fhDijetAsymmetryVsDphi->Write();
-  fhDijetLeadingVsSubleadingPt->Write();
+  fhDijet->Write();
+  fhAnyJet->Write();
   
 }
 

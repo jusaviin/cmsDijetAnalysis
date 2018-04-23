@@ -10,13 +10,16 @@
  *   const char *name = Name of the THnSparse that is read
  *   int lowBinIndex = Index of the lowest considered centrality bin
  *   int highBinIndex = Index of the highest considered centrality bin
+ *   int xAxis = Index for the axis in THnSparse that is projected to x-axis for TH2D
+ *   int yAxis = Index for the axis in THnSparse that is projected to y-axis for TH2D
+ *   int restrictionAxis = Index for the axis in THnSparse that is used as a restriction for the projection
  */
-TH2D* findHistogram2D(TFile *inputFile, const char *name, int lowBinIndex, int highBinIndex){
+TH2D* findHistogram2D(TFile *inputFile, const char *name, int lowBinIndex, int highBinIndex, int xAxis, int yAxis, int restrictionAxis){
   THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
-  histogramArray->GetAxis(2)->SetRange(lowBinIndex,highBinIndex);
+  histogramArray->GetAxis(restrictionAxis)->SetRange(lowBinIndex,highBinIndex);
   char newName[100];
   sprintf(newName,"%s%d",histogramArray->GetName(),lowBinIndex);
-  TH2D *projectedHistogram = (TH2D*) histogramArray->Projection(1,0);
+  TH2D *projectedHistogram = (TH2D*) histogramArray->Projection(yAxis,xAxis);
   projectedHistogram->SetName(newName);
   return projectedHistogram;
 }
@@ -29,13 +32,15 @@ TH2D* findHistogram2D(TFile *inputFile, const char *name, int lowBinIndex, int h
  *   const char *name = Name of the THnSparse that is read
  *   int lowBinIndex = Index of the lowest considered centrality bin
  *   int highBinIndex = Index of the highest considered centrality bin
+ *   int xAxis = Index for the axis in THnSparse that is projected to TH1D
+ *   int restrictionAxis = Index for the axis in THnSparse that is used as a restriction for the projection
  */
-TH1D* findHistogram(TFile *inputFile, const char *name, int lowBinIndex, int highBinIndex){
+TH1D* findHistogram(TFile *inputFile, const char *name, int lowBinIndex, int highBinIndex, int xAxis, int restrictionAxis){
   THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
-  histogramArray->GetAxis(1)->SetRange(lowBinIndex,highBinIndex);
+  histogramArray->GetAxis(restrictionAxis)->SetRange(lowBinIndex,highBinIndex);
   char newName[100];
   sprintf(newName,"%s%d",histogramArray->GetName(),lowBinIndex);
-  TH1D *projectedHistogram = (TH1D*) histogramArray->Projection(0);
+  TH1D *projectedHistogram = (TH1D*) histogramArray->Projection(xAxis);
   projectedHistogram->SetName(newName);
   return projectedHistogram;
 }
@@ -64,6 +69,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
   
+  // Logarithmic scale for pT distributions
+  bool logPt = true;
+  
   // Define binning to project out from THnSparses. For pp centrality binning is automatically disabled.
   const int nCentralityBins = 4;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};
@@ -88,8 +96,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   DijetCard *card = new DijetCard(inputFile);
   TString collisionSystem = card->GetDataType();
   
-  // Remove centrality selection from pp data
-  if(collisionSystem.Contains("pp")){
+  // Remove centrality selection from pp data and local testing
+  if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
     lastDrawnCentralityBin = 0;
     centralityBinBorders[0] = -0.5;
   }
@@ -128,6 +136,27 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   int lowerCentralityBin = 0;
   int higherCentralityBin = 0;
   
+  /*
+   *  Axis information for THnSparses in data files:
+   *
+   *  Histogram name     Axis index      Content of axis
+   * -------------------------------------------------------
+   *      dijet            Axis 0        Leading jet pT
+   *      dijet            Axis 1        Leading jet phi
+   *      dijet            Axis 2        Leading jet eta
+   *      dijet            Axis 3       Subleading jet pT
+   *      dijet            Axis 4       Subleading jet phi
+   *      dijet            Axis 5       Subleading jet eta
+   *      dijet            Axis 6         Dijet deltaPhi
+   *      dijet            Axis 7         Dijet asymmetry
+   *      dijet            Axis 8           Centrality
+   *---------------------------------------------------------
+   *     anyJet            Axis 0           Any jet pT
+   *     anyJet            Axis 1           Any jet phi
+   *     anyJet            Axis 2           Any jet eta
+   *     anyJet            Axis 3           Centrality
+   */
+  
   // Load only the bins that are drawn
   for(int iCentralityBin = 0; iCentralityBin <= lastDrawnCentralityBin; iCentralityBin++){
     
@@ -137,19 +166,19 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
     higherCentralityBin = centralityBinIndices[iCentralityBin+1]+duplicateRemover;
     
     // Read the corresponding centrality bins from the file
-    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijetDphi",lowerCentralityBin,higherCentralityBin);
-    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijetAsymmetry",lowerCentralityBin,higherCentralityBin);
-    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"leadingJetPt",lowerCentralityBin,higherCentralityBin);
-    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"subleadingJetPt",lowerCentralityBin,higherCentralityBin);
-    hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJetPt",lowerCentralityBin,higherCentralityBin);
-    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"leadingJetPhi",lowerCentralityBin,higherCentralityBin);
-    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"subleadingJetPhi",lowerCentralityBin,higherCentralityBin);
-    hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJetPhi",lowerCentralityBin,higherCentralityBin);
-    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"leadingJetEta",lowerCentralityBin,higherCentralityBin);
-    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"subleadingJetEta",lowerCentralityBin,higherCentralityBin);
-    hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJetEta",lowerCentralityBin,higherCentralityBin);
-    hDijetAsymmetryVsDphi[iCentralityBin] = findHistogram2D(inputFile,"dijetAsymmetryVsDphi",lowerCentralityBin,higherCentralityBin);
-    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijetLeadingSubleadingPt",lowerCentralityBin,higherCentralityBin);
+    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,6,8);
+    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,7,8);
+    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,8);
+    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,3,8);
+    hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,0,3);
+    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,1,8);
+    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,4,8);
+    hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,1,3);
+    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,2,8);
+    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,5,8);
+    hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,2,3);
+    hDijetAsymmetryVsDphi[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,6,7,8);
+    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,3,8);
   }
   
   // ============ All the histograms loaded from the file ============
@@ -257,6 +286,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
     // Draw pT histograms for jets
     if(drawJetPtHistograms){
       
+      drawer->SetLogY(logPt);
+      
       // === Leading jet pT ===
       drawer->DrawHistogram(hLeadingJetPt[iCentrality],"Leading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
@@ -301,6 +332,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
         if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
         gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
       }
+      
+      drawer->SetLogY(false);
     }
     
     // Draw phi histograms for jets
