@@ -88,13 +88,21 @@ void DijetAnalyzer::RunAnalysis(){
   //        Dijet selection cuts
   //****************************************
   
-  const double etacut = fCard->Get("EtaCut");
-  const double searchetacut = fCard->Get("SearchEtaCut");
-  const double pTmaxcut = fCard->Get("MaxPtCut");
-  const double pTmincut = fCard->Get("MinPtCut");
-  const double leadingjetcut = fCard->Get("MinPtCut");
-  const double subleadingjetcut = fCard->Get("SubleadingPtCut");
-  const double dphicut = fCard->Get("DeltaPhiCut");
+  const double jetEtaCut = fCard->Get("JetEtaCut");
+  const double jetSearchEtaCut = fCard->Get("SearchEtaCut");
+  const double jetMaximumPtCut = fCard->Get("MaxPtCut");
+  const double leadingJetMinPtCut = fCard->Get("MinPtCut");
+  const double subleadingJetMinPtCut = fCard->Get("SubleadingPtCut");
+  const double deltaPhiCut = fCard->Get("DeltaPhiCut");
+  const double minimumMaxTrackPtFraction = fCard->Get("MinMaxTrackPtFraction");
+  const double maximumMaxTrackPtFraction = fCard->Get("MaxMaxTrackPtFraction");
+  
+  //****************************************
+  //        Traxk selection cuts
+  //****************************************
+  
+  const double trackEtaCut = fCard->Get("TrackEtaCut");
+  const double trackMinPtCut = fCard->Get("MinTrackPtCut");
   
   //****************************************
   //            All cuts set!
@@ -115,6 +123,12 @@ void DijetAnalyzer::RunAnalysis(){
   int highestIndex = -1;
   double jetPt = 0;
   double dphi = 0;
+  
+  // Variables for tracks
+  double trackPt;       // Track pT
+  double trackEta;      // Track eta
+  double trackPhi;      // Track phi
+  double trackRMin;     // Minimum distance to a jet
   
   // File name helper variables
   TString currentFile;
@@ -206,10 +220,12 @@ void DijetAnalyzer::RunAnalysis(){
       // Search for leading jet and fill histograms for all jets within the eta vut
       for(int jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
         jetPt = treeReader->GetJetPt(jetIndex);
-        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= searchetacut) continue;
+        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= jetSearchEtaCut) continue; // Cut for search eta range
+        if(minimumMaxTrackPtFraction > treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets with only very low pT particle
+        if(maximumMaxTrackPtFraction < treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets where all the pT is taken by one track
         
         // Fill the histogram for all jets within eta range
-        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) < etacut){
+        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) < jetEtaCut){
           
           // Fill the axes in correct order
           fillerAnyJet[0] = jetPt;                             // Axis 0 = any jet pT
@@ -220,7 +236,7 @@ void DijetAnalyzer::RunAnalysis(){
           
         }
         
-        if(jetPt <= leadingjetcut) continue;
+        if(jetPt <= leadingJetMinPtCut) continue; // Minimum leading jet pT cut
         if(jetPt > leadingPt){
           leadingPt = jetPt;
           highestIndex = jetIndex;
@@ -230,9 +246,11 @@ void DijetAnalyzer::RunAnalysis(){
       // Search for subleading jet
       for(int jetIndex = 0 ; jetIndex < treeReader->GetNJets(); jetIndex++){
         jetPt = treeReader->GetJetPt(jetIndex);
-        if(jetIndex == highestIndex) continue;
-        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= searchetacut) continue;
-        if(jetPt <= subleadingjetcut) continue;
+        if(jetIndex == highestIndex) continue; // Do not consider leading particle
+        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= jetSearchEtaCut) continue; // Cut for search eta range
+        if(minimumMaxTrackPtFraction > treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets with only very low pT particle
+        if(maximumMaxTrackPtFraction < treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets where all the pT is taken by one track
+        if(jetPt <= subleadingJetMinPtCut) continue; // Minimum subleading jet pT cut
         if(jetPt > subleadingPt){
           subleadingPt = jetPt;
           secondHighestIndex = jetIndex;
@@ -251,11 +269,10 @@ void DijetAnalyzer::RunAnalysis(){
         if(dphi > TMath::Pi()) dphi = 2*TMath::Pi() - dphi;
         
         
-        if((treeReader->GetJetPt(highestIndex) >= pTmaxcut) ||
-           (treeReader->GetJetPt(highestIndex) <= pTmincut) ||
-           (TMath::Abs(treeReader->GetJetEta(highestIndex)) >= etacut) ||
-           (TMath::Abs(treeReader->GetJetEta(secondHighestIndex)) >= etacut)||
-           (TMath::Abs(dphi) <= dphicut)){
+        if((treeReader->GetJetPt(highestIndex) >= jetMaximumPtCut) ||              // Maximum leading jet pT cut
+           (TMath::Abs(treeReader->GetJetEta(highestIndex)) >= jetEtaCut) ||       // Leading jet eta cut
+           (TMath::Abs(treeReader->GetJetEta(secondHighestIndex)) >= jetEtaCut)||  // Subleading jet eta cut
+           (TMath::Abs(dphi) <= deltaPhiCut)){                                     // DeltaPhi cut
           dijetFound = false;
         }
       } // End of dijet cuts
@@ -280,6 +297,21 @@ void DijetAnalyzer::RunAnalysis(){
         fHistograms->fhDijet->Fill(fillerDijet);                    // Fill the data point to dijet histogram
 
       }
+      
+      // Correlate jets with tracks
+      int nTracks = treeReader->GetNTracks();
+      for(int iTrack = i; iTrack <nTracks; iTrack++){
+        trackEta = treeReader->GetTrackEta(iTrack);
+        
+        // Apply cuts for tracks
+        if(fabs(trackEta) > trackEtaCut) continue;                // Eta cut
+        if(treeReader->GetTrackHighPurity(iTrack) != 1) continue; // High purity cut
+        
+        trackPt = treeReader->GetTrackPt(iTrack);
+        trackPhi = treeReader->GetTrackPhi(iTrack);
+        
+      } // Loop over tracks
+      
     } // Event loop
     
     // Close the input file after the event has been read
