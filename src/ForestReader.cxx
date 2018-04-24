@@ -27,10 +27,18 @@ ForestReader::ForestReader() :
   fCollisionEventSelectionBranch(0),
   fHBHENoiseBranch(0),
   fTrackPtBranch(0),
+  fTrackPtErrorBranch(0),
   fTrackPhiBranch(0),
   fTrackEtaBranch(0),
   fnTracksBranch(0),
   fHighPurityTrackBranch(0),
+  fTrackVertexDistanceZBranch(0),
+  fTrackVertexDistanceZErrorBranch(0),
+  fTrackVertexDistanceXYBranch(0),
+  fTrackVertexDistanceXYErrorBranch(0),
+  fTrackChi2Branch(0),
+  fnTrackDegreesOfFreedomBranch(0),
+  fnHitsTrackerLayerBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
   fJetPtArray(),
@@ -45,10 +53,18 @@ ForestReader::ForestReader() :
   fCollisionEventSelectionFilterBit(0),
   fHBHENoiseFilterBit(0),
   fTrackPtArray(),
+  fTrackPtErrorArray(),
   fTrackPhiArray(),
   fTrackEtaArray(),
   fnTracks(0),
-  fHighPurityTrackArray()
+  fHighPurityTrackArray(),
+  fTrackVertexDistanceZArray(),
+  fTrackVertexDistanceZErrorArray(),
+  fTrackVertexDistanceXYArray(),
+  fTrackVertexDistanceXYErrorArray(),
+  fTrackChi2Array(),
+  fnTrackDegreesOfFreedomArray(),
+  fnHitsTrackerLayerArray()
 {
   // Default constructor
 }
@@ -80,10 +96,18 @@ ForestReader::ForestReader(int dataType) :
   fCollisionEventSelectionBranch(0),
   fHBHENoiseBranch(0),
   fTrackPtBranch(0),
+  fTrackPtErrorBranch(0),
   fTrackPhiBranch(0),
   fTrackEtaBranch(0),
   fnTracksBranch(0),
   fHighPurityTrackBranch(0),
+  fTrackVertexDistanceZBranch(0),
+  fTrackVertexDistanceZErrorBranch(0),
+  fTrackVertexDistanceXYBranch(0),
+  fTrackVertexDistanceXYErrorBranch(0),
+  fTrackChi2Branch(0),
+  fnTrackDegreesOfFreedomBranch(0),
+  fnHitsTrackerLayerBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
   fJetPtArray(),
@@ -98,10 +122,18 @@ ForestReader::ForestReader(int dataType) :
   fCollisionEventSelectionFilterBit(0),
   fHBHENoiseFilterBit(0),
   fTrackPtArray(),
+  fTrackPtErrorArray(),
   fTrackPhiArray(),
   fTrackEtaArray(),
   fnTracks(0),
-  fHighPurityTrackArray()
+  fHighPurityTrackArray(),
+  fTrackVertexDistanceZArray(),
+  fTrackVertexDistanceZErrorArray(),
+  fTrackVertexDistanceXYArray(),
+  fTrackVertexDistanceXYErrorArray(),
+  fTrackChi2Array(),
+  fnTrackDegreesOfFreedomArray(),
+  fnHitsTrackerLayerArray()
 {
   // Custom constructor
   
@@ -133,10 +165,18 @@ ForestReader::ForestReader(const ForestReader& in) :
   fCollisionEventSelectionBranch(in.fCollisionEventSelectionBranch),
   fHBHENoiseBranch(in.fHBHENoiseBranch),
   fTrackPtBranch(in.fTrackPtBranch),
+  fTrackPtErrorBranch(in.fTrackPtErrorBranch),
   fTrackPhiBranch(in.fTrackPhiBranch),
   fTrackEtaBranch(in.fTrackEtaBranch),
   fnTracksBranch(in.fnTracksBranch),
   fHighPurityTrackBranch(in.fHighPurityTrackBranch),
+  fTrackVertexDistanceZBranch(in.fTrackVertexDistanceZBranch),
+  fTrackVertexDistanceZErrorBranch(in.fTrackVertexDistanceZErrorBranch),
+  fTrackVertexDistanceXYBranch(in.fTrackVertexDistanceXYBranch),
+  fTrackVertexDistanceXYErrorBranch(in.fTrackVertexDistanceXYErrorBranch),
+  fTrackChi2Branch(in.fTrackChi2Branch),
+  fnTrackDegreesOfFreedomBranch(in.fnTrackDegreesOfFreedomBranch),
+  fnHitsTrackerLayerBranch(in.fnHitsTrackerLayerBranch),
   fVertexZ(in.fVertexZ),
   fHiBin(in.fHiBin),
   fnJets(in.fnJets),
@@ -158,9 +198,17 @@ ForestReader::ForestReader(const ForestReader& in) :
   
   for(int i = 0; i < fnMaxTrack; i++){
     fTrackPtArray[i] = in.fTrackPtArray[i];
+    fTrackPtErrorArray[i] = in.fTrackPtErrorArray[i];
     fTrackPhiArray[i] = in.fTrackPhiArray[i];
     fTrackEtaArray[i] = in.fTrackEtaArray[i];
     fHighPurityTrackArray[i] = in.fHighPurityTrackArray[i];
+    fTrackVertexDistanceZArray[i] = in.fTrackVertexDistanceZArray[i];
+    fTrackVertexDistanceZErrorArray[i] = fTrackVertexDistanceZErrorArray[i];
+    fTrackVertexDistanceXYArray[i] = fTrackVertexDistanceXYArray[i];
+    fTrackVertexDistanceXYErrorArray[i] = fTrackVertexDistanceXYErrorArray[i];
+    fTrackChi2Array[i] = fTrackChi2Array[i];
+    fnTrackDegreesOfFreedomArray[i] = fnTrackDegreesOfFreedomArray[i];
+    fnHitsTrackerLayerArray[i] = fnHitsTrackerLayerArray[i];
   }
 }
 
@@ -192,10 +240,18 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fCollisionEventSelectionBranch = in.fCollisionEventSelectionBranch;
   fHBHENoiseBranch = in.fHBHENoiseBranch;
   fTrackPtBranch = in.fTrackPtBranch;
+  fTrackPtErrorBranch = in.fTrackPtErrorBranch;
   fTrackPhiBranch = in.fTrackPhiBranch;
   fTrackEtaBranch = in.fTrackEtaBranch;
   fnTracksBranch = in.fnTracksBranch;
   fHighPurityTrackBranch = in.fHighPurityTrackBranch;
+  fTrackVertexDistanceZBranch = in.fTrackVertexDistanceZBranch;
+  fTrackVertexDistanceZErrorBranch = in.fTrackVertexDistanceZErrorBranch;
+  fTrackVertexDistanceXYBranch = in.fTrackVertexDistanceXYBranch;
+  fTrackVertexDistanceXYErrorBranch = in.fTrackVertexDistanceXYErrorBranch;
+  fTrackChi2Branch = in.fTrackChi2Branch;
+  fnTrackDegreesOfFreedomBranch = in.fnTrackDegreesOfFreedomBranch;
+  fnHitsTrackerLayerBranch = in.fnHitsTrackerLayerBranch;
   fVertexZ = in.fVertexZ;
   fHiBin = in.fHiBin;
   fnJets = in.fnJets;
@@ -216,9 +272,17 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   
   for(int i = 0; i < fnMaxTrack; i++){
     fTrackPtArray[i] = in.fTrackPtArray[i];
+    fTrackPtErrorArray[i] = in.fTrackPtErrorArray[i];
     fTrackPhiArray[i] = in.fTrackPhiArray[i];
     fTrackEtaArray[i] = in.fTrackEtaArray[i];
     fHighPurityTrackArray[i] = in.fHighPurityTrackArray[i];
+    fTrackVertexDistanceZArray[i] = in.fTrackVertexDistanceZArray[i];
+    fTrackVertexDistanceZErrorArray[i] = fTrackVertexDistanceZErrorArray[i];
+    fTrackVertexDistanceXYArray[i] = fTrackVertexDistanceXYArray[i];
+    fTrackVertexDistanceXYErrorArray[i] = fTrackVertexDistanceXYErrorArray[i];
+    fTrackChi2Array[i] = fTrackChi2Array[i];
+    fnTrackDegreesOfFreedomArray[i] = fnTrackDegreesOfFreedomArray[i];
+    fnHitsTrackerLayerArray[i] = fnHitsTrackerLayerArray[i];
   }
   
   return *this;
@@ -306,10 +370,18 @@ void ForestReader::Initialize(){
   
   // Connect the branches to the track tree
   fTrackTree->SetBranchAddress("trkPt",&fTrackPtArray,&fTrackPtBranch);
+  fTrackTree->SetBranchAddress("trkPtError",&fTrackPtErrorArray,&fTrackPtErrorBranch);
   fTrackTree->SetBranchAddress("trkPhi",&fTrackPhiArray,&fTrackPhiBranch);
   fTrackTree->SetBranchAddress("trkEta",&fTrackEtaArray,&fTrackEtaBranch);
   fTrackTree->SetBranchAddress("nTrk",&fnTracks,&fnTracksBranch);
   fTrackTree->SetBranchAddress("highPurity",&fHighPurityTrackArray,&fHighPurityTrackBranch);
+  fTrackTree->SetBranchAddress("trkDz1",&fTrackVertexDistanceZArray,&fTrackVertexDistanceZBranch);
+  fTrackTree->SetBranchAddress("trkDzError1",&fTrackVertexDistanceZErrorArray,&fTrackVertexDistanceZErrorBranch);
+  fTrackTree->SetBranchAddress("trkDxy1",&fTrackVertexDistanceXYArray,&fTrackVertexDistanceXYBranch);
+  fTrackTree->SetBranchAddress("trkDxyError1",&fTrackVertexDistanceXYErrorArray,&fTrackVertexDistanceXYErrorBranch);
+  fTrackTree->SetBranchAddress("trkChi2",&fTrackChi2Array,&fTrackChi2Branch);
+  fTrackTree->SetBranchAddress("trkNdof",&fnTrackDegreesOfFreedomArray,&fnTrackDegreesOfFreedomBranch);
+  fTrackTree->SetBranchAddress("trkNlayer",&fnHitsTrackerLayerArray,&fnHitsTrackerLayerBranch);
 }
 
 /*
@@ -430,6 +502,11 @@ int ForestReader::GetCollisionEventSelectionFilterBit() const{
 // Getter for track pT
 float ForestReader::GetTrackPt(int iTrack) const{
   return fTrackPtArray[iTrack];
+}
+
+// Getter for track pT error
+float ForestReader::GetTrackPtError(int iTrack) const{
+  return fTrackPtErrorArray[iTrack];
 }
 
 // Getter for track phi

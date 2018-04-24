@@ -103,6 +103,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   const double trackEtaCut = fCard->Get("TrackEtaCut");
   const double trackMinPtCut = fCard->Get("MinTrackPtCut");
+  const double maxTrackPtRelativeError = fCard->Get("MaxTrackPtRelativeError");
   
   //****************************************
   //            All cuts set!
@@ -302,13 +303,29 @@ void DijetAnalyzer::RunAnalysis(){
       int nTracks = treeReader->GetNTracks();
       for(int iTrack = 0; iTrack <nTracks; iTrack++){
         trackEta = treeReader->GetTrackEta(iTrack);
-        
-        // Apply cuts for tracks
-        if(fabs(trackEta) > trackEtaCut) continue;                // Eta cut
-        if(treeReader->GetTrackHighPurity(iTrack) != 1) continue; // High purity cut
-        
         trackPt = treeReader->GetTrackPt(iTrack);
         trackPhi = treeReader->GetTrackPhi(iTrack);
+        
+        // Apply cuts for tracks
+        if(trackPt < trackMinPtCut) continue;                     // Minimum pT cut
+        if(trackPt > jetMaximumPtCut) continue;                   // Maximum pT cut (same as for leading jets)
+        if(fabs(trackEta) > trackEtaCut) continue;                // Eta cut
+        if(treeReader->GetTrackHighPurity(iTrack) != 1) continue; // High purity cut
+        if(treeReader->GetTrackPtError(iTrack)/trackPt > maxTrackPtRelativeError) continue; // Cut for track pT relative error
+        
+        // Check how to implement these, taken from README for efficiency correction
+        // For pp
+        //if(trkPtError[j]/trkPt[j]>0.3 || TMath::Abs(trkDz1[j]/trkDzError1[j])>3 || TMath::Abs(trkDxy1[j]/trkDxyError1[j])>3) continue;
+        //float Et = (pfHcal[j]+pfEcal[j])/TMath::CosH(trkEta[j]);
+        //if(!(trkPt[j]<20 || (Et>0.5*trkPt[j]))) continue;
+        
+        //For PbPb
+        //if(trkPtError[j]/trkPt[j]>0.1 || TMath::Abs(trkDz1[j]/trkDzError1[j])>3 || TMath::Abs(trkDxy1[j]/trkDxyError1[j])>3) continue;
+        //if(trkChi2[j]/(float)trkNdof[j]/(float)trkNlayer[j]>0.15) continue;
+        //if(trkNHit[j]<11 && trkPt[j]>0.7) continue;
+        
+        //float Et = (pfHcal[j]+pfEcal[j])/TMath::CosH(trkEta[j]);
+        //if(!(trkPt[j]<20 || (Et>0.5*trkPt[j]))) continue;
         
       } // Loop over tracks
       

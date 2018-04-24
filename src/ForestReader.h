@@ -68,6 +68,7 @@ public:
   
   // Getters for leaves in the track tree
   float GetTrackPt(int iTrack) const;       // Getter for track pT
+  float GetTrackPtError(int iTrack) const;  // Getter for track pT error
   float GetTrackPhi(int iTrack) const;      // Getter for track phi
   float GetTrackEta(int iTrack) const;      // Getter for track eta
   int GetNTracks() const;                   // Getter for number of track
@@ -112,11 +113,19 @@ private:
   TBranch *fHBHENoiseBranch;               // Branch for HB/HE noise filter bit
   
   // Branches for track tree
-  TBranch *fTrackPtBranch;            // Branch for track pT
-  TBranch *fTrackPhiBranch;           // Branch for track phi
-  TBranch *fTrackEtaBranch;           // Branch for track eta
-  TBranch *fnTracksBranch;            // Branch for number of tracks
-  TBranch *fHighPurityTrackBranch;    // Branch for high purity of the track
+  TBranch *fTrackPtBranch;                    // Branch for track pT
+  TBranch *fTrackPtErrorBranch;               // Branch for track pT error
+  TBranch *fTrackPhiBranch;                   // Branch for track phi
+  TBranch *fTrackEtaBranch;                   // Branch for track eta
+  TBranch *fnTracksBranch;                    // Branch for number of tracks
+  TBranch *fHighPurityTrackBranch;            // Branch for high purity of the track
+  TBranch *fTrackVertexDistanceZBranch;       // Branch for track distance from primary vertex in z-direction
+  TBranch *fTrackVertexDistanceZErrorBranch;  // Branch for error for track distance from primary vertex in z-direction
+  TBranch *fTrackVertexDistanceXYBranch;      // Branch for track distance from primary vertex in xy-direction
+  TBranch *fTrackVertexDistanceXYErrorBranch; // Branch for error for track distance from primary vertex in xy-direction
+  TBranch *fTrackChi2Branch;                  // Branch for track chi2 value from reconstruction fit
+  TBranch *fnTrackDegreesOfFreedomBranch;     // Branch for number of degrees of freedom in reconstruction fit
+  TBranch *fnHitsTrackerLayerBranch;          // Branch for number of hits in tracker layers
   
   // Leaves for heavy ion tree
   float fVertexZ;    // Vertex z-position
@@ -140,11 +149,19 @@ private:
   int fHBHENoiseFilterBit;               // Filter bit for HB/HE noise
   
   // Leaves for the track tree
-  float fTrackPtArray[fnMaxTrack] = {0};          // Array for track pT:s
-  float fTrackPhiArray[fnMaxTrack] = {0};         // Array for track phis
-  float fTrackEtaArray[fnMaxTrack] = {0};         // Array for track etas
-  int fnTracks;                                   // Number of tracks
-  int fHighPurityTrackArray[fnMaxTrack] = {0};    // Array for the high purity of tracks
+  float fTrackPtArray[fnMaxTrack] = {0};                    // Array for track pT:s
+  float fTrackPtErrorArray[fnMaxTrack] = {0};               // Array for track pT errors
+  float fTrackPhiArray[fnMaxTrack] = {0};                   // Array for track phis
+  float fTrackEtaArray[fnMaxTrack] = {0};                   // Array for track etas
+  int fnTracks;                                             // Number of tracks
+  int fHighPurityTrackArray[fnMaxTrack] = {0};              // Array for the high purity of tracks
+  float fTrackVertexDistanceZArray[fnMaxTrack] = {0};       // Array for track distance from primary vertex in z-direction
+  float fTrackVertexDistanceZErrorArray[fnMaxTrack] = {0};  // Array for error for track distance from primary vertex in z-direction
+  float fTrackVertexDistanceXYArray[fnMaxTrack] = {0};      // Array for track distance from primary vertex in xy-direction
+  float fTrackVertexDistanceXYErrorArray[fnMaxTrack] = {0}; // Array for error for track distance from primary vertex in xy-direction
+  float fTrackChi2Array[fnMaxTrack] = {0};                  // Array for track chi2 value from reconstruction fit
+  int fnTrackDegreesOfFreedomArray[fnMaxTrack] = {0};       // Array for number of degrees of freedom in reconstruction fit
+  int fnHitsTrackerLayerArray[fnMaxTrack] = {0};            // Array for number of hits in tracker layers
   
 };
 
