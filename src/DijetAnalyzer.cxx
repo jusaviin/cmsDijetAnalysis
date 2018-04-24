@@ -221,8 +221,8 @@ void DijetAnalyzer::RunAnalysis(){
       for(int jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
         jetPt = treeReader->GetJetPt(jetIndex);
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= jetSearchEtaCut) continue; // Cut for search eta range
-        if(minimumMaxTrackPtFraction > treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets with only very low pT particle
-        if(maximumMaxTrackPtFraction < treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets where all the pT is taken by one track
+        if(minimumMaxTrackPtFraction > treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particle
+        if(maximumMaxTrackPtFraction < treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
         // Fill the histogram for all jets within eta range
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) < jetEtaCut){
@@ -248,8 +248,8 @@ void DijetAnalyzer::RunAnalysis(){
         jetPt = treeReader->GetJetPt(jetIndex);
         if(jetIndex == highestIndex) continue; // Do not consider leading particle
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= jetSearchEtaCut) continue; // Cut for search eta range
-        if(minimumMaxTrackPtFraction > treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets with only very low pT particle
-        if(maximumMaxTrackPtFraction < treeReader->GetJetMaxTrackPt()/treeReader->GetJetRawPt()) continue; // Cut for jets where all the pT is taken by one track
+        if(minimumMaxTrackPtFraction > treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particle
+        if(maximumMaxTrackPtFraction < treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         if(jetPt <= subleadingJetMinPtCut) continue; // Minimum subleading jet pT cut
         if(jetPt > subleadingPt){
           subleadingPt = jetPt;
@@ -300,7 +300,7 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Correlate jets with tracks
       int nTracks = treeReader->GetNTracks();
-      for(int iTrack = i; iTrack <nTracks; iTrack++){
+      for(int iTrack = 0; iTrack <nTracks; iTrack++){
         trackEta = treeReader->GetTrackEta(iTrack);
         
         // Apply cuts for tracks

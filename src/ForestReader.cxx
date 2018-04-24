@@ -153,7 +153,7 @@ ForestReader::ForestReader(const ForestReader& in) :
     fJetPhiArray[i] = in.fJetPhiArray[i];
     fJetEtaArray[i] = in.fJetEtaArray[i];
     fJetRawPtArray[i] = in.fJetRawPtArray[i];
-    fJetMaxTrackPtArray = in.fJetMaxTrackPtArray[i];
+    fJetMaxTrackPtArray[i] = in.fJetMaxTrackPtArray[i];
   }
   
   for(int i = 0; i < fnMaxTrack; i++){
@@ -211,7 +211,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
     fJetPhiArray[i] = in.fJetPhiArray[i];
     fJetEtaArray[i] = in.fJetEtaArray[i];
     fJetRawPtArray[i] = in.fJetRawPtArray[i];
-    fJetMaxTrackPtArray = in.fJetMaxTrackPtArray[i];
+    fJetMaxTrackPtArray[i] = in.fJetMaxTrackPtArray[i];
   }
   
   for(int i = 0; i < fnMaxTrack; i++){
