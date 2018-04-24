@@ -60,14 +60,14 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   
   // Choose which figure sets to draw
   bool drawEventInformation = true;
-  bool drawDijetHistograms = true;
-  bool drawJetPtHistograms = true;
-  bool drawJetPhiHistograms = true;
-  bool drawJetEtaHistograms = true;
-  bool drawTwoDimensionalHistograms = true;
+  bool drawDijetHistograms = false;
+  bool drawJetPtHistograms = false;
+  bool drawJetPhiHistograms = false;
+  bool drawJetEtaHistograms = false;
+  bool drawTwoDimensionalHistograms = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Logarithmic scale for pT distributions
   bool logPt = true;
@@ -166,19 +166,34 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
     higherCentralityBin = centralityBinIndices[iCentralityBin+1]+duplicateRemover;
     
     // Read the corresponding centrality bins from the file
-    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,6,8);
-    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,7,8);
-    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,8);
-    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,3,8);
-    hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,0,3);
-    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,1,8);
-    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,4,8);
-    hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,1,3);
-    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,2,8);
-    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,5,8);
-    hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,2,3);
-    hDijetAsymmetryVsDphi[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,6,7,8);
-    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,3,8);
+    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijetDphi",lowerCentralityBin,higherCentralityBin,0,1);
+    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijetAsymmetry",lowerCentralityBin,higherCentralityBin,0,1);
+    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"leadingJetPt",lowerCentralityBin,higherCentralityBin,0,1);
+    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"subleadingJetPt",lowerCentralityBin,higherCentralityBin,0,1);
+    hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJetPt",lowerCentralityBin,higherCentralityBin,0,1);
+    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"leadingJetPhi",lowerCentralityBin,higherCentralityBin,0,1);
+    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"subleadingJetPhi",lowerCentralityBin,higherCentralityBin,0,1);
+    hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJetPhi",lowerCentralityBin,higherCentralityBin,0,1);
+    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"leadingJetEta",lowerCentralityBin,higherCentralityBin,0,1);
+    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"subleadingJetEta",lowerCentralityBin,higherCentralityBin,0,1);
+    hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJetEta",lowerCentralityBin,higherCentralityBin,0,1);
+    hDijetAsymmetryVsDphi[iCentralityBin] = findHistogram2D(inputFile,"dijetAsymmetryVsDphi",lowerCentralityBin,higherCentralityBin,0,1,2);
+    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijetLeadingSubleadingPt",lowerCentralityBin,higherCentralityBin,0,1,2);
+ 
+    // New drawing style for the updated code, use the code above before new input files are produced
+//    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,6,8);
+//    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,7,8);
+//    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,8);
+//    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,3,8);
+//    hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,0,3);
+//    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,1,8);
+//    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,4,8);
+//    hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,1,3);
+//    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,2,8);
+//    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,5,8);
+//    hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,2,3);
+//    hDijetAsymmetryVsDphi[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,6,7,8);
+//    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,3,8);
   }
   
   // ============ All the histograms loaded from the file ============
@@ -204,6 +219,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   if(drawEventInformation){
     
     // === Vertex z-position ===
+    hVertexZ->SetMarkerStyle(kFullDiamond);
     drawer->DrawHistogram(hVertexZ,"v_{z} (cm)","#frac{dN}{dv_{z}}  (1/cm)"," ");
     legend = new TLegend(0.62,0.75,0.82,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
@@ -230,6 +246,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
     }
     
     // === Centrality ===
+    hCentrality->SetMarkerStyle(kFullDiamond);
     drawer->DrawHistogram(hCentrality,"Centrality percentile","N"," ");
     legend = new TLegend(0.62,0.75,0.82,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
