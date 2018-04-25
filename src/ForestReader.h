@@ -173,9 +173,9 @@ private:
   float fTrackVertexDistanceXYArray[fnMaxTrack] = {0};      // Array for track distance from primary vertex in xy-direction
   float fTrackVertexDistanceXYErrorArray[fnMaxTrack] = {0}; // Array for error for track distance from primary vertex in xy-direction
   float fTrackChi2Array[fnMaxTrack] = {0};                  // Array for track chi2 value from reconstruction fit
-  int fnTrackDegreesOfFreedomArray[fnMaxTrack] = {0};       // Array for number of degrees of freedom in reconstruction fit
-  int fnHitsTrackerLayerArray[fnMaxTrack] = {0};            // Array for number of hits in tracker layers
-  int fnHitsTrackArray[fnMaxTrack] = {0};                   // Array for number of hits for the track
+  UChar_t fnTrackDegreesOfFreedomArray[fnMaxTrack] = {0};   // Array for number of degrees of freedom in reconstruction fit
+  UChar_t fnHitsTrackerLayerArray[fnMaxTrack] = {0};        // Array for number of hits in tracker layers
+  UChar_t fnHitsTrackArray[fnMaxTrack] = {0};               // Array for number of hits for the track
   float fTrackEnergyEcalArray[fnMaxTrack] = {0};            // Array for track energy in ECal
   float fTrackEnergyHcalArray[fnMaxTrack] = {0};            // Array for track energy in HCal
   

@@ -20,6 +20,8 @@ DijetHistograms::DijetHistograms() :
   fhDijet(0),
   fhAnyJet(0),
   fhTrack(0),
+  fhTrackUncorrected(0),
+  fhTrackPtWeighted(0),
   fCard(0)
 {
   // Default constructor
@@ -31,10 +33,13 @@ DijetHistograms::DijetHistograms() :
 DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhVertexZ(0),
   fhEvents(0),
+  fhTrackCuts(0),
   fhCentrality(0),
   fhDijet(0),
   fhAnyJet(0),
   fhTrack(0),
+  fhTrackUncorrected(0),
+  fhTrackPtWeighted(0),
   fCard(newCard)
 {
   // Custom constructor
@@ -46,10 +51,13 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
 DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhVertexZ(in.fhVertexZ),
   fhEvents(in.fhEvents),
+  fhTrackCuts(in.fhTrackCuts),
   fhCentrality(in.fhCentrality),
   fhDijet(in.fhDijet),
   fhAnyJet(in.fhAnyJet),
   fhTrack(in.fhTrack),
+  fhTrackUncorrected(in.fhTrackUncorrected),
+  fhTrackPtWeighted(in.fhTrackPtWeighted),
   fCard(in.fCard)
 {
   // Copy constructor
@@ -65,10 +73,13 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   
   fhVertexZ = in.fhVertexZ;
   fhEvents = in.fhEvents;
+  fhTrackCuts = in.fhTrackCuts;
   fhCentrality = in.fhCentrality;
   fhDijet = in.fhDijet;
   fhAnyJet = in.fhAnyJet;
   fhTrack = in.fhTrack;
+  fhTrackUncorrected = in.fhTrackUncorrected;
+  fhTrackPtWeighted = in.fhTrackPtWeighted;
   fCard = in.fCard;
   
   return *this;
@@ -81,10 +92,13 @@ DijetHistograms::~DijetHistograms(){
   // destructor
   delete fhVertexZ;
   delete fhEvents;
+  delete fhTrackCuts;
   delete fhCentrality;
   delete fhDijet;
   delete fhAnyJet;
   delete fhTrack;
+  delete fhTrackUncorrected;
+  delete fhTrackPtWeighted;
 }
 
 /*
@@ -154,26 +168,36 @@ void DijetHistograms::CreateHistograms(){
   // Arrays for creating THnSparses
   const int dimensionDijet = 9;
   const int dimensionAnyJet = 4;
-  const int dimensionTrack = 20;
+  const int dimensionTrack = 9;
+  const int dimensionTrackPtWeight = 6;
   int nBinsDijet[dimensionDijet];
   int nBinsAnyjet[dimensionAnyJet];
   int nBinsTrack[dimensionTrack];
+  int nBinsTrackPtWeight[dimensionTrackPtWeight];
   double lowBinBorderDijet[dimensionDijet];
   double lowBinBorderAnyJet[dimensionAnyJet];
   double lowBinBorderTrack[dimensionTrack];
+  double lowBinBorderTrackPtWeight[dimensionTrackPtWeight];
   double highBinBorderDijet[dimensionDijet];
   double highBinBorderAnyJet[dimensionAnyJet];
   double highBinBorderTrack[dimensionTrack];
+  double highBinBorderTrackPtWeight[dimensionTrackPtWeight];
   
   // ======== Plain TH1 histograms ========
   
   fhVertexZ = new TH1D("vertexZ","vertexZ",nVzBins,minVz,maxVz); fhVertexZ->Sumw2();
   fhEvents = new TH1D("nEvents","nEvents",knEventTypes,-0.5,knEventTypes-0.5); fhEvents->Sumw2();
+  fhTrackCuts = new TH1D("trackCuts","trackCuts",knTrackCuts,-0.5,knTrackCuts-0.5); fhTrackCuts->Sumw2();
   fhCentrality = new TH1D("centrality","centrality",nCentralityBins,minCentrality,maxCentrality); fhCentrality->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
   for(int i = 0; i < knEventTypes; i++){
     fhEvents->GetXaxis()->SetBinLabel(i+1,kEventTypeStrings[i]);
+  }
+  
+  // For the track cut histogram, label each bin corresponding to a track cut
+  for(int i = 0; i < knTrackCuts; i++){
+    fhTrackCuts->GetXaxis()->SetBinLabel(i+1,kTrackCutStrings[i]);
   }
   
   // ======== THnSparse for dijets ========
@@ -268,93 +292,74 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorderTrack[2] = minEta;    // low bin border for track eta
   highBinBorderTrack[2] = maxEta;   // high bin border for track eta
   
-  // Axis 3 for the track histogram: uncorrected track pT
-  nBinsTrack[3] = nPtBinsTrack;         // nBins for uncorrected track pT
-  lowBinBorderTrack[3] = minPtTrack;    // low bin border for uncorrected track pT
-  highBinBorderTrack[3] = maxPtTrack;   // high bin border for uncorrected track pT
+  // Axis 3 for the track histogram: deltaPhi between track and leading jet
+  nBinsTrack[3] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between track and leading jet
+  lowBinBorderTrack[3] = minDeltaPhiTrack;  // low bin border for deltaPhi between track and leading jet
+  highBinBorderTrack[3] = maxDeltaPhiTrack; // high bin border for deltaPhi between track and leading jet
   
-  // Axis 4 for the track histogram: uncorrected track phi
-  nBinsTrack[4] = nPhiBins;         // nBins for uncorrected track phi
-  lowBinBorderTrack[4] = minPhi;    // low bin border for uncorrected track phi
-  highBinBorderTrack[4] = maxPhi;   // high bin border for uncorrected track phi
+  // Axis 4 for the track histogram: deltaEta between track and leading jet
+  nBinsTrack[4] = nDeltaEtaBins;         // nBins for deltaEta between track and leading jet
+  lowBinBorderTrack[4] = minDeltaEta;    // low bin border deltaEta between track and leading jet
+  highBinBorderTrack[4] = maxDeltaEta;   // high bin border deltaEta between track and leading jet
   
-  // Axis 5 for the track histogram: uncorrected track eta
-  nBinsTrack[5] = nEtaBins;         // nBins for uncorrected track eta
-  lowBinBorderTrack[5] = minEta;    // low bin border for uncorrected track eta
-  highBinBorderTrack[5] = maxEta;   // high bin border for uncorrected track eta
+  // Axis 5 for the track histogram: deltaPhi between track and subleading jet
+  nBinsTrack[5] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between track and subleading jet
+  lowBinBorderTrack[5] = minDeltaPhiTrack;  // low bin border for deltaPhi between track and subleading jet
+  highBinBorderTrack[5] = maxDeltaPhiTrack; // high bin border for deltaPhi between track and subleading jet
   
-  // Axis 6 for the track histogram: deltaPhi between track and leading jet
-  nBinsTrack[6] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between track and leading jet
-  lowBinBorderTrack[6] = minDeltaPhiTrack;  // low bin border for deltaPhi between track and leading jet
-  highBinBorderTrack[6] = maxDeltaPhiTrack; // high bin border for deltaPhi between track and leading jet
+  // Axis 6 for the track histogram: deltaEta between track and subleading jet
+  nBinsTrack[6] = nDeltaEtaBins;         // nBins for deltaEta between track and subleading jet
+  lowBinBorderTrack[6] = minDeltaEta;    // low bin border deltaEta between track and subleading jet
+  highBinBorderTrack[6] = maxDeltaEta;   // high bin border deltaEta between track and subleading jet
   
-  // Axis 7 for the track histogram: deltaPhi between uncorrected track and leading jet
-  nBinsTrack[7] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between uncorrected track and leading jet
-  lowBinBorderTrack[7] = minDeltaPhiTrack;  // low bin border for deltaPhi between uncorrected track and leading jet
-  highBinBorderTrack[7] = maxDeltaPhiTrack; // high bin border for deltaPhi between uncorrected track and leading jet
+  // Axis 7 for the track histogram: dijet asymmetry
+  nBinsTrack[7] = nAsymmetryBins;         // nBins for dijet asymmetry
+  lowBinBorderTrack[7] = minAsymmetry;    // low bin border for dijet asymmetry
+  highBinBorderTrack[7] = maxAsymmetry;   // high bin border for dijet asymmetry
   
-  // Axis 8 for the track histogram: deltaPhi between pT weighted track and leading jet
-  nBinsTrack[8] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between pT weighted track and leading jet
-  lowBinBorderTrack[8] = minDeltaPhiTrack;  // low bin border for deltaPhi between pT weighted track and leading jet
-  highBinBorderTrack[8] = maxDeltaPhiTrack; // high bin border for deltaPhi between pT weighted track and leading jet
+  // Axis 8 for the track histogram: centrality
+  nBinsTrack[8] = nCentralityBins;         // nBins for centrality
+  lowBinBorderTrack[8] = minCentrality;    // low bin border for centrality
+  highBinBorderTrack[8] = maxCentrality;   // high bin border for centrality
   
-  // Axis 9 for the track histogram: deltaEta between track and leading jet
-  nBinsTrack[9] = nDeltaEtaBins;         // nBins for deltaEta between track and leading jet
-  lowBinBorderTrack[9] = minDeltaEta;    // low bin border deltaEta between track and leading jet
-  highBinBorderTrack[9] = maxDeltaEta;   // high bin border deltaEta between track and leading jet
-  
-  // Axis 10 for the track histogram: deltaEta between uncorrected track and leading jet
-  nBinsTrack[10] = nDeltaEtaBins;         // nBins for deltaEta between uncorrected track and leading jet
-  lowBinBorderTrack[10] = minDeltaEta;    // low bin border for deltaEta between uncorrected track and leading jet
-  highBinBorderTrack[10] = maxDeltaEta;   // high bin border for deltaEta between uncorrected track and leading jet
-  
-  // Axis 11 for the track histogram: deltaEta between pT weighted track and leading jet
-  nBinsTrack[11] = nDeltaEtaBins;         // nBins for deltaEta between pT weighted track and leading jet
-  lowBinBorderTrack[11] = minDeltaEta;    // low bin border for deltaEta between pT weighted track and leading jet
-  highBinBorderTrack[11] = maxDeltaEta;   // high bin border for deltaEta between pT weighted track and leading jet
-  
-  // Axis 12 for the track histogram: deltaPhi between track and subleading jet
-  nBinsTrack[12] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between track and subleading jet
-  lowBinBorderTrack[12] = minDeltaPhiTrack;  // low bin border for deltaPhi between track and subleading jet
-  highBinBorderTrack[12] = maxDeltaPhiTrack; // high bin border for deltaPhi between track and subleading jet
-  
-  // Axis 13 for the track histogram: deltaPhi between uncorrected track and subleading jet
-  nBinsTrack[13] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between uncorrected track and subleading jet
-  lowBinBorderTrack[13] = minDeltaPhiTrack;  // low bin border for deltaPhi between uncorrected track and subleading jet
-  highBinBorderTrack[13] = maxDeltaPhiTrack; // high bin border for deltaPhi between uncorrected track and subleading jet
-  
-  // Axis 14 for the track histogram: deltaPhi between pT weighted track and subleading jet
-  nBinsTrack[14] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between pT weighted track and subleading jet
-  lowBinBorderTrack[14] = minDeltaPhiTrack;  // low bin border for deltaPhi between pT weighted track and subleading jet
-  highBinBorderTrack[14] = maxDeltaPhiTrack; // high bin border for deltaPhi between pT weighted track and subleading jet
-  
-  // Axis 15 for the track histogram: deltaEta between track and subleading jet
-  nBinsTrack[15] = nDeltaEtaBins;         // nBins for deltaEta between track and subleading jet
-  lowBinBorderTrack[15] = minDeltaEta;    // low bin border deltaEta between track and subleading jet
-  highBinBorderTrack[15] = maxDeltaEta;   // high bin border deltaEta between track and subleading jet
-  
-  // Axis 16 for the track histogram: deltaEta between uncorrected track and subleading jet
-  nBinsTrack[16] = nDeltaEtaBins;         // nBins for deltaEta between uncorrected track and subleading jet
-  lowBinBorderTrack[16] = minDeltaEta;    // low bin border for deltaEta between uncorrected track and subleading jet
-  highBinBorderTrack[16] = maxDeltaEta;   // high bin border for deltaEta between uncorrected track and subleading jet
-  
-  // Axis 17 for the track histogram: deltaEta between pT weighted track and subleading jet
-  nBinsTrack[17] = nDeltaEtaBins;         // nBins for deltaEta between pT weighted track and subleading jet
-  lowBinBorderTrack[17] = minDeltaEta;    // low bin border for deltaEta between pT weighted track and subleading jet
-  highBinBorderTrack[17] = maxDeltaEta;   // high bin border for deltaEta between pT weighted track and subleading jet
-  
-  // Axis 18 for the track histogram: dijet asymmetry
-  nBinsTrack[18] = nAsymmetryBins;         // nBins for dijet asymmetry
-  lowBinBorderTrack[18] = minAsymmetry;    // low bin border for dijet asymmetry
-  highBinBorderTrack[18] = maxAsymmetry;   // high bin border for dijet asymmetry
-  
-  // Axis 19 for the track histogram: centrality
-  nBinsTrack[19] = nCentralityBins;         // nBins for centrality
-  lowBinBorderTrack[19] = minCentrality;    // low bin border for centrality
-  highBinBorderTrack[19] = maxCentrality;   // high bin border for centrality
-  
-  // Create the histogram for tracks using the above binning information
+  // Create histograms for tracks and uncorrected tracks using the above binning information
   fhTrack = new THnSparseD("track","track",dimensionTrack,nBinsTrack,lowBinBorderTrack,highBinBorderTrack); fhTrack->Sumw2();
+  fhTrackUncorrected = new THnSparseD("trackUncorrected","trackUncorrected",dimensionTrack,nBinsTrack,lowBinBorderTrack,highBinBorderTrack); fhTrackUncorrected->Sumw2();
+  
+  // ======== THnSparse for pT weighted jet-track correlations with leading and subleading jets ========
+  
+  // Axis 0 for the track histogram: deltaPhi between track and leading jet
+  nBinsTrackPtWeight[0] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between track and leading jet
+  lowBinBorderTrackPtWeight[0] = minDeltaPhiTrack;  // low bin border for deltaPhi between track and leading jet
+  highBinBorderTrackPtWeight[0] = maxDeltaPhiTrack; // high bin border for deltaPhi between track and leading jet
+  
+  // Axis 1 for the track histogram: deltaEta between track and leading jet
+  nBinsTrackPtWeight[1] = nDeltaEtaBins;         // nBins for deltaEta between track and leading jet
+  lowBinBorderTrackPtWeight[1] = minDeltaEta;    // low bin border deltaEta between track and leading jet
+  highBinBorderTrackPtWeight[1] = maxDeltaEta;   // high bin border deltaEta between track and leading jet
+  
+  // Axis 2 for the track histogram: deltaPhi between track and subleading jet
+  nBinsTrackPtWeight[2] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between track and subleading jet
+  lowBinBorderTrackPtWeight[2] = minDeltaPhiTrack;  // low bin border for deltaPhi between track and subleading jet
+  highBinBorderTrackPtWeight[2] = maxDeltaPhiTrack; // high bin border for deltaPhi between track and subleading jet
+  
+  // Axis 3 for the track histogram: deltaEta between track and subleading jet
+  nBinsTrackPtWeight[3] = nDeltaEtaBins;         // nBins for deltaEta between track and subleading jet
+  lowBinBorderTrackPtWeight[3] = minDeltaEta;    // low bin border deltaEta between track and subleading jet
+  highBinBorderTrackPtWeight[3] = maxDeltaEta;   // high bin border deltaEta between track and subleading jet
+  
+  // Axis 4 for the track histogram: dijet asymmetry
+  nBinsTrackPtWeight[4] = nAsymmetryBins;         // nBins for dijet asymmetry
+  lowBinBorderTrackPtWeight[4] = minAsymmetry;    // low bin border for dijet asymmetry
+  highBinBorderTrackPtWeight[4] = maxAsymmetry;   // high bin border for dijet asymmetry
+  
+  // Axis 5 for the track histogram: centrality
+  nBinsTrackPtWeight[5] = nCentralityBins;         // nBins for centrality
+  lowBinBorderTrackPtWeight[5] = minCentrality;    // low bin border for centrality
+  highBinBorderTrackPtWeight[5] = maxCentrality;   // high bin border for centrality
+  
+  // Create histograms for pT weighted tracks using the above binning information
+  fhTrackPtWeighted = new THnSparseD("trackPtWeighted","trackPtWeighted",dimensionTrackPtWeight,nBinsTrackPtWeight,lowBinBorderTrackPtWeight,highBinBorderTrackPtWeight); fhTrackPtWeighted->Sumw2();
 }
 
 /*
@@ -365,10 +370,13 @@ void DijetHistograms::Write() const{
   // Write the histograms to file
   fhVertexZ->Write();
   fhEvents->Write();
+  fhTrackCuts->Write();
   fhCentrality->Write();
   fhDijet->Write();
   fhAnyJet->Write();
   fhTrack->Write();
+  fhTrackUncorrected->Write();
+  fhTrackPtWeighted->Write();
   
 }
 

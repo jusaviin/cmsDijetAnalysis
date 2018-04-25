@@ -159,23 +159,29 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
    *      track            Axis 0                           Track pT
    *      track            Axis 1                           Track phi
    *      track            Axis 2                           Track eta
-   *      track            Axis 3                      Uncorrected track pT
-   *      track            Axis 4                      Uncorrected track phi
-   *      track            Axis 5                      Uncorrected track eta
-   *      track            Axis 6              DeltaPhi between track and leading jet
-   *      track            Axis 7        DeltaPhi between uncorrected track and leading jet
-   *      track            Axis 8        DeltaPhi between pT weighted track and leading jet
-   *      track            Axis 9               DeltaEta between track and leading jet
-   *      track            Axis 10       DeltaEta between uncorrected track and leading jet
-   *      track            Axis 11       DeltaEta between pT weighted track and leading jet
-   *      track            Axis 12           DeltaPhi between track and subleading jet
-   *      track            Axis 13      DeltaPhi between uncorrected track and subleading jet
-   *      track            Axis 14      DeltaPhi between pT weighted track and subleading jet
-   *      track            Axis 15           DeltaEta between track and subleading jet
-   *      track            Axis 16      DeltaEta between uncorrected track and subleading jet
-   *      track            Axis 17      DeltaEta between pT weighted track and subleading jet
-   *      track            Axis 18                        Dijet asymmetry
-   *      track            Axis 19                          Centrality
+   *      track            Axis 3              DeltaPhi between track and leading jet
+   *      track            Axis 4              DeltaEta between track and leading jet
+   *      track            Axis 5            DeltaPhi between track and subleading jet
+   *      track            Axis 6            DeltaEta between track and subleading jet
+   *      track            Axis 7                         Dijet asymmetry
+   *      track            Axis 8                           Centrality
+   *-----------------------------------------------------------------------------------------------
+   * trackUncorrected      Axis 0                      Uncorrected track pT
+   * trackUncorrected      Axis 1                      Uncorrected track phi
+   * trackUncorrected      Axis 2                      Uncorrected track eta
+   * trackUncorrected      Axis 3        DeltaPhi between uncorrected track and leading jet
+   * trackUncorrected      Axis 4        DeltaEta between uncorrected track and leading jet
+   * trackUncorrected      Axis 5       DeltaPhi between uncorrected track and subleading jet
+   * trackUncorrected      Axis 6       DeltaEta between uncorrected track and subleading jet
+   * trackUncorrected      Axis 7                         Dijet asymmetry
+   * trackUncorrected      Axis 8                           Centrality
+   *-----------------------------------------------------------------------------------------------
+   * trackPtWeighted       Axis 0        DeltaPhi between pT weighted track and leading jet
+   * trackPtWeighted       Axis 1        DeltaEta between pT weighted track and leading jet
+   * trackPtWeighted       Axis 2       DeltaPhi between pT weighted track and subleading jet
+   * trackPtWeighted       Axis 3       DeltaEta between pT weighted track and subleading jet
+   * trackPtWeighted       Axis 4                         Dijet asymmetry
+   * trackPtWeighted       Axis 5                           Centrality
    */
   
   // Load only the bins that are drawn

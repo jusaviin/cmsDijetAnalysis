@@ -20,8 +20,8 @@ MaxTrackPtRelativeError 0.3 # Maximum relative error allowed for track pT
 VertexMaxDistance 3         # TODO: Understand what this cut means
 CalorimeterSignalLimitPt 20 # Require signal in calorimeters for all track above this pT
 HighPtEtFraction 0.5        # For high pT tracks, require Et to be at least this fraction of pT
-Chi2QualityCut 0.15         # Maximum accepted chi2/(nDof*nHits) for tracks
-MinimumTrackHits 11         # Require this many hits for each track 
+Chi2QualityCut 6666         # Maximum accepted chi2/(nDof*nHits) for tracks
+MinimumTrackHits 0          # Require this many hits for each track 
 
 # Cuts for event selection
 ZVertexCut 15      # Maximum vz value for accepted tracks

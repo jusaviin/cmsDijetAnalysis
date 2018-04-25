@@ -15,8 +15,9 @@ class DijetHistograms{
   
 public:
   
-  // Enumeration for event types to event histogram
+  // Enumeration for event types to event histogram and track cuts for track cut histogram
   enum enumEventTypes {kAll, kPrimaryVertex, kHBHENoise, kCollisionEventSelection, kBeamScraping, kCaloJet, kVzCut, kDijet, knEventTypes};
+  enum enumTrackCuts {kAllTracks, kPtCuts, kEtaCut, kHighPurity, kPtError, kVertexDistance, kCaloSignal, kReconstructionQuality, knTrackCuts};
   
   // Constructors and destructor
   DijetHistograms(); // Default constructor
@@ -33,17 +34,21 @@ public:
   
   // Histograms defined public to allow easier access to them. Should not be abused
   // Notation in comments: l = leading jet, s = subleading jet, uc = uncorrected, ptw = pT weighted
-  TH1D *fhVertexZ;      // Vertex z-position
-  TH1D *fhEvents;       // Number of events. Bin 1 = all. Bin 2 = good vz bin. Bin 3 = Dijet found.
-  TH1D *fhCentrality;   // Centrality information. -0.5 for pp or PYTHIA.
-  THnSparse *fhDijet;   // Dijet information. Axes: [l-pT][l-phi][l-eta][s-pT][s-phi][s-eta][dphi][Ajj][cent]
-  THnSparse *fhAnyJet;  // Any jet information. Axes: [jet pT][jet phi][jet eta][cent]
-  THnSparse *fhTrack;   // Track histogram. Axes: [pT][phi][eta][uc pT][uc phi][uc eta][l-dphi][uc l-dhi][ptw l-dphi][l-deta][uc l-eta][ptw l-deta][s-dphi][uc s-dhi][ptw s-dphi][s-deta][uc s-deta][ptw s-deta][Ajj][cent]
+  TH1D *fhVertexZ;       // Vertex z-position
+  TH1D *fhEvents;        // Number of events. For binning see enumEventTypes.
+  TH1D *fhTrackCuts;     // Number of tracks. For binning see enumTrackCuts.
+  TH1D *fhCentrality;    // Centrality information. -0.5 for pp or PYTHIA.
+  THnSparseD *fhDijet;   // Dijet information. Axes: [l-pT][l-phi][l-eta][s-pT][s-phi][s-eta][dphi][Ajj][cent]
+  THnSparseD *fhAnyJet;  // Any jet information. Axes: [jet pT][jet phi][jet eta][cent]
+  THnSparseD *fhTrack;   // Track histogram. Axes: [pT][phi][eta][l-dphi][l-deta][s-dphi][s-deta][Ajj][cent]
+  THnSparseD *fhTrackUncorrected; // Uncorrected track histogram. Axes: [uc pT][uc phi][uc eta][uc l-dhi][uc l-eta][uc s-dhi][uc s-deta][Ajj][cent]
+  THnSparseD *fhTrackPtWeighted; // pT weighted track histogram. Axes: [ptw l-dphi][ptw l-deta][ptw s-dphi][ptw s-deta][Ajj][cent]
   
 private:
   
   ConfigurationCard *fCard;    // Card for binning info
   const TString kEventTypeStrings[knEventTypes] = {"All", "PrimVertex", "HBHENoise", "CollEvtSel", "BeamScrape", "CaloJet", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
+  const TString kTrackCutStrings[knTrackCuts] = {"All", "p_{T} cut", "#eta cut", "HighPurity", "p_{T} error", "vertexDist", "caloSignal", "RecoQuality"}; // String corresponding to track cuts
   
 };
 
