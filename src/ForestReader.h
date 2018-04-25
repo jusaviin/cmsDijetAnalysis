@@ -67,12 +67,22 @@ public:
   int GetCollisionEventSelectionFilterBit() const; // Getter for collision event selection filter bit
   
   // Getters for leaves in the track tree
-  float GetTrackPt(int iTrack) const;       // Getter for track pT
-  float GetTrackPtError(int iTrack) const;  // Getter for track pT error
-  float GetTrackPhi(int iTrack) const;      // Getter for track phi
-  float GetTrackEta(int iTrack) const;      // Getter for track eta
-  int GetNTracks() const;                   // Getter for number of track
-  int GetTrackHighPurity(int iTrack) const; // Getter for the high purity of the track
+  float GetTrackPt(int iTrack) const;                    // Getter for track pT
+  float GetTrackPtError(int iTrack) const;               // Getter for track pT error
+  float GetTrackPhi(int iTrack) const;                   // Getter for track phi
+  float GetTrackEta(int iTrack) const;                   // Getter for track eta
+  int GetNTracks() const;                                // Getter for number of track
+  bool GetTrackHighPurity(int iTrack) const;             // Getter for the high purity of the track
+  float GetTrackVertexDistanceZ(int iTrack) const;       // Getter for track distance from primary vertex in z-direction
+  float GetTrackVertexDistanceZError(int iTrack) const;  // Getter for error of track distance from primary vertex in z-direction
+  float GetTrackVertexDistanceXY(int iTrack) const;      // Getter for track distance from primary vertex in xy-direction
+  float GetTrackVertexDistanceXYError(int iTrack) const; // Getter for error of track distance from primary vertex in xy-direction
+  float GetTrackChi2(int iTrack) const;                  // Getter for track chi2 value from reconstruction fit
+  int GetNTrackDegreesOfFreedom(int iTrack) const;       // Getter for number of degrees of freedom in reconstruction fit
+  int GetNHitsTrackerLayer(int iTrack) const;            // Getter for number of hits in tracker layers
+  int GetNHitsTrack(int iTrack) const;                   // Getter for number of hits for the track
+  float GetTrackEnergyEcal(int iTrack) const;            // Getter for track energy in ECal
+  float GetTrackEnergyHcal(int iTrack) const;            // Getter for track energy in HCal
   
   // Setter for data type
   void SetDataType(int dataType); // Setter for data type
@@ -126,6 +136,9 @@ private:
   TBranch *fTrackChi2Branch;                  // Branch for track chi2 value from reconstruction fit
   TBranch *fnTrackDegreesOfFreedomBranch;     // Branch for number of degrees of freedom in reconstruction fit
   TBranch *fnHitsTrackerLayerBranch;          // Branch for number of hits in tracker layers
+  TBranch *fnHitsTrackBranch;                 // Branch for number of hits for the track
+  TBranch *fTrackEnergyEcalBranch;            // Branch for track energy in ECal
+  TBranch *fTrackEnergyHcalBranch;            // Branch for track energy in HCal
   
   // Leaves for heavy ion tree
   float fVertexZ;    // Vertex z-position
@@ -154,7 +167,7 @@ private:
   float fTrackPhiArray[fnMaxTrack] = {0};                   // Array for track phis
   float fTrackEtaArray[fnMaxTrack] = {0};                   // Array for track etas
   int fnTracks;                                             // Number of tracks
-  int fHighPurityTrackArray[fnMaxTrack] = {0};              // Array for the high purity of tracks
+  bool fHighPurityTrackArray[fnMaxTrack] = {0};             // Array for the high purity of tracks
   float fTrackVertexDistanceZArray[fnMaxTrack] = {0};       // Array for track distance from primary vertex in z-direction
   float fTrackVertexDistanceZErrorArray[fnMaxTrack] = {0};  // Array for error for track distance from primary vertex in z-direction
   float fTrackVertexDistanceXYArray[fnMaxTrack] = {0};      // Array for track distance from primary vertex in xy-direction
@@ -162,6 +175,9 @@ private:
   float fTrackChi2Array[fnMaxTrack] = {0};                  // Array for track chi2 value from reconstruction fit
   int fnTrackDegreesOfFreedomArray[fnMaxTrack] = {0};       // Array for number of degrees of freedom in reconstruction fit
   int fnHitsTrackerLayerArray[fnMaxTrack] = {0};            // Array for number of hits in tracker layers
+  int fnHitsTrackArray[fnMaxTrack] = {0};                   // Array for number of hits for the track
+  float fTrackEnergyEcalArray[fnMaxTrack] = {0};            // Array for track energy in ECal
+  float fTrackEnergyHcalArray[fnMaxTrack] = {0};            // Array for track energy in HCal
   
 };
 

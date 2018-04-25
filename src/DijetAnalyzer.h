@@ -12,6 +12,7 @@
 // Own includes
 #include "ConfigurationCard.h"
 #include "DijetHistograms.h"
+#include "TrkCorr.h"
 
 class DijetAnalyzer{
   
@@ -33,6 +34,7 @@ private:
   std::vector<TString> fFileNames;   // Vector for all the files to loop over
   ConfigurationCard *fCard;          // Configuration card for the analysis
   DijetHistograms *fHistograms;      // Filled histograms
+  TrkCorr *fTrackCorrection;         // Track correction class
 
 };
 

@@ -39,6 +39,9 @@ ForestReader::ForestReader() :
   fTrackChi2Branch(0),
   fnTrackDegreesOfFreedomBranch(0),
   fnHitsTrackerLayerBranch(0),
+  fnHitsTrackBranch(0),
+  fTrackEnergyEcalBranch(0),
+  fTrackEnergyHcalBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
   fJetPtArray(),
@@ -64,7 +67,10 @@ ForestReader::ForestReader() :
   fTrackVertexDistanceXYErrorArray(),
   fTrackChi2Array(),
   fnTrackDegreesOfFreedomArray(),
-  fnHitsTrackerLayerArray()
+  fnHitsTrackerLayerArray(),
+  fnHitsTrackArray(),
+  fTrackEnergyEcalArray(),
+  fTrackEnergyHcalArray()
 {
   // Default constructor
 }
@@ -108,6 +114,9 @@ ForestReader::ForestReader(int dataType) :
   fTrackChi2Branch(0),
   fnTrackDegreesOfFreedomBranch(0),
   fnHitsTrackerLayerBranch(0),
+  fnHitsTrackBranch(0),
+  fTrackEnergyEcalBranch(0),
+  fTrackEnergyHcalBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
   fJetPtArray(),
@@ -133,7 +142,10 @@ ForestReader::ForestReader(int dataType) :
   fTrackVertexDistanceXYErrorArray(),
   fTrackChi2Array(),
   fnTrackDegreesOfFreedomArray(),
-  fnHitsTrackerLayerArray()
+  fnHitsTrackerLayerArray(),
+  fnHitsTrackArray(),
+  fTrackEnergyEcalArray(),
+  fTrackEnergyHcalArray()
 {
   // Custom constructor
   
@@ -177,6 +189,9 @@ ForestReader::ForestReader(const ForestReader& in) :
   fTrackChi2Branch(in.fTrackChi2Branch),
   fnTrackDegreesOfFreedomBranch(in.fnTrackDegreesOfFreedomBranch),
   fnHitsTrackerLayerBranch(in.fnHitsTrackerLayerBranch),
+  fnHitsTrackBranch(in.fnHitsTrackBranch),
+  fTrackEnergyEcalBranch(in.fTrackEnergyEcalBranch),
+  fTrackEnergyHcalBranch(in.fTrackEnergyHcalBranch),
   fVertexZ(in.fVertexZ),
   fHiBin(in.fHiBin),
   fnJets(in.fnJets),
@@ -203,12 +218,15 @@ ForestReader::ForestReader(const ForestReader& in) :
     fTrackEtaArray[i] = in.fTrackEtaArray[i];
     fHighPurityTrackArray[i] = in.fHighPurityTrackArray[i];
     fTrackVertexDistanceZArray[i] = in.fTrackVertexDistanceZArray[i];
-    fTrackVertexDistanceZErrorArray[i] = fTrackVertexDistanceZErrorArray[i];
-    fTrackVertexDistanceXYArray[i] = fTrackVertexDistanceXYArray[i];
-    fTrackVertexDistanceXYErrorArray[i] = fTrackVertexDistanceXYErrorArray[i];
-    fTrackChi2Array[i] = fTrackChi2Array[i];
-    fnTrackDegreesOfFreedomArray[i] = fnTrackDegreesOfFreedomArray[i];
-    fnHitsTrackerLayerArray[i] = fnHitsTrackerLayerArray[i];
+    fTrackVertexDistanceZErrorArray[i] = in.fTrackVertexDistanceZErrorArray[i];
+    fTrackVertexDistanceXYArray[i] = in.fTrackVertexDistanceXYArray[i];
+    fTrackVertexDistanceXYErrorArray[i] = in.fTrackVertexDistanceXYErrorArray[i];
+    fTrackChi2Array[i] = in.fTrackChi2Array[i];
+    fnTrackDegreesOfFreedomArray[i] = in.fnTrackDegreesOfFreedomArray[i];
+    fnHitsTrackerLayerArray[i] = in.fnHitsTrackerLayerArray[i];
+    fnHitsTrackArray[i] = in.fnHitsTrackArray[i];
+    fTrackEnergyEcalArray[i] = in.fTrackEnergyEcalArray[i];
+    fTrackEnergyHcalArray[i] = in.fTrackEnergyHcalArray[i];
   }
 }
 
@@ -252,6 +270,9 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fTrackChi2Branch = in.fTrackChi2Branch;
   fnTrackDegreesOfFreedomBranch = in.fnTrackDegreesOfFreedomBranch;
   fnHitsTrackerLayerBranch = in.fnHitsTrackerLayerBranch;
+  fnHitsTrackBranch = in.fnHitsTrackBranch;
+  fTrackEnergyEcalBranch = in.fTrackEnergyEcalBranch;
+  fTrackEnergyHcalBranch = in.fTrackEnergyHcalBranch;
   fVertexZ = in.fVertexZ;
   fHiBin = in.fHiBin;
   fnJets = in.fnJets;
@@ -277,12 +298,15 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
     fTrackEtaArray[i] = in.fTrackEtaArray[i];
     fHighPurityTrackArray[i] = in.fHighPurityTrackArray[i];
     fTrackVertexDistanceZArray[i] = in.fTrackVertexDistanceZArray[i];
-    fTrackVertexDistanceZErrorArray[i] = fTrackVertexDistanceZErrorArray[i];
-    fTrackVertexDistanceXYArray[i] = fTrackVertexDistanceXYArray[i];
-    fTrackVertexDistanceXYErrorArray[i] = fTrackVertexDistanceXYErrorArray[i];
-    fTrackChi2Array[i] = fTrackChi2Array[i];
-    fnTrackDegreesOfFreedomArray[i] = fnTrackDegreesOfFreedomArray[i];
-    fnHitsTrackerLayerArray[i] = fnHitsTrackerLayerArray[i];
+    fTrackVertexDistanceZErrorArray[i] = in.fTrackVertexDistanceZErrorArray[i];
+    fTrackVertexDistanceXYArray[i] = in.fTrackVertexDistanceXYArray[i];
+    fTrackVertexDistanceXYErrorArray[i] = in.fTrackVertexDistanceXYErrorArray[i];
+    fTrackChi2Array[i] = in.fTrackChi2Array[i];
+    fnTrackDegreesOfFreedomArray[i] = in.fnTrackDegreesOfFreedomArray[i];
+    fnHitsTrackerLayerArray[i] = in.fnHitsTrackerLayerArray[i];
+    fnHitsTrackArray[i] = in.fnHitsTrackArray[i];
+    fTrackEnergyEcalArray[i] = in.fTrackEnergyEcalArray[i];
+    fTrackEnergyHcalArray[i] = in.fTrackEnergyHcalArray[i];
   }
   
   return *this;
@@ -382,6 +406,9 @@ void ForestReader::Initialize(){
   fTrackTree->SetBranchAddress("trkChi2",&fTrackChi2Array,&fTrackChi2Branch);
   fTrackTree->SetBranchAddress("trkNdof",&fnTrackDegreesOfFreedomArray,&fnTrackDegreesOfFreedomBranch);
   fTrackTree->SetBranchAddress("trkNlayer",&fnHitsTrackerLayerArray,&fnHitsTrackerLayerBranch);
+  fTrackTree->SetBranchAddress("trkNHit",&fnHitsTrackArray,&fnHitsTrackBranch);
+  fTrackTree->SetBranchAddress("pfEcal",&fTrackEnergyEcalArray,&fTrackEnergyEcalBranch);
+  fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
 }
 
 /*
@@ -469,8 +496,9 @@ float ForestReader::GetCentrality() const{
   return fHiBin/2.0;
 }
 
-// Getter for hiBin
+// Getter for hiBin. Return 1 for negative values (for easier handling of tracking efficiency correction)
 int ForestReader::GetHiBin() const{
+  if(fHiBin < 0) return 1;
   return fHiBin;
 }
 
@@ -525,6 +553,56 @@ int ForestReader::GetNTracks() const{
 }
 
 // Getter for high purity of the track
-int ForestReader::GetTrackHighPurity(int iTrack) const{
+bool ForestReader::GetTrackHighPurity(int iTrack) const{
   return fHighPurityTrackArray[iTrack];
+}
+
+// Getter for track distance from primary vertex in z-direction
+float ForestReader::GetTrackVertexDistanceZ(int iTrack) const{
+  return fTrackVertexDistanceZArray[iTrack];
+}
+
+// Getter for error of track distance from primary vertex in z-direction
+float ForestReader::GetTrackVertexDistanceZError(int iTrack) const{
+  return fTrackVertexDistanceZErrorArray[iTrack];
+}
+
+// Getter for track distance from primary vertex in xy-direction
+float ForestReader::GetTrackVertexDistanceXY(int iTrack) const{
+  return fTrackVertexDistanceXYArray[iTrack];
+}
+
+// Getter for error of track distance from primary vertex in xy-direction
+float ForestReader::GetTrackVertexDistanceXYError(int iTrack) const{
+  return fTrackVertexDistanceXYErrorArray[iTrack];
+}
+
+// Getter for track chi2 value from reconstruction fit
+float ForestReader::GetTrackChi2(int iTrack) const{
+  return fTrackChi2Array[iTrack];
+}
+
+// Getter for number of degrees of freedom in reconstruction fit
+int ForestReader::GetNTrackDegreesOfFreedom(int iTrack) const{
+  return fnTrackDegreesOfFreedomArray[iTrack];
+}
+
+// Getter for number of hits in tracker layers
+int ForestReader::GetNHitsTrackerLayer(int iTrack) const{
+  return fnHitsTrackerLayerArray[iTrack];
+}
+
+// Getter for number of hits for the track
+int ForestReader::GetNHitsTrack(int iTrack) const{
+  return fnHitsTrackArray[iTrack];
+}
+
+// Getter for track energy in ECal
+float ForestReader::GetTrackEnergyEcal(int iTrack) const{
+  return fTrackEnergyEcalArray[iTrack];
+}
+
+// Getter for track energy in HCal
+float ForestReader::GetTrackEnergyHcal(int iTrack) const{
+  return fTrackEnergyHcalArray[iTrack];
 }
