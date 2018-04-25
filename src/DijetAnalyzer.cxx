@@ -160,6 +160,8 @@ void DijetAnalyzer::RunAnalysis(){
   // Fillers for THnSparses
   double fillerAnyJet[4];
   double fillerDijet[9];
+  double fillerTrack[20];
+  double weightTrack[20];
   
   // Amount of debugging messages
   int debugLevel = fCard->Get("DebugLevel");
@@ -324,9 +326,9 @@ void DijetAnalyzer::RunAnalysis(){
         // Correlate jets with tracks in dijet events
         int nTracks = treeReader->GetNTracks();
         for(int iTrack = 0; iTrack <nTracks; iTrack++){
-          trackEta = treeReader->GetTrackEta(iTrack);
           trackPt = treeReader->GetTrackPt(iTrack);
           trackPhi = treeReader->GetTrackPhi(iTrack);
+          trackEta = treeReader->GetTrackEta(iTrack);
           trackEt = (treeReader->GetTrackEnergyEcal(iTrack)+treeReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
           
           //  ==== Apply cuts for tracks ====

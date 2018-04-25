@@ -139,22 +139,43 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   /*
    *  Axis information for THnSparses in data files:
    *
-   *  Histogram name     Axis index      Content of axis
-   * -------------------------------------------------------
-   *      dijet            Axis 0        Leading jet pT
-   *      dijet            Axis 1        Leading jet phi
-   *      dijet            Axis 2        Leading jet eta
-   *      dijet            Axis 3       Subleading jet pT
-   *      dijet            Axis 4       Subleading jet phi
-   *      dijet            Axis 5       Subleading jet eta
-   *      dijet            Axis 6         Dijet deltaPhi
-   *      dijet            Axis 7         Dijet asymmetry
-   *      dijet            Axis 8           Centrality
-   *---------------------------------------------------------
-   *     anyJet            Axis 0           Any jet pT
-   *     anyJet            Axis 1           Any jet phi
-   *     anyJet            Axis 2           Any jet eta
-   *     anyJet            Axis 3           Centrality
+   *  Histogram name     Axis index                     Content of axis
+   * ----------------------------------------------------------------------------------------------
+   *      dijet            Axis 0                        Leading jet pT
+   *      dijet            Axis 1                        Leading jet phi
+   *      dijet            Axis 2                        Leading jet eta
+   *      dijet            Axis 3                       Subleading jet pT
+   *      dijet            Axis 4                       Subleading jet phi
+   *      dijet            Axis 5                       Subleading jet eta
+   *      dijet            Axis 6                        Dijet deltaPhi
+   *      dijet            Axis 7                        Dijet asymmetry
+   *      dijet            Axis 8                          Centrality
+   *-----------------------------------------------------------------------------------------------
+   *     anyJet            Axis 0                          Any jet pT
+   *     anyJet            Axis 1                          Any jet phi
+   *     anyJet            Axis 2                          Any jet eta
+   *     anyJet            Axis 3                          Centrality
+   *-----------------------------------------------------------------------------------------------
+   *      track            Axis 0                           Track pT
+   *      track            Axis 1                           Track phi
+   *      track            Axis 2                           Track eta
+   *      track            Axis 3                      Uncorrected track pT
+   *      track            Axis 4                      Uncorrected track phi
+   *      track            Axis 5                      Uncorrected track eta
+   *      track            Axis 6              DeltaPhi between track and leading jet
+   *      track            Axis 7        DeltaPhi between uncorrected track and leading jet
+   *      track            Axis 8        DeltaPhi between pT weighted track and leading jet
+   *      track            Axis 9               DeltaEta between track and leading jet
+   *      track            Axis 10       DeltaEta between uncorrected track and leading jet
+   *      track            Axis 11       DeltaEta between pT weighted track and leading jet
+   *      track            Axis 12           DeltaPhi between track and subleading jet
+   *      track            Axis 13      DeltaPhi between uncorrected track and subleading jet
+   *      track            Axis 14      DeltaPhi between pT weighted track and subleading jet
+   *      track            Axis 15           DeltaEta between track and subleading jet
+   *      track            Axis 16      DeltaEta between uncorrected track and subleading jet
+   *      track            Axis 17      DeltaEta between pT weighted track and subleading jet
+   *      track            Axis 18                        Dijet asymmetry
+   *      track            Axis 19                          Centrality
    */
   
   // Load only the bins that are drawn

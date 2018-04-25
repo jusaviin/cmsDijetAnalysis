@@ -32,12 +32,13 @@ public:
   void SetCard(ConfigurationCard *newCard);  // Set a new configuration card for the histogram class
   
   // Histograms defined public to allow easier access to them. Should not be abused
-  // Notation in comments: l = leading jet, s = subleading jet
+  // Notation in comments: l = leading jet, s = subleading jet, uc = uncorrected, ptw = pT weighted
   TH1D *fhVertexZ;      // Vertex z-position
   TH1D *fhEvents;       // Number of events. Bin 1 = all. Bin 2 = good vz bin. Bin 3 = Dijet found.
   TH1D *fhCentrality;   // Centrality information. -0.5 for pp or PYTHIA.
   THnSparse *fhDijet;   // Dijet information. Axes: [l-pT][l-phi][l-eta][s-pT][s-phi][s-eta][dphi][Ajj][cent]
   THnSparse *fhAnyJet;  // Any jet information. Axes: [jet pT][jet phi][jet eta][cent]
+  THnSparse *fhTrack;   // Track histogram. Axes: [pT][phi][eta][uc pT][uc phi][uc eta][l-dphi][uc l-dhi][ptw l-dphi][l-deta][uc l-eta][ptw l-deta][s-dphi][uc s-dhi][ptw s-dphi][s-deta][uc s-deta][ptw s-deta][Ajj][cent]
   
 private:
   
