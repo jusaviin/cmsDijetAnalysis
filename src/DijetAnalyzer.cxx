@@ -162,10 +162,8 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentFile;
   
   // Fillers for THnSparses
-  Double_t fillerAnyJet[4];
-  Double_t fillerDijet[9];
-  Double_t fillerTrack[9];
-  Double_t fillerTrackPtWeight[6];
+  Double_t filler4D[4];
+  Double_t filler5D[5];
   
   // Amount of debugging messages
   Int_t debugLevel = fCard->Get("DebugLevel");
@@ -259,11 +257,11 @@ void DijetAnalyzer::RunAnalysis(){
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) < jetEtaCut){
           
           // Fill the axes in correct order
-          fillerAnyJet[0] = jetPt;                             // Axis 0 = any jet pT
-          fillerAnyJet[1] = treeReader->GetJetPhi(jetIndex);   // Axis 1 = any jet phi
-          fillerAnyJet[2] = treeReader->GetJetEta(jetIndex);   // Axis 2 = any jet eta
-          fillerAnyJet[3] = centrality;                        // Axis 3 = centrality
-          fHistograms->fhAnyJet->Fill(fillerAnyJet);           // Fill the data point to histogram
+          filler4D[0] = jetPt;                             // Axis 0 = any jet pT
+          filler4D[1] = treeReader->GetJetPhi(jetIndex);   // Axis 1 = any jet phi
+          filler4D[2] = treeReader->GetJetEta(jetIndex);   // Axis 2 = any jet eta
+          filler4D[3] = centrality;                        // Axis 3 = centrality
+          fHistograms->fhAnyJet->Fill(filler4D);           // Fill the data point to histogram
           
         }
         
@@ -315,17 +313,29 @@ void DijetAnalyzer::RunAnalysis(){
         // Calculate the asymmetry
         dijetAsymmetry = (treeReader->GetJetPt(highestIndex) - treeReader->GetJetPt(secondHighestIndex))/(treeReader->GetJetPt(highestIndex) + treeReader->GetJetPt(secondHighestIndex));
         
-        // Fill the dijet histogram axes in correct order
-        fillerDijet[0] = treeReader->GetJetPt(highestIndex);        // Axis 0: Leading jet pT
-        fillerDijet[1] = treeReader->GetJetPhi(highestIndex);       // Axis 1: Leading jet phi
-        fillerDijet[2] = treeReader->GetJetEta(highestIndex);       // Axis 2: Leading jet eta
-        fillerDijet[3] = treeReader->GetJetPt(secondHighestIndex);  // Axis 3: Subleading jet pT
-        fillerDijet[4] = treeReader->GetJetPhi(secondHighestIndex); // Axis 4: Subleading jet phi
-        fillerDijet[5] = treeReader->GetJetEta(secondHighestIndex); // Axis 5: Subleading jet eta
-        fillerDijet[6] = TMath::Abs(dphi);                          // Axis 6: deltaPhi
-        fillerDijet[7] = dijetAsymmetry;                            // Axis 7: Asymmetry
-        fillerDijet[8] = centrality;                                // Axis 8: Centrality
-        fHistograms->fhDijet->Fill(fillerDijet);                    // Fill the data point to dijet histogram
+        // Fill the leading jet histogram
+        filler5D[0] = treeReader->GetJetPt(highestIndex);        // Axis 0: Leading jet pT
+        filler5D[1] = treeReader->GetJetPhi(highestIndex);       // Axis 1: Leading jet phi
+        filler5D[2] = treeReader->GetJetEta(highestIndex);       // Axis 2: Leading jet eta
+        filler5D[3] = dijetAsymmetry;                            // Axis 3: Asymmetry
+        filler5D[4] = centrality;                                // Axis 4: Centrality
+        fHistograms->fhLeadingJet->Fill(filler5D);               // Fill the data point to leading jet histogram
+        
+        // Fill the subleading jet histogram
+        filler5D[0] = treeReader->GetJetPt(secondHighestIndex);  // Axis 0: Subleading jet pT
+        filler5D[1] = treeReader->GetJetPhi(secondHighestIndex); // Axis 1: Subleading jet phi
+        filler5D[2] = treeReader->GetJetEta(secondHighestIndex); // Axis 2: Subleading jet eta
+        filler5D[3] = dijetAsymmetry;                            // Axis 3: Asymmetry
+        filler5D[4] = centrality;                                // Axis 4: Centrality
+        fHistograms->fhSubleadingJet->Fill(filler5D);            // Fill the data point to subleading jet histogram
+
+        // Fill the dijet histogram
+        filler5D[0] = treeReader->GetJetPt(highestIndex);        // Axis 0: Leading jet pT
+        filler5D[1] = treeReader->GetJetPt(secondHighestIndex);  // Axis 1: Subleading jet pT
+        filler5D[2] = TMath::Abs(dphi);                          // Axis 2: deltaPhi
+        filler5D[3] = dijetAsymmetry;                            // Axis 3: Asymmetry
+        filler5D[4] = centrality;                                // Axis 4: Centrality
+        fHistograms->fhDijet->Fill(filler5D);                    // Fill the data point to dijet histogram
         
         // Correlate jets with tracks in dijet events
         Int_t nTracks = treeReader->GetNTracks();
@@ -404,34 +414,32 @@ void DijetAnalyzer::RunAnalysis(){
           while(deltaPhiTrackSubleadingJet < (-0.5*TMath::Pi())){deltaPhiTrackSubleadingJet += 2*TMath::Pi();}
           
           // Fill track histograms
-          
-          // ===== Nominal tracks =====
-          fillerTrack[0] = trackPt;                    // Axis 0: Track pT
-          fillerTrack[1] = trackPhi;                   // Axis 1: Track phi
-          fillerTrack[2] = trackEta;                   // Axis 2: Track eta
-          fillerTrack[3] = deltaPhiTrackLeadingJet;    // Axis 3: DeltaPhi between track and leading jet
-          fillerTrack[4] = deltaEtaTrackLeadingJet;    // Axis 4: DeltaEta between track and leading jet
-          fillerTrack[5] = deltaPhiTrackSubleadingJet; // Axis 5: DeltaPhi between track and subleading jet
-          fillerTrack[6] = deltaEtaTrackSubleadingJet; // Axis 6: DeltaEta between track and subleading jet
-          fillerTrack[7] = dijetAsymmetry;             // Axis 7: Dijet asymmetry
-          fillerTrack[8] = centrality;                 // Axis 8: Centrality
+          filler4D[0] = trackPt;                    // Axis 0: Track pT
+          filler4D[1] = trackPhi;                   // Axis 1: Track phi
+          filler4D[2] = trackEta;                   // Axis 2: Track eta
+          filler4D[3] = centrality;                 // Axis 3: Centrality
+          fHistograms->fhTrack->Fill(filler4D,trackEfficiencyCorrection);  // Fill the track histogram
+          fHistograms->fhTrackUncorrected->Fill(filler4D);                 // Fill the uncorrected track histogram
 
-          // ===== Track for pT weighting =====
-          fillerTrackPtWeight[0] = deltaPhiTrackLeadingJet;    // Axis 0: DeltaPhi between track and leading jet
-          fillerTrackPtWeight[1] = deltaEtaTrackLeadingJet;    // Axis 1: DeltaEta between track and leading jet
-          fillerTrackPtWeight[2] = deltaPhiTrackSubleadingJet; // Axis 2: DeltaPhi between track and subleading jet
-          fillerTrackPtWeight[3] = deltaEtaTrackSubleadingJet; // Axis 3: DeltaEta between track and subleading jet
-          fillerTrackPtWeight[4] = dijetAsymmetry;             // Axis 4: Dijet asymmetry
-          fillerTrackPtWeight[5] = centrality;                 // Axis 5: Centrality
+          // Fill the track-leading jet correlation histograms
+          filler5D[0] = trackPt;                    // Axis 0: Track pT
+          filler5D[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
+          filler5D[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
+          filler5D[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+          filler5D[4] = centrality;                 // Axis 4: Centrality
+          fHistograms->fhTrackLeadingJet->Fill(filler5D,trackEfficiencyCorrection); // Fill the track-leading jet correlation histogram
+          fHistograms->fhTrackLeadingJetUncorrected->Fill(filler5D);                // Fill the uncorrected track-leading jet correlation histogram
+          fHistograms->fhTrackLeadingJetPtWeighted->Fill(filler5D,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-leading jet correlation histogram
           
-          // Fill the histogram for nominal tracks
-          fHistograms->fhTrack->Fill(fillerTrack,trackEfficiencyCorrection);
-          
-          // Fill the histogram for undorrected tracks
-          fHistograms->fhTrackUncorrected->Fill(fillerTrack);
-          
-          // Fill the histogram for pT weighted tracks
-          fHistograms->fhTrackPtWeighted->Fill(fillerTrackPtWeight,trackEfficiencyCorrection*trackPt);
+          // Fill the track-subleading jet correlation histograms
+          filler5D[0] = trackPt;                    // Axis 0: Track pT
+          filler5D[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
+          filler5D[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
+          filler5D[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+          filler5D[4] = centrality;                 // Axis 4: Centrality
+          fHistograms->fhTrackSubleadingJet->Fill(filler5D,trackEfficiencyCorrection); // Fill the track-subleading jet correlation histogram
+          fHistograms->fhTrackSubleadingJetUncorrected->Fill(filler5D);                // Fill the uncorrected track-subleading jet correlation histogram
+          fHistograms->fhTrackSubleadingJetPtWeighted->Fill(filler5D,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-subleading jet correlation histogram
           
         } // Loop over tracks
         
