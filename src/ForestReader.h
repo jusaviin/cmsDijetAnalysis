@@ -24,8 +24,8 @@ using namespace std;
 class ForestReader{
   
 private:
-  static const int fnMaxJet = 60;        // Maximum number of jets in an event
-  static const int fnMaxTrack = 11000;   // Maximum number of tracks in an event
+  static const Int_t fnMaxJet = 60;        // Maximum number of jets in an event
+  static const Int_t fnMaxTrack = 11000;   // Maximum number of tracks in an event
   
 public:
   
@@ -34,65 +34,65 @@ public:
   
   // Constructors and destructors
   ForestReader();                                   // Default constructor
-  ForestReader(int dataType);                       // Custom constructor
+  ForestReader(Int_t dataType);                       // Custom constructor
   ForestReader(const ForestReader& in);             // Copy constructor
   virtual ~ForestReader();                          // Destructor
   ForestReader& operator=(const ForestReader& obj); // Equal sign operator
   
   // Methods
-  void GetEvent(int nEvent) const;             // Get the nth event in tree
-  int GetNEvents() const;                      // Get the number of events
+  void GetEvent(Int_t nEvent) const;             // Get the nth event in tree
+  Int_t GetNEvents() const;                      // Get the number of events
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
   
   // Getters for leaves in heavy ion tree
-  float GetVz() const;              // Getter for vertex z position
-  float GetCentrality() const;      // Getter for centrality
-  int GetHiBin() const;             // Getter for CMS hiBin
+  Float_t GetVz() const;              // Getter for vertex z position
+  Float_t GetCentrality() const;      // Getter for centrality
+  Int_t GetHiBin() const;             // Getter for CMS hiBin
   
   // Getters for leaves in jet tree
-  float GetJetPt(int iJet) const;         // Getter for jet pT
-  float GetJetPhi(int iJet) const;        // Getter for jet phi
-  float GetJetEta(int iJet) const;        // Getter for jet eta
-  int GetNJets() const;                   // Getter for number of jets
-  float GetJetRawPt(int iJet) const;      // Getter for jet raw pT
-  float GetJetMaxTrackPt(int iJet) const; // Getter for maximum track pT inside a jet
+  Float_t GetJetPt(Int_t iJet) const;         // Getter for jet pT
+  Float_t GetJetPhi(Int_t iJet) const;        // Getter for jet phi
+  Float_t GetJetEta(Int_t iJet) const;        // Getter for jet eta
+  Int_t GetNJets() const;                     // Getter for number of jets
+  Float_t GetJetRawPt(Int_t iJet) const;      // Getter for jet raw pT
+  Float_t GetJetMaxTrackPt(Int_t iJet) const; // Getter for maximum track pT inside a jet
   
   // Getters for leaves in HLT tree
-  int GetCaloJetFilterBit() const;  // Getter for calorimeter jet filter bit
+  Int_t GetCaloJetFilterBit() const;  // Getter for calorimeter jet filter bit
   
   // Getters for leaves in skim tree
-  int GetPrimaryVertexFilterBit() const;           // Getter for primary vertex filter bit
-  int GetBeamScrapingFilterBit() const;            // Getter got beam scraping filter bit
-  int GetHBHENoiseFilterBit() const;               // Getter for HB/HE noise filter bit
-  int GetCollisionEventSelectionFilterBit() const; // Getter for collision event selection filter bit
+  Int_t GetPrimaryVertexFilterBit() const;           // Getter for primary vertex filter bit
+  Int_t GetBeamScrapingFilterBit() const;            // Getter got beam scraping filter bit
+  Int_t GetHBHENoiseFilterBit() const;               // Getter for HB/HE noise filter bit
+  Int_t GetCollisionEventSelectionFilterBit() const; // Getter for collision event selection filter bit
   
   // Getters for leaves in the track tree
-  float GetTrackPt(int iTrack) const;                    // Getter for track pT
-  float GetTrackPtError(int iTrack) const;               // Getter for track pT error
-  float GetTrackPhi(int iTrack) const;                   // Getter for track phi
-  float GetTrackEta(int iTrack) const;                   // Getter for track eta
-  int GetNTracks() const;                                // Getter for number of track
-  bool GetTrackHighPurity(int iTrack) const;             // Getter for the high purity of the track
-  float GetTrackVertexDistanceZ(int iTrack) const;       // Getter for track distance from primary vertex in z-direction
-  float GetTrackVertexDistanceZError(int iTrack) const;  // Getter for error of track distance from primary vertex in z-direction
-  float GetTrackVertexDistanceXY(int iTrack) const;      // Getter for track distance from primary vertex in xy-direction
-  float GetTrackVertexDistanceXYError(int iTrack) const; // Getter for error of track distance from primary vertex in xy-direction
-  float GetTrackChi2(int iTrack) const;                  // Getter for track chi2 value from reconstruction fit
-  int GetNTrackDegreesOfFreedom(int iTrack) const;       // Getter for number of degrees of freedom in reconstruction fit
-  int GetNHitsTrackerLayer(int iTrack) const;            // Getter for number of hits in tracker layers
-  int GetNHitsTrack(int iTrack) const;                   // Getter for number of hits for the track
-  float GetTrackEnergyEcal(int iTrack) const;            // Getter for track energy in ECal
-  float GetTrackEnergyHcal(int iTrack) const;            // Getter for track energy in HCal
+  Float_t GetTrackPt(Int_t iTrack) const;                    // Getter for track pT
+  Float_t GetTrackPtError(Int_t iTrack) const;               // Getter for track pT error
+  Float_t GetTrackPhi(Int_t iTrack) const;                   // Getter for track phi
+  Float_t GetTrackEta(Int_t iTrack) const;                   // Getter for track eta
+  Int_t GetNTracks() const;                                  // Getter for number of track
+  Bool_t GetTrackHighPurity(Int_t iTrack) const;             // Getter for the high purity of the track
+  Float_t GetTrackVertexDistanceZ(Int_t iTrack) const;       // Getter for track distance from primary vertex in z-direction
+  Float_t GetTrackVertexDistanceZError(Int_t iTrack) const;  // Getter for error of track distance from primary vertex in z-direction
+  Float_t GetTrackVertexDistanceXY(Int_t iTrack) const;      // Getter for track distance from primary vertex in xy-direction
+  Float_t GetTrackVertexDistanceXYError(Int_t iTrack) const; // Getter for error of track distance from primary vertex in xy-direction
+  Float_t GetTrackChi2(Int_t iTrack) const;                  // Getter for track chi2 value from reconstruction fit
+  UChar_t GetNTrackDegreesOfFreedom(Int_t iTrack) const;     // Getter for number of degrees of freedom in reconstruction fit
+  UChar_t GetNHitsTrackerLayer(Int_t iTrack) const;          // Getter for number of hits in tracker layers
+  UChar_t GetNHitsTrack(Int_t iTrack) const;                 // Getter for number of hits for the track
+  Float_t GetTrackEnergyEcal(Int_t iTrack) const;            // Getter for track energy in ECal
+  Float_t GetTrackEnergyHcal(Int_t iTrack) const;            // Getter for track energy in HCal
   
   // Setter for data type
-  void SetDataType(int dataType); // Setter for data type
+  void SetDataType(Int_t dataType); // Setter for data type
   
 private:
   
   // Methods
   void Initialize();  // Connect the branches to the tree
   
-  int fDataType;  // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
+  Int_t fDataType;  // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
   
   // Trees in the forest
   TTree *fHeavyIonTree;    // Tree for heavy ion event information
@@ -140,44 +140,46 @@ private:
   TBranch *fTrackEnergyEcalBranch;            // Branch for track energy in ECal
   TBranch *fTrackEnergyHcalBranch;            // Branch for track energy in HCal
   
+  // TODO: Change all leaf types to root defined ones to avoid losing precision!!!!
+  
   // Leaves for heavy ion tree
-  float fVertexZ;    // Vertex z-position
-  int fHiBin;        // HiBin = Centrality percentile * 2
+  Float_t fVertexZ;    // Vertex z-position
+  Int_t fHiBin;        // HiBin = Centrality percentile * 2
   
   // Leaves for jet tree
-  float fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
-  float fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
-  float fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
-  int fnJets;                                // number of jets in an event
-  float fJetRawPtArray[fnMaxJet] = {0};      // raw jet pT for all the jets in an event
-  float fJetMaxTrackPtArray[fnMaxJet] = {0}; // maximum track pT inside a jet for all the jets in an event
+  Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
+  Float_t fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
+  Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
+  Int_t fnJets;                                // number of jets in an event
+  Float_t fJetRawPtArray[fnMaxJet] = {0};      // raw jet pT for all the jets in an event
+  Float_t fJetMaxTrackPtArray[fnMaxJet] = {0}; // maximum track pT inside a jet for all the jets in an event
   
   // Leaves for the HLT tree
-  int fCaloJetFilterBit;    // Filter bit for calorimeter jets
+  Int_t fCaloJetFilterBit;    // Filter bit for calorimeter jets
   
   // Leaves for the skim tree
-  int fPrimaryVertexFilterBit;           // Filter bit for primary vertex
-  int fBeamScrapingFilterBit;            // Filter bit for beam scraping
-  int fCollisionEventSelectionFilterBit; // Filter bit for collision event selection
-  int fHBHENoiseFilterBit;               // Filter bit for HB/HE noise
+  Int_t fPrimaryVertexFilterBit;           // Filter bit for primary vertex
+  Int_t fBeamScrapingFilterBit;            // Filter bit for beam scraping
+  Int_t fCollisionEventSelectionFilterBit; // Filter bit for collision event selection
+  Int_t fHBHENoiseFilterBit;               // Filter bit for HB/HE noise
   
   // Leaves for the track tree
-  float fTrackPtArray[fnMaxTrack] = {0};                    // Array for track pT:s
-  float fTrackPtErrorArray[fnMaxTrack] = {0};               // Array for track pT errors
-  float fTrackPhiArray[fnMaxTrack] = {0};                   // Array for track phis
-  float fTrackEtaArray[fnMaxTrack] = {0};                   // Array for track etas
-  int fnTracks;                                             // Number of tracks
-  bool fHighPurityTrackArray[fnMaxTrack] = {0};             // Array for the high purity of tracks
-  float fTrackVertexDistanceZArray[fnMaxTrack] = {0};       // Array for track distance from primary vertex in z-direction
-  float fTrackVertexDistanceZErrorArray[fnMaxTrack] = {0};  // Array for error for track distance from primary vertex in z-direction
-  float fTrackVertexDistanceXYArray[fnMaxTrack] = {0};      // Array for track distance from primary vertex in xy-direction
-  float fTrackVertexDistanceXYErrorArray[fnMaxTrack] = {0}; // Array for error for track distance from primary vertex in xy-direction
-  float fTrackChi2Array[fnMaxTrack] = {0};                  // Array for track chi2 value from reconstruction fit
-  UChar_t fnTrackDegreesOfFreedomArray[fnMaxTrack] = {0};   // Array for number of degrees of freedom in reconstruction fit
-  UChar_t fnHitsTrackerLayerArray[fnMaxTrack] = {0};        // Array for number of hits in tracker layers
-  UChar_t fnHitsTrackArray[fnMaxTrack] = {0};               // Array for number of hits for the track
-  float fTrackEnergyEcalArray[fnMaxTrack] = {0};            // Array for track energy in ECal
-  float fTrackEnergyHcalArray[fnMaxTrack] = {0};            // Array for track energy in HCal
+  Float_t fTrackPtArray[fnMaxTrack] = {0};                    // Array for track pT:s
+  Float_t fTrackPtErrorArray[fnMaxTrack] = {0};               // Array for track pT errors
+  Float_t fTrackPhiArray[fnMaxTrack] = {0};                   // Array for track phis
+  Float_t fTrackEtaArray[fnMaxTrack] = {0};                   // Array for track etas
+  Int_t fnTracks;                                             // Number of tracks
+  Bool_t fHighPurityTrackArray[fnMaxTrack] = {0};             // Array for the high purity of tracks
+  Float_t fTrackVertexDistanceZArray[fnMaxTrack] = {0};       // Array for track distance from primary vertex in z-direction
+  Float_t fTrackVertexDistanceZErrorArray[fnMaxTrack] = {0};  // Array for error for track distance from primary vertex in z-direction
+  Float_t fTrackVertexDistanceXYArray[fnMaxTrack] = {0};      // Array for track distance from primary vertex in xy-direction
+  Float_t fTrackVertexDistanceXYErrorArray[fnMaxTrack] = {0}; // Array for error for track distance from primary vertex in xy-direction
+  Float_t fTrackChi2Array[fnMaxTrack] = {0};                  // Array for track chi2 value from reconstruction fit
+  UChar_t fnTrackDegreesOfFreedomArray[fnMaxTrack] = {0};     // Array for number of degrees of freedom in reconstruction fit
+  UChar_t fnHitsTrackerLayerArray[fnMaxTrack] = {0};          // Array for number of hits in tracker layers
+  UChar_t fnHitsTrackArray[fnMaxTrack] = {0};                 // Array for number of hits for the track
+  Float_t fTrackEnergyEcalArray[fnMaxTrack] = {0};            // Array for track energy in ECal
+  Float_t fTrackEnergyHcalArray[fnMaxTrack] = {0};            // Array for track energy in HCal
   
 };
 

@@ -79,9 +79,9 @@ ForestReader::ForestReader() :
  * Custom constructor
  *
  *  Arguments:
- *   int dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
+ *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  */
-ForestReader::ForestReader(int dataType) :
+ForestReader::ForestReader(Int_t dataType) :
   fDataType(0),
   fHeavyIonTree(0),
   fJetTree(0),
@@ -203,7 +203,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fnTracks(in.fnTracks)
 {
   // Copy constructor
-  for(int i = 0; i < fnMaxJet; i++){
+  for(Int_t i = 0; i < fnMaxJet; i++){
     fJetPtArray[i] = in.fJetPtArray[i];
     fJetPhiArray[i] = in.fJetPhiArray[i];
     fJetEtaArray[i] = in.fJetEtaArray[i];
@@ -211,7 +211,7 @@ ForestReader::ForestReader(const ForestReader& in) :
     fJetMaxTrackPtArray[i] = in.fJetMaxTrackPtArray[i];
   }
   
-  for(int i = 0; i < fnMaxTrack; i++){
+  for(Int_t i = 0; i < fnMaxTrack; i++){
     fTrackPtArray[i] = in.fTrackPtArray[i];
     fTrackPtErrorArray[i] = in.fTrackPtErrorArray[i];
     fTrackPhiArray[i] = in.fTrackPhiArray[i];
@@ -283,7 +283,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fHBHENoiseFilterBit = in.fHBHENoiseFilterBit;
   fnTracks = in.fnTracks;
   
-  for(int i = 0; i < fnMaxJet; i++){
+  for(Int_t i = 0; i < fnMaxJet; i++){
     fJetPtArray[i] = in.fJetPtArray[i];
     fJetPhiArray[i] = in.fJetPhiArray[i];
     fJetEtaArray[i] = in.fJetEtaArray[i];
@@ -291,7 +291,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
     fJetMaxTrackPtArray[i] = in.fJetMaxTrackPtArray[i];
   }
   
-  for(int i = 0; i < fnMaxTrack; i++){
+  for(Int_t i = 0; i < fnMaxTrack; i++){
     fTrackPtArray[i] = in.fTrackPtArray[i];
     fTrackPtErrorArray[i] = in.fTrackPtErrorArray[i];
     fTrackPhiArray[i] = in.fTrackPhiArray[i];
@@ -322,7 +322,7 @@ ForestReader::~ForestReader(){
 /*
  * Setter for fDataType
  */
-void ForestReader::SetDataType(int dataType){
+void ForestReader::SetDataType(Int_t dataType){
   
   //Sanity check for given data type
   if(dataType < 0 || dataType > knDataTypes-1){
@@ -443,7 +443,7 @@ void ForestReader::ReadForestFromFile(TFile *inputFile){
 /*
  * Load an event to memory
  */
-void ForestReader::GetEvent(int nEvent) const{
+void ForestReader::GetEvent(Int_t nEvent) const{
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
   fHltTree->GetEntry(nEvent);
@@ -452,157 +452,157 @@ void ForestReader::GetEvent(int nEvent) const{
 }
 
 // Getter for number of events in the tree
-int ForestReader::GetNEvents() const{
+Int_t ForestReader::GetNEvents() const{
   return fJetPtBranch->GetEntries();
 }
 
 // Getter for jet pT
-float ForestReader::GetJetPt(int iJet) const{
+Float_t ForestReader::GetJetPt(Int_t iJet) const{
   return fJetPtArray[iJet];
 }
 
 // Getter for jet phi
-float ForestReader::GetJetPhi(int iJet) const{
+Float_t ForestReader::GetJetPhi(Int_t iJet) const{
   return fJetPhiArray[iJet];
 }
 
 // Getter for jet eta
-float ForestReader::GetJetEta(int iJet) const{
+Float_t ForestReader::GetJetEta(Int_t iJet) const{
   return fJetEtaArray[iJet];
 }
 
 // Getter for number of jets in an event
-int ForestReader::GetNJets() const{
+Int_t ForestReader::GetNJets() const{
   return fnJets;
 }
 
 // Getter for jet raw pT
-float ForestReader::GetJetRawPt(int iJet) const{
+Float_t ForestReader::GetJetRawPt(Int_t iJet) const{
   return fJetRawPtArray[iJet];
 }
 
 // Getter for maximum track pT inside a jet
-float ForestReader::GetJetMaxTrackPt(int iJet) const{
+Float_t ForestReader::GetJetMaxTrackPt(Int_t iJet) const{
   return fJetMaxTrackPtArray[iJet];
 }
 
 // Getter for vertex z position
-float ForestReader::GetVz() const{
+Float_t ForestReader::GetVz() const{
   return fVertexZ;
 }
 
 // Getter for centrality. CMS has integer centrality bins from 0 to 200, thus division by 2.
-float ForestReader::GetCentrality() const{
+Float_t ForestReader::GetCentrality() const{
   return fHiBin/2.0;
 }
 
 // Getter for hiBin. Return 1 for negative values (for easier handling of tracking efficiency correction)
-int ForestReader::GetHiBin() const{
+Int_t ForestReader::GetHiBin() const{
   if(fHiBin < 0) return 1;
   return fHiBin;
 }
 
 // Getter for calorimeter jet filter bit. Always 1 for MC (set in the initializer).
-int ForestReader::GetCaloJetFilterBit() const{
+Int_t ForestReader::GetCaloJetFilterBit() const{
   return fCaloJetFilterBit;
 }
 
 // Getter for primary vertex filter bit. Always 1 for MC (set in the initializer).
-int ForestReader::GetPrimaryVertexFilterBit() const{
+Int_t ForestReader::GetPrimaryVertexFilterBit() const{
   return fPrimaryVertexFilterBit;
 }
 
 // Getter for beam scraping filter bit. Always 1 for MC and PbPb (set in the initializer).
-int ForestReader::GetBeamScrapingFilterBit() const{
+Int_t ForestReader::GetBeamScrapingFilterBit() const{
   return fBeamScrapingFilterBit;
 }
 
 // Getter for HB/HE noisr filter bit. Always 1 for MC (set in the initializer).
-int ForestReader::GetHBHENoiseFilterBit() const{
+Int_t ForestReader::GetHBHENoiseFilterBit() const{
   return fHBHENoiseFilterBit;
 }
 
 // Getter for HB/HE noisr filter bit. Always 1 for MC and pp (set in the initializer).
-int ForestReader::GetCollisionEventSelectionFilterBit() const{
+Int_t ForestReader::GetCollisionEventSelectionFilterBit() const{
   return fCollisionEventSelectionFilterBit;
 }
 
 // Getter for track pT
-float ForestReader::GetTrackPt(int iTrack) const{
+Float_t ForestReader::GetTrackPt(Int_t iTrack) const{
   return fTrackPtArray[iTrack];
 }
 
 // Getter for track pT error
-float ForestReader::GetTrackPtError(int iTrack) const{
+Float_t ForestReader::GetTrackPtError(Int_t iTrack) const{
   return fTrackPtErrorArray[iTrack];
 }
 
 // Getter for track phi
-float ForestReader::GetTrackPhi(int iTrack) const{
+Float_t ForestReader::GetTrackPhi(Int_t iTrack) const{
   return fTrackPhiArray[iTrack];
 }
 
 // Getter for track eta
-float ForestReader::GetTrackEta(int iTrack) const{
+Float_t ForestReader::GetTrackEta(Int_t iTrack) const{
   return fTrackEtaArray[iTrack];
 }
 
 // Getter for number of tracks in an event
-int ForestReader::GetNTracks() const{
+Int_t ForestReader::GetNTracks() const{
   return fnTracks;
 }
 
 // Getter for high purity of the track
-bool ForestReader::GetTrackHighPurity(int iTrack) const{
+bool ForestReader::GetTrackHighPurity(Int_t iTrack) const{
   return fHighPurityTrackArray[iTrack];
 }
 
 // Getter for track distance from primary vertex in z-direction
-float ForestReader::GetTrackVertexDistanceZ(int iTrack) const{
+Float_t ForestReader::GetTrackVertexDistanceZ(Int_t iTrack) const{
   return fTrackVertexDistanceZArray[iTrack];
 }
 
 // Getter for error of track distance from primary vertex in z-direction
-float ForestReader::GetTrackVertexDistanceZError(int iTrack) const{
+Float_t ForestReader::GetTrackVertexDistanceZError(Int_t iTrack) const{
   return fTrackVertexDistanceZErrorArray[iTrack];
 }
 
 // Getter for track distance from primary vertex in xy-direction
-float ForestReader::GetTrackVertexDistanceXY(int iTrack) const{
+Float_t ForestReader::GetTrackVertexDistanceXY(Int_t iTrack) const{
   return fTrackVertexDistanceXYArray[iTrack];
 }
 
 // Getter for error of track distance from primary vertex in xy-direction
-float ForestReader::GetTrackVertexDistanceXYError(int iTrack) const{
+Float_t ForestReader::GetTrackVertexDistanceXYError(Int_t iTrack) const{
   return fTrackVertexDistanceXYErrorArray[iTrack];
 }
 
 // Getter for track chi2 value from reconstruction fit
-float ForestReader::GetTrackChi2(int iTrack) const{
+Float_t ForestReader::GetTrackChi2(Int_t iTrack) const{
   return fTrackChi2Array[iTrack];
 }
 
 // Getter for number of degrees of freedom in reconstruction fit
-int ForestReader::GetNTrackDegreesOfFreedom(int iTrack) const{
+UChar_t ForestReader::GetNTrackDegreesOfFreedom(Int_t iTrack) const{
   return fnTrackDegreesOfFreedomArray[iTrack];
 }
 
 // Getter for number of hits in tracker layers
-int ForestReader::GetNHitsTrackerLayer(int iTrack) const{
+UChar_t ForestReader::GetNHitsTrackerLayer(Int_t iTrack) const{
   return fnHitsTrackerLayerArray[iTrack];
 }
 
 // Getter for number of hits for the track
-int ForestReader::GetNHitsTrack(int iTrack) const{
+UChar_t ForestReader::GetNHitsTrack(Int_t iTrack) const{
   return fnHitsTrackArray[iTrack];
 }
 
 // Getter for track energy in ECal
-float ForestReader::GetTrackEnergyEcal(int iTrack) const{
+Float_t ForestReader::GetTrackEnergyEcal(Int_t iTrack) const{
   return fTrackEnergyEcalArray[iTrack];
 }
 
 // Getter for track energy in HCal
-float ForestReader::GetTrackEnergyHcal(int iTrack) const{
+Float_t ForestReader::GetTrackEnergyHcal(Int_t iTrack) const{
   return fTrackEnergyHcalArray[iTrack];
 }

@@ -37,7 +37,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fHistograms->CreateHistograms();
   
   // Find the correct folder for track correction tables based on data type
-  int dataType = fCard->Get("DataType");
+  Int_t dataType = fCard->Get("DataType");
   if(dataType == ForestReader::kPp || dataType == ForestReader::kPpMC || dataType == ForestReader::kLocalTest){
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
   } else if (dataType == ForestReader::kPbPb || dataType == ForestReader::kPbPbMC){
@@ -96,82 +96,82 @@ void DijetAnalyzer::RunAnalysis(){
   //        Event selection cuts
   //****************************************
   
-  const double vzCut = fCard->Get("ZVertexCut");  // Event cut vor the z-posiiton of the primary vertex
+  const Double_t vzCut = fCard->Get("ZVertexCut");  // Event cut vor the z-posiiton of the primary vertex
   
   //****************************************
   //        Dijet selection cuts
   //****************************************
   
-  const double jetEtaCut = fCard->Get("JetEtaCut");           // Eta cut around midrapidity
-  const double jetSearchEtaCut = fCard->Get("SearchEtaCut");  // Eta cut when searching for a dijet
-  const double jetMaximumPtCut = fCard->Get("MaxPtCut");      // Maximum pT accepted for leading jet (and tracks)
-  const double leadingJetMinPtCut = fCard->Get("MinPtCut");   // Minimum pT cut for leading jet
-  const double subleadingJetMinPtCut = fCard->Get("SubleadingPtCut"); // Minimum pT cut for subleading jet
-  const double deltaPhiCut = fCard->Get("DeltaPhiCut");       // DeltaPhi cut for the dijet system
-  const double minimumMaxTrackPtFraction = fCard->Get("MinMaxTrackPtFraction");  // Cut for jets consisting only from soft particles
-  const double maximumMaxTrackPtFraction = fCard->Get("MaxMaxTrackPtFraction");  // Cut for jets consisting only from one high pT particle
+  const Double_t jetEtaCut = fCard->Get("JetEtaCut");           // Eta cut around midrapidity
+  const Double_t jetSearchEtaCut = fCard->Get("SearchEtaCut");  // Eta cut when searching for a dijet
+  const Double_t jetMaximumPtCut = fCard->Get("MaxPtCut");      // Maximum pT accepted for leading jet (and tracks)
+  const Double_t leadingJetMinPtCut = fCard->Get("MinPtCut");   // Minimum pT cut for leading jet
+  const Double_t subleadingJetMinPtCut = fCard->Get("SubleadingPtCut"); // Minimum pT cut for subleading jet
+  const Double_t deltaPhiCut = fCard->Get("DeltaPhiCut");       // DeltaPhi cut for the dijet system
+  const Double_t minimumMaxTrackPtFraction = fCard->Get("MinMaxTrackPtFraction");  // Cut for jets consisting only from soft particles
+  const Double_t maximumMaxTrackPtFraction = fCard->Get("MaxMaxTrackPtFraction");  // Cut for jets consisting only from one high pT particle
   
   //****************************************
   //        Traxk selection cuts
   //****************************************
   
-  const double trackEtaCut = fCard->Get("TrackEtaCut");     // Eta cut around midrapidity
-  const double trackMinPtCut = fCard->Get("MinTrackPtCut"); // Minimum pT cut
-  const double maxTrackPtRelativeError = fCard->Get("MaxTrackPtRelativeError");   // Maximum relative error for pT
-  const double maxTrackDistanceToVertex = fCard->Get("VertexMaxDistance");        // Maximum distance to primary vetrex
-  const double calorimeterSignalLimitPt = fCard->Get("CalorimeterSignalLimitPt"); // Require signal in calorimeters for track above this pT
-  const double highPtEtFraction = fCard->Get("HighPtEtFraction"); // For high pT tracks, minimum required Et as a fraction of track pT
-  const double chi2QualityCut = fCard->Get("Chi2QualityCut");     // Quality cut for track reconstruction
-  const double minimumTrackHits = fCard->Get("MinimumTrackHits"); // Quality cut for track hits
+  const Double_t trackEtaCut = fCard->Get("TrackEtaCut");     // Eta cut around midrapidity
+  const Double_t trackMinPtCut = fCard->Get("MinTrackPtCut"); // Minimum pT cut
+  const Double_t maxTrackPtRelativeError = fCard->Get("MaxTrackPtRelativeError");   // Maximum relative error for pT
+  const Double_t maxTrackDistanceToVertex = fCard->Get("VertexMaxDistance");        // Maximum distance to primary vetrex
+  const Double_t calorimeterSignalLimitPt = fCard->Get("CalorimeterSignalLimitPt"); // Require signal in calorimeters for track above this pT
+  const Double_t highPtEtFraction = fCard->Get("HighPtEtFraction"); // For high pT tracks, minimum required Et as a fraction of track pT
+  const Double_t chi2QualityCut = fCard->Get("Chi2QualityCut");     // Quality cut for track reconstruction
+  const Double_t minimumTrackHits = fCard->Get("MinimumTrackHits"); // Quality cut for track hits
   
   //****************************************
   //            All cuts set!
   //****************************************
 
   // Event variables
-  int nEvents = 0;            // Number of events
-  bool dijetFound = false;    // Is there a dijet in the event?
-  bool twoJetsFound = false;  // Are there two jets in the event?
-  double vz = 0;              // Vertex z-position
-  double centrality = 0;      // Event centrality
-  int hiBin = 0;              // CMS hiBin (centrality * 2)
+  Int_t nEvents = 0;            // Number of events
+  Bool_t dijetFound = false;    // Is there a dijet in the event?
+  Bool_t twoJetsFound = false;  // Are there two jets in the event?
+  Double_t vz = 0;               // Vertex z-position
+  Double_t centrality = 0;       // Event centrality
+  Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
   
   // Variables for jets
-  double dijetAsymmetry = -99;  // Dijet asymmetry
-  double leadingPt = 0;         // Leading jet pT
-  double subleadingPt = 0;      // Subleading jet pT
-  int secondHighestIndex = -1;  // Index of the subleading jet in the event
-  int highestIndex = -1;        // Index of the leading jet in the event
-  double jetPt = 0;             // pT of the i:th jet in the event
-  double dphi = 0;              // deltaPhi for the considered jets
+  Double_t dijetAsymmetry = -99;   // Dijet asymmetry
+  Double_t leadingPt = 0;          // Leading jet pT
+  Double_t subleadingPt = 0;       // Subleading jet pT
+  Int_t secondHighestIndex = -1;  // Index of the subleading jet in the event
+  Int_t highestIndex = -1;        // Index of the leading jet in the event
+  Double_t jetPt = 0;              // pT of the i:th jet in the event
+  Double_t dphi = 0;               // deltaPhi for the considered jets
   
   // Variables for tracks
-  double trackPt;       // Track pT
-  double trackEta;      // Track eta
-  double trackPhi;      // Track phi
-  double trackR;        // Distance of a track to the current jet
-  double trackRMin;     // Minimum distance to a jet
-  double trackEt;       // Track transverse energy
-  double trackEfficiencyCorrection;  // Efficiency correction for the track
-  double deltaPhiTrackLeadingJet;    // DeltaPhi between track and leading jet
-  double deltaEtaTrackLeadingJet;    // DeltaEta between track and leading jet
-  double deltaPhiTrackSubleadingJet; // DeltaPhi between track and subleading jet
-  double deltaEtaTrackSubleadingJet; // DeltaEta between track and subleading jet
+  Double_t trackPt;       // Track pT
+  Double_t trackEta;      // Track eta
+  Double_t trackPhi;      // Track phi
+  Double_t trackR;        // Distance of a track to the current jet
+  Double_t trackRMin;     // Minimum distance to a jet
+  Double_t trackEt;       // Track transverse energy
+  Double_t trackEfficiencyCorrection;  // Efficiency correction for the track
+  Double_t deltaPhiTrackLeadingJet;    // DeltaPhi between track and leading jet
+  Double_t deltaEtaTrackLeadingJet;    // DeltaEta between track and leading jet
+  Double_t deltaPhiTrackSubleadingJet; // DeltaPhi between track and subleading jet
+  Double_t deltaEtaTrackSubleadingJet; // DeltaEta between track and subleading jet
   
   // File name helper variables
   TString currentFile;
   
   // Fillers for THnSparses
-  double fillerAnyJet[4];
-  double fillerDijet[9];
-  double fillerTrack[9];
-  double fillerTrackPtWeight[6];
+  Double_t fillerAnyJet[4];
+  Double_t fillerDijet[9];
+  Double_t fillerTrack[9];
+  Double_t fillerTrackPtWeight[6];
   
   // Amount of debugging messages
-  int debugLevel = fCard->Get("DebugLevel");
+  Int_t debugLevel = fCard->Get("DebugLevel");
   
   // Loop over files
-  for(int iFile = 0; iFile < (int) fFileNames.size(); iFile++) {
+  for(Int_t iFile = 0; iFile < (Int_t) fFileNames.size(); iFile++) {
     
     // Find the filename
     currentFile = fFileNames.at(iFile);
@@ -199,7 +199,7 @@ void DijetAnalyzer::RunAnalysis(){
     nEvents = treeReader->GetNEvents();
     
     // Event loop
-    for(int iEvent = 0; iEvent < nEvents; iEvent++){
+    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
       
       // Read the event to memory
       treeReader->GetEvent(iEvent);
@@ -249,7 +249,7 @@ void DijetAnalyzer::RunAnalysis(){
       subleadingPt = 0;
       
       // Search for leading jet and fill histograms for all jets within the eta vut
-      for(int jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
+      for(Int_t jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
         jetPt = treeReader->GetJetPt(jetIndex);
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= jetSearchEtaCut) continue; // Cut for search eta range
         if(minimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
@@ -275,7 +275,7 @@ void DijetAnalyzer::RunAnalysis(){
       } // End of search for leading jet loop
       
       // Search for subleading jet
-      for(int jetIndex = 0 ; jetIndex < treeReader->GetNJets(); jetIndex++){
+      for(Int_t jetIndex = 0 ; jetIndex < treeReader->GetNJets(); jetIndex++){
         jetPt = treeReader->GetJetPt(jetIndex);
         if(jetIndex == highestIndex) continue; // Do not consider leading particle
         if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= jetSearchEtaCut) continue; // Cut for search eta range
@@ -328,8 +328,8 @@ void DijetAnalyzer::RunAnalysis(){
         fHistograms->fhDijet->Fill(fillerDijet);                    // Fill the data point to dijet histogram
         
         // Correlate jets with tracks in dijet events
-        int nTracks = treeReader->GetNTracks();
-        for(int iTrack = 0; iTrack <nTracks; iTrack++){
+        Int_t nTracks = treeReader->GetNTracks();
+        for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
           trackPt = treeReader->GetTrackPt(iTrack);
           trackPhi = treeReader->GetTrackPhi(iTrack);
           trackEta = treeReader->GetTrackEta(iTrack);
@@ -373,7 +373,7 @@ void DijetAnalyzer::RunAnalysis(){
           
           // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
           trackRMin = 666;   // Initialize the minimum distance to a jet to some very large value
-          for(int iJet = 0; iJet < treeReader->GetNJets(); iJet++){
+          for(Int_t iJet = 0; iJet < treeReader->GetNJets(); iJet++){
             
             // Require the same jet quality cuts as when searching for dijets
             if(TMath::Abs(treeReader->GetJetEta(iJet)) >= jetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets

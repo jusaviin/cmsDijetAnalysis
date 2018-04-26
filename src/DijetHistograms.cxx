@@ -116,72 +116,72 @@ void DijetHistograms::CreateHistograms(){
   // ======== Common binning information for histograms =========
   
   // Centrality
-  double minCentrality = -0.75;   // Minimum centrality bin, is negative since hiBin is -1 for pp
-  double maxCentrality = 100.25;  // Maximum centrality bin
-  int nCentralityBins = 202;      // Number of centrality bins
+  Double_t minCentrality = -0.75;   // Minimum centrality bin, is negative since hiBin is -1 for pp
+  Double_t maxCentrality = 100.25;  // Maximum centrality bin
+  Int_t nCentralityBins = 202;      // Number of centrality bins
   
   // Jet pT
-  double minPtJet = 0;     // Minimum jet pT
-  double maxPtJet = 300;   // Maximum jet pT
-  int nPtBinsJet = 150;    // Number of jet pT bins
+  Double_t minPtJet = 0;     // Minimum jet pT
+  Double_t maxPtJet = 300;   // Maximum jet pT
+  Int_t nPtBinsJet = 150;    // Number of jet pT bins
   
   //Track pT
-  double minPtTrack = 0;   // Minimum track pT
-  double maxPtTrack = 30;  // Maximum track pT   (Hallie's analysis = 20)
-  int nPtBinsTrack = 600;  // Number of track pT bins (Hallie's analysis = 500)
+  Double_t minPtTrack = 0;   // Minimum track pT
+  Double_t maxPtTrack = 30;  // Maximum track pT   (Hallie's analysis = 20)
+  Int_t nPtBinsTrack = 600;  // Number of track pT bins (Hallie's analysis = 500)
   
   // Phi
-  double minPhi = -TMath::Pi();  // Minimum phi
-  double maxPhi = TMath::Pi();   // Maximum phi
-  int nPhiBins = 72;             // Number of phi bins
+  Double_t minPhi = -TMath::Pi();  // Minimum phi
+  Double_t maxPhi = TMath::Pi();   // Maximum phi
+  Int_t nPhiBins = 72;             // Number of phi bins
   
   // Eta
-  double minEta = -2.5;    // Minimum eta (current eta cut for tracks = 2.4)
-  double maxEta = 2.5;     // Maximum eta (current eta cut for tracks = 2.4)
-  int nEtaBins = 50;       // Number of eta bins
+  Double_t minEta = -2.5;    // Minimum eta (current eta cut for tracks = 2.4)
+  Double_t maxEta = 2.5;     // Maximum eta (current eta cut for tracks = 2.4)
+  Int_t nEtaBins = 50;       // Number of eta bins
   
   // DeltaPhi in [0,pi]
-  double minDeltaPhi = 0;             // Minimum deltaPhi
-  double maxDeltaPhi = TMath::Pi();   // Maximum deltaPhi
-  int nDeltaPhiBins = 30;             // Number of deltaPhi bins
+  Double_t minDeltaPhi = 0;             // Minimum deltaPhi
+  Double_t maxDeltaPhi = TMath::Pi();   // Maximum deltaPhi
+  Int_t nDeltaPhiBins = 30;             // Number of deltaPhi bins
   
   // DeltaPhi in [-pi/2,3pi/2]
-  double minDeltaPhiTrack = -TMath::Pi()/2.0;    // Minimum deltaPhi for two dimensional plots
-  double maxDeltaPhiTrack = 3.0*TMath::Pi()/2.0; // Maximum deltaPhi for two dimensional plots
-  int nDeltaPhiBinsTrack = 60;                   // Number of deltaPhi bins for two dimensional plots
+  Double_t minDeltaPhiTrack = -TMath::Pi()/2.0;    // Minimum deltaPhi for two dimensional plots
+  Double_t maxDeltaPhiTrack = 3.0*TMath::Pi()/2.0; // Maximum deltaPhi for two dimensional plots
+  Int_t nDeltaPhiBinsTrack = 60;                   // Number of deltaPhi bins for two dimensional plots
   
   // DeltaEta
-  double minDeltaEta = -5.0;   // Minimum deltaEta
-  double maxDeltaEta = 5.0;    // Maximum deltaEta
-  int nDeltaEtaBins = 100;     // Number of deltaEta bins
+  Double_t minDeltaEta = -5.0;   // Minimum deltaEta
+  Double_t maxDeltaEta = 5.0;    // Maximum deltaEta
+  Int_t nDeltaEtaBins = 100;     // Number of deltaEta bins
   
   // Dijet asymmetry
-  double minAsymmetry = 0;     // Minimum asymmetry
-  double maxAsymmetry = 0.75;  // Maximum asymmetry
-  int nAsymmetryBins = 25;     // Number of asymmetry bins
+  Double_t minAsymmetry = 0;     // Minimum asymmetry
+  Double_t maxAsymmetry = 0.75;  // Maximum asymmetry
+  Int_t nAsymmetryBins = 25;     // Number of asymmetry bins
   
   // Vertex z-position
-  double minVz = -20;   // Minimum vz
-  double maxVz = 20;    // Maximum vz
-  int nVzBins = 80;     // Number of vz bins
+  Double_t minVz = -20;   // Minimum vz
+  Double_t maxVz = 20;    // Maximum vz
+  Int_t nVzBins = 80;     // Number of vz bins
   
   // Arrays for creating THnSparses
-  const int dimensionDijet = 9;
-  const int dimensionAnyJet = 4;
-  const int dimensionTrack = 9;
-  const int dimensionTrackPtWeight = 6;
-  int nBinsDijet[dimensionDijet];
-  int nBinsAnyjet[dimensionAnyJet];
-  int nBinsTrack[dimensionTrack];
-  int nBinsTrackPtWeight[dimensionTrackPtWeight];
-  double lowBinBorderDijet[dimensionDijet];
-  double lowBinBorderAnyJet[dimensionAnyJet];
-  double lowBinBorderTrack[dimensionTrack];
-  double lowBinBorderTrackPtWeight[dimensionTrackPtWeight];
-  double highBinBorderDijet[dimensionDijet];
-  double highBinBorderAnyJet[dimensionAnyJet];
-  double highBinBorderTrack[dimensionTrack];
-  double highBinBorderTrackPtWeight[dimensionTrackPtWeight];
+  const Int_t dimensionDijet = 9;
+  const Int_t dimensionAnyJet = 4;
+  const Int_t dimensionTrack = 9;
+  const Int_t dimensionTrackPtWeight = 6;
+  Int_t nBinsDijet[dimensionDijet];
+  Int_t nBinsAnyjet[dimensionAnyJet];
+  Int_t nBinsTrack[dimensionTrack];
+  Int_t nBinsTrackPtWeight[dimensionTrackPtWeight];
+  Double_t lowBinBorderDijet[dimensionDijet];
+  Double_t lowBinBorderAnyJet[dimensionAnyJet];
+  Double_t lowBinBorderTrack[dimensionTrack];
+  Double_t lowBinBorderTrackPtWeight[dimensionTrackPtWeight];
+  Double_t highBinBorderDijet[dimensionDijet];
+  Double_t highBinBorderAnyJet[dimensionAnyJet];
+  Double_t highBinBorderTrack[dimensionTrack];
+  Double_t highBinBorderTrackPtWeight[dimensionTrackPtWeight];
   
   // ======== Plain TH1 histograms ========
   
@@ -191,12 +191,12 @@ void DijetHistograms::CreateHistograms(){
   fhCentrality = new TH1D("centrality","centrality",nCentralityBins,minCentrality,maxCentrality); fhCentrality->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
-  for(int i = 0; i < knEventTypes; i++){
+  for(Int_t i = 0; i < knEventTypes; i++){
     fhEvents->GetXaxis()->SetBinLabel(i+1,kEventTypeStrings[i]);
   }
   
   // For the track cut histogram, label each bin corresponding to a track cut
-  for(int i = 0; i < knTrackCuts; i++){
+  for(Int_t i = 0; i < knTrackCuts; i++){
     fhTrackCuts->GetXaxis()->SetBinLabel(i+1,kTrackCutStrings[i]);
   }
   
