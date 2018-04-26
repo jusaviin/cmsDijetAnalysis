@@ -89,9 +89,6 @@ DijetAnalyzer::~DijetAnalyzer(){
  */
 void DijetAnalyzer::RunAnalysis(){
   
-  TFile *inputFile;
-  ForestReader *treeReader = new ForestReader(fCard->Get("DataType"));
-  
   //****************************************
   //        Event selection cuts
   //****************************************
@@ -177,17 +174,19 @@ void DijetAnalyzer::RunAnalysis(){
     currentFile = fFileNames.at(iFile);
     
     // Open the file and check that everything goes fine
-    inputFile = TFile::Open(currentFile);
+    TFile *inputFile = new TFile(currentFile); // Create file with new so we can delete it at the end of file loop
 
     // Check that the file exists
     if(!inputFile){
       cout << "Warning! Could not open the file: " << currentFile.Data() << endl;
+      delete inputFile;
       continue;
     }
     
     // Check that the file is not zombie
     if(inputFile->IsZombie()){
       cout << "Warning! The following file is a zombie: " << currentFile.Data() << endl;
+      delete inputFile;
       continue;
     }
     
@@ -195,7 +194,8 @@ void DijetAnalyzer::RunAnalysis(){
     if(debugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
     
     // If file is good, read the forest from the file
-    treeReader->ReadForestFromFile(inputFile);
+    ForestReader *treeReader = new ForestReader(fCard->Get("DataType")); // Creating this with new and deleting at the end of file loop makes memory leak slower, but does not prevent it completely
+    treeReader->ReadForestFromFile(inputFile);  // There seems to be a memory leak here...
     nEvents = treeReader->GetNEvents();
     
     // Event loop
@@ -441,10 +441,11 @@ void DijetAnalyzer::RunAnalysis(){
     
     // Close the input file after the event has been read
     inputFile->Close();
+    delete treeReader;
+    delete inputFile;
     
   } // File loop
   
-  delete treeReader;  // Delete the created tree reader after the analysis is done
 }
 
 /*
