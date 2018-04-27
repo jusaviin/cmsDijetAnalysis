@@ -25,7 +25,7 @@ class ForestReader{
   
 private:
   static const Int_t fnMaxJet = 60;        // Maximum number of jets in an event
-  static const Int_t fnMaxTrack = 11000;   // Maximum number of tracks in an event
+  static const Int_t fnMaxTrack = 15000;   // Maximum number of tracks in an event
   
 public:
   

@@ -51,7 +51,7 @@ TH1D* findHistogram(TFile *inputFile, const char *name, int lowBinIndex, int hig
  *  Arguments:
  *   TString inputFileName = File, from which the histograms are plotter
  */
-void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
+void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.root"){
   
   // Write the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -63,8 +63,11 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   bool drawDijetHistograms = false;
   bool drawJetPtHistograms = false;
   bool drawJetPhiHistograms = false;
-  bool drawJetEtaHistograms = false;
-  bool drawTwoDimensionalHistograms = true;
+  bool drawJetEtaHistograms = true;
+  bool drawTwoDimensionalJetHistograms = false;
+  bool drawTracks = false;
+  bool drawUncorrectedTracks = false;
+  bool drawTrackLeadingJetCorrelations = false;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -72,10 +75,15 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   // Logarithmic scale for pT distributions
   bool logPt = true;
   
-  // Define binning to project out from THnSparses. For pp centrality binning is automatically disabled.
+  // Define centrality binning to project out from THnSparses. For pp centrality binning is automatically disabled.
   const int nCentralityBins = 4;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};
   int centralityBinIndices[nCentralityBins+1] = {0};
+  
+  // Define track pT binning to project out from THnSparses.
+//  const int nTrackPtBins = 1;
+//  double trackPtBinBorders[nCentralityBins+1] = {0,30};
+//  int trackPtBinIndices[nCentralityBins+1] = {0};
   
   // Choose which centrality bins to draw
   int firstDrawnCentralityBin = 0;
@@ -119,26 +127,45 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
     centralityBinIndices[iCentrality] = hCentrality->GetXaxis()->FindBin(centralityBinBorders[iCentrality]);
   }
   
-  // Histograms for jets, including dijets
+  // Histograms for leading jets
+  TH1D *hLeadingJetPt[nCentralityBins];               // Leading jet pT histograms
+  TH1D *hLeadingJetPhi[nCentralityBins];              // Leading jet phi histograms
+  TH1D *hLeadingJetEta[nCentralityBins];              // Leading jet eta histograms
+  TH2D *hLeadingJetEtaPhi[nCentralityBins];           // 2D eta-phi histogram for leading jet
+
+  // Histograms for subleading jets
+  TH1D *hSubleadingJetPt[nCentralityBins];            // Subleading jet pT histograms
+  TH1D *hSubleadingJetPhi[nCentralityBins];           // Subleading jet phi histograms
+  TH1D *hSubleadingJetEta[nCentralityBins];           // Subleading jet eta histograms
+  TH2D *hSubleadingJetEtaPhi[nCentralityBins];        // 2D eta-phi histogram for subleading jet
+
+  // Histograms for all jets
+  TH1D *hAnyJetPt[nCentralityBins] ;                  // Any jet pT histograms
+  TH1D *hAnyJetPhi[nCentralityBins];                  // Any jet phi histograms
+  TH1D *hAnyJetEta[nCentralityBins];                  // Any jet eta histograms
+  TH2D *hAnyJetEtaPhi[nCentralityBins];               // 2D eta-phi histogram for all jets
+  
+  // Histograms for dijets
   TH1D *hDijetDphi[nCentralityBins];                  // Dijet deltaPhi histograms
   TH1D *hDijetAsymmetry[nCentralityBins];             // Dijet asymmetry histograms
-  TH1D *hLeadingJetPt[nCentralityBins];               // Leading jet pT histograms
-  TH1D *hSubleadingJetPt[nCentralityBins];            // Subleading jet pT histograms
-  TH1D *hAnyJetPt[nCentralityBins] ;                  // Any jet pT histograms
-  TH1D *hLeadingJetPhi[nCentralityBins];              // Leading jet phi histograms
-  TH1D *hSubleadingJetPhi[nCentralityBins];           // Subleading jet phi histograms
-  TH1D *hAnyJetPhi[nCentralityBins];                  // Any jet phi histograms
-  TH1D *hLeadingJetEta[nCentralityBins];              // Leading jet eta histograms
-  TH1D *hSubleadingJetEta[nCentralityBins];           // Subleading jet eta histograms
-  TH1D *hAnyJetEta[nCentralityBins];                  // Any jet eta histograms
-  TH2D *hLeadingJetEtaPhi[nCentralityBins];           // 2D eta-phi histogram for leading jet
-  TH2D *hSubleadingJetEtaPhi[nCentralityBins];        // 2D eta-phi histogram for subleading jet
-  TH2D *hAnyJetEtaPhi[nCentralityBins];               // 2D eta-phi histogram for all jets
   TH2D *hDijetLeadingVsSubleadingPt[nCentralityBins]; // Leading versus subleading jet pT 2D histograms
   
-  // Histograms for tracks
+  // Histograms for tracks in dijet events
+  TH1D *hTrackPt[nCentralityBins] ;                   // Any jet pT histograms
+  TH1D *hTrackPhi[nCentralityBins];                   // Any jet phi histograms
+  TH1D *hTrackEta[nCentralityBins];                   // Any jet eta histograms
+  TH2D *hTrackEtaPhi[nCentralityBins];                // 2D eta-phi histogram for all jets
   
-  // Histograms for jet-track correlations
+  // Histograms for uncorrected tracks in dijet events
+  TH1D *hTrackPtUncorrected[nCentralityBins] ;        // Any jet pT histograms
+  TH1D *hTrackPhiUncorrected[nCentralityBins];        // Any jet phi histograms
+  TH1D *hTrackEtaUncorrected[nCentralityBins];        // Any jet eta histograms
+  TH2D *hTrackEtaPhiUncorrected[nCentralityBins];     // 2D eta-phi histogram for all jets
+  
+  // Histograms for track-leading jet correlations
+  TH1D *hTrackLeadingJetDeltaPhi[nCentralityBins];         // DeltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaEta[nCentralityBins];         // DeltaEta between track and leading jet
+  TH2D *hTrackLeadingJetDeltaEtaDeltaPhi[nCentralityBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Project the desired centrality bins out from THnSparses
   int duplicateRemover = -1;
@@ -148,46 +175,13 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   /*
    *  Axis information for THnSparses in data files:
    *
-   *  Histogram name               Axis index                     Content of axis
-   * ----------------------------------------------------------------------------------------------
-   *         leadingJet              Axis 0                        Leading jet pT
-   *         leadingJet              Axis 1                        Leading jet phi
-   *         leadingJet              Axis 2                        Leading jet eta
-   *         leadingJet              Axis 3                        Dijet asymmetry
-   *         leadingJet              Axis 4                          Centrality
-   * ----------------------------------------------------------------------------------------------
-   *       subleadingJet             Axis 0                       Subleading jet pT
-   *       subleadingJet             Axis 1                       Subleading jet phi
-   *       subleadingJet             Axis 2                       Subleading jet eta
-   *       subleadingJet             Axis 3                        Dijet asymmetry
-   *       subleadingJet             Axis 4                          Centrality
-   * ----------------------------------------------------------------------------------------------
-   *           dijet                 Axis 0                        Leading jet pT
-   *           dijet                 Axis 1                       Subleading jet pT
-   *           dijet                 Axis 2                        Dijet deltaPhi
-   *           dijet                 Axis 3                        Dijet asymmetry
-   *           dijet                 Axis 4                          Centrality
+   *      Histogram name           Axis index                      Content of axis
    *-----------------------------------------------------------------------------------------------
-   *          anyJet                 Axis 0                          Any jet pT
-   *          anyJet                 Axis 1                          Any jet phi
-   *          anyJet                 Axis 2                          Any jet eta
-   *          anyJet                 Axis 3                          Centrality
+   
    *-----------------------------------------------------------------------------------------------
-   *           track                 Axis 0                           Track pT
-   *           track                 Axis 1                           Track phi
-   *           track                 Axis 2                           Track eta
-   *           track                 Axis 3                           Centrality
+   
    *-----------------------------------------------------------------------------------------------
-   *      trackUncorrected           Axis 0                      Uncorrected track pT
-   *      trackUncorrected           Axis 1                      Uncorrected track phi
-   *      trackUncorrected           Axis 2                      Uncorrected track eta
-   *      trackUncorrected           Axis 3                           Centrality
-   *-----------------------------------------------------------------------------------------------
-   *       trackLeadingJet           Axis 0                           Track pT
-   *       trackLeadingJet           Axis 1              DeltaPhi between track and leading jet
-   *       trackLeadingJet           Axis 2              DeltaEta between track and leading jet
-   *       trackLeadingJet           Axis 3                         Dijet asymmetry
-   *       trackLeadingJet           Axis 4                           Centrality
+   
    *-----------------------------------------------------------------------------------------------
    *  trackLeadingJetUncorrected     Axis 0                      Uncorrected track pT
    *  trackLeadingJetUncorrected     Axis 1        DeltaPhi between uncorrected track and leading jet
@@ -227,38 +221,131 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
     if(iCentralityBin == lastDrawnCentralityBin) duplicateRemover = 0;
     lowerCentralityBin = centralityBinIndices[iCentralityBin];
     higherCentralityBin = centralityBinIndices[iCentralityBin+1]+duplicateRemover;
-    
-    // Read the corresponding centrality bins from the file
-//    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijetDphi",lowerCentralityBin,higherCentralityBin,0,1);
-//    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijetAsymmetry",lowerCentralityBin,higherCentralityBin,0,1);
-//    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"leadingJetPt",lowerCentralityBin,higherCentralityBin,0,1);
-//    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"subleadingJetPt",lowerCentralityBin,higherCentralityBin,0,1);
-//    hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJetPt",lowerCentralityBin,higherCentralityBin,0,1);
-//    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"leadingJetPhi",lowerCentralityBin,higherCentralityBin,0,1);
-//    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"subleadingJetPhi",lowerCentralityBin,higherCentralityBin,0,1);
-//    hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJetPhi",lowerCentralityBin,higherCentralityBin,0,1);
-//    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"leadingJetEta",lowerCentralityBin,higherCentralityBin,0,1);
-//    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"subleadingJetEta",lowerCentralityBin,higherCentralityBin,0,1);
-//    hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJetEta",lowerCentralityBin,higherCentralityBin,0,1);
-//    hDijetAsymmetryVsDphi[iCentralityBin] = findHistogram2D(inputFile,"dijetAsymmetryVsDphi",lowerCentralityBin,higherCentralityBin,0,1,2);
-//    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijetLeadingSubleadingPt",lowerCentralityBin,higherCentralityBin,0,1,2);
- 
-    // Read histograms from file for all jets, including dijets
-    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,6,8);
-    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,7,8);
-    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,8);
-    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,3,8);
+
+    /*
+     * Read the histograms for leading jets
+     *
+     * THnSparse for leading jets:
+     *
+     *   Histogram name        Axis index       Content of axis
+     * ----------------------------------------------------------
+     *     leadingJet            Axis 0         Leading jet pT
+     *     leadingJet            Axis 1         Leading jet phi
+     *     leadingJet            Axis 2         Leading jet eta
+     *     leadingJet            Axis 3         Dijet asymmetry
+     *     leadingJet            Axis 4           Centrality
+     */
+    hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"leadingJet",lowerCentralityBin,higherCentralityBin,0,4);
+    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"leadingJet",lowerCentralityBin,higherCentralityBin,1,4);
+    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"leadingJet",lowerCentralityBin,higherCentralityBin,2,4);
+    hLeadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"leadingJet",lowerCentralityBin,higherCentralityBin,2,1,4);
+
+    /*
+     * Read the histograms for subleading jets
+     *
+     * THnSparse for subleading jets:
+     *
+     *   Histogram name        Axis index       Content of axis
+     * ----------------------------------------------------------
+     *    subleadingJet          Axis 0        Subleading jet pT
+     *    subleadingJet          Axis 1        Subleading jet phi
+     *    subleadingJet          Axis 2        Subleading jet eta
+     *    subleadingJet          Axis 3          Dijet asymmetry
+     *    subleadingJet          Axis 4            Centrality
+     */
+    hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"subleadingJet",lowerCentralityBin,higherCentralityBin,0,4);
+    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"subleadingJet",lowerCentralityBin,higherCentralityBin,1,4);
+    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"subleadingJet",lowerCentralityBin,higherCentralityBin,2,4);
+    hSubleadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"subleadingJet",lowerCentralityBin,higherCentralityBin,2,1,4);
+
+    /*
+     * Read the histograms for all jets
+     *
+     * THnSparse for all jets:
+     *
+     *   Histogram name        Axis index       Content of axis
+     * ----------------------------------------------------------
+     *       anyJet              Axis 0           Any jet pT
+     *       anyJet              Axis 1           Any jet phi
+     *       anyJet              Axis 2           Any jet eta
+     *       anyJet              Axis 3           Centrality
+     */
     hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,0,3);
-    hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,1,8);
-    hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,4,8);
     hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,1,3);
-    hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,2,8);
-    hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,5,8);
     hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,2,3);
-    hLeadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,2,1,8);
-    hSubleadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,5,4,8);
-    //hAnyJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"anyjet",lowerCentralityBin,higherCentralityBin,2,1,3);
-    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,3,8);
+    hAnyJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"anyJet",lowerCentralityBin,higherCentralityBin,2,1,3);
+    
+    /*
+     * Read the histograms for dijets
+     *
+     * THnSparse for dijets:
+     *
+     *   Histogram name        Axis index       Content of axis
+     * ----------------------------------------------------------
+     *        dijet              Axis 0         Leading jet pT
+     *        dijet              Axis 1        Subleading jet pT
+     *        dijet              Axis 2         Dijet deltaPhi
+     *        dijet              Axis 3         Dijet asymmetry
+     *        dijet              Axis 4           Centrality
+     */
+    hDijetLeadingVsSubleadingPt[iCentralityBin] = findHistogram2D(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,0,1,4);
+    hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,2,4);
+    hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijet",lowerCentralityBin,higherCentralityBin,3,4);
+    
+    /*
+     * Read the histograms for tracks
+     *
+     * THnSparse for track:
+     *
+     *   Histogram name        Axis index       Content of axis
+     * ----------------------------------------------------------
+     *        track              Axis 0            Track pT
+     *        track              Axis 1            Track phi
+     *        track              Axis 2            Track eta
+     *        track              Axis 3            Centrality
+     */
+    hTrackPt[iCentralityBin] = findHistogram(inputFile,"track",lowerCentralityBin,higherCentralityBin,0,3);
+    hTrackPhi[iCentralityBin] = findHistogram(inputFile,"track",lowerCentralityBin,higherCentralityBin,1,3);
+    hTrackEta[iCentralityBin] = findHistogram(inputFile,"track",lowerCentralityBin,higherCentralityBin,2,3);
+    hTrackEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"track",lowerCentralityBin,higherCentralityBin,2,1,3);
+    
+    /*
+     * Read the histograms for uncorrected tracks
+     *
+     * THnSparse for uncorrected jets:
+     *
+     *   Histogram name        Axis index       Content of axis
+     * ----------------------------------------------------------
+     *   trackUncorrected        Axis 0       Uncorrected track pT
+     *   trackUncorrected        Axis 1       Uncorrected track phi
+     *   trackUncorrected        Axis 2       Uncorrected track eta
+     *   trackUncorrected        Axis 3            Centrality
+     */
+    hTrackPtUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",lowerCentralityBin,higherCentralityBin,0,3);
+    hTrackPhiUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",lowerCentralityBin,higherCentralityBin,1,3);
+    hTrackEtaUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",lowerCentralityBin,higherCentralityBin,2,3);
+    hTrackEtaPhiUncorrected[iCentralityBin] = findHistogram2D(inputFile,"trackUncorrected",lowerCentralityBin,higherCentralityBin,2,1,3);
+    
+    // TODO: track pT binning for correlation histograms
+    
+    /*
+     * Read the histograms for track-leading jet correlations
+     *
+     * THnSparse for track-leading jet correlations:
+     *
+     *   Histogram name        Axis index             Content of axis
+     * ---------------------------------------------------------------------------
+     *   trackLeadingJet         Axis 0                   Track pT
+     *   trackLeadingJet         Axis 1     DeltaPhi between track and leading jet
+     *   trackLeadingJet         Axis 2     DeltaEta between track and leading jet
+     *   trackLeadingJet         Axis 3                Dijet asymmetry
+     *   trackLeadingJet         Axis 4                   Centrality
+     */
+    hTrackLeadingJetDeltaPhi[iCentralityBin] = findHistogram(inputFile,"trackLeadingJet",lowerCentralityBin,higherCentralityBin,1,4);
+    hTrackLeadingJetDeltaEta[iCentralityBin] = findHistogram(inputFile,"trackLeadingJet",lowerCentralityBin,higherCentralityBin,2,4);
+    hTrackLeadingJetDeltaEtaDeltaPhi[iCentralityBin] = findHistogram2D(inputFile,"trackLeadingJet",lowerCentralityBin,higherCentralityBin,1,2,4);
+
+
   }
   
   // ============ All the histograms loaded from the file ============
@@ -336,11 +423,10 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
       TString figName = Form("figures/centrality_%s",compactSystemAndEnergy.Data());
       gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
     }
-  }
+  } // Event information histograms
   
   for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
     
-    drawer->SetRightMargin(0.06);
     centralityString = Form("Cent: %.0f-%.0f%%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
     compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
     
@@ -376,11 +462,12 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
         if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
         gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
       }
-    }
+    } // Dijet histograms
     
     // Draw pT histograms for jets
     if(drawJetPtHistograms){
       
+      // Select logarithmic drawing for pT
       drawer->SetLogY(logPt);
       
       // === Leading jet pT ===
@@ -428,8 +515,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
         gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
       }
       
+      // Set linear drawing
       drawer->SetLogY(false);
-    }
+    } // Jet pT histograms
     
     // Draw phi histograms for jets
     if(drawJetPhiHistograms){
@@ -478,7 +566,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
         if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
         gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
       }
-    }
+    } // Jet phi histograms
     
     // Draw eta histograms for jets
     if(drawJetEtaHistograms){
@@ -527,12 +615,13 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
         if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
         gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
       }
-    }
+    } // Jet eta histograms
     
-    // Draw 2D histograms
-    drawer->SetRightMargin(0.1);
-    
-    if(drawTwoDimensionalHistograms){
+    // Draw 2D jet histograms
+    if(drawTwoDimensionalJetHistograms){
+      
+      // Change the right margin better suited for 2D-drawing
+      drawer->SetRightMargin(0.1);
       
       // === Leading jet eta vs. phi ===
       drawer->DrawHistogram(hLeadingJetEtaPhi[iCentrality],"Leading jet #eta","Leading jet #varphi"," ","colz");
@@ -565,19 +654,19 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
       }
       
       // === Any jet eta vs. phi ===
-//      drawer->DrawHistogram(hAnyJetEtaPhi[iCentrality],"Any jet #eta","Any jet #varphi"," ","colz");
-//      legend = new TLegend(0.17,0.75,0.37,0.9);
-//      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-//      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-//      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetEtaPhi[iCentrality],centralityString.Data(),"");
-//      legend->Draw();
-//      
-//      // Save the figures to file
-//      if(saveFigures){
-//        TString figName = Form("figures/subleadingJetEtaPhi_%s",compactSystemAndEnergy.Data());
-//        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
-//        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
-//      }
+      drawer->DrawHistogram(hAnyJetEtaPhi[iCentrality],"Any jet #eta","Any jet #varphi"," ","colz");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetEtaPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/subleadingJetEtaPhi_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
       
       // === Leading jet pT vs. subleading jet pT ===
       drawer->DrawHistogram(hDijetLeadingVsSubleadingPt[iCentrality],"Leading jet p_{T}","Subleading jet p_{T}"," ","colz");
@@ -593,6 +682,224 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
         if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
         gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
       }
-    }
-  }
+      
+      // Change right margin back to 1D-drawing
+      drawer->SetRightMargin(0.06);
+    } // 2D jet histograms
+    
+    // Draw track histograms in dijet events
+    if(drawTracks){
+      
+      // Select logarithmic drawing for pT
+      drawer->SetLogY(logPt);
+      
+      // === Track pT ===
+      drawer->DrawHistogram(hTrackPt[iCentrality],"Track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPt[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackPt_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Select linear drawing
+      drawer->SetLogY(false);
+      
+      // === Track phi ===
+      drawer->DrawHistogram(hTrackPhi[iCentrality],"Track #varphi","#frac{dN}{d#varphi}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackPhi_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // === Track eta ===
+      drawer->DrawHistogram(hTrackEta[iCentrality],"Track #eta","#frac{dN}{d#eta}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEta[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackEta_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Change the right margin better suited for 2D-drawing
+      drawer->SetRightMargin(0.1);
+      
+      // === Track eta-phi ===
+      drawer->DrawHistogram(hTrackEtaPhi[iCentrality],"Track #eta","Track #varphi"," ","colz");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackEtaPhi_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Change right margin back to 1D-drawing
+      drawer->SetRightMargin(0.06);
+      
+    } // Track histograms
+    
+    // Draw track histograms in dijet events
+    if(drawUncorrectedTracks){
+      
+      // Select logarithmic drawing for pT
+      drawer->SetLogY(logPt);
+      
+      // === Uncorrected track pT ===
+      drawer->DrawHistogram(hTrackPtUncorrected[iCentrality],"Uncorrected track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPtUncorrected[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+            
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackPtUncorrected_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Select linear drawing
+      drawer->SetLogY(false);
+      
+      // === Uncorrected track phi ===
+      drawer->DrawHistogram(hTrackPhiUncorrected[iCentrality],"Uncorrected track #varphi","#frac{dN}{d#varphi}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPhiUncorrected[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackPhiUncorrected_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // === Uncorrected track eta ===
+      drawer->DrawHistogram(hTrackEtaUncorrected[iCentrality],"Uncorrected track #eta","#frac{dN}{d#eta}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaUncorrected[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackEtaUncorrected_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Change the right margin better suited for 2D-drawing
+      drawer->SetRightMargin(0.1);
+      
+      // === Uncorrected track eta-phi ===
+      drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCentrality],"Uncorrected track #eta","Uncorrected track #varphi"," ","colz");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaPhiUncorrected[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackEtaPhiUncorrected_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Change right margin back to 1D-drawing
+      drawer->SetRightMargin(0.06);
+      
+    } // Uncorrected track histograms
+    
+    // Draw track-leading jet correlation histograms
+    if(drawTrackLeadingJetCorrelations){
+      
+      // === Track-leading jet deltaPhi ===
+      drawer->DrawHistogram(hTrackLeadingJetDeltaPhi[iCentrality],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackLeadingJetDeltaPhi_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Select linear drawing
+      drawer->SetLogY(false);
+      
+      // === Track phi ===
+      drawer->DrawHistogram(hTrackLeadingJetDeltaEta[iCentrality],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEta[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackLeadingJetDeltaEta_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Change the right margin better suited for 2D-drawing
+      drawer->SetRightMargin(0.1);
+      
+      // === Any jet eta vs. phi ===
+      drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhi[iCentrality],"#Delta#varphi","#Delta#eta"," ","lego2");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEtaDeltaPhi[iCentrality],centralityString.Data(),"");
+      legend->Draw();
+      
+      // Save the figures to file
+      if(saveFigures){
+        TString figName = Form("figures/trackLeadingJetDeltaEtaDeltaPhi_%s",compactSystemAndEnergy.Data());
+        if(collisionSystem.Contains("PbPb")) figName.Append(compactCentralityString);
+        gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+      }
+      
+      // Change right margin back to 1D-drawing
+      drawer->SetRightMargin(0.06);
+      
+    } // Uncorrected track histograms
+    
+  } // Centrality loop
+  
 }
