@@ -125,6 +125,10 @@ void DijetAnalyzer::RunAnalysis(){
   //            All cuts set!
   //****************************************
 
+  // Input file and forest reader for analysis
+  TFile *inputFile;
+  ForestReader *treeReader = new ForestReader(fCard->Get("DataType"));
+  
   // Event variables
   Int_t nEvents = 0;            // Number of events
   Bool_t dijetFound = false;    // Is there a dijet in the event?
@@ -172,19 +176,17 @@ void DijetAnalyzer::RunAnalysis(){
     currentFile = fFileNames.at(iFile);
     
     // Open the file and check that everything goes fine
-    TFile *inputFile = new TFile(currentFile); // Create file with new so we can delete it at the end of file loop
-
+    inputFile = TFile::Open(currentFile);
+    
     // Check that the file exists
     if(!inputFile){
       cout << "Warning! Could not open the file: " << currentFile.Data() << endl;
-      delete inputFile;
       continue;
     }
     
     // Check that the file is not zombie
     if(inputFile->IsZombie()){
       cout << "Warning! The following file is a zombie: " << currentFile.Data() << endl;
-      delete inputFile;
       continue;
     }
     
@@ -192,8 +194,8 @@ void DijetAnalyzer::RunAnalysis(){
     if(debugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
     
     // If file is good, read the forest from the file
-    ForestReader *treeReader = new ForestReader(fCard->Get("DataType")); // Creating this with new and deleting at the end of file loop makes memory leak slower, but does not prevent it completely
     treeReader->ReadForestFromFile(inputFile);  // There seems to be a memory leak here...
+    // TODO: Maybe one could try to use TTreeReader instead of setting branch addresse manually...
     nEvents = treeReader->GetNEvents();
     
     // Event loop
@@ -449,11 +451,11 @@ void DijetAnalyzer::RunAnalysis(){
     
     // Close the input file after the event has been read
     inputFile->Close();
-    delete treeReader;
-    delete inputFile;
     
   } // File loop
   
+  // When we are done, delete treeReader
+  delete treeReader;
 }
 
 /*

@@ -148,49 +148,76 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPbPb.root"){
   /*
    *  Axis information for THnSparses in data files:
    *
-   *  Histogram name     Axis index                     Content of axis
+   *  Histogram name               Axis index                     Content of axis
    * ----------------------------------------------------------------------------------------------
-   *      dijet            Axis 0                        Leading jet pT
-   *      dijet            Axis 1                        Leading jet phi
-   *      dijet            Axis 2                        Leading jet eta
-   *      dijet            Axis 3                       Subleading jet pT
-   *      dijet            Axis 4                       Subleading jet phi
-   *      dijet            Axis 5                       Subleading jet eta
-   *      dijet            Axis 6                        Dijet deltaPhi
-   *      dijet            Axis 7                        Dijet asymmetry
-   *      dijet            Axis 8                          Centrality
+   *         leadingJet              Axis 0                        Leading jet pT
+   *         leadingJet              Axis 1                        Leading jet phi
+   *         leadingJet              Axis 2                        Leading jet eta
+   *         leadingJet              Axis 3                        Dijet asymmetry
+   *         leadingJet              Axis 4                          Centrality
+   * ----------------------------------------------------------------------------------------------
+   *       subleadingJet             Axis 0                       Subleading jet pT
+   *       subleadingJet             Axis 1                       Subleading jet phi
+   *       subleadingJet             Axis 2                       Subleading jet eta
+   *       subleadingJet             Axis 3                        Dijet asymmetry
+   *       subleadingJet             Axis 4                          Centrality
+   * ----------------------------------------------------------------------------------------------
+   *           dijet                 Axis 0                        Leading jet pT
+   *           dijet                 Axis 1                       Subleading jet pT
+   *           dijet                 Axis 2                        Dijet deltaPhi
+   *           dijet                 Axis 3                        Dijet asymmetry
+   *           dijet                 Axis 4                          Centrality
    *-----------------------------------------------------------------------------------------------
-   *     anyJet            Axis 0                          Any jet pT
-   *     anyJet            Axis 1                          Any jet phi
-   *     anyJet            Axis 2                          Any jet eta
-   *     anyJet            Axis 3                          Centrality
+   *          anyJet                 Axis 0                          Any jet pT
+   *          anyJet                 Axis 1                          Any jet phi
+   *          anyJet                 Axis 2                          Any jet eta
+   *          anyJet                 Axis 3                          Centrality
    *-----------------------------------------------------------------------------------------------
-   *      track            Axis 0                           Track pT
-   *      track            Axis 1                           Track phi
-   *      track            Axis 2                           Track eta
-   *      track            Axis 3              DeltaPhi between track and leading jet
-   *      track            Axis 4              DeltaEta between track and leading jet
-   *      track            Axis 5            DeltaPhi between track and subleading jet
-   *      track            Axis 6            DeltaEta between track and subleading jet
-   *      track            Axis 7                         Dijet asymmetry
-   *      track            Axis 8                           Centrality
+   *           track                 Axis 0                           Track pT
+   *           track                 Axis 1                           Track phi
+   *           track                 Axis 2                           Track eta
+   *           track                 Axis 3                           Centrality
    *-----------------------------------------------------------------------------------------------
-   * trackUncorrected      Axis 0                      Uncorrected track pT
-   * trackUncorrected      Axis 1                      Uncorrected track phi
-   * trackUncorrected      Axis 2                      Uncorrected track eta
-   * trackUncorrected      Axis 3        DeltaPhi between uncorrected track and leading jet
-   * trackUncorrected      Axis 4        DeltaEta between uncorrected track and leading jet
-   * trackUncorrected      Axis 5       DeltaPhi between uncorrected track and subleading jet
-   * trackUncorrected      Axis 6       DeltaEta between uncorrected track and subleading jet
-   * trackUncorrected      Axis 7                         Dijet asymmetry
-   * trackUncorrected      Axis 8                           Centrality
+   *      trackUncorrected           Axis 0                      Uncorrected track pT
+   *      trackUncorrected           Axis 1                      Uncorrected track phi
+   *      trackUncorrected           Axis 2                      Uncorrected track eta
+   *      trackUncorrected           Axis 3                           Centrality
    *-----------------------------------------------------------------------------------------------
-   * trackPtWeighted       Axis 0        DeltaPhi between pT weighted track and leading jet
-   * trackPtWeighted       Axis 1        DeltaEta between pT weighted track and leading jet
-   * trackPtWeighted       Axis 2       DeltaPhi between pT weighted track and subleading jet
-   * trackPtWeighted       Axis 3       DeltaEta between pT weighted track and subleading jet
-   * trackPtWeighted       Axis 4                         Dijet asymmetry
-   * trackPtWeighted       Axis 5                           Centrality
+   *       trackLeadingJet           Axis 0                           Track pT
+   *       trackLeadingJet           Axis 1              DeltaPhi between track and leading jet
+   *       trackLeadingJet           Axis 2              DeltaEta between track and leading jet
+   *       trackLeadingJet           Axis 3                         Dijet asymmetry
+   *       trackLeadingJet           Axis 4                           Centrality
+   *-----------------------------------------------------------------------------------------------
+   *  trackLeadingJetUncorrected     Axis 0                      Uncorrected track pT
+   *  trackLeadingJetUncorrected     Axis 1        DeltaPhi between uncorrected track and leading jet
+   *  trackLeadingJetUncorrected     Axis 2        DeltaEta between uncorrected track and leading jet
+   *  trackLeadingJetUncorrected     Axis 3                         Dijet asymmetry
+   *  trackLeadingJetUncorrected     Axis 4                           Centrality
+   *-----------------------------------------------------------------------------------------------
+   *  trackLeadingJetPtWeighted      Axis 0                           Track pT
+   *  trackLeadingJetPtWeighted      Axis 1        DeltaPhi between pT weighted track and leading jet
+   *  trackLeadingJetPtWeighted      Axis 2        DeltaEta between pT weighted track and leading jet
+   *  trackLeadingJetPtWeighted      Axis 3                         Dijet asymmetry
+   *  trackLeadingJetPtWeighted      Axis 4                           Centrality
+   *-----------------------------------------------------------------------------------------------
+   *     trackSubleadingJet          Axis 0                           Track pT
+   *     trackSubleadingJet          Axis 1            DeltaPhi between track and subleading jet
+   *     trackSubleadingJet          Axis 2            DeltaEta between track and subleading jet
+   *     trackSubleadingJet          Axis 3                         Dijet asymmetry
+   *     trackSubleadingJet          Axis 4                           Centrality
+   *-----------------------------------------------------------------------------------------------
+   * trackSubleadingJetUncorrected   Axis 0                      Uncorrected track pT
+   * trackSubleadingJetUncorrected   Axis 1       DeltaPhi between uncorrected track and subleading jet
+   * trackSubleadingJetUncorrected   Axis 2       DeltaEta between uncorrected track and subleading jet
+   * trackSubleadingJetUncorrected   Axis 3                         Dijet asymmetry
+   * trackSubleadingJetUncorrected   Axis 4                           Centrality
+   *-----------------------------------------------------------------------------------------------
+   * trackSubleadingJetPtWeighted    Axis 0                           Track pT
+   * trackSubleadingJetPtWeighted    Axis 1       DeltaPhi between pT weighted track and subleading jet
+   * trackSubleadingJetPtWeighted    Axis 2       DeltaEta between pT weighted track and subleading jet
+   * trackSubleadingJetPtWeighted    Axis 3                         Dijet asymmetry
+   * trackSubleadingJetPtWeighted    Axis 4                           Centrality
    */
   
   // Load only the bins that are drawn
