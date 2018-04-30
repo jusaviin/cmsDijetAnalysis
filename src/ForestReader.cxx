@@ -374,6 +374,8 @@ void ForestReader::Initialize(){
     fCaloJetFilterBit = 1;  // No filter for Monte Carlo
   }
   
+  // TODO: ADD cuts for phfCoincFilter3 and pclusterCompatibilityFilter for HI collisions!!
+  
   // Connect the branches to the skim tree (different for pp and PbPb data, no connection for Monte Carlo)
   if(fDataType == kPp){ // pp data
     fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);

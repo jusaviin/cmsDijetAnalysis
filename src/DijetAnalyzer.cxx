@@ -33,7 +33,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fHistograms(0)
 {
   // Custom constructor
-  fHistograms = new DijetHistograms();
+  fHistograms = new DijetHistograms(fCard);
   fHistograms->CreateHistograms();
   
   // Find the correct folder for track correction tables based on data type
@@ -311,6 +311,7 @@ void DijetAnalyzer::RunAnalysis(){
       // If a dijet is found, fill some information to fHistograms
       if(dijetFound){
         fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
+        fHistograms->fhCentralityDijet->Fill(centrality);
         
         // Calculate the asymmetry
         dijetAsymmetry = (treeReader->GetJetPt(highestIndex) - treeReader->GetJetPt(secondHighestIndex))/(treeReader->GetJetPt(highestIndex) + treeReader->GetJetPt(secondHighestIndex));

@@ -3,6 +3,9 @@
 # Data type for the analysis
 DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
+# Centrality binning
+CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 100.25
+
 # Cuts for dijets
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
