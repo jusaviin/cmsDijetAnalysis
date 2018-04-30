@@ -20,7 +20,7 @@
 TH2D* findHistogram2D(TFile *inputFile, const char *name, int xAxis, int yAxis, int restrictionAxis, int lowBinIndex, int highBinIndex, int restrictionAxis2 = 0, int lowBinIndex2 = 0, int highBinIndex2 = 0){
   THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
   histogramArray->GetAxis(restrictionAxis)->SetRange(lowBinIndex,highBinIndex);
-  if(highBinIndex2 > lowBinIndex2) histogramArray->GetAxis(restrictionAxis2)->SetRange(lowBinIndex2,highBinIndex2);
+  if(highBinIndex2 > 0 && lowBinIndex2 > 0) histogramArray->GetAxis(restrictionAxis2)->SetRange(lowBinIndex2,highBinIndex2);
   char newName[100];
   sprintf(newName,"%s%d",histogramArray->GetName(),lowBinIndex);
   TH2D *projectedHistogram = (TH2D*) histogramArray->Projection(yAxis,xAxis);
@@ -45,7 +45,7 @@ TH2D* findHistogram2D(TFile *inputFile, const char *name, int xAxis, int yAxis, 
 TH1D* findHistogram(TFile *inputFile, const char *name, int xAxis, int restrictionAxis, int lowBinIndex, int highBinIndex, int restrictionAxis2 = 0, int lowBinIndex2 = 0, int highBinIndex2 = 0, bool debug = false){
   THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
   histogramArray->GetAxis(restrictionAxis)->SetRange(lowBinIndex,highBinIndex);
-  if(highBinIndex2 > lowBinIndex2) histogramArray->GetAxis(restrictionAxis2)->SetRange(lowBinIndex2,highBinIndex2);
+  if(highBinIndex2 > 0 && lowBinIndex2 > 0) histogramArray->GetAxis(restrictionAxis2)->SetRange(lowBinIndex2,highBinIndex2);
   char newName[100];
   sprintf(newName,"%s%d",histogramArray->GetName(),lowBinIndex);
   TH1D *projectedHistogram = (TH1D*) histogramArray->Projection(xAxis);
@@ -113,6 +113,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
   
   // Define centrality binning to project out from THnSparses. For pp centrality binning is automatically disabled.
+  // TODO: Read from configuration card
   const int nCentralityBins = 4;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};
   int centralityBinIndices[nCentralityBins+1] = {0};
@@ -126,6 +127,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   if(lastDrawnCentralityBin > nCentralityBins-1) lastDrawnCentralityBin = nCentralityBins-1;
   
   // Define track pT binning to project out from THnSparses.
+  // TODO: Read from ConfigurationCard
   const int nTrackPtBins = 6;
   double trackPtBinBorders[nTrackPtBins+1] = {0.5,1,2,3,4,8,30};
   int trackPtBinIndices[nTrackPtBins+1] = {0};
@@ -177,9 +179,10 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   }
   
   // For track pT binning, read the track pT bin information from the track histogram
-  TH1D* hTrackPtBinner = findHistogram(inputFile,"track",0,3,firstDrawnCentralityBin,lastDrawnCentralityBin);
+  TH1D* hTrackPtBinner = findHistogram(inputFile,"trackLeadingJet",0,3,firstDrawnCentralityBin,lastDrawnCentralityBin);
   for(int iTrackPt = 0; iTrackPt < nTrackPtBins+1; iTrackPt++){
     trackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(trackPtBinBorders[iTrackPt]);
+    cout << "Index for bin " << iTrackPt << " is " << trackPtBinIndices[iTrackPt] << endl;
   }
   
   // Histograms for leading jets
@@ -386,9 +389,11 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
     for(int iTrackPtBin = firstDrawnTrackPtBin; iTrackPtBin <= lastDrawnTrackPtBin; iTrackPtBin++){
       
       // Select the bin indices for track pT
-      if(iTrackPtBin == lastDrawnTrackPtBin) duplicateRemoverTrackPt = 0;
       lowerTrackPtBin = trackPtBinIndices[iTrackPtBin];
       higherTrackPtBin = trackPtBinIndices[iTrackPtBin+1]+duplicateRemoverTrackPt;
+      
+      cout << "Lower bin index: " << lowerTrackPtBin << endl;
+      cout << "Higher bin index: " << higherTrackPtBin << endl;
       
       if(drawTrackLeadingJetCorrelations){
         

@@ -3,9 +3,6 @@
 # Data type for the analysis
 DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
-# Centrality binning
-CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 100.25
-
 # Cuts for dijets
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
@@ -28,6 +25,10 @@ MinimumTrackHits 0          # Require this many hits for each track
 
 # Cuts for event selection
 ZVertexCut 15      # Maximum vz value for accepted tracks
+
+# Binning for THnSparses
+CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 100.25
+TrackPtBinEdges 0.5 1 2 3 4 8 30
 
 # Debug
 DebugLevel 2   # 0 = No debug messages, 1 = Some debug messages, 2 = All debug messages
