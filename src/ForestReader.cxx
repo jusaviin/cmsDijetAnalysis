@@ -551,12 +551,12 @@ Int_t ForestReader::GetCollisionEventSelectionFilterBit() const{
 
 // Getter for HF energy coincidence filter bit. Always 1 for MC and pp (set in the initializer).
 Int_t ForestReader::GetHfCoincidenceFilterBit() const{
-  return fCollisionEventSelectionFilterBit;
+  return fHfCoincidenceFilterBit;
 }
 
 // Getter for cluster compatibility filter bit. Always 1 for MC and pp (set in the initializer).
 Int_t ForestReader::GetClusterCompatibilityFilterBit() const{
-  return fCollisionEventSelectionFilterBit;
+  return fClusterCompatibilityFilterBit;
 }
 
 // Getter for track pT
