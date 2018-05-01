@@ -96,9 +96,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
-  bool drawTracks = false;
+  bool drawTracks = true;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -182,7 +182,6 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TH1D* hTrackPtBinner = findHistogram(inputFile,"trackLeadingJet",0,3,firstDrawnCentralityBin,lastDrawnCentralityBin);
   for(int iTrackPt = 0; iTrackPt < nTrackPtBins+1; iTrackPt++){
     trackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(trackPtBinBorders[iTrackPt]);
-    cout << "Index for bin " << iTrackPt << " is " << trackPtBinIndices[iTrackPt] << endl;
   }
   
   // Histograms for leading jets
@@ -285,7 +284,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       hLeadingJetPt[iCentralityBin] = findHistogram(inputFile,"leadingJet",0,4,lowerCentralityBin,higherCentralityBin);
       hLeadingJetPhi[iCentralityBin] = findHistogram(inputFile,"leadingJet",1,4,lowerCentralityBin,higherCentralityBin);
       hLeadingJetEta[iCentralityBin] = findHistogram(inputFile,"leadingJet",2,4,lowerCentralityBin,higherCentralityBin);
-      hLeadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"leadingJet",2,1,4,lowerCentralityBin,higherCentralityBin);
+      hLeadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"leadingJet",1,2,4,lowerCentralityBin,higherCentralityBin);
     }
     
     if(drawSubleadingJetHistograms){
@@ -305,7 +304,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       hSubleadingJetPt[iCentralityBin] = findHistogram(inputFile,"subleadingJet",0,4,lowerCentralityBin,higherCentralityBin);
       hSubleadingJetPhi[iCentralityBin] = findHistogram(inputFile,"subleadingJet",1,4,lowerCentralityBin,higherCentralityBin);
       hSubleadingJetEta[iCentralityBin] = findHistogram(inputFile,"subleadingJet",2,4,lowerCentralityBin,higherCentralityBin);
-      hSubleadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"subleadingJet",2,1,4,lowerCentralityBin,higherCentralityBin);
+      hSubleadingJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"subleadingJet",1,2,4,lowerCentralityBin,higherCentralityBin);
     }
     
     if(drawAnyJetHistograms){
@@ -324,7 +323,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       hAnyJetPt[iCentralityBin] = findHistogram(inputFile,"anyJet",0,3,lowerCentralityBin,higherCentralityBin);
       hAnyJetPhi[iCentralityBin] = findHistogram(inputFile,"anyJet",1,3,lowerCentralityBin,higherCentralityBin);
       hAnyJetEta[iCentralityBin] = findHistogram(inputFile,"anyJet",2,3,lowerCentralityBin,higherCentralityBin);
-      hAnyJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"anyJet",2,1,3,lowerCentralityBin,higherCentralityBin);
+      hAnyJetEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"anyJet",1,2,3,lowerCentralityBin,higherCentralityBin);
     }
       
     if(drawDijetHistograms){
@@ -362,7 +361,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       hTrackPt[iCentralityBin] = findHistogram(inputFile,"track",0,3,lowerCentralityBin,higherCentralityBin);
       hTrackPhi[iCentralityBin] = findHistogram(inputFile,"track",1,3,lowerCentralityBin,higherCentralityBin);
       hTrackEta[iCentralityBin] = findHistogram(inputFile,"track",2,3,lowerCentralityBin,higherCentralityBin);
-      hTrackEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"track",2,1,3,lowerCentralityBin,higherCentralityBin);
+      hTrackEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"track",1,2,3,lowerCentralityBin,higherCentralityBin);
     }
     
     if(drawUncorrectedTracks){
@@ -381,7 +380,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       hTrackPtUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",0,3,lowerCentralityBin,higherCentralityBin);
       hTrackPhiUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",1,3,lowerCentralityBin,higherCentralityBin);
       hTrackEtaUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",2,3,lowerCentralityBin,higherCentralityBin);
-      hTrackEtaPhiUncorrected[iCentralityBin] = findHistogram2D(inputFile,"trackUncorrected",2,1,3,lowerCentralityBin,higherCentralityBin);
+      hTrackEtaPhiUncorrected[iCentralityBin] = findHistogram2D(inputFile,"trackUncorrected",1,2,3,lowerCentralityBin,higherCentralityBin);
     }
       
     // For track-jet correlation histograms, apply track pT binning
@@ -391,9 +390,6 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // Select the bin indices for track pT
       lowerTrackPtBin = trackPtBinIndices[iTrackPtBin];
       higherTrackPtBin = trackPtBinIndices[iTrackPtBin+1]+duplicateRemoverTrackPt;
-      
-      cout << "Lower bin index: " << lowerTrackPtBin << endl;
-      cout << "Higher bin index: " << higherTrackPtBin << endl;
       
       if(drawTrackLeadingJetCorrelations){
         
@@ -470,9 +466,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
          *   trackSubleadingJet         Axis 3                 Dijet asymmetry
          *   trackSubleadingJet         Axis 4                    Centrality
          */
-        hTrackLeadingJetDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEta[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJet",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaEta[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaEtaDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJet",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
       }
       
       if(drawUncorrectedTrackSubleadingJetCorrelations){
@@ -490,9 +486,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
          *  trackSubleadingJetUncorrected     Axis 3                           Dijet asymmetry
          *  trackSubleadingJetUncorrected     Axis 4                             Centrality
          */
-        hTrackLeadingJetDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetUncorrected",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaEtaUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetUncorrected",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
       }
       
       if(drawPtWeightedTrackSubleadingJetCorrelations){
@@ -510,9 +506,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
          *  trackSubleadingJetPtWeighted      Axis 3                          Dijet asymmetry
          *  trackSubleadingJetPtWeighted      Axis 4                             Centrality
          */
-        hTrackLeadingJetDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetPtWeighted",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaEtaPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetPtWeighted",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
       }
       
     } // Loop over track pT
@@ -696,8 +692,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Leading jet eta vs. phi ===
-      drawer->DrawHistogram(hLeadingJetEtaPhi[iCentrality],"Leading jet #eta","Leading jet #varphi"," ","colz");
-      legend = new TLegend(0.17,0.75,0.37,0.9);
+      drawer->DrawHistogram(hLeadingJetEtaPhi[iCentrality],"Leading jet #varphi","Leading jet #eta"," ","colz");
+      legend = new TLegend(0.17,0.78,0.37,0.93);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
       if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetEtaPhi[iCentrality],centralityString.Data(),"");
@@ -760,8 +756,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Subleading jet eta vs. phi ===
-      drawer->DrawHistogram(hSubleadingJetEtaPhi[iCentrality],"Subleading jet #eta","Subleading jet #varphi"," ","colz");
-      legend = new TLegend(0.17,0.75,0.37,0.9);
+      drawer->DrawHistogram(hSubleadingJetEtaPhi[iCentrality],"Subleading jet #varphi","Subleading jet #eta"," ","colz");
+      legend = new TLegend(0.17,0.78,0.37,0.93);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
       if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetEtaPhi[iCentrality],centralityString.Data(),"");
@@ -824,8 +820,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Any jet eta vs. phi ===
-      drawer->DrawHistogram(hAnyJetEtaPhi[iCentrality],"Any jet #eta","Any jet #varphi"," ","colz");
-      legend = new TLegend(0.17,0.75,0.37,0.9);
+      drawer->DrawHistogram(hAnyJetEtaPhi[iCentrality],"Any jet #varphi","Any jet #eta"," ","colz");
+      legend = new TLegend(0.17,0.78,0.37,0.93);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
       if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetEtaPhi[iCentrality],centralityString.Data(),"");
@@ -888,8 +884,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Track eta-phi ===
-      drawer->DrawHistogram(hTrackEtaPhi[iCentrality],"Track #eta","Track #varphi"," ","colz");
-      legend = new TLegend(0.17,0.75,0.37,0.9);
+      drawer->DrawHistogram(hTrackEtaPhi[iCentrality],"Track #varphi","Track #eta"," ","colz");
+      legend = new TLegend(0.17,0.78,0.37,0.93);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
       if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaPhi[iCentrality],centralityString.Data(),"");
@@ -952,8 +948,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Uncorrected track eta-phi ===
-      drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCentrality],"Uncorrected track #eta","Uncorrected track #varphi"," ","colz");
-      legend = new TLegend(0.17,0.75,0.37,0.9);
+      drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCentrality],"Uncorrected track #varphi","Uncorrected track #eta"," ","colz");
+      legend = new TLegend(0.17,0.78,0.37,0.93);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
       if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaPhiUncorrected[iCentrality],centralityString.Data(),"");
