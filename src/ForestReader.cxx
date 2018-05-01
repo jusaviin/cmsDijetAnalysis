@@ -26,6 +26,8 @@ ForestReader::ForestReader() :
   fBeamScrapingBranch(0),
   fCollisionEventSelectionBranch(0),
   fHBHENoiseBranch(0),
+  fHfCoincidenceBranch(0),
+  fClusterCompatibilityBranch(0),
   fTrackPtBranch(0),
   fTrackPtErrorBranch(0),
   fTrackPhiBranch(0),
@@ -55,6 +57,8 @@ ForestReader::ForestReader() :
   fBeamScrapingFilterBit(0),
   fCollisionEventSelectionFilterBit(0),
   fHBHENoiseFilterBit(0),
+  fHfCoincidenceFilterBit(0),
+  fClusterCompatibilityFilterBit(0),
   fTrackPtArray(),
   fTrackPtErrorArray(),
   fTrackPhiArray(),
@@ -101,6 +105,8 @@ ForestReader::ForestReader(Int_t dataType) :
   fBeamScrapingBranch(0),
   fCollisionEventSelectionBranch(0),
   fHBHENoiseBranch(0),
+  fHfCoincidenceBranch(0),
+  fClusterCompatibilityBranch(0),
   fTrackPtBranch(0),
   fTrackPtErrorBranch(0),
   fTrackPhiBranch(0),
@@ -130,6 +136,8 @@ ForestReader::ForestReader(Int_t dataType) :
   fBeamScrapingFilterBit(0),
   fCollisionEventSelectionFilterBit(0),
   fHBHENoiseFilterBit(0),
+  fHfCoincidenceFilterBit(0),
+  fClusterCompatibilityFilterBit(0),
   fTrackPtArray(),
   fTrackPtErrorArray(),
   fTrackPhiArray(),
@@ -176,6 +184,8 @@ ForestReader::ForestReader(const ForestReader& in) :
   fBeamScrapingBranch(in.fBeamScrapingBranch),
   fCollisionEventSelectionBranch(in.fCollisionEventSelectionBranch),
   fHBHENoiseBranch(in.fHBHENoiseBranch),
+  fHfCoincidenceBranch(in.fHfCoincidenceBranch),
+  fClusterCompatibilityBranch(in.fClusterCompatibilityBranch),
   fTrackPtBranch(in.fTrackPtBranch),
   fTrackPtErrorBranch(in.fTrackPtErrorBranch),
   fTrackPhiBranch(in.fTrackPhiBranch),
@@ -200,6 +210,8 @@ ForestReader::ForestReader(const ForestReader& in) :
   fBeamScrapingFilterBit(in.fBeamScrapingFilterBit),
   fCollisionEventSelectionFilterBit(in.fCollisionEventSelectionFilterBit),
   fHBHENoiseFilterBit(in.fHBHENoiseFilterBit),
+  fHfCoincidenceFilterBit(in.fHfCoincidenceFilterBit),
+  fClusterCompatibilityFilterBit(in.fClusterCompatibilityFilterBit),
   fnTracks(in.fnTracks)
 {
   // Copy constructor
@@ -257,6 +269,8 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fBeamScrapingBranch = in.fBeamScrapingBranch;
   fCollisionEventSelectionBranch = in.fCollisionEventSelectionBranch;
   fHBHENoiseBranch = in.fHBHENoiseBranch;
+  fHfCoincidenceBranch = in.fHfCoincidenceBranch;
+  fClusterCompatibilityBranch = in.fClusterCompatibilityBranch;
   fTrackPtBranch = in.fTrackPtBranch;
   fTrackPtErrorBranch = in.fTrackPtErrorBranch;
   fTrackPhiBranch = in.fTrackPhiBranch;
@@ -281,6 +295,8 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fBeamScrapingFilterBit = in.fBeamScrapingFilterBit;
   fCollisionEventSelectionFilterBit = in.fCollisionEventSelectionFilterBit;
   fHBHENoiseFilterBit = in.fHBHENoiseFilterBit;
+  fHfCoincidenceFilterBit = in.fHfCoincidenceFilterBit;
+  fClusterCompatibilityFilterBit = in.fClusterCompatibilityFilterBit;
   fnTracks = in.fnTracks;
   
   for(Int_t i = 0; i < fnMaxJet; i++){
@@ -374,24 +390,28 @@ void ForestReader::Initialize(){
     fCaloJetFilterBit = 1;  // No filter for Monte Carlo
   }
   
-  // TODO: ADD cuts for phfCoincFilter3 and pclusterCompatibilityFilter for HI collisions!!
-  
   // Connect the branches to the skim tree (different for pp and PbPb data, no connection for Monte Carlo)
   if(fDataType == kPp){ // pp data
     fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchAddress("pBeamScrapingFilter",&fBeamScrapingFilterBit,&fBeamScrapingBranch);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp
+    fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
+    fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
   } else if (fDataType == kPbPb){ // PbPb data
     fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
+    fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
+    fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
   } else { // Monte Carlo
     fPrimaryVertexFilterBit = 1;            // No filter for Monte Carlo
     fBeamScrapingFilterBit = 1;             // No filter for Monte Carlo
     fCollisionEventSelectionFilterBit = 1;  // No filter for Monte Carlo
     fHBHENoiseFilterBit = 1;                // No filter for Monte Carlo
+    fHfCoincidenceFilterBit = 1;            // No HF energy coincidence requirement for Monte Carlo
+    fClusterCompatibilityFilterBit = 1;     // No cluster compatibility requirement for Monte Carlo
   }
   
   // Connect the branches to the track tree
@@ -519,13 +539,23 @@ Int_t ForestReader::GetBeamScrapingFilterBit() const{
   return fBeamScrapingFilterBit;
 }
 
-// Getter for HB/HE noisr filter bit. Always 1 for MC (set in the initializer).
+// Getter for HB/HE noise filter bit. Always 1 for MC (set in the initializer).
 Int_t ForestReader::GetHBHENoiseFilterBit() const{
   return fHBHENoiseFilterBit;
 }
 
-// Getter for HB/HE noisr filter bit. Always 1 for MC and pp (set in the initializer).
+// Getter for collision event selection filter bit. Always 1 for MC and pp (set in the initializer).
 Int_t ForestReader::GetCollisionEventSelectionFilterBit() const{
+  return fCollisionEventSelectionFilterBit;
+}
+
+// Getter for HF energy coincidence filter bit. Always 1 for MC and pp (set in the initializer).
+Int_t ForestReader::GetHfCoincidenceFilterBit() const{
+  return fCollisionEventSelectionFilterBit;
+}
+
+// Getter for cluster compatibility filter bit. Always 1 for MC and pp (set in the initializer).
+Int_t ForestReader::GetClusterCompatibilityFilterBit() const{
   return fCollisionEventSelectionFilterBit;
 }
 

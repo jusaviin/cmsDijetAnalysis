@@ -65,6 +65,8 @@ public:
   Int_t GetBeamScrapingFilterBit() const;            // Getter got beam scraping filter bit
   Int_t GetHBHENoiseFilterBit() const;               // Getter for HB/HE noise filter bit
   Int_t GetCollisionEventSelectionFilterBit() const; // Getter for collision event selection filter bit
+  Int_t GetHfCoincidenceFilterBit() const;           // Getter for hadronic forward coincidence filter bit
+  Int_t GetClusterCompatibilityFilterBit() const;    // Getter for cluster compatibility filter bit
   
   // Getters for leaves in the track tree
   Float_t GetTrackPt(Int_t iTrack) const;                    // Getter for track pT
@@ -121,6 +123,8 @@ private:
   TBranch *fBeamScrapingBranch;            // Branch for beam scraping filter bit
   TBranch *fCollisionEventSelectionBranch; // Branch for collision event selection filter bit
   TBranch *fHBHENoiseBranch;               // Branch for HB/HE noise filter bit
+  TBranch *fHfCoincidenceBranch;           // Branch for energy recorded in at least 3 HF calorimeter towers
+  TBranch *fClusterCompatibilityBranch;    // Branch for cluster compatibility
   
   // Branches for track tree
   TBranch *fTrackPtBranch;                    // Branch for track pT
@@ -162,6 +166,8 @@ private:
   Int_t fBeamScrapingFilterBit;            // Filter bit for beam scraping
   Int_t fCollisionEventSelectionFilterBit; // Filter bit for collision event selection
   Int_t fHBHENoiseFilterBit;               // Filter bit for HB/HE noise
+  Int_t fHfCoincidenceFilterBit;           // Filter bit for energy recorded in at least 3 HF calorimeter towers
+  Int_t fClusterCompatibilityFilterBit;    // Filter bit for cluster compatibility
   
   // Leaves for the track tree
   Float_t fTrackPtArray[fnMaxTrack] = {0};                    // Array for track pT:s

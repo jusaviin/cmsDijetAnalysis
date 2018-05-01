@@ -230,6 +230,14 @@ void DijetAnalyzer::RunAnalysis(){
       if(treeReader->GetBeamScrapingFilterBit() == 0) continue;
       fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
       
+      // Cut for energy deposition in at least 3 hadronic forward towers. Only applied for PbPb data.
+      if(treeReader->GetHfCoincidenceFilterBit() == 0) continue;
+      fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
+      
+      // Cut for cluster compatibility. Only applied for PbPb data.
+      if(treeReader->GetClusterCompatibilityFilterBit() == 0) continue;
+      fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
+      
       // Cut for calirimeter jet quality. Only applied for data.
       if(treeReader->GetCaloJetFilterBit() == 0) continue;
       fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);

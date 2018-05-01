@@ -16,7 +16,7 @@ class DijetHistograms{
 public:
   
   // Enumeration for event types to event histogram and track cuts for track cut histogram
-  enum enumEventTypes {kAll, kPrimaryVertex, kHBHENoise, kCollisionEventSelection, kBeamScraping, kCaloJet, kVzCut, kDijet, knEventTypes};
+  enum enumEventTypes {kAll, kPrimaryVertex, kHBHENoise, kCollisionEventSelection, kBeamScraping, kHfCoincidence, kClusterCompatibility, kCaloJet, kVzCut, kDijet, knEventTypes};
   enum enumTrackCuts {kAllTracks, kPtCuts, kEtaCut, kHighPurity, kPtError, kVertexDistance, kCaloSignal, kReconstructionQuality, knTrackCuts};
   
   // Constructors and destructor
@@ -55,7 +55,7 @@ public:
 private:
   
   ConfigurationCard *fCard;    // Card for binning info
-  const TString kEventTypeStrings[knEventTypes] = {"All", "PrimVertex", "HBHENoise", "CollEvtSel", "BeamScrape", "CaloJet", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
+  const TString kEventTypeStrings[knEventTypes] = {"All", "PrimVertex", "HBHENoise", "CollEvtSel", "BeamScrape", "HfCoin3", "ClustCompt", "CaloJet", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
   const TString kTrackCutStrings[knTrackCuts] = {"All", "p_{T} cut", "#eta cut", "HighPurity", "p_{T} error", "vertexDist", "caloSignal", "RecoQuality"}; // String corresponding to track cuts
   
 };
