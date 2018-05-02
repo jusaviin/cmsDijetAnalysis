@@ -372,7 +372,7 @@ void DijetAnalyzer::RunAnalysis(){
           if(!treeReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
           fHistograms->fhTrackCuts->Fill(DijetHistograms::kHighPurity);
           
-          // Cut for realtive error for track pT
+          // Cut for relative error for track pT
           if(treeReader->GetTrackPtError(iTrack)/trackPt >= maxTrackPtRelativeError) continue; // Cut for track pT relative error
           fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtError);
           

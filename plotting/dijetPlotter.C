@@ -71,8 +71,23 @@ void saveFigure(bool saveFigures, TString figureName, TString systemString, TStr
   TString figName = Form("figures/%s_%s",figureName.Data(),systemString.Data());
   if(systemString.Contains("PbPb")) figName.Append(centralityString);
   figName.Append(trackPtString);
-  gPad->GetCanvas()->SaveAs(Form("%s.pdf",figName.Data()));
+  gPad->GetCanvas()->SaveAs(Form("%s.png",figName.Data()));
   
+}
+
+/*
+ * Common legend style setup for figures
+ *
+ *  TLegend *legend = Pointer to legend that needs setup
+ *  TString systemString = Collision system
+ *  TString centralityString = Collision centrality
+ *  TString trackString = Track pT information
+ */
+void setupLegend(TLegend *legend, TString systemString, TString centralityString = "", TString trackString = ""){
+  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+  legend->AddEntry((TObject*) 0, systemString.Data(), "");
+  if(systemString.Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
+  if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
 }
 
 /*
@@ -93,10 +108,10 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = false;
+  bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
-  bool drawTracks = true;
+  bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
@@ -111,6 +126,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   // Logarithmic scales for figures for pT distributions
   bool logPt = true;          // pT distributions
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
+  
+  // Plotting style for 3D plots
+  const char* style3D = "surf1";
   
   // Define centrality binning to project out from THnSparses. For pp centrality binning is automatically disabled.
   // TODO: Read from configuration card
@@ -170,16 +188,18 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   // Number of tracks surviving different track cuts
   TH1D *hTrackCuts = (TH1D*) inputFile->Get("trackCuts");
   
-  // Centrality of all events
+  // Centrality of all and dijet events
   TH1D *hCentrality = (TH1D*) inputFile->Get("centrality");
+  TH1D *hCentralityDijet = (TH1D*) inputFile->Get("centralityDijet");
   
-  // All the histograms have the same centrality binning, so we can figure out bin indices from the centrality histogram
+  // For centrality binning, read the track pT bin information from the track-leading jet histogram
+  TH1D* hCentralityBinner = findHistogram(inputFile,"trackLeadingJet",4,0,0,0);
   for(int iCentrality = 0; iCentrality < nCentralityBins+1; iCentrality++){
-    centralityBinIndices[iCentrality] = hCentrality->GetXaxis()->FindBin(centralityBinBorders[iCentrality]);
+    centralityBinIndices[iCentrality] = hCentralityBinner->GetXaxis()->FindBin(centralityBinBorders[iCentrality]);
   }
   
-  // For track pT binning, read the track pT bin information from the track histogram
-  TH1D* hTrackPtBinner = findHistogram(inputFile,"trackLeadingJet",0,3,firstDrawnCentralityBin,lastDrawnCentralityBin);
+  // For track pT binning, read the track pT bin information from the track-leading jet histogram
+  TH1D* hTrackPtBinner = findHistogram(inputFile,"trackLeadingJet",0,4,firstDrawnCentralityBin,lastDrawnCentralityBin);
   for(int iTrackPt = 0; iTrackPt < nTrackPtBins+1; iTrackPt++){
     trackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(trackPtBinBorders[iTrackPt]);
   }
@@ -550,29 +570,26 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
     // === Vertex z-position ===
     hVertexZ->SetMarkerStyle(kFullDiamond);
     drawer->DrawHistogram(hVertexZ,"v_{z} (cm)","#frac{dN}{dv_{z}}  (1/cm)"," ");
-    legend = new TLegend(0.62,0.75,0.82,0.9);
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+    legend = new TLegend(0.65,0.75,0.85,0.9);
+    setupLegend(legend,systemAndEnergy);
     legend->Draw();
     
     // Save the figure to a file
     saveFigure(saveFigures,"vz",compactSystemAndEnergy);
     
     // === Event cuts ===
-    drawer->DrawHistogram(hEvents,"Event cuts","Number of events", " ");
+    drawer->DrawHistogram(hEvents," ","Number of events", " ");
     legend = new TLegend(0.17,0.22,0.37,0.37);
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+    setupLegend(legend,systemAndEnergy);
     legend->Draw();
     
     // Save the figure to a file
     saveFigure(saveFigures,"eventCuts",compactSystemAndEnergy);
     
     // === Track cuts ===
-    drawer->DrawHistogram(hTrackCuts,"Track cuts","Number of tracks", " ");
-    legend = new TLegend(0.17,0.22,0.37,0.37);
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+    drawer->DrawHistogram(hTrackCuts," ","Number of tracks", " ");
+    legend = new TLegend(0.65,0.75,0.85,0.9);
+    setupLegend(legend,systemAndEnergy);
     legend->Draw();
     
     // Save the figure to a file
@@ -581,13 +598,23 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
     // === Centrality ===
     hCentrality->SetMarkerStyle(kFullDiamond);
     drawer->DrawHistogram(hCentrality,"Centrality percentile","N"," ");
-    legend = new TLegend(0.62,0.75,0.82,0.9);
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
+    legend = new TLegend(0.63,0.75,0.83,0.9);
+    setupLegend(legend,systemAndEnergy);
     legend->Draw();
     
     // Save the figure to a file
     saveFigure(saveFigures,"centrality",compactSystemAndEnergy);
+    
+    // === Centrality ===
+    hCentralityDijet->SetMarkerStyle(kFullDiamond);
+    drawer->DrawHistogram(hCentralityDijet,"Centrality in dijet events","N"," ");
+    legend = new TLegend(0.63,0.75,0.83,0.9);
+    setupLegend(legend,systemAndEnergy);
+    legend->Draw();
+    
+    // Save the figure to a file
+    saveFigure(saveFigures,"centralityDijet",compactSystemAndEnergy);
+
 
   } // Event information histograms
   
@@ -605,9 +632,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Dijet DeltaPhi ===
       drawer->DrawHistogram(hDijetDphi[iCentrality],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
       legend = new TLegend(0.17,0.75,0.37,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hDijetDphi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -616,9 +641,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Dijet asymmetry ===
       drawer->DrawHistogram(hDijetAsymmetry[iCentrality],"A_{jj}","#frac{dN}{dA_{jj}}"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hDijetAsymmetry[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -630,9 +653,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Leading jet pT vs. subleading jet pT ===
       drawer->DrawHistogram(hDijetLeadingVsSubleadingPt[iCentrality],"Leading jet p_{T}","Subleading jet p_{T}"," ","colz");
       legend = new TLegend(0.17,0.75,0.37,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hDijetLeadingVsSubleadingPt[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -655,9 +676,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Leading jet pT ===
       drawer->DrawHistogram(hLeadingJetPt[iCentrality],"Leading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetPt[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -669,9 +688,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Leading jet phi ===
       drawer->DrawHistogram(hLeadingJetPhi[iCentrality],"Leading jet #varphi","#frac{dN}{d#varphi}"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -680,9 +697,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Leading jet eta ===
       drawer->DrawHistogram(hLeadingJetEta[iCentrality],"Leading jet #eta","#frac{dN}{d#eta}"," ");
       legend = new TLegend(0.62,0.20,0.82,0.35);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetEta[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -694,9 +709,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Leading jet eta vs. phi ===
       drawer->DrawHistogram(hLeadingJetEtaPhi[iCentrality],"Leading jet #varphi","Leading jet #eta"," ","colz");
       legend = new TLegend(0.17,0.78,0.37,0.93);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hLeadingJetEtaPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figures to file
@@ -719,9 +732,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Subleading jet pT ===
       drawer->DrawHistogram(hSubleadingJetPt[iCentrality],"Subleading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetPt[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -733,9 +744,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Subleading jet phi ===
       drawer->DrawHistogram(hSubleadingJetPhi[iCentrality],"Subleading jet #varphi","#frac{dN}{d#varphi}"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -744,9 +753,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Subleading jet eta ===
       drawer->DrawHistogram(hSubleadingJetEta[iCentrality],"Subleading jet #eta","#frac{dN}{d#eta}"," ");
       legend = new TLegend(0.62,0.20,0.82,0.35);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetEta[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -758,9 +765,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Subleading jet eta vs. phi ===
       drawer->DrawHistogram(hSubleadingJetEtaPhi[iCentrality],"Subleading jet #varphi","Subleading jet #eta"," ","colz");
       legend = new TLegend(0.17,0.78,0.37,0.93);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hSubleadingJetEtaPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -783,9 +788,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Any jet pT ===
       drawer->DrawHistogram(hAnyJetPt[iCentrality],"Any jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetPt[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -797,9 +800,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Any jet phi ===
       drawer->DrawHistogram(hAnyJetPhi[iCentrality],"Any jet #varphi","#frac{dN}{d#varphi}"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -808,9 +809,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Any jet eta ===
       drawer->DrawHistogram(hAnyJetEta[iCentrality],"Any jet #eta","#frac{dN}{d#eta}"," ");
       legend = new TLegend(0.62,0.20,0.82,0.35);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetEta[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -822,9 +821,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Any jet eta vs. phi ===
       drawer->DrawHistogram(hAnyJetEtaPhi[iCentrality],"Any jet #varphi","Any jet #eta"," ","colz");
       legend = new TLegend(0.17,0.78,0.37,0.93);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hAnyJetEtaPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -847,9 +844,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Track pT ===
       drawer->DrawHistogram(hTrackPt[iCentrality],"Track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPt[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -861,9 +856,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Track phi ===
       drawer->DrawHistogram(hTrackPhi[iCentrality],"Track #varphi","#frac{dN}{d#varphi}"," ");
       legend = new TLegend(0.62,0.20,0.82,0.35);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -872,9 +865,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Track eta ===
       drawer->DrawHistogram(hTrackEta[iCentrality],"Track #eta","#frac{dN}{d#eta}"," ");
       legend = new TLegend(0.62,0.20,0.82,0.35);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEta[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -886,9 +877,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Track eta-phi ===
       drawer->DrawHistogram(hTrackEtaPhi[iCentrality],"Track #varphi","Track #eta"," ","colz");
       legend = new TLegend(0.17,0.78,0.37,0.93);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaPhi[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -911,9 +900,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Uncorrected track pT ===
       drawer->DrawHistogram(hTrackPtUncorrected[iCentrality],"Uncorrected track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPtUncorrected[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
             
       // Save the figure to a file
@@ -925,9 +912,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Uncorrected track phi ===
       drawer->DrawHistogram(hTrackPhiUncorrected[iCentrality],"Uncorrected track #varphi","#frac{dN}{d#varphi}"," ");
       legend = new TLegend(0.62,0.20,0.82,0.35);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackPhiUncorrected[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -936,9 +921,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Uncorrected track eta ===
       drawer->DrawHistogram(hTrackEtaUncorrected[iCentrality],"Uncorrected track #eta","#frac{dN}{d#eta}"," ");
       legend = new TLegend(0.62,0.20,0.82,0.35);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaUncorrected[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -950,9 +933,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // === Uncorrected track eta-phi ===
       drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCentrality],"Uncorrected track #varphi","Uncorrected track #eta"," ","colz");
       legend = new TLegend(0.17,0.78,0.37,0.93);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-      if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackEtaPhiUncorrected[iCentrality],centralityString.Data(),"");
+      setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
       
       // Save the figure to a file
@@ -980,10 +961,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Track-leading jet deltaPhi ===
         drawer->DrawHistogram(hTrackLeadingJetDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaPhi[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaPhi[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -992,10 +970,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Track-leading jet deltaEta ===
         drawer->DrawHistogram(hTrackLeadingJetDeltaEta[iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEta[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaEta[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1008,12 +983,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         drawer->SetLogZ(logCorrelation);
         
         // === Track-leading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ","lego2");
+        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ",style3D);
         legend = new TLegend(-0.05,0.85,0.30,0.99);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1036,10 +1008,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Uncorrected track-leading jet deltaPhi ===
         drawer->DrawHistogram(hTrackLeadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1048,10 +1017,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Uncorrected track-leading jet deltaEta ===
         drawer->DrawHistogram(hTrackLeadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1064,12 +1030,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         drawer->SetLogZ(logCorrelation);
         
         // === Uncorrected track-leading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta"," ","lego2");
+        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta"," ",style3D);
         legend = new TLegend(-0.05,0.85,0.30,0.99);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1092,10 +1055,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === pT weighted track-leading jet deltaPhi ===
         drawer->DrawHistogram(hTrackLeadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1104,10 +1064,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === pT weighted track-leading jet deltaEta ===
         drawer->DrawHistogram(hTrackLeadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1120,12 +1077,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         drawer->SetLogZ(logCorrelation);
         
         // === pT weighted track-leading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta"," ","lego2");
+        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta"," ",style3D);
         legend = new TLegend(-0.05,0.85,0.30,0.99);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1148,10 +1102,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Track-subleading jet deltaPhi ===
         drawer->DrawHistogram(hTrackSubleadingJetDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaPhi[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaPhi[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1160,10 +1111,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Track-subleading jet deltaEta ===
         drawer->DrawHistogram(hTrackSubleadingJetDeltaEta[iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaEta[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaEta[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1176,12 +1124,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         drawer->SetLogZ(logCorrelation);
         
         // === Track-subleading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ","lego2");
+        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ",style3D);
         legend = new TLegend(-0.05,0.85,0.30,0.99);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1204,10 +1149,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Uncorrected track-subleading jet deltaPhi ===
         drawer->DrawHistogram(hTrackSubleadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1216,10 +1158,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === Uncorrected track-subleading jet deltaEta ===
         drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1232,12 +1171,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         drawer->SetLogZ(logCorrelation);
         
         // === Uncorrected track-subleading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta"," ","lego2");
+        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta"," ",style3D);
         legend = new TLegend(-0.05,0.85,0.30,0.99);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1260,10 +1196,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === pT weighted track-subleading jet deltaPhi ===
         drawer->DrawHistogram(hTrackSubleadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1272,10 +1205,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         // === pT weighted track-subleading jet deltaEta ===
         drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
@@ -1288,12 +1218,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         drawer->SetLogZ(logCorrelation);
         
         // === pT weighted track-subleading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta"," ","lego2");
+        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta"," ",style3D);
         legend = new TLegend(-0.05,0.85,0.30,0.99);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
-        if(collisionSystem.Contains("PbPb")) legend->AddEntry(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],centralityString.Data(),"");
-        legend->AddEntry(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],trackPtString.Data(),"");
+        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
         
         // Save the figure to a file
