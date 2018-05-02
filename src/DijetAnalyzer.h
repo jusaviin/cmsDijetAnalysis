@@ -12,6 +12,7 @@
 // Own includes
 #include "ConfigurationCard.h"
 #include "DijetHistograms.h"
+#include "ForestReader.h"
 #include "TrkCorr.h"
 
 class DijetAnalyzer{
@@ -31,10 +32,33 @@ public:
   
 private:
   
+  // Private methods
+  void CorrelateTracksAndJets(ForestReader *treeReader, Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], Int_t correlationType);  // Do jet-track correlations
+  
+  // Private data members
   std::vector<TString> fFileNames;   // Vector for all the files to loop over
   ConfigurationCard *fCard;          // Configuration card for the analysis
   DijetHistograms *fHistograms;      // Filled histograms
   TrkCorr *fTrackCorrection;         // Track correction class
+  
+  // Jet and track selection cuts
+  Double_t fVzCut;                     // Cut for vertez z-position in an event
+  Double_t fJetEtaCut;                 // Eta cut around midrapidity
+  Double_t fJetSearchEtaCut;           // Eta cut when searching for a dijet
+  Double_t fJetMaximumPtCut;           // Maximum pT accepted for leading jet (and tracks)
+  Double_t fLeadingJetMinPtCut;        // Minimum pT cut for leading jet
+  Double_t fSubleadingJetMinPtCut;     // Minimum pT cut for subleading jet
+  Double_t fDeltaPhiCut;               // DeltaPhi cut for the dijet system
+  Double_t fMinimumMaxTrackPtFraction; // Cut for jets consisting only from soft particles
+  Double_t fMaximumMaxTrackPtFraction; // Cut for jets consisting only from one high pT
+  Double_t fTrackEtaCut;               // Eta cut around midrapidity
+  Double_t fTrackMinPtCut;             // Minimum pT cut
+  Double_t fMaxTrackPtRelativeError;   // Maximum relative error for pT
+  Double_t fMaxTrackDistanceToVertex;  // Maximum distance to primary vetrex
+  Double_t fCalorimeterSignalLimitPt;  // Require signal in calorimeters for track above this pT
+  Double_t fHighPtEtFraction;          // For high pT tracks, minimum required Et as a fraction of track pT
+  Double_t fChi2QualityCut;            // Quality cut for track reconstruction
+  Double_t fMinimumTrackHits;          // Quality cut for track hits
 
 };
 

@@ -127,7 +127,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool logPt = true;          // pT distributions
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
   
-  // Plotting style for 3D plots
+  // Plotting style for 2D and 3D plots
+  int colorPalette = kRainBow;
+  const char* style2D = "colz";
   const char* style3D = "surf1";
   
   // Define centrality binning to project out from THnSparses. For pp centrality binning is automatically disabled.
@@ -546,7 +548,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   
   // Finally, draw the histograms
   JDrawer *drawer = new JDrawer();
-  gStyle->SetPalette(kRainBow);
+  gStyle->SetPalette(colorPalette);
   
   // Pointer for legend in figures
   TLegend *legend;
@@ -651,7 +653,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Leading jet pT vs. subleading jet pT ===
-      drawer->DrawHistogram(hDijetLeadingVsSubleadingPt[iCentrality],"Leading jet p_{T}","Subleading jet p_{T}"," ","colz");
+      drawer->DrawHistogram(hDijetLeadingVsSubleadingPt[iCentrality],"Leading jet p_{T}","Subleading jet p_{T}"," ",style2D);
       legend = new TLegend(0.17,0.75,0.37,0.9);
       setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
@@ -707,7 +709,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Leading jet eta vs. phi ===
-      drawer->DrawHistogram(hLeadingJetEtaPhi[iCentrality],"Leading jet #varphi","Leading jet #eta"," ","colz");
+      drawer->DrawHistogram(hLeadingJetEtaPhi[iCentrality],"Leading jet #varphi","Leading jet #eta"," ",style2D);
       legend = new TLegend(0.17,0.78,0.37,0.93);
       setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
@@ -763,7 +765,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Subleading jet eta vs. phi ===
-      drawer->DrawHistogram(hSubleadingJetEtaPhi[iCentrality],"Subleading jet #varphi","Subleading jet #eta"," ","colz");
+      drawer->DrawHistogram(hSubleadingJetEtaPhi[iCentrality],"Subleading jet #varphi","Subleading jet #eta"," ",style2D);
       legend = new TLegend(0.17,0.78,0.37,0.93);
       setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
@@ -819,7 +821,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Any jet eta vs. phi ===
-      drawer->DrawHistogram(hAnyJetEtaPhi[iCentrality],"Any jet #varphi","Any jet #eta"," ","colz");
+      drawer->DrawHistogram(hAnyJetEtaPhi[iCentrality],"Any jet #varphi","Any jet #eta"," ",style2D);
       legend = new TLegend(0.17,0.78,0.37,0.93);
       setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
@@ -875,7 +877,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Track eta-phi ===
-      drawer->DrawHistogram(hTrackEtaPhi[iCentrality],"Track #varphi","Track #eta"," ","colz");
+      drawer->DrawHistogram(hTrackEtaPhi[iCentrality],"Track #varphi","Track #eta"," ",style2D);
       legend = new TLegend(0.17,0.78,0.37,0.93);
       setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();
@@ -931,7 +933,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       drawer->SetRightMargin(0.1);
       
       // === Uncorrected track eta-phi ===
-      drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCentrality],"Uncorrected track #varphi","Uncorrected track #eta"," ","colz");
+      drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCentrality],"Uncorrected track #varphi","Uncorrected track #eta"," ",style2D);
       legend = new TLegend(0.17,0.78,0.37,0.93);
       setupLegend(legend,systemAndEnergy,centralityString);
       legend->Draw();

@@ -18,6 +18,7 @@ public:
   // Enumeration for event types to event histogram and track cuts for track cut histogram
   enum enumEventTypes {kAll, kPrimaryVertex, kHBHENoise, kCollisionEventSelection, kBeamScraping, kHfCoincidence, kClusterCompatibility, kCaloJet, kVzCut, kDijet, knEventTypes};
   enum enumTrackCuts {kAllTracks, kPtCuts, kEtaCut, kHighPurity, kPtError, kVertexDistance, kCaloSignal, kReconstructionQuality, knTrackCuts};
+  enum enumCorrelationType {kSameEvent, kMixedEvent, knCorrelationTypes};
   
   // Constructors and destructor
   DijetHistograms(); // Default constructor
