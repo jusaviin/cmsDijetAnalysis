@@ -579,38 +579,40 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
     trackEt = (treeReader->GetTrackEnergyEcal(iTrack)+treeReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
     
     //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kAllTracks);
+    
+    // Only fill the track cut histograms for same event data
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kAllTracks);
     
     // Cut for track pT
     if(trackPt <= fTrackMinPtCut) continue;                     // Minimum pT cut
     if(trackPt >= fJetMaximumPtCut) continue;                   // Maximum pT cut (same as for leading jets)
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtCuts);
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtCuts);
     
     // Cut for track eta
     if(TMath::Abs(trackEta) >= fTrackEtaCut) continue;          // Eta cut
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kEtaCut);
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kEtaCut);
     
     // Cut for high purity
     if(!treeReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kHighPurity);
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kHighPurity);
     
     // Cut for relative error for track pT
     if(treeReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtError);
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtError);
     
     // Cut for track distance from primary vertex
     if(treeReader->GetTrackVertexDistanceZ(iTrack)/treeReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
     if(treeReader->GetTrackVertexDistanceXY(iTrack)/treeReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kVertexDistance);
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kVertexDistance);
     
     // Cut for energy deposition in calorimeters for high pT tracks
     if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) continue;  // For high pT tracks, require signal also in calorimeters
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kCaloSignal);
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kCaloSignal);
     
     // Cuts for track reconstruction quality
     if(treeReader->GetTrackChi2(iTrack)/(1.0*treeReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*treeReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
     if(treeReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
-    fHistograms->fhTrackCuts->Fill(DijetHistograms::kReconstructionQuality);
+    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kReconstructionQuality);
     
     //     ==== Track cuts done ====
     
