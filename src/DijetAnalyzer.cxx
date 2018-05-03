@@ -3,6 +3,7 @@
 // Root includes
 #include <TFile.h>
 #include <TMath.h>
+#include <TRandom3.h>
 
 // Own includes
 #include "DijetAnalyzer.h"
@@ -194,7 +195,9 @@ void DijetAnalyzer::RunAnalysis(){
 
   // Input file and forest reader for analysis
   TFile *inputFile;
+  TFile *mixedEventFile;
   ForestReader *treeReader = new ForestReader(fCard->Get("DataType"));
+  ForestReader *mixedEventReader = new ForestReader(fCard->Get("DataType"));
   
   // Event variables
   Int_t nEvents = 0;            // Number of events
@@ -203,6 +206,22 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t vz = 0;              // Vertex z-position
   Double_t centrality = 0;      // Event centrality
   Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
+  
+  // Event mixing information
+  Bool_t mixEvents = (fCard->Get("DoEventMixing") == 1);           // Do or do not do event mixing
+  Int_t nMixedEventsPerDijet = fCard->Get("NMixedEventsPerDijet"); // Number of events mixed with each dijet event
+  TRandom3 *mixedEventRandomizer = new TRandom3();                 // Randomizer for starting point in the mixed event file
+  Int_t firstMixingEvent;                                          // Event index from which we start the mixing
+  Double_t mixingVzTolerance = fCard->Get("VzTolerance");          // Maximum vz distance between mixed event and dijet event
+  Int_t mixedEventIndex;                                           // Index of current event in mixing loop
+  Int_t eventsMixed;                                               // Number of events mixed
+  Int_t nEventsInMixingFile;                                       // Number of events in the mixing file
+  Bool_t allEventsWentThrough;                                     // Have we checked all the events in the mixing file
+  std::vector<Double_t> mixedEventVz;                              // Vector for vz in mixing events
+  std::vector<Int_t> mixedEventHiBin;                              // Vector for hiBin in mixing events
+  
+  // Initialize the mixed event randomizer
+  mixedEventRandomizer->SetSeed(0);
   
   // Variables for jets
   Double_t dijetAsymmetry = -99;   // Dijet asymmetry
@@ -221,6 +240,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // File name helper variables
   TString currentFile;
+  TString currentMixedEventFile;
   
   // Fillers for THnSparses
   Double_t fillerJet[4];
@@ -235,9 +255,11 @@ void DijetAnalyzer::RunAnalysis(){
     
     // Find the filename
     currentFile = fFileNames.at(iFile);
+    currentMixedEventFile = fFileNames.at(iFile);
     
     // Open the file and check that everything goes fine
     inputFile = TFile::Open(currentFile);
+    mixedEventFile = TFile::Open(currentMixedEventFile);
     
     // Check that the file exists
     if(!inputFile){
@@ -259,6 +281,24 @@ void DijetAnalyzer::RunAnalysis(){
     // TODO: Maybe one could try to use TTreeReader instead of setting branch addresses manually...
     nEvents = treeReader->GetNEvents();
     
+    // Read also the forest for event mixing
+    if(mixEvents){
+      mixedEventReader->ReadForestFromFile(mixedEventFile);  // TODO: For PbPb we need to use different file for event mixing
+      nEventsInMixingFile = mixedEventReader->GetNEvents(); // Read the number of events in the mixing file
+      firstMixingEvent = nEventsInMixingFile*mixedEventRandomizer->Rndm();  // Start mixing from random spot in file
+      if(firstMixingEvent == nEventsInMixingFile) firstMixingEvent--;  // Move the index to allowed range
+      
+      // Read vz and hiBin from each event in event mixing file to memory.
+      // This way we avoid loading different mixed events in a loop several times
+      mixedEventVz.clear();     // Clear the vectors for any possible
+      mixedEventHiBin.clear();  // contents they might have
+      for(Int_t iMixedEvent = 0; iMixedEvent < nEventsInMixingFile; iMixedEvent++){
+        mixedEventReader->GetEvent(iMixedEvent);
+        mixedEventVz.push_back(mixedEventReader->GetVz());
+        mixedEventHiBin.push_back(mixedEventReader->GetHiBin());
+      }
+    }
+
     // Event loop
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
       
@@ -426,6 +466,54 @@ void DijetAnalyzer::RunAnalysis(){
         // Correlate jets with tracks in dijet events
         CorrelateTracksAndJets(treeReader,leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
         
+        // Do event mixing
+        if(mixEvents){
+          
+          // Start mixing from the first event index
+          mixedEventIndex = firstMixingEvent;
+          eventsMixed = 0;
+          allEventsWentThrough = false;
+          
+          // Continue mixing until we have reached required number of event or no event candidates remain in the file
+          while (eventsMixed < nMixedEventsPerDijet && !allEventsWentThrough) {
+            
+            // Increment the counter for event index to be mixed with the current event
+            mixedEventIndex++;
+            
+            // If we are out of bounds from the event in data file, reset the counter
+            if(mixedEventIndex == nEventsInMixingFile) {
+              mixedEventIndex = -1;
+              continue;
+            }
+            
+            // If we come back to the first event index, we have gone through all the events without finding 20 similar events form the file
+            if(mixedEventIndex == firstMixingEvent) allEventsWentThrough = true;
+            
+            // Do not mix with the same event
+            if(mixedEventIndex == iEvent && currentFile == currentMixedEventFile) continue;
+            
+            // Match vz and hiBin between the dijet event and mixed event
+            if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > mixingVzTolerance) continue;
+            if(mixedEventHiBin.at(mixedEventIndex) != hiBin) continue;
+            
+            // If match vz and hiBin, then load the event from the mixed event tree
+            mixedEventReader->GetEvent(mixedEventIndex);
+            
+            // Do the correlations with the dijet from current event and track from mixing event
+            CorrelateTracksAndJets(mixedEventReader,leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent);
+            eventsMixed++;
+            
+          } // While loop for finding events to mix
+          
+          // Print out a message if we could not find 20 events to mix with the current event
+          if(allEventsWentThrough && (debugLevel > 0)){
+            cout << "Could only find " << eventsMixed << " events to mix with event " << iEvent << " in file " << currentFile.Data() << endl;
+          }
+          
+          // For the next event, start mixing the events from where we were left with in the previous event
+          firstMixingEvent = mixedEventIndex;
+          
+        } // Event mixing
       } // Dijet in event
       
     } // Event loop
@@ -435,8 +523,9 @@ void DijetAnalyzer::RunAnalysis(){
     
   } // File loop
   
-  // When we are done, delete treeReader
+  // When we are done, delete ForestReaders
   delete treeReader;
+  delete mixedEventReader;
 }
 
 /*

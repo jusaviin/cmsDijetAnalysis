@@ -28,7 +28,12 @@ ZVertexCut 15      # Maximum vz value for accepted tracks
 
 # Binning for THnSparses
 CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 100.25
-TrackPtBinEdges 0.5 1 2 3 4 8 30
+TrackPtBinEdges     0.5 1 2 3 4 8 300
+
+# Event mixing
+DoEventMixing 1           # 0 = Do not mix events. 1 = Generate mixed events
+NMixedEventsPerDijet 10   # Number of events mixed with each dijet event
+VzTolerance 1             # Maximum vz distance for event to be accepted in mixing
 
 # Debug
 DebugLevel 2   # 0 = No debug messages, 1 = Some debug messages, 2 = All debug messages
