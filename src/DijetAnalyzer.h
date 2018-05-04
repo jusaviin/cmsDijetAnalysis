@@ -12,7 +12,7 @@
 // Own includes
 #include "ConfigurationCard.h"
 #include "DijetHistograms.h"
-#include "ForestReader.h"
+#include "HighForestReader.h"
 #include "TrkCorr.h"
 
 class DijetAnalyzer{

@@ -196,8 +196,8 @@ void DijetAnalyzer::RunAnalysis(){
   // Input file and forest reader for analysis
   TFile *inputFile;
   TFile *mixedEventFile;
-  ForestReader *treeReader = new ForestReader(fCard->Get("DataType"));
-  ForestReader *mixedEventReader = new ForestReader(fCard->Get("DataType"));
+  HighForestReader *treeReader = new HighForestReader(fCard->Get("DataType"));
+  HighForestReader *mixedEventReader = new HighForestReader(fCard->Get("DataType"));
   
   // Event variables
   Int_t nEvents = 0;            // Number of events
