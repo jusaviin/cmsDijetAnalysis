@@ -518,8 +518,9 @@ void DijetAnalyzer::RunAnalysis(){
       
     } // Event loop
     
-    // Close the input file after the event has been read
+    // Close the input files after the event has been read
     inputFile->Close();
+    mixedEventFile->Close();
     
   } // File loop
   
