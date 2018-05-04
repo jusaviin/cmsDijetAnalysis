@@ -13,6 +13,8 @@ HighForestReader::HighForestReader() :
   fHltTree(0),
   fSkimTree(0),
   fTrackTree(0),
+  fnJetsBranch(0),
+  fnTracksBranch(0),
   fJetPtArray(),
   fJetPhiArray(),
   fJetEtaArray(),
@@ -50,6 +52,8 @@ HighForestReader::HighForestReader(Int_t dataType) :
   fHltTree(0),
   fSkimTree(0),
   fTrackTree(0),
+  fnJetsBranch(0),
+  fnTracksBranch(0),
   fJetPtArray(),
   fJetPhiArray(),
   fJetEtaArray(),
@@ -82,7 +86,9 @@ HighForestReader::HighForestReader(const HighForestReader& in) :
   fJetTree(in.fJetTree),
   fHltTree(in.fHltTree),
   fSkimTree(in.fSkimTree),
-  fTrackTree(in.fTrackTree)
+  fTrackTree(in.fTrackTree),
+  fnJetsBranch(in.fnJetsBranch),
+  fnTracksBranch(in.fnTracksBranch)
 {
   // Copy constructor
   for(Int_t i = 0; i < fnMaxJet; i++){
@@ -127,6 +133,8 @@ HighForestReader& HighForestReader::operator=(const HighForestReader& in){
   fHltTree = in.fHltTree;
   fSkimTree = in.fSkimTree;
   fTrackTree = in.fTrackTree;
+  fnJetsBranch = in.fnJetsBranch;
+  fnTracksBranch = in.fnTracksBranch;
   
   for(Int_t i = 0; i < fnMaxJet; i++){
     fJetPtArray[i] = in.fJetPtArray[i];
@@ -276,7 +284,7 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
 /*
  * Load an event to memory
  */
-void HighForestReader::GetEvent(Int_t nEvent) const{
+void HighForestReader::GetEvent(Int_t nEvent){
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
   fHltTree->GetEntry(nEvent);
@@ -360,17 +368,17 @@ Float_t HighForestReader::GetTrackChi2(Int_t iTrack) const{
 }
 
 // Getter for number of degrees of freedom in reconstruction fit
-UChar_t HighForestReader::GetNTrackDegreesOfFreedom(Int_t iTrack) const{
+Int_t HighForestReader::GetNTrackDegreesOfFreedom(Int_t iTrack) const{
   return fnTrackDegreesOfFreedomArray[iTrack];
 }
 
 // Getter for number of hits in tracker layers
-UChar_t HighForestReader::GetNHitsTrackerLayer(Int_t iTrack) const{
+Int_t HighForestReader::GetNHitsTrackerLayer(Int_t iTrack) const{
   return fnHitsTrackerLayerArray[iTrack];
 }
 
 // Getter for number of hits for the track
-UChar_t HighForestReader::GetNHitsTrack(Int_t iTrack) const{
+Int_t HighForestReader::GetNHitsTrack(Int_t iTrack) const{
   return fnHitsTrackArray[iTrack];
 }
 

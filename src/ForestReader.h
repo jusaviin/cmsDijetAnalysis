@@ -36,7 +36,7 @@ public:
   ForestReader& operator=(const ForestReader& obj); // Equal sign operator
   
   // Methods
-  virtual void GetEvent(Int_t nEvent) const = 0;           // Get the nth event in tree
+  virtual void GetEvent(Int_t nEvent) = 0;           // Get the nth event in tree
   Int_t GetNEvents() const;                                // Get the number of events
   virtual void ReadForestFromFile(TFile *inputFile) = 0;   // Read the forest from a file
   
@@ -76,9 +76,9 @@ public:
   virtual Float_t GetTrackVertexDistanceXY(Int_t iTrack) const = 0;      // Getter for track distance from primary vertex in xy-direction
   virtual Float_t GetTrackVertexDistanceXYError(Int_t iTrack) const = 0; // Getter for error of track distance from primary vertex in xy-direction
   virtual Float_t GetTrackChi2(Int_t iTrack) const = 0;                  // Getter for track chi2 value from reconstruction fit
-  virtual UChar_t GetNTrackDegreesOfFreedom(Int_t iTrack) const = 0;     // Getter for number of degrees of freedom in reconstruction fit
-  virtual UChar_t GetNHitsTrackerLayer(Int_t iTrack) const = 0;          // Getter for number of hits in tracker layers
-  virtual UChar_t GetNHitsTrack(Int_t iTrack) const = 0;                 // Getter for number of hits for the track
+  virtual Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const = 0;     // Getter for number of degrees of freedom in reconstruction fit
+  virtual Int_t GetNHitsTrackerLayer(Int_t iTrack) const = 0;          // Getter for number of hits in tracker layers
+  virtual Int_t GetNHitsTrack(Int_t iTrack) const = 0;                 // Getter for number of hits for the track
   virtual Float_t GetTrackEnergyEcal(Int_t iTrack) const = 0;            // Getter for track energy in ECal
   virtual Float_t GetTrackEnergyHcal(Int_t iTrack) const = 0;            // Getter for track energy in HCal
   
@@ -100,7 +100,6 @@ protected:
   TBranch *fJetPtBranch;         // Branch for jet pT
   TBranch *fJetPhiBranch;        // Branch for jet phi
   TBranch *fJetEtaBranch;        // Branch for jet eta
-  TBranch *fnJetsBranch;         // Branch for number of jets in an event
   TBranch *fJetRawPtBranch;      // Branch for raw jet pT
   TBranch *fJetMaxTrackPtBranch; // Maximum pT for a track inside a jet
   
@@ -120,7 +119,6 @@ protected:
   TBranch *fTrackPtErrorBranch;               // Branch for track pT error
   TBranch *fTrackPhiBranch;                   // Branch for track phi
   TBranch *fTrackEtaBranch;                   // Branch for track eta
-  TBranch *fnTracksBranch;                    // Branch for number of tracks
   TBranch *fHighPurityTrackBranch;            // Branch for high purity of the track
   TBranch *fTrackVertexDistanceZBranch;       // Branch for track distance from primary vertex in z-direction
   TBranch *fTrackVertexDistanceZErrorBranch;  // Branch for error for track distance from primary vertex in z-direction

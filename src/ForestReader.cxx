@@ -13,7 +13,6 @@ ForestReader::ForestReader() :
   fJetPtBranch(0),
   fJetPhiBranch(0),
   fJetEtaBranch(0),
-  fnJetsBranch(0),
   fJetRawPtBranch(0),
   fJetMaxTrackPtBranch(0),
   fCaloJetFilterBranch(0),
@@ -27,7 +26,6 @@ ForestReader::ForestReader() :
   fTrackPtErrorBranch(0),
   fTrackPhiBranch(0),
   fTrackEtaBranch(0),
-  fnTracksBranch(0),
   fHighPurityTrackBranch(0),
   fTrackVertexDistanceZBranch(0),
   fTrackVertexDistanceZErrorBranch(0),
@@ -67,7 +65,6 @@ ForestReader::ForestReader(Int_t dataType) :
   fJetPtBranch(0),
   fJetPhiBranch(0),
   fJetEtaBranch(0),
-  fnJetsBranch(0),
   fJetRawPtBranch(0),
   fJetMaxTrackPtBranch(0),
   fCaloJetFilterBranch(0),
@@ -81,7 +78,6 @@ ForestReader::ForestReader(Int_t dataType) :
   fTrackPtErrorBranch(0),
   fTrackPhiBranch(0),
   fTrackEtaBranch(0),
-  fnTracksBranch(0),
   fHighPurityTrackBranch(0),
   fTrackVertexDistanceZBranch(0),
   fTrackVertexDistanceZErrorBranch(0),
@@ -121,7 +117,6 @@ ForestReader::ForestReader(const ForestReader& in) :
   fJetPtBranch(in.fJetPtBranch),
   fJetPhiBranch(in.fJetPhiBranch),
   fJetEtaBranch(in.fJetEtaBranch),
-  fnJetsBranch(in.fnJetsBranch),
   fJetRawPtBranch(in.fJetRawPtBranch),
   fJetMaxTrackPtBranch(in.fJetMaxTrackPtBranch),
   fCaloJetFilterBranch(in.fCaloJetFilterBranch),
@@ -135,7 +130,6 @@ ForestReader::ForestReader(const ForestReader& in) :
   fTrackPtErrorBranch(in.fTrackPtErrorBranch),
   fTrackPhiBranch(in.fTrackPhiBranch),
   fTrackEtaBranch(in.fTrackEtaBranch),
-  fnTracksBranch(in.fnTracksBranch),
   fHighPurityTrackBranch(in.fHighPurityTrackBranch),
   fTrackVertexDistanceZBranch(in.fTrackVertexDistanceZBranch),
   fTrackVertexDistanceZErrorBranch(in.fTrackVertexDistanceZErrorBranch),
@@ -176,7 +170,6 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fJetPtBranch = in.fJetPtBranch;
   fJetPhiBranch = in.fJetPhiBranch;
   fJetEtaBranch = in.fJetEtaBranch;
-  fnJetsBranch = in.fnJetsBranch;
   fJetRawPtBranch = in.fJetRawPtBranch;
   fJetMaxTrackPtBranch = in.fJetMaxTrackPtBranch;
   fCaloJetFilterBranch = in.fCaloJetFilterBranch;
@@ -190,7 +183,6 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fTrackPtErrorBranch = in.fTrackPtErrorBranch;
   fTrackPhiBranch = in.fTrackPhiBranch;
   fTrackEtaBranch = in.fTrackEtaBranch;
-  fnTracksBranch = in.fnTracksBranch;
   fHighPurityTrackBranch = in.fHighPurityTrackBranch;
   fTrackVertexDistanceZBranch = in.fTrackVertexDistanceZBranch;
   fTrackVertexDistanceZErrorBranch = in.fTrackVertexDistanceZErrorBranch;

@@ -32,7 +32,7 @@ public:
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
   
-  void GetEvent(Int_t nEvent) const;           // Get the nEventh event from the file
+  void GetEvent(Int_t nEvent);           // Get the nEventh event from the file
   
   // Getters for leaves in jet tree
   Float_t GetJetPt(Int_t iJet) const;         // Getter for jet pT
@@ -52,9 +52,9 @@ public:
   Float_t GetTrackVertexDistanceXY(Int_t iTrack) const;      // Getter for track distance from primary vertex in xy-direction
   Float_t GetTrackVertexDistanceXYError(Int_t iTrack) const; // Getter for error of track distance from primary vertex in xy-direction
   Float_t GetTrackChi2(Int_t iTrack) const;                  // Getter for track chi2 value from reconstruction fit
-  UChar_t GetNTrackDegreesOfFreedom(Int_t iTrack) const;     // Getter for number of degrees of freedom in reconstruction fit
-  UChar_t GetNHitsTrackerLayer(Int_t iTrack) const;          // Getter for number of hits in tracker layers
-  UChar_t GetNHitsTrack(Int_t iTrack) const;                 // Getter for number of hits for the track
+  Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const;     // Getter for number of degrees of freedom in reconstruction fit
+  Int_t GetNHitsTrackerLayer(Int_t iTrack) const;          // Getter for number of hits in tracker layers
+  Int_t GetNHitsTrack(Int_t iTrack) const;                 // Getter for number of hits for the track
   Float_t GetTrackEnergyEcal(Int_t iTrack) const;            // Getter for track energy in ECal
   Float_t GetTrackEnergyHcal(Int_t iTrack) const;            // Getter for track energy in HCal
   
@@ -69,6 +69,10 @@ private:
   TTree *fHltTree;         // Tree for high level trigger information
   TTree *fSkimTree;        // Tree for event selection information
   TTree *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
+  
+  // Non-common branches for all types of trees
+  TBranch *fnJetsBranch;         // Branch for number of jets in an event
+  TBranch *fnTracksBranch;       // Branch for number of tracks
   
   // Leaves for jet tree
   Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
