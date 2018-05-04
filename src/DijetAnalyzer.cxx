@@ -197,7 +197,14 @@ void DijetAnalyzer::RunAnalysis(){
   TFile *inputFile;
   TFile *mixedEventFile;
   HighForestReader *treeReader = new HighForestReader(fCard->Get("DataType"));
-  HighForestReader *mixedEventReader = new HighForestReader(fCard->Get("DataType"));
+  ForestReader *mixedEventReader;
+  
+  // For PbPb, the Forest in mixing file is in different format as for other datasets
+  if(fCard->Get("DataType") == ForestReader::kPbPb){
+    mixedEventReader = new SkimForestReader(ForestReader::kPbPb);
+  } else {
+    mixedEventReader = new HighForestReader(fCard->Get("DataType"));
+  }
   
   // Event variables
   Int_t nEvents = 0;            // Number of events
@@ -255,7 +262,13 @@ void DijetAnalyzer::RunAnalysis(){
     
     // Find the filename
     currentFile = fFileNames.at(iFile);
-    currentMixedEventFile = fFileNames.at(iFile);
+    
+    // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
+    if(fCard->Get("DataType") == ForestReader::kPbPb){
+      currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
+    } else {
+      currentMixedEventFile = fFileNames.at(iFile);
+    }
     
     // Open the file and check that everything goes fine
     inputFile = TFile::Open(currentFile);

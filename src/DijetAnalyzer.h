@@ -13,6 +13,7 @@
 #include "ConfigurationCard.h"
 #include "DijetHistograms.h"
 #include "HighForestReader.h"
+#include "SkimForestReader.h"
 #include "TrkCorr.h"
 
 class DijetAnalyzer{
