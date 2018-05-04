@@ -30,14 +30,14 @@ public:
   
   // Constructors and destructors
   ForestReader();                                   // Default constructor
-  ForestReader(Int_t dataType);                       // Custom constructor
+  ForestReader(Int_t dataType);                     // Custom constructor
   ForestReader(const ForestReader& in);             // Copy constructor
   virtual ~ForestReader();                          // Destructor
   ForestReader& operator=(const ForestReader& obj); // Equal sign operator
   
   // Methods
-  void GetEvent(Int_t nEvent) const;             // Get the nth event in tree
-  Int_t GetNEvents() const;                      // Get the number of events
+  virtual void GetEvent(Int_t nEvent) const = 0;           // Get the nth event in tree
+  Int_t GetNEvents() const;                                // Get the number of events
   virtual void ReadForestFromFile(TFile *inputFile) = 0;   // Read the forest from a file
   
   // Getters for leaves in heavy ion tree
@@ -49,7 +49,7 @@ public:
   virtual Float_t GetJetPt(Int_t iJet) const = 0;         // Getter for jet pT
   virtual Float_t GetJetPhi(Int_t iJet) const = 0;        // Getter for jet phi
   virtual Float_t GetJetEta(Int_t iJet) const = 0;        // Getter for jet eta
-  virtual Int_t GetNJets() const;                     // Getter for number of jets
+  virtual Int_t GetNJets() const;                         // Getter for number of jets
   virtual Float_t GetJetRawPt(Int_t iJet) const = 0;      // Getter for jet raw pT
   virtual Float_t GetJetMaxTrackPt(Int_t iJet) const = 0; // Getter for maximum track pT inside a jet
   
@@ -91,13 +91,6 @@ protected:
   virtual void Initialize() = 0;  // Connect the branches to the tree
   
   Int_t fDataType;  // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
-  
-  // Trees in the forest
-  TTree *fHeavyIonTree;    // Tree for heavy ion event information
-  TTree *fJetTree;         // Tree for jet information
-  TTree *fHltTree;         // Tree for high level trigger information
-  TTree *fSkimTree;        // Tree for event selection information
-  TTree *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;            // Branch for vertex z-position

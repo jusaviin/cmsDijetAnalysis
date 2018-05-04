@@ -32,6 +32,8 @@ public:
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
   
+  void GetEvent(Int_t nEvent) const;           // Get the nEventh event from the file
+  
   // Getters for leaves in jet tree
   Float_t GetJetPt(Int_t iJet) const;         // Getter for jet pT
   Float_t GetJetPhi(Int_t iJet) const;        // Getter for jet phi
@@ -60,6 +62,13 @@ private:
   
   // Methods
   void Initialize();  // Connect the branches to the tree
+  
+  // Trees in the forest
+  TTree *fHeavyIonTree;    // Tree for heavy ion event information
+  TTree *fJetTree;         // Tree for jet information
+  TTree *fHltTree;         // Tree for high level trigger information
+  TTree *fSkimTree;        // Tree for event selection information
+  TTree *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
   
   // Leaves for jet tree
   Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event

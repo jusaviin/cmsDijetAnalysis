@@ -8,11 +8,6 @@
  */
 ForestReader::ForestReader() :
   fDataType(0),
-  fHeavyIonTree(0),
-  fJetTree(0),
-  fHltTree(0),
-  fSkimTree(0),
-  fTrackTree(0),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fJetPtBranch(0),
@@ -67,11 +62,6 @@ ForestReader::ForestReader() :
  */
 ForestReader::ForestReader(Int_t dataType) :
   fDataType(0),
-  fHeavyIonTree(0),
-  fJetTree(0),
-  fHltTree(0),
-  fSkimTree(0),
-  fTrackTree(0),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fJetPtBranch(0),
@@ -126,11 +116,6 @@ ForestReader::ForestReader(Int_t dataType) :
  */
 ForestReader::ForestReader(const ForestReader& in) :
   fDataType(in.fDataType),
-  fHeavyIonTree(in.fHeavyIonTree),
-  fJetTree(in.fJetTree),
-  fHltTree(in.fHltTree),
-  fSkimTree(in.fSkimTree),
-  fTrackTree(in.fTrackTree),
   fHiVzBranch(in.fHiVzBranch),
   fHiBinBranch(in.fHiBinBranch),
   fJetPtBranch(in.fJetPtBranch),
@@ -186,11 +171,6 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   if (&in==this) return *this;
   
   fDataType = in.fDataType;
-  fHeavyIonTree = in.fHeavyIonTree;
-  fJetTree = in.fJetTree;
-  fHltTree = in.fHltTree;
-  fSkimTree = in.fSkimTree;
-  fTrackTree = in.fTrackTree;
   fHiVzBranch = in.fHiVzBranch;
   fHiBinBranch = in.fHiBinBranch;
   fJetPtBranch = in.fJetPtBranch;
@@ -260,17 +240,6 @@ void ForestReader::SetDataType(Int_t dataType){
     // If the sanity check passes, set the given data type
     fDataType = dataType;
   }
-}
-
-/*
- * Load an event to memory
- */
-void ForestReader::GetEvent(Int_t nEvent) const{
-  fHeavyIonTree->GetEntry(nEvent);
-  fJetTree->GetEntry(nEvent);
-  fHltTree->GetEntry(nEvent);
-  fSkimTree->GetEntry(nEvent);
-  fTrackTree->GetEntry(nEvent);
 }
 
 // Getter for number of events in the tree

@@ -8,6 +8,11 @@
  */
 HighForestReader::HighForestReader() :
   ForestReader(),
+  fHeavyIonTree(0),
+  fJetTree(0),
+  fHltTree(0),
+  fSkimTree(0),
+  fTrackTree(0),
   fJetPtArray(),
   fJetPhiArray(),
   fJetEtaArray(),
@@ -40,6 +45,11 @@ HighForestReader::HighForestReader() :
  */
 HighForestReader::HighForestReader(Int_t dataType) :
   ForestReader(dataType),
+  fHeavyIonTree(0),
+  fJetTree(0),
+  fHltTree(0),
+  fSkimTree(0),
+  fTrackTree(0),
   fJetPtArray(),
   fJetPhiArray(),
   fJetEtaArray(),
@@ -67,7 +77,12 @@ HighForestReader::HighForestReader(Int_t dataType) :
  * Copy constructor
  */
 HighForestReader::HighForestReader(const HighForestReader& in) :
-  ForestReader(in)
+  ForestReader(in),
+  fHeavyIonTree(in.fHeavyIonTree),
+  fJetTree(in.fJetTree),
+  fHltTree(in.fHltTree),
+  fSkimTree(in.fSkimTree),
+  fTrackTree(in.fTrackTree)
 {
   // Copy constructor
   for(Int_t i = 0; i < fnMaxJet; i++){
@@ -105,54 +120,13 @@ HighForestReader& HighForestReader::operator=(const HighForestReader& in){
   
   if (&in==this) return *this;
   
-  fDataType = in.fDataType;
+  ForestReader::operator=(in);
+  
   fHeavyIonTree = in.fHeavyIonTree;
   fJetTree = in.fJetTree;
   fHltTree = in.fHltTree;
   fSkimTree = in.fSkimTree;
   fTrackTree = in.fTrackTree;
-  fHiVzBranch = in.fHiVzBranch;
-  fHiBinBranch = in.fHiBinBranch;
-  fJetPtBranch = in.fJetPtBranch;
-  fJetPhiBranch = in.fJetPhiBranch;
-  fJetEtaBranch = in.fJetEtaBranch;
-  fnJetsBranch = in.fnJetsBranch;
-  fJetRawPtBranch = in.fJetRawPtBranch;
-  fJetMaxTrackPtBranch = in.fJetMaxTrackPtBranch;
-  fCaloJetFilterBranch = in.fCaloJetFilterBranch;
-  fPrimaryVertexBranch = in.fPrimaryVertexBranch;
-  fBeamScrapingBranch = in.fBeamScrapingBranch;
-  fCollisionEventSelectionBranch = in.fCollisionEventSelectionBranch;
-  fHBHENoiseBranch = in.fHBHENoiseBranch;
-  fHfCoincidenceBranch = in.fHfCoincidenceBranch;
-  fClusterCompatibilityBranch = in.fClusterCompatibilityBranch;
-  fTrackPtBranch = in.fTrackPtBranch;
-  fTrackPtErrorBranch = in.fTrackPtErrorBranch;
-  fTrackPhiBranch = in.fTrackPhiBranch;
-  fTrackEtaBranch = in.fTrackEtaBranch;
-  fnTracksBranch = in.fnTracksBranch;
-  fHighPurityTrackBranch = in.fHighPurityTrackBranch;
-  fTrackVertexDistanceZBranch = in.fTrackVertexDistanceZBranch;
-  fTrackVertexDistanceZErrorBranch = in.fTrackVertexDistanceZErrorBranch;
-  fTrackVertexDistanceXYBranch = in.fTrackVertexDistanceXYBranch;
-  fTrackVertexDistanceXYErrorBranch = in.fTrackVertexDistanceXYErrorBranch;
-  fTrackChi2Branch = in.fTrackChi2Branch;
-  fnTrackDegreesOfFreedomBranch = in.fnTrackDegreesOfFreedomBranch;
-  fnHitsTrackerLayerBranch = in.fnHitsTrackerLayerBranch;
-  fnHitsTrackBranch = in.fnHitsTrackBranch;
-  fTrackEnergyEcalBranch = in.fTrackEnergyEcalBranch;
-  fTrackEnergyHcalBranch = in.fTrackEnergyHcalBranch;
-  fVertexZ = in.fVertexZ;
-  fHiBin = in.fHiBin;
-  fnJets = in.fnJets;
-  fCaloJetFilterBit = in.fCaloJetFilterBit;
-  fPrimaryVertexFilterBit = in.fPrimaryVertexFilterBit;
-  fBeamScrapingFilterBit = in.fBeamScrapingFilterBit;
-  fCollisionEventSelectionFilterBit = in.fCollisionEventSelectionFilterBit;
-  fHBHENoiseFilterBit = in.fHBHENoiseFilterBit;
-  fHfCoincidenceFilterBit = in.fHfCoincidenceFilterBit;
-  fClusterCompatibilityFilterBit = in.fClusterCompatibilityFilterBit;
-  fnTracks = in.fnTracks;
   
   for(Int_t i = 0; i < fnMaxJet; i++){
     fJetPtArray[i] = in.fJetPtArray[i];
@@ -297,6 +271,17 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
   }
   
   Initialize();
+}
+
+/*
+ * Load an event to memory
+ */
+void HighForestReader::GetEvent(Int_t nEvent) const{
+  fHeavyIonTree->GetEntry(nEvent);
+  fJetTree->GetEntry(nEvent);
+  fHltTree->GetEntry(nEvent);
+  fSkimTree->GetEntry(nEvent);
+  fTrackTree->GetEntry(nEvent);
 }
 
 // Getter for jet pT
