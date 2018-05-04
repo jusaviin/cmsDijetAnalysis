@@ -280,9 +280,21 @@ void DijetAnalyzer::RunAnalysis(){
       continue;
     }
     
+    // Check that the mixing file exists
+    if(!mixedEventFile && mixEvents){
+      cout << "Warning! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
+      continue;
+    }
+    
     // Check that the file is not zombie
     if(inputFile->IsZombie()){
       cout << "Warning! The following file is a zombie: " << currentFile.Data() << endl;
+      continue;
+    }
+    
+    // Check that the file is not zombie
+    if(mixedEventFile->IsZombie() && mixEvents){
+      cout << "Warning! The following mixing file is a zombie: " << currentMixedEventFile.Data() << endl;
       continue;
     }
     
@@ -291,12 +303,11 @@ void DijetAnalyzer::RunAnalysis(){
     
     // If file is good, read the forest from the file
     treeReader->ReadForestFromFile(inputFile);  // There seems to be a memory leak here...
-    // TODO: Maybe one could try to use TTreeReader instead of setting branch addresses manually...
     nEvents = treeReader->GetNEvents();
     
     // Read also the forest for event mixing
     if(mixEvents){
-      mixedEventReader->ReadForestFromFile(mixedEventFile);  // TODO: For PbPb we need to use different file for event mixing
+      mixedEventReader->ReadForestFromFile(mixedEventFile);  // Read the mixed event forest
       nEventsInMixingFile = mixedEventReader->GetNEvents(); // Read the number of events in the mixing file
       firstMixingEvent = nEventsInMixingFile*mixedEventRandomizer->Rndm();  // Start mixing from random spot in file
       if(firstMixingEvent == nEventsInMixingFile) firstMixingEvent--;  // Move the index to allowed range
