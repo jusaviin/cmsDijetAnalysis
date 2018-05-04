@@ -143,9 +143,7 @@ private:
   TBranch *fnHitsTrackBranch;                 // Branch for number of hits for the track
   TBranch *fTrackEnergyEcalBranch;            // Branch for track energy in ECal
   TBranch *fTrackEnergyHcalBranch;            // Branch for track energy in HCal
-  
-  // TODO: Change all leaf types to root defined ones to avoid losing precision!!!!
-  
+    
   // Leaves for heavy ion tree
   Float_t fVertexZ;    // Vertex z-position
   Int_t fHiBin;        // HiBin = Centrality percentile * 2

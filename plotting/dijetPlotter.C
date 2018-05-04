@@ -10,6 +10,29 @@
  *   const char *name = Name of the THnSparse that is read
  *   int xAxis = Index for the axis in THnSparse that is projected to x-axis for TH2D
  *   int yAxis = Index for the axis in THnSparse that is projected to y-axis for TH2D
+ *   int nAxes = Number of axes that are restained for the projection
+ *   int *restrictionAxis = Index for the axis in THnSparse that is used as a restriction for the projection
+ *   int *lowBinIndex = Indices of the lowest considered bins in the restriction axis
+ *   int *highBinIndex = Indices of the highest considered bins in the restriction axis
+ */
+TH2D* findHistogram2D(TFile *inputFile, const char *name, int xAxis, int yAxis, int nAxes, int *axisNumber, int *lowBinIndex, int *highBinIndex){
+  THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
+  for(int i = 0; i < nAxes; i++) histogramArray->GetAxis(axisNumber[i])->SetRange(lowBinIndex[i],highBinIndex[i]);
+  char newName[100];
+  sprintf(newName,"%s%d",histogramArray->GetName(),lowBinIndex[0]);
+  TH2D *projectedHistogram = (TH2D*) histogramArray->Projection(yAxis,xAxis);
+  projectedHistogram->SetName(newName);
+  return projectedHistogram;
+}
+
+/*
+ * Extract a 2D histogram from a given centrality bin from THnSparseD
+ *
+ *  Arguments:
+ *   TFile *inputFile = Inputfile containing the THnSparse to be read
+ *   const char *name = Name of the THnSparse that is read
+ *   int xAxis = Index for the axis in THnSparse that is projected to x-axis for TH2D
+ *   int yAxis = Index for the axis in THnSparse that is projected to y-axis for TH2D
  *   int restrictionAxis = Index for the axis in THnSparse that is used as a restriction for the projection
  *   int lowBinIndex = Index of the lowest considered bin in the restriction axis
  *   int highBinIndex = Index of the highest considered bin in the restriction axis
@@ -29,6 +52,28 @@ TH2D* findHistogram2D(TFile *inputFile, const char *name, int xAxis, int yAxis, 
 }
 
 /*
+ * Extract a 2D histogram from a given centrality bin from THnSparseD
+ *
+ *  Arguments:
+ *   TFile *inputFile = Inputfile containing the THnSparse to be read
+ *   const char *name = Name of the THnSparse that is read
+ *   int xAxis = Index for the axis in THnSparse that is projected to x-axis for TH1D
+ *   int nAxes = Number of axes that are restained for the projection
+ *   int *restrictionAxis = Index for the axis in THnSparse that is used as a restriction for the projection
+ *   int *lowBinIndex = Indices of the lowest considered bins in the restriction axis
+ *   int *highBinIndex = Indices of the highest considered bins in the restriction axis
+ */
+TH1D* findHistogram(TFile *inputFile, const char *name, int xAxis, int nAxes, int *axisNumber, int *lowBinIndex, int *highBinIndex){
+  THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
+  for(int i = 0; i < nAxes; i++) histogramArray->GetAxis(axisNumber[i])->SetRange(lowBinIndex[i],highBinIndex[i]);
+  char newName[100];
+  sprintf(newName,"%s%d",histogramArray->GetName(),lowBinIndex[0]);
+  TH1D *projectedHistogram = (TH1D*) histogramArray->Projection(xAxis);
+  projectedHistogram->SetName(newName);
+  return projectedHistogram;
+}
+
+/*
  * Extract a histogram from a given centrality bin from THnSparseD
  *
  *  Arguments:
@@ -42,7 +87,7 @@ TH2D* findHistogram2D(TFile *inputFile, const char *name, int xAxis, int yAxis, 
  *   int lowBinIndex2 = Index of the lowest considered bin in the second restriction axis
  *   int highBinIndex2 = Index of the highest considered bin in the second restriction axis
  */
-TH1D* findHistogram(TFile *inputFile, const char *name, int xAxis, int restrictionAxis, int lowBinIndex, int highBinIndex, int restrictionAxis2 = 0, int lowBinIndex2 = 0, int highBinIndex2 = 0, bool debug = false){
+TH1D* findHistogram(TFile *inputFile, const char *name, int xAxis, int restrictionAxis, int lowBinIndex, int highBinIndex, int restrictionAxis2 = 0, int lowBinIndex2 = 0, int highBinIndex2 = 0){
   THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
   histogramArray->GetAxis(restrictionAxis)->SetRange(lowBinIndex,highBinIndex);
   if(highBinIndex2 > 0 && lowBinIndex2 > 0) histogramArray->GetAxis(restrictionAxis2)->SetRange(lowBinIndex2,highBinIndex2);
@@ -108,17 +153,20 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
+  
+  // Draw mixed event histograms for selected jet-track corraletion histograms
+  bool drawMixedEvent = true;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -159,6 +207,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   // Sanity check for drawn track pT bins
   if(firstDrawnTrackPtBin < 0) firstDrawnTrackPtBin = 0;
   if(lastDrawnTrackPtBin > nTrackPtBins-1) lastDrawnTrackPtBin = nTrackPtBins-1;
+  
+  // Define the number of correlation types (same event = 0, mixed event = 1)
+  const int nCorrelationTypes = 2;
   
   // ==================================================================
   // ====================== End of configuration ======================
@@ -242,9 +293,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TH2D *hTrackEtaPhiUncorrected[nCentralityBins];     // 2D eta-phi histogram for all jets
   
   // Histograms for track-leading jet correlations
-  TH1D *hTrackLeadingJetDeltaPhi[nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackLeadingJetDeltaEta[nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackLeadingJetDeltaEtaDeltaPhi[nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaEta[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
+  TH2D *hTrackLeadingJetDeltaEtaDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for uncorrected track-leading jet correlations
   TH1D *hTrackLeadingJetDeltaPhiUncorrected[nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
@@ -415,22 +466,30 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       
       if(drawTrackLeadingJetCorrelations){
         
-      /*
-       * Read the histograms for track-leading jet correlations
-       *
-       * THnSparse for track-leading jet correlations:
-       *
-       *   Histogram name        Axis index             Content of axis
-       * ---------------------------------------------------------------------------
-       *   trackLeadingJet         Axis 0                   Track pT
-       *   trackLeadingJet         Axis 1     DeltaPhi between track and leading jet
-       *   trackLeadingJet         Axis 2     DeltaEta between track and leading jet
-       *   trackLeadingJet         Axis 3                Dijet asymmetry
-       *   trackLeadingJet         Axis 4                   Centrality
-       */
-      hTrackLeadingJetDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-      hTrackLeadingJetDeltaEta[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-      hTrackLeadingJetDeltaEtaDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJet",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
+        /*
+         * Read the histograms for track-leading jet correlations
+         *
+         * THnSparse for track-leading jet correlations:
+         *
+         *   Histogram name        Axis index             Content of axis
+         * ---------------------------------------------------------------------------
+         *   trackLeadingJet         Axis 0                   Track pT
+         *   trackLeadingJet         Axis 1     DeltaPhi between track and leading jet
+         *   trackLeadingJet         Axis 2     DeltaEta between track and leading jet
+         *   trackLeadingJet         Axis 3                Dijet asymmetry
+         *   trackLeadingJet         Axis 4                   Centrality
+         */
+        int axisIndices[3];
+        int lowLimits[3];
+        int highLimits[3];
+        for(int iCorrType = 0; iCorrType < nCorrelationTypes; iCorrType++){
+          axisIndices[0] = 5; axisIndices[1] = 4; axisIndices[2] = 0;
+          lowLimits[0] = iCorrType+1; lowLimits[1] = lowerCentralityBin; lowLimits[2] = lowerTrackPtBin;
+          highLimits[0] = iCorrType+1; highLimits[1] = higherCentralityBin; highLimits[2] = higherTrackPtBin;
+        hTrackLeadingJetDeltaPhi[iCorrType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",1,3,axisIndices,lowLimits,highLimits);
+        hTrackLeadingJetDeltaEta[iCorrType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",2,3,axisIndices,lowLimits,highLimits);
+        hTrackLeadingJetDeltaEtaDeltaPhi[iCorrType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJet",1,2,3,axisIndices,lowLimits,highLimits);
+        }
       }
       
       if(drawUncorrectedTrackLeadingJetCorrelations){
@@ -961,7 +1020,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       if(drawTrackLeadingJetCorrelations){
         
         // === Track-leading jet deltaPhi ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
+        drawer->DrawHistogram(hTrackLeadingJetDeltaPhi[1][iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
         setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
@@ -970,7 +1029,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         saveFigure(saveFigures,"trackLeadingJetDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
         
         // === Track-leading jet deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEta[iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
+        drawer->DrawHistogram(hTrackLeadingJetDeltaEta[1][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
         legend = new TLegend(0.52,0.75,0.82,0.9);
         setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
@@ -985,7 +1044,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
         drawer->SetLogZ(logCorrelation);
         
         // === Track-leading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ",style3D);
+        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhi[1][iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ",style3D);
         legend = new TLegend(-0.05,0.85,0.30,0.99);
         setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
         legend->Draw();
