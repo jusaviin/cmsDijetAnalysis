@@ -99,6 +99,21 @@ TH1D* findHistogram(TFile *inputFile, const char *name, int xAxis, int restricti
 }
 
 /*
+ * Do the mixed event correction and return corrected TH2D
+ *
+ *  TH2D* sameEventHistogram = Histogram with correlation from the same event
+ *  TH2D* mixedEventHistogram = Histogram with correlation from different events
+ */
+TH2D* mixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEventHistogram){
+  char newName[100];
+  sprintf(newName,"%sCorrected",sameEventHistogram->GetName());
+  TH2D* correctedHistogram = (TH2D*) sameEventHistogram->Clone(newName);
+  mixedEventHistogram->Scale(1.0/mixedEventHistogram->GetMaximum());
+  correctedHistogram->Divide(mixedEventHistogram);
+  return correctedHistogram;
+}
+
+/*
  * Save the figure in current canvas to a file
  *
  *  bool saveFigures = true: save figure, false: do nothing
@@ -160,7 +175,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -168,7 +183,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
+  bool drawSameEvent = true;
   bool drawMixedEvent = true;
+  bool drawCorrected = true;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -210,8 +227,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   if(firstDrawnTrackPtBin < 0) firstDrawnTrackPtBin = 0;
   if(lastDrawnTrackPtBin > nTrackPtBins-1) lastDrawnTrackPtBin = nTrackPtBins-1;
   
-  // Define the number of correlation types (same event = 0, mixed event = 1)
-  const int nCorrelationTypes = 2;
+  // Define the number of correlation types (same event = 0, mixed event = 1, 2 = corrected same event)
+  const int nCorrelationTypes = 3;
   
   // ==================================================================
   // ====================== End of configuration ======================
@@ -340,7 +357,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   int highLimits[3];
   
   // Load only the bins and histograms that are drawn
-  for(int iCentralityBin = 0; iCentralityBin <= lastDrawnCentralityBin; iCentralityBin++){
+  for(int iCentralityBin = firstDrawnCentralityBin; iCentralityBin <= lastDrawnCentralityBin; iCentralityBin++){
     
     // Select the bin indices
     if(iCentralityBin == lastDrawnCentralityBin) duplicateRemoverCentrality = 0;
@@ -428,7 +445,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
     /*
      * Tracks and track-jet correlations come for same events (correlationType = 0) and mixed events (correlationType = 1)
      */
-    for(int iCorrelationType = 0; iCorrelationType < nCorrelationTypes; iCorrelationType++){
+    for(int iCorrelationType = 0; iCorrelationType < nCorrelationTypes-1; iCorrelationType++){
       
       if(drawTracks){
         /*
@@ -616,13 +633,69 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
 
   } // Loop over centrality
   
-  // ==================================================================
-  // ============ All the histograms loaded from the file =============
-  // ==================================================================
+  // ==============================================================================
+  // ================== All the histograms loaded from the file ===================
+  // ==============================================================================
   
-  // ==================================================================
-  // ====================== Draw the histograms =======================
-  // ==================================================================
+  // ==============================================================================
+  // ===== Do the mixed event correction for jet-track correlation histograms =====
+  // ==============================================================================
+  
+  for(int iCentralityBin = firstDrawnCentralityBin; iCentralityBin <= lastDrawnCentralityBin; iCentralityBin++){
+    for(int iTrackPtBin = firstDrawnTrackPtBin; iTrackPtBin <= lastDrawnTrackPtBin; iTrackPtBin++){
+      
+      // Mixed event correction for leading jet-track correlations
+      if(drawTrackLeadingJetCorrelations){
+        hTrackLeadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackLeadingJetDeltaEtaDeltaPhi[0][iCentralityBin][iTrackPtBin],hTrackLeadingJetDeltaEtaDeltaPhi[1][iCentralityBin][iTrackPtBin]);
+        hTrackLeadingJetDeltaPhi[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
+        hTrackLeadingJetDeltaEta[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+      }
+      
+      // Mixed event correction for uncorrected leading jet-track correlations
+      if(drawUncorrectedTrackLeadingJetCorrelations){
+        hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[0][iCentralityBin][iTrackPtBin],hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[1][iCentralityBin][iTrackPtBin]);
+        hTrackLeadingJetDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
+        hTrackLeadingJetDeltaEtaUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+      }
+      
+      // Mixed event correction for pT weighted leading jet-track correlations
+      if(drawPtWeightedTrackLeadingJetCorrelations){
+        hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[0][iCentralityBin][iTrackPtBin],hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[1][iCentralityBin][iTrackPtBin]);
+        hTrackLeadingJetDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
+        hTrackLeadingJetDeltaEtaPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+      }
+      
+      // Mixed event correction for subleading jet-track correlations
+      if(drawTrackSubleadingJetCorrelations){
+        hTrackSubleadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackSubleadingJetDeltaEtaDeltaPhi[0][iCentralityBin][iTrackPtBin],hTrackSubleadingJetDeltaEtaDeltaPhi[1][iCentralityBin][iTrackPtBin]);
+        hTrackSubleadingJetDeltaPhi[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
+        hTrackSubleadingJetDeltaEta[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+      }
+      
+      // Mixed event correction for uncorrected subleading jet-track correlations
+      if(drawUncorrectedTrackSubleadingJetCorrelations){
+        hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[0][iCentralityBin][iTrackPtBin],hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[1][iCentralityBin][iTrackPtBin]);
+        hTrackSubleadingJetDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
+        hTrackSubleadingJetDeltaEtaUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+      }
+      
+      // Mixed event correction for pT weighted subleading jet-track correlations
+      if(drawPtWeightedTrackSubleadingJetCorrelations){
+        hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[0][iCentralityBin][iTrackPtBin],hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[1][iCentralityBin][iTrackPtBin]);
+        hTrackSubleadingJetDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
+        hTrackSubleadingJetDeltaEtaPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+        
+      }
+    }
+  }
+  
+  // ==============================================================================
+  // ====================== Mixed event correction applied ========================
+  // ==============================================================================
+  
+  // ==============================================================================
+  // ============================ Draw the histograms =============================
+  // ==============================================================================
   
   // Finally, draw the histograms
   JDrawer *drawer = new JDrawer();
@@ -917,11 +990,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
     // Draw both same event and mixed event histograms
     for(int iCorrelationType = 0; iCorrelationType < nCorrelationTypes; iCorrelationType++){
       
+      // Draw only types of correlations that are requested
+      if(!drawSameEvent && (iCorrelationType == 0)) continue;
+      if(!drawMixedEvent && (iCorrelationType == 1)) continue;
+      if(!drawCorrected && (iCorrelationType == 2)) continue;
+      
       // =====================================================================
       // =============== Draw track histograms in dijet events ===============
       // =====================================================================
       
-      if(drawTracks){
+      if(drawTracks && iCorrelationType < 2){ // There is no mixed event corrected histograms for just tracks
         
         // Select logarithmic drawing for pT
         drawer->SetLogY(logPt);
@@ -977,7 +1055,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       // ========= Draw uncorrected track histograms in dijet events =========
       // =====================================================================
       
-      if(drawUncorrectedTracks){
+      if(drawUncorrectedTracks && iCorrelationType < 2){ // There is no mixed event corrected histograms for just tracks
         
         // Select logarithmic drawing for pT
         drawer->SetLogY(logPt);
