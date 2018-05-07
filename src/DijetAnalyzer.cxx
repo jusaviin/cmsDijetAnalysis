@@ -514,7 +514,7 @@ void DijetAnalyzer::RunAnalysis(){
             if(mixedEventIndex == firstMixingEvent) allEventsWentThrough = true;
             
             // Do not mix with the same event
-            if(mixedEventIndex == iEvent && currentFile == currentMixedEventFile) continue;
+            if((mixedEventIndex == iEvent) && (currentFile == currentMixedEventFile)) continue;
             
             // Match vz and hiBin between the dijet event and mixed event
             if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > mixingVzTolerance) continue;
