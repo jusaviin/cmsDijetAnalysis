@@ -106,8 +106,9 @@ TH1D* findHistogram(TFile *inputFile, const char *name, int xAxis, int restricti
  *  TString systemString = Information about the collision system
  *  TString centralityString = Information about collision centrality
  *  TString trackPtString = Informaiton about track pT
+ *  TString correlationTypeString = Information about correlation type (same/mixed event)
  */
-void saveFigure(bool saveFigures, TString figureName, TString systemString, TString centralityString = "", TString trackPtString = ""){
+void saveFigure(bool saveFigures, TString figureName, TString systemString, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = ""){
   
   // Only save the figures if flag is set
   if(!saveFigures) return;
@@ -116,6 +117,7 @@ void saveFigure(bool saveFigures, TString figureName, TString systemString, TStr
   TString figName = Form("figures/%s_%s",figureName.Data(),systemString.Data());
   if(systemString.Contains("PbPb")) figName.Append(centralityString);
   figName.Append(trackPtString);
+  figName.Append(correlationTypeString);
   gPad->GetCanvas()->SaveAs(Form("%s.png",figName.Data()));
   
 }
@@ -158,7 +160,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -197,7 +199,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   // Define track pT binning to project out from THnSparses.
   // TODO: Read from ConfigurationCard
   const int nTrackPtBins = 6;
-  double trackPtBinBorders[nTrackPtBins+1] = {0.5,1,2,3,4,8,30};
+  double trackPtBinBorders[nTrackPtBins+1] = {0.5,1,2,3,4,8,300};
   int trackPtBinIndices[nTrackPtBins+1] = {0};
   
   // Choose which track pT bins to draw
@@ -281,16 +283,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TH2D *hDijetLeadingVsSubleadingPt[nCentralityBins]; // Leading versus subleading jet pT 2D histograms
   
   // Histograms for tracks in dijet events
-  TH1D *hTrackPt[nCentralityBins] ;                   // Any jet pT histograms
-  TH1D *hTrackPhi[nCentralityBins];                   // Any jet phi histograms
-  TH1D *hTrackEta[nCentralityBins];                   // Any jet eta histograms
-  TH2D *hTrackEtaPhi[nCentralityBins];                // 2D eta-phi histogram for all jets
+  TH1D *hTrackPt[nCorrelationTypes][nCentralityBins] ;                   // Any jet pT histograms
+  TH1D *hTrackPhi[nCorrelationTypes][nCentralityBins];                   // Any jet phi histograms
+  TH1D *hTrackEta[nCorrelationTypes][nCentralityBins];                   // Any jet eta histograms
+  TH2D *hTrackEtaPhi[nCorrelationTypes][nCentralityBins];                // 2D eta-phi histogram for all jets
   
   // Histograms for uncorrected tracks in dijet events
-  TH1D *hTrackPtUncorrected[nCentralityBins] ;        // Any jet pT histograms
-  TH1D *hTrackPhiUncorrected[nCentralityBins];        // Any jet phi histograms
-  TH1D *hTrackEtaUncorrected[nCentralityBins];        // Any jet eta histograms
-  TH2D *hTrackEtaPhiUncorrected[nCentralityBins];     // 2D eta-phi histogram for all jets
+  TH1D *hTrackPtUncorrected[nCorrelationTypes][nCentralityBins] ;        // Any jet pT histograms
+  TH1D *hTrackPhiUncorrected[nCorrelationTypes][nCentralityBins];        // Any jet phi histograms
+  TH1D *hTrackEtaUncorrected[nCorrelationTypes][nCentralityBins];        // Any jet eta histograms
+  TH2D *hTrackEtaPhiUncorrected[nCorrelationTypes][nCentralityBins];     // 2D eta-phi histogram for all jets
   
   // Histograms for track-leading jet correlations
   TH1D *hTrackLeadingJetDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
@@ -298,29 +300,29 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TH2D *hTrackLeadingJetDeltaEtaDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for uncorrected track-leading jet correlations
-  TH1D *hTrackLeadingJetDeltaPhiUncorrected[nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackLeadingJetDeltaEtaUncorrected[nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaEtaUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
+  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for pT weighted track-leading jet correlations
-  TH1D *hTrackLeadingJetDeltaPhiPtWeighted[nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackLeadingJetDeltaEtaPtWeighted[nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaEtaPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
+  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for track-subleading jet correlations
-  TH1D *hTrackSubleadingJetDeltaPhi[nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackSubleadingJetDeltaEta[nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhi[nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaEta[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
+  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for uncorrected track-subleading jet correlations
-  TH1D *hTrackSubleadingJetDeltaPhiUncorrected[nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackSubleadingJetDeltaEtaUncorrected[nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaEtaUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
+  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for pT weighted track-subleading jet correlations
-  TH1D *hTrackSubleadingJetDeltaPhiPtWeighted[nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackSubleadingJetDeltaEtaPtWeighted[nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaEtaPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
+  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
   
   // Project the desired centrality bins out from THnSparses
   int duplicateRemoverCentrality = -1;
@@ -331,6 +333,11 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   int duplicateRemoverTrackPt = -1;
   int lowerTrackPtBin = 0;
   int higherTrackPtBin = 0;
+  
+  // There are also histograms with projection needed for three different axes (centrality, track pT, correlation type)
+  int axisIndices[3];
+  int lowLimits[3];
+  int highLimits[3];
   
   // Load only the bins and histograms that are drawn
   for(int iCentralityBin = 0; iCentralityBin <= lastDrawnCentralityBin; iCentralityBin++){
@@ -417,182 +424,194 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       hDijetDphi[iCentralityBin] = findHistogram(inputFile,"dijet",2,4,lowerCentralityBin,higherCentralityBin);
       hDijetAsymmetry[iCentralityBin] = findHistogram(inputFile,"dijet",3,4,lowerCentralityBin,higherCentralityBin);
     }
-      
-    if(drawTracks){
-      /*
-       * Read the histograms for tracks
-       *
-       * THnSparse for track:
-       *
-       *   Histogram name        Axis index       Content of axis
-       * ----------------------------------------------------------
-       *        track              Axis 0            Track pT
-       *        track              Axis 1            Track phi
-       *        track              Axis 2            Track eta
-       *        track              Axis 3            Centrality
-       */
-      hTrackPt[iCentralityBin] = findHistogram(inputFile,"track",0,3,lowerCentralityBin,higherCentralityBin);
-      hTrackPhi[iCentralityBin] = findHistogram(inputFile,"track",1,3,lowerCentralityBin,higherCentralityBin);
-      hTrackEta[iCentralityBin] = findHistogram(inputFile,"track",2,3,lowerCentralityBin,higherCentralityBin);
-      hTrackEtaPhi[iCentralityBin] = findHistogram2D(inputFile,"track",1,2,3,lowerCentralityBin,higherCentralityBin);
-    }
     
-    if(drawUncorrectedTracks){
-      /*
-       * Read the histograms for uncorrected tracks
-       *
-       * THnSparse for uncorrected jets:
-       *
-       *   Histogram name        Axis index       Content of axis
-       * ----------------------------------------------------------
-       *   trackUncorrected        Axis 0       Uncorrected track pT
-       *   trackUncorrected        Axis 1       Uncorrected track phi
-       *   trackUncorrected        Axis 2       Uncorrected track eta
-       *   trackUncorrected        Axis 3            Centrality
-       */
-      hTrackPtUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",0,3,lowerCentralityBin,higherCentralityBin);
-      hTrackPhiUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",1,3,lowerCentralityBin,higherCentralityBin);
-      hTrackEtaUncorrected[iCentralityBin] = findHistogram(inputFile,"trackUncorrected",2,3,lowerCentralityBin,higherCentralityBin);
-      hTrackEtaPhiUncorrected[iCentralityBin] = findHistogram2D(inputFile,"trackUncorrected",1,2,3,lowerCentralityBin,higherCentralityBin);
-    }
+    /*
+     * Tracks and track-jet correlations come for same events (correlationType = 0) and mixed events (correlationType = 1)
+     */
+    for(int iCorrelationType = 0; iCorrelationType < nCorrelationTypes; iCorrelationType++){
       
-    // For track-jet correlation histograms, apply track pT binning
-    
-    for(int iTrackPtBin = firstDrawnTrackPtBin; iTrackPtBin <= lastDrawnTrackPtBin; iTrackPtBin++){
-      
-      // Select the bin indices for track pT
-      lowerTrackPtBin = trackPtBinIndices[iTrackPtBin];
-      higherTrackPtBin = trackPtBinIndices[iTrackPtBin+1]+duplicateRemoverTrackPt;
-      
-      if(drawTrackLeadingJetCorrelations){
-        
+      if(drawTracks){
         /*
-         * Read the histograms for track-leading jet correlations
+         * Read the histograms for tracks
          *
-         * THnSparse for track-leading jet correlations:
+         * THnSparse for track:
          *
-         *   Histogram name        Axis index             Content of axis
-         * ---------------------------------------------------------------------------
-         *   trackLeadingJet         Axis 0                   Track pT
-         *   trackLeadingJet         Axis 1     DeltaPhi between track and leading jet
-         *   trackLeadingJet         Axis 2     DeltaEta between track and leading jet
-         *   trackLeadingJet         Axis 3                Dijet asymmetry
-         *   trackLeadingJet         Axis 4                   Centrality
+         *   Histogram name        Axis index       Content of axis
+         * ----------------------------------------------------------
+         *        track              Axis 0            Track pT
+         *        track              Axis 1            Track phi
+         *        track              Axis 2            Track eta
+         *        track              Axis 3            Centrality
+         *        track              Axis 4         Correlation type
          */
-        int axisIndices[3];
-        int lowLimits[3];
-        int highLimits[3];
-        for(int iCorrType = 0; iCorrType < nCorrelationTypes; iCorrType++){
-          axisIndices[0] = 5; axisIndices[1] = 4; axisIndices[2] = 0;
-          lowLimits[0] = iCorrType+1; lowLimits[1] = lowerCentralityBin; lowLimits[2] = lowerTrackPtBin;
-          highLimits[0] = iCorrType+1; highLimits[1] = higherCentralityBin; highLimits[2] = higherTrackPtBin;
-        hTrackLeadingJetDeltaPhi[iCorrType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",1,3,axisIndices,lowLimits,highLimits);
-        hTrackLeadingJetDeltaEta[iCorrType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",2,3,axisIndices,lowLimits,highLimits);
-        hTrackLeadingJetDeltaEtaDeltaPhi[iCorrType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJet",1,2,3,axisIndices,lowLimits,highLimits);
+        hTrackPt[iCorrelationType][iCentralityBin] = findHistogram(inputFile,"track",0,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+        hTrackPhi[iCorrelationType][iCentralityBin] = findHistogram(inputFile,"track",1,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+        hTrackEta[iCorrelationType][iCentralityBin] = findHistogram(inputFile,"track",2,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+        hTrackEtaPhi[iCorrelationType][iCentralityBin] = findHistogram2D(inputFile,"track",1,2,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+      }
+      
+      if(drawUncorrectedTracks){
+        /*
+         * Read the histograms for uncorrected tracks
+         *
+         * THnSparse for uncorrected jets:
+         *
+         *   Histogram name        Axis index       Content of axis
+         * ----------------------------------------------------------
+         *   trackUncorrected        Axis 0       Uncorrected track pT
+         *   trackUncorrected        Axis 1       Uncorrected track phi
+         *   trackUncorrected        Axis 2       Uncorrected track eta
+         *   trackUncorrected        Axis 3            Centrality
+         *   trackUncorrected        Axis 4         Correlation type
+         */
+        hTrackPtUncorrected[iCorrelationType][iCentralityBin] = findHistogram(inputFile,"trackUncorrected",0,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+        hTrackPhiUncorrected[iCorrelationType][iCentralityBin] = findHistogram(inputFile,"trackUncorrected",1,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+        hTrackEtaUncorrected[iCorrelationType][iCentralityBin] = findHistogram(inputFile,"trackUncorrected",2,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+        hTrackEtaPhiUncorrected[iCorrelationType][iCentralityBin] = findHistogram2D(inputFile,"trackUncorrected",1,2,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+      }
+      
+      // For track-jet correlation histograms, apply track pT binning
+      
+      for(int iTrackPtBin = firstDrawnTrackPtBin; iTrackPtBin <= lastDrawnTrackPtBin; iTrackPtBin++){
+        
+        // Select the bin indices for track pT
+        lowerTrackPtBin = trackPtBinIndices[iTrackPtBin];
+        higherTrackPtBin = trackPtBinIndices[iTrackPtBin+1]+duplicateRemoverTrackPt;
+        
+        // Setup the axes with restrictions, that are common for all jet-track correlation histograms
+        axisIndices[0] = 5; lowLimits[0] = iCorrelationType+1; highLimits[0] = iCorrelationType+1;   // Same/mixed event
+        axisIndices[1] = 4; lowLimits[1] = lowerCentralityBin; highLimits[1] = higherCentralityBin;  // Centrality
+        axisIndices[2] = 0; lowLimits[2] = lowerTrackPtBin;    highLimits[2] = higherTrackPtBin;     // Track pT
+        
+        if(drawTrackLeadingJetCorrelations){
+          
+          /*
+           * Read the histograms for track-leading jet correlations
+           *
+           * THnSparse for track-leading jet correlations:
+           *
+           *   Histogram name        Axis index             Content of axis
+           * ---------------------------------------------------------------------------
+           *   trackLeadingJet         Axis 0                   Track pT
+           *   trackLeadingJet         Axis 1     DeltaPhi between track and leading jet
+           *   trackLeadingJet         Axis 2     DeltaEta between track and leading jet
+           *   trackLeadingJet         Axis 3                Dijet asymmetry
+           *   trackLeadingJet         Axis 4                   Centrality
+           *   trackLeadingJet         Axis 5                Correlation type
+           */
+          hTrackLeadingJetDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",1,3,axisIndices,lowLimits,highLimits);
+          hTrackLeadingJetDeltaEta[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",2,3,axisIndices,lowLimits,highLimits);
+          hTrackLeadingJetDeltaEtaDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJet",1,2,3,axisIndices,lowLimits,highLimits);
         }
-      }
-      
-      if(drawUncorrectedTrackLeadingJetCorrelations){
         
-        /*
-         * Read the histograms for uncorrected track-leading jet correlations
-         *
-         * THnSparse for uncorrected track-leading jet correlations:
-         *
-         *        Histogram name         Axis index                      Content of axis
-         * ------------------------------------------------------------------------------------------------
-         *  trackLeadingJetUncorrected     Axis 0                      Uncorrected track pT
-         *  trackLeadingJetUncorrected     Axis 1        DeltaPhi between uncorrected track and leading jet
-         *  trackLeadingJetUncorrected     Axis 2        DeltaEta between uncorrected track and leading jet
-         *  trackLeadingJetUncorrected     Axis 3                         Dijet asymmetry
-         *  trackLeadingJetUncorrected     Axis 4                           Centrality
-         */
-        hTrackLeadingJetDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetUncorrected",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetUncorrected",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJetUncorrected",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-      }
-      
-      if(drawPtWeightedTrackLeadingJetCorrelations){
+        if(drawUncorrectedTrackLeadingJetCorrelations){
+          
+          /*
+           * Read the histograms for uncorrected track-leading jet correlations
+           *
+           * THnSparse for uncorrected track-leading jet correlations:
+           *
+           *        Histogram name         Axis index                      Content of axis
+           * ------------------------------------------------------------------------------------------------
+           *  trackLeadingJetUncorrected     Axis 0                      Uncorrected track pT
+           *  trackLeadingJetUncorrected     Axis 1        DeltaPhi between uncorrected track and leading jet
+           *  trackLeadingJetUncorrected     Axis 2        DeltaEta between uncorrected track and leading jet
+           *  trackLeadingJetUncorrected     Axis 3                         Dijet asymmetry
+           *  trackLeadingJetUncorrected     Axis 4                           Centrality
+           *  trackLeadingJetUncorrected     Axis 5                        Correlation type
+           */
+          hTrackLeadingJetDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetUncorrected",1,3,axisIndices,lowLimits,highLimits);
+          hTrackLeadingJetDeltaEtaUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetUncorrected",2,3,axisIndices,lowLimits,highLimits);
+          hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJetUncorrected",1,2,3,axisIndices,lowLimits,highLimits);
+        }
         
-        /*
-         * Read the histograms for pT weighted track-leading jet correlations
-         *
-         * THnSparse for pT weighted track-leading jet correlations:
-         *
-         *        Histogram name         Axis index                     Content of axis
-         * ------------------------------------------------------------------------------------------------
-         *  trackLeadingJetPtWeighted      Axis 0                           Track pT
-         *  trackLeadingJetPtWeighted      Axis 1        DeltaPhi between pT weighted track and leading jet
-         *  trackLeadingJetPtWeighted      Axis 2        DeltaEta between pT weighted track and leading jet
-         *  trackLeadingJetPtWeighted      Axis 3                         Dijet asymmetry
-         *  trackLeadingJetPtWeighted      Axis 4                           Centrality
-         */
-        hTrackLeadingJetDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetPtWeighted",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetPtWeighted",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJetPtWeighted",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-      }
-      
-      if(drawTrackSubleadingJetCorrelations){
+        if(drawPtWeightedTrackLeadingJetCorrelations){
+          
+          /*
+           * Read the histograms for pT weighted track-leading jet correlations
+           *
+           * THnSparse for pT weighted track-leading jet correlations:
+           *
+           *        Histogram name         Axis index                     Content of axis
+           * ------------------------------------------------------------------------------------------------
+           *  trackLeadingJetPtWeighted      Axis 0                           Track pT
+           *  trackLeadingJetPtWeighted      Axis 1        DeltaPhi between pT weighted track and leading jet
+           *  trackLeadingJetPtWeighted      Axis 2        DeltaEta between pT weighted track and leading jet
+           *  trackLeadingJetPtWeighted      Axis 3                         Dijet asymmetry
+           *  trackLeadingJetPtWeighted      Axis 4                           Centrality
+           *  trackLeadingJetPtWeighted      Axis 5                        Correlation type
+           */
+          hTrackLeadingJetDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetPtWeighted",1,3,axisIndices,lowLimits,highLimits);
+          hTrackLeadingJetDeltaEtaPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetPtWeighted",2,3,axisIndices,lowLimits,highLimits);
+          hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJetPtWeighted",1,2,3,axisIndices,lowLimits,highLimits);
+        }
         
-        /*
-         * Read the histograms for track-subleading jet correlations
-         *
-         * THnSparse for track-subleading jet correlations:
-         *
-         *     Histogram name         Axis index              Content of axis
-         * ---------------------------------------------------------------------------------
-         *   trackSubleadingJet         Axis 0                    Track pT
-         *   trackSubleadingJet         Axis 1     DeltaPhi between track and subleading jet
-         *   trackSubleadingJet         Axis 2     DeltaEta between track and subleading jet
-         *   trackSubleadingJet         Axis 3                 Dijet asymmetry
-         *   trackSubleadingJet         Axis 4                    Centrality
-         */
-        hTrackSubleadingJetDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackSubleadingJetDeltaEta[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackSubleadingJetDeltaEtaDeltaPhi[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJet",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-      }
-      
-      if(drawUncorrectedTrackSubleadingJetCorrelations){
+        if(drawTrackSubleadingJetCorrelations){
+          
+          /*
+           * Read the histograms for track-subleading jet correlations
+           *
+           * THnSparse for track-subleading jet correlations:
+           *
+           *     Histogram name         Axis index              Content of axis
+           * ---------------------------------------------------------------------------------
+           *   trackSubleadingJet         Axis 0                    Track pT
+           *   trackSubleadingJet         Axis 1     DeltaPhi between track and subleading jet
+           *   trackSubleadingJet         Axis 2     DeltaEta between track and subleading jet
+           *   trackSubleadingJet         Axis 3                 Dijet asymmetry
+           *   trackSubleadingJet         Axis 4                    Centrality
+           *   trackSubleadingJet         Axis 5                 Correlation type
+           */
+          hTrackSubleadingJetDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",1,3,axisIndices,lowLimits,highLimits);
+          hTrackSubleadingJetDeltaEta[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",2,3,axisIndices,lowLimits,highLimits);
+          hTrackSubleadingJetDeltaEtaDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJet",1,2,3,axisIndices,lowLimits,highLimits);
+        }
         
-        /*
-         * Read the histograms for uncorrected track-subleading jet correlations
-         *
-         * THnSparse for uncorrected track-subleading jet correlations:
-         *
-         *          Histogram name          Axis index                        Content of axis
-         * ------------------------------------------------------------------------------------------------
-         *  trackSubleadingJetUncorrected     Axis 0                        Uncorrected track pT
-         *  trackSubleadingJetUncorrected     Axis 1        DeltaPhi between uncorrected track and subleading jet
-         *  trackSubleadingJetUncorrected     Axis 2        DeltaEta between uncorrected track and subleading jet
-         *  trackSubleadingJetUncorrected     Axis 3                           Dijet asymmetry
-         *  trackSubleadingJetUncorrected     Axis 4                             Centrality
-         */
-        hTrackSubleadingJetDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackSubleadingJetDeltaEtaUncorrected[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetUncorrected",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-      }
-      
-      if(drawPtWeightedTrackSubleadingJetCorrelations){
+        if(drawUncorrectedTrackSubleadingJetCorrelations){
+          
+          /*
+           * Read the histograms for uncorrected track-subleading jet correlations
+           *
+           * THnSparse for uncorrected track-subleading jet correlations:
+           *
+           *          Histogram name          Axis index                        Content of axis
+           * ------------------------------------------------------------------------------------------------
+           *  trackSubleadingJetUncorrected     Axis 0                        Uncorrected track pT
+           *  trackSubleadingJetUncorrected     Axis 1        DeltaPhi between uncorrected track and subleading jet
+           *  trackSubleadingJetUncorrected     Axis 2        DeltaEta between uncorrected track and subleading jet
+           *  trackSubleadingJetUncorrected     Axis 3                           Dijet asymmetry
+           *  trackSubleadingJetUncorrected     Axis 4                             Centrality
+           *  trackSubleadingJetUncorrected     Axis 5                          Correlation type
+           */
+          hTrackSubleadingJetDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",1,3,axisIndices,lowLimits,highLimits);
+          hTrackSubleadingJetDeltaEtaUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",2,3,axisIndices,lowLimits,highLimits);
+          hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetUncorrected",1,2,3,axisIndices,lowLimits,highLimits);
+        }
         
-        /*
-         * Read the histograms for pT weighted track-subleading jet correlations
-         *
-         * THnSparse for pT weighted track-subleading jet correlations:
-         *
-         *          Histogram name          Axis index                       Content of axis
-         * ------------------------------------------------------------------------------------------------
-         *  trackSubleadingJetPtWeighted      Axis 0                             Track pT
-         *  trackSubleadingJetPtWeighted      Axis 1        DeltaPhi between pT weighted track and subleading jet
-         *  trackSubleadingJetPtWeighted      Axis 2        DeltaEta between pT weighted track and subleading jet
-         *  trackSubleadingJetPtWeighted      Axis 3                          Dijet asymmetry
-         *  trackSubleadingJetPtWeighted      Axis 4                             Centrality
-         */
-        hTrackSubleadingJetDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",1,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackSubleadingJetDeltaEtaPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-        hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetPtWeighted",1,2,4,lowerCentralityBin,higherCentralityBin,0,lowerTrackPtBin,higherTrackPtBin);
-      }
+        if(drawPtWeightedTrackSubleadingJetCorrelations){
+          
+          /*
+           * Read the histograms for pT weighted track-subleading jet correlations
+           *
+           * THnSparse for pT weighted track-subleading jet correlations:
+           *
+           *          Histogram name          Axis index                       Content of axis
+           * ------------------------------------------------------------------------------------------------
+           *  trackSubleadingJetPtWeighted      Axis 0                             Track pT
+           *  trackSubleadingJetPtWeighted      Axis 1        DeltaPhi between pT weighted track and subleading jet
+           *  trackSubleadingJetPtWeighted      Axis 2        DeltaEta between pT weighted track and subleading jet
+           *  trackSubleadingJetPtWeighted      Axis 3                          Dijet asymmetry
+           *  trackSubleadingJetPtWeighted      Axis 4                             Centrality
+           *  trackSubleadingJetPtWeighted      Axis 5                          Correlation type
+           */
+          hTrackSubleadingJetDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",1,3,axisIndices,lowLimits,highLimits);
+          hTrackSubleadingJetDeltaEtaPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",2,3,axisIndices,lowLimits,highLimits);
+          hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetPtWeighted",1,2,3,axisIndices,lowLimits,highLimits);
+        }
+        
+      } // Loop over track pT
       
-    } // Loop over track pT
+    } // Loop over correlation type (same or mixed event)
 
 
   } // Loop over centrality
@@ -612,7 +631,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   // Pointer for legend in figures
   TLegend *legend;
   
-  // Prepare system name information and strings for centrality and track pT
+  // Prepare system name information and strings for centrality, track pT and correlation type
   TString systemAndEnergy = Form("%s 5.02 TeV",collisionSystem.Data());
   TString compactSystemAndEnergy = systemAndEnergy;
   compactSystemAndEnergy.ReplaceAll(" ","");
@@ -621,6 +640,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TString compactCentralityString;
   TString trackPtString;
   TString compactTrackPtString;
+  TString correlationTypeString[3] = {"Same Event","Mixed Event"," "};
+  TString compactCorrelationTypeString[3] = {"_SameEvent","_MixedEvent",""};
   
   // =====================================================================
   // ================= Draw event information histograms =================
@@ -893,409 +914,414 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       
     } // Any jet histograms
 
-    // =====================================================================
-    // =============== Draw track histograms in dijet events ===============
-    // =====================================================================
-    
-    if(drawTracks){
-      
-      // Select logarithmic drawing for pT
-      drawer->SetLogY(logPt);
-      
-      // === Track pT ===
-      drawer->DrawHistogram(hTrackPt[iCentrality],"Track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
-      legend = new TLegend(0.62,0.75,0.82,0.9);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackPt",compactSystemAndEnergy,compactCentralityString);
-      
-      // Select linear drawing
-      drawer->SetLogY(false);
-      
-      // === Track phi ===
-      drawer->DrawHistogram(hTrackPhi[iCentrality],"Track #varphi","#frac{dN}{d#varphi}"," ");
-      legend = new TLegend(0.62,0.20,0.82,0.35);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackPhi",compactSystemAndEnergy,compactCentralityString);
-      
-      // === Track eta ===
-      drawer->DrawHistogram(hTrackEta[iCentrality],"Track #eta","#frac{dN}{d#eta}"," ");
-      legend = new TLegend(0.62,0.20,0.82,0.35);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackEta",compactSystemAndEnergy,compactCentralityString);
-      
-      // Change the right margin better suited for 2D-drawing
-      drawer->SetRightMargin(0.1);
-      
-      // === Track eta-phi ===
-      drawer->DrawHistogram(hTrackEtaPhi[iCentrality],"Track #varphi","Track #eta"," ",style2D);
-      legend = new TLegend(0.17,0.78,0.37,0.93);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackEtaPhi",compactSystemAndEnergy,compactCentralityString);
-      
-      // Change right margin back to 1D-drawing
-      drawer->SetRightMargin(0.06);
-      
-    } // Track histograms
-    
-    // =====================================================================
-    // ========= Draw uncorrected track histograms in dijet events =========
-    // =====================================================================
-    
-    if(drawUncorrectedTracks){
-      
-      // Select logarithmic drawing for pT
-      drawer->SetLogY(logPt);
-      
-      // === Uncorrected track pT ===
-      drawer->DrawHistogram(hTrackPtUncorrected[iCentrality],"Uncorrected track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
-      legend = new TLegend(0.62,0.75,0.82,0.9);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-            
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackPtUncorrected",compactSystemAndEnergy,compactCentralityString);
-      
-      // Select linear drawing
-      drawer->SetLogY(false);
-      
-      // === Uncorrected track phi ===
-      drawer->DrawHistogram(hTrackPhiUncorrected[iCentrality],"Uncorrected track #varphi","#frac{dN}{d#varphi}"," ");
-      legend = new TLegend(0.62,0.20,0.82,0.35);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackPhiUncorrected",compactSystemAndEnergy,compactCentralityString);
-      
-      // === Uncorrected track eta ===
-      drawer->DrawHistogram(hTrackEtaUncorrected[iCentrality],"Uncorrected track #eta","#frac{dN}{d#eta}"," ");
-      legend = new TLegend(0.62,0.20,0.82,0.35);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackEtaUncorrected",compactSystemAndEnergy,compactCentralityString);
-      
-      // Change the right margin better suited for 2D-drawing
-      drawer->SetRightMargin(0.1);
-      
-      // === Uncorrected track eta-phi ===
-      drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCentrality],"Uncorrected track #varphi","Uncorrected track #eta"," ",style2D);
-      legend = new TLegend(0.17,0.78,0.37,0.93);
-      setupLegend(legend,systemAndEnergy,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      saveFigure(saveFigures,"trackEtaPhiUncorrected",compactSystemAndEnergy,compactCentralityString);
-      
-      // Change right margin back to 1D-drawing
-      drawer->SetRightMargin(0.06);
-      
-    } // Uncorrected track histograms
-    
-    // Histograms with track pT binning
-    for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
-      
-      // Set the correct track pT bins
-      trackPtString = Form("Track pT: %.1f-%.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
-      compactTrackPtString = Form("_pT=%.1f-%.1f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
-      compactTrackPtString.ReplaceAll(".","v");
+    // Draw both same event and mixed event histograms
+    for(int iCorrelationType = 0; iCorrelationType < nCorrelationTypes; iCorrelationType++){
       
       // =====================================================================
-      // =========== Draw track-leading jet correlation histograms ===========
+      // =============== Draw track histograms in dijet events ===============
       // =====================================================================
       
-      if(drawTrackLeadingJetCorrelations){
+      if(drawTracks){
         
-        // === Track-leading jet deltaPhi ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaPhi[1][iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+        // Select logarithmic drawing for pT
+        drawer->SetLogY(logPt);
+        
+        // === Track pT ===
+        drawer->DrawHistogram(hTrackPt[iCorrelationType][iCentrality],"Track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)",correlationTypeString[iCorrelationType]);
+        legend = new TLegend(0.62,0.75,0.82,0.9);
+        setupLegend(legend,systemAndEnergy,centralityString);
         legend->Draw();
         
         // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
+        saveFigure(saveFigures,"trackPt",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
         
-        // === Track-leading jet deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEta[1][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+        // Select linear drawing
+        drawer->SetLogY(false);
+        
+        // === Track phi ===
+        drawer->DrawHistogram(hTrackPhi[iCorrelationType][iCentrality],"Track #varphi","#frac{dN}{d#varphi}",correlationTypeString[iCorrelationType]);
+        legend = new TLegend(0.62,0.20,0.82,0.35);
+        setupLegend(legend,systemAndEnergy,centralityString);
         legend->Draw();
         
         // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
+        saveFigure(saveFigures,"trackPhi",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
+        
+        // === Track eta ===
+        drawer->DrawHistogram(hTrackEta[iCorrelationType][iCentrality],"Track #eta","#frac{dN}{d#eta}",correlationTypeString[iCorrelationType]);
+        legend = new TLegend(0.62,0.20,0.82,0.35);
+        setupLegend(legend,systemAndEnergy,centralityString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        saveFigure(saveFigures,"trackEta",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
         
         // Change the right margin better suited for 2D-drawing
         drawer->SetRightMargin(0.1);
         
-        // Draw the z-axis in logarithmic scale
-        drawer->SetLogZ(logCorrelation);
-        
-        // === Track-leading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhi[1][iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ",style3D);
-        legend = new TLegend(-0.05,0.85,0.30,0.99);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+        // === Track eta-phi ===
+        drawer->DrawHistogram(hTrackEtaPhi[iCorrelationType][iCentrality],"Track #varphi","Track #eta",correlationTypeString[iCorrelationType],style2D);
+        legend = new TLegend(0.17,0.78,0.37,0.93);
+        setupLegend(legend,systemAndEnergy,centralityString);
         legend->Draw();
         
         // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaEtaDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
+        saveFigure(saveFigures,"trackEtaPhi",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
         
         // Change right margin back to 1D-drawing
         drawer->SetRightMargin(0.06);
         
-        // Change back to linear scale for z-axis
-        drawer->SetLogZ(false);
-        
-      } // Track-leading jet correlation histograms
+      } // Track histograms
       
       // =====================================================================
-      // ===== Draw uncorrected track-leading jet correlation histograms =====
+      // ========= Draw uncorrected track histograms in dijet events =========
       // =====================================================================
       
-      if(drawUncorrectedTrackLeadingJetCorrelations){
+      if(drawUncorrectedTracks){
         
-        // === Uncorrected track-leading jet deltaPhi ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+        // Select logarithmic drawing for pT
+        drawer->SetLogY(logPt);
+        
+        // === Uncorrected track pT ===
+        drawer->DrawHistogram(hTrackPtUncorrected[iCorrelationType][iCentrality],"Uncorrected track p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)",correlationTypeString[iCorrelationType]);
+        legend = new TLegend(0.62,0.75,0.82,0.9);
+        setupLegend(legend,systemAndEnergy,centralityString);
         legend->Draw();
         
         // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
+        saveFigure(saveFigures,"trackPtUncorrected",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
         
-        // === Uncorrected track-leading jet deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+        // Select linear drawing
+        drawer->SetLogY(false);
+        
+        // === Uncorrected track phi ===
+        drawer->DrawHistogram(hTrackPhiUncorrected[iCorrelationType][iCentrality],"Uncorrected track #varphi","#frac{dN}{d#varphi}",correlationTypeString[iCorrelationType]);
+        legend = new TLegend(0.62,0.20,0.82,0.35);
+        setupLegend(legend,systemAndEnergy,centralityString);
         legend->Draw();
         
         // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
+        saveFigure(saveFigures,"trackPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
+        
+        // === Uncorrected track eta ===
+        drawer->DrawHistogram(hTrackEtaUncorrected[iCorrelationType][iCentrality],"Uncorrected track #eta","#frac{dN}{d#eta}",correlationTypeString[iCorrelationType]);
+        legend = new TLegend(0.62,0.20,0.82,0.35);
+        setupLegend(legend,systemAndEnergy,centralityString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        saveFigure(saveFigures,"trackEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
         
         // Change the right margin better suited for 2D-drawing
         drawer->SetRightMargin(0.1);
         
-        // Draw the z-axis in logarithmic scale
-        drawer->SetLogZ(logCorrelation);
-        
-        // === Uncorrected track-leading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta"," ",style3D);
-        legend = new TLegend(-0.05,0.85,0.30,0.99);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+        // === Uncorrected track eta-phi ===
+        drawer->DrawHistogram(hTrackEtaPhiUncorrected[iCorrelationType][iCentrality],"Uncorrected track #varphi","Uncorrected track #eta",correlationTypeString[iCorrelationType],style2D);
+        legend = new TLegend(0.17,0.78,0.37,0.93);
+        setupLegend(legend,systemAndEnergy,centralityString);
         legend->Draw();
         
         // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaEtaDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
+        saveFigure(saveFigures,"trackEtaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactCorrelationTypeString[iCorrelationType]);
         
         // Change right margin back to 1D-drawing
         drawer->SetRightMargin(0.06);
         
-        // Change back to linear scale for z-axis
-        drawer->SetLogZ(false);
-        
-      } // Uncorrected track-leading jet correlation histograms
+      } // Uncorrected track histograms
       
-      // =====================================================================
-      // ===== Draw pT weighted track-leading jet correlation histograms =====
-      // =====================================================================
+      // Histograms with track pT binning
+      for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
+        
+        // Set the correct track pT bins
+        trackPtString = Form("Track pT: %.1f-%.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+        compactTrackPtString = Form("_pT=%.1f-%.1f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+        compactTrackPtString.ReplaceAll(".","v");
+        
+        // =====================================================================
+        // =========== Draw track-leading jet correlation histograms ===========
+        // =====================================================================
+        
+        if(drawTrackLeadingJetCorrelations){
+          
+          // === Track-leading jet deltaPhi ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaPhi[iCorrelationType][iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // === Track-leading jet deltaEta ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change the right margin better suited for 2D-drawing
+          drawer->SetRightMargin(0.1);
+          
+          // Draw the z-axis in logarithmic scale
+          drawer->SetLogZ(logCorrelation);
+          
+          // === Track-leading jet deltaPhi deltaEta ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhi[iCorrelationType][iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta",correlationTypeString[iCorrelationType],style3D);
+          legend = new TLegend(-0.05,0.85,0.30,0.99);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaEtaDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change right margin back to 1D-drawing
+          drawer->SetRightMargin(0.06);
+          
+          // Change back to linear scale for z-axis
+          drawer->SetLogZ(false);
+          
+        } // Track-leading jet correlation histograms
+        
+        // =====================================================================
+        // ===== Draw uncorrected track-leading jet correlation histograms =====
+        // =====================================================================
+        
+        if(drawUncorrectedTrackLeadingJetCorrelations){
+          
+          // === Uncorrected track-leading jet deltaPhi ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaPhiUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#varphi","#frac{dN}{d#Delta#varphi}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // === Uncorrected track-leading jet deltaEta ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change the right margin better suited for 2D-drawing
+          drawer->SetRightMargin(0.1);
+          
+          // Draw the z-axis in logarithmic scale
+          drawer->SetLogZ(logCorrelation);
+          
+          // === Uncorrected track-leading jet deltaPhi deltaEta ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta",correlationTypeString[iCorrelationType],style3D);
+          legend = new TLegend(-0.05,0.85,0.30,0.99);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaEtaDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change right margin back to 1D-drawing
+          drawer->SetRightMargin(0.06);
+          
+          // Change back to linear scale for z-axis
+          drawer->SetLogZ(false);
+          
+        } // Uncorrected track-leading jet correlation histograms
+        
+        // =====================================================================
+        // ===== Draw pT weighted track-leading jet correlation histograms =====
+        // =====================================================================
+        
+        if(drawPtWeightedTrackLeadingJetCorrelations){
+          
+          // === pT weighted track-leading jet deltaPhi ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaPhiPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","#frac{dN}{d#Delta#varphi}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // === pT weighted track-leading jet deltaEta ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaEtaPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change the right margin better suited for 2D-drawing
+          drawer->SetRightMargin(0.1);
+          
+          // Draw the z-axis in logarithmic scale
+          drawer->SetLogZ(logCorrelation);
+          
+          // === pT weighted track-leading jet deltaPhi deltaEta ===
+          drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta",correlationTypeString[iCorrelationType],style3D);
+          legend = new TLegend(-0.05,0.85,0.30,0.99);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackLeadingJetDeltaEtaDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change right margin back to 1D-drawing
+          drawer->SetRightMargin(0.06);
+          
+          // Change back to linear scale for z-axis
+          drawer->SetLogZ(false);
+          
+        } // pT weighted track-leading jet correlation histograms
+        
+        // =====================================================================
+        // =========== Draw track-leading jet correlation histograms ===========
+        // =====================================================================
+        
+        if(drawTrackSubleadingJetCorrelations){
+          
+          // === Track-subleading jet deltaPhi ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaPhi[iCorrelationType][iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // === Track-subleading jet deltaEta ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change the right margin better suited for 2D-drawing
+          drawer->SetRightMargin(0.1);
+          
+          // Draw the z-axis in logarithmic scale
+          drawer->SetLogZ(logCorrelation);
+          
+          // === Track-subleading jet deltaPhi deltaEta ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhi[iCorrelationType][iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta",correlationTypeString[iCorrelationType],style3D);
+          legend = new TLegend(-0.05,0.85,0.30,0.99);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaEtaDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change right margin back to 1D-drawing
+          drawer->SetRightMargin(0.06);
+          
+          // Change back to linear scale for z-axis
+          drawer->SetLogZ(false);
+          
+        } // Track-subleading jet correlation histograms
+        
+        // ========================================================================
+        // ===== Draw uncorrected track-subleading jet correlation histograms =====
+        // ========================================================================
+        
+        if(drawUncorrectedTrackSubleadingJetCorrelations){
+          
+          // === Uncorrected track-subleading jet deltaPhi ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaPhiUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#varphi","#frac{dN}{d#Delta#varphi}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // === Uncorrected track-subleading jet deltaEta ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change the right margin better suited for 2D-drawing
+          drawer->SetRightMargin(0.1);
+          
+          // Draw the z-axis in logarithmic scale
+          drawer->SetLogZ(logCorrelation);
+          
+          // === Uncorrected track-subleading jet deltaPhi deltaEta ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta",correlationTypeString[iCorrelationType],style3D);
+          legend = new TLegend(-0.05,0.85,0.30,0.99);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaEtaDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change right margin back to 1D-drawing
+          drawer->SetRightMargin(0.06);
+          
+          // Change back to linear scale for z-axis
+          drawer->SetLogZ(false);
+          
+        } // Uncorrected track-subleading jet correlation histograms
+        
+        // ========================================================================
+        // ===== Draw pT weighted track-subleading jet correlation histograms =====
+        // ========================================================================
+        
+        if(drawPtWeightedTrackSubleadingJetCorrelations){
+          
+          // === pT weighted track-subleading jet deltaPhi ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaPhiPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","#frac{dN}{d#Delta#varphi}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // === pT weighted track-subleading jet deltaEta ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
+          legend = new TLegend(0.52,0.75,0.82,0.9);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaEtaPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change the right margin better suited for 2D-drawing
+          drawer->SetRightMargin(0.1);
+          
+          // Draw the z-axis in logarithmic scale
+          drawer->SetLogZ(logCorrelation);
+          
+          // === pT weighted track-subleading jet deltaPhi deltaEta ===
+          drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta",correlationTypeString[iCorrelationType],style3D);
+          legend = new TLegend(-0.05,0.85,0.30,0.99);
+          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+          legend->Draw();
+          
+          // Save the figure to a file
+          saveFigure(saveFigures,"trackSubleadingJetDeltaEtaDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
+          
+          // Change right margin back to 1D-drawing
+          drawer->SetRightMargin(0.06);
+          
+          // Change back to linear scale for z-axis
+          drawer->SetLogZ(false);
+          
+        } // pT weighted track-subleading jet correlation histograms
+        
+      } // Track pT loop
       
-      if(drawPtWeightedTrackLeadingJetCorrelations){
-        
-        // === pT weighted track-leading jet deltaPhi ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // === pT weighted track-leading jet deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaEtaPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change the right margin better suited for 2D-drawing
-        drawer->SetRightMargin(0.1);
-        
-        // Draw the z-axis in logarithmic scale
-        drawer->SetLogZ(logCorrelation);
-        
-        // === pT weighted track-leading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta"," ",style3D);
-        legend = new TLegend(-0.05,0.85,0.30,0.99);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackLeadingJetDeltaEtaDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change right margin back to 1D-drawing
-        drawer->SetRightMargin(0.06);
-        
-        // Change back to linear scale for z-axis
-        drawer->SetLogZ(false);
-        
-      } // pT weighted track-leading jet correlation histograms
-      
-      // =====================================================================
-      // =========== Draw track-leading jet correlation histograms ===========
-      // =====================================================================
-      
-      if(drawTrackSubleadingJetCorrelations){
-        
-        // === Track-subleading jet deltaPhi ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // === Track-subleading jet deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEta[iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change the right margin better suited for 2D-drawing
-        drawer->SetRightMargin(0.1);
-        
-        // Draw the z-axis in logarithmic scale
-        drawer->SetLogZ(logCorrelation);
-        
-        // === Track-subleading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhi[iCentrality][iTrackPt],"#Delta#varphi","#Delta#eta"," ",style3D);
-        legend = new TLegend(-0.05,0.85,0.30,0.99);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaEtaDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change right margin back to 1D-drawing
-        drawer->SetRightMargin(0.06);
-        
-        // Change back to linear scale for z-axis
-        drawer->SetLogZ(false);
-        
-      } // Track-subleading jet correlation histograms
-      
-      // ========================================================================
-      // ===== Draw uncorrected track-subleading jet correlation histograms =====
-      // ========================================================================
-      
-      if(drawUncorrectedTrackSubleadingJetCorrelations){
-        
-        // === Uncorrected track-subleading jet deltaPhi ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // === Uncorrected track-subleading jet deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change the right margin better suited for 2D-drawing
-        drawer->SetRightMargin(0.1);
-        
-        // Draw the z-axis in logarithmic scale
-        drawer->SetLogZ(logCorrelation);
-        
-        // === Uncorrected track-subleading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCentrality][iTrackPt],"Uncorrected #Delta#varphi","Uncorrected #Delta#eta"," ",style3D);
-        legend = new TLegend(-0.05,0.85,0.30,0.99);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaEtaDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change right margin back to 1D-drawing
-        drawer->SetRightMargin(0.06);
-        
-        // Change back to linear scale for z-axis
-        drawer->SetLogZ(false);
-        
-      } // Uncorrected track-subleading jet correlation histograms
-      
-      // ========================================================================
-      // ===== Draw pT weighted track-subleading jet correlation histograms =====
-      // ========================================================================
-      
-      if(drawPtWeightedTrackSubleadingJetCorrelations){
-        
-        // === pT weighted track-subleading jet deltaPhi ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // === pT weighted track-subleading jet deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}"," ");
-        legend = new TLegend(0.52,0.75,0.82,0.9);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaEtaPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change the right margin better suited for 2D-drawing
-        drawer->SetRightMargin(0.1);
-        
-        // Draw the z-axis in logarithmic scale
-        drawer->SetLogZ(logCorrelation);
-        
-        // === pT weighted track-subleading jet deltaPhi deltaEta ===
-        drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCentrality][iTrackPt],"p_{T} weighted #Delta#varphi","p_{T} weighted #Delta#eta"," ",style3D);
-        legend = new TLegend(-0.05,0.85,0.30,0.99);
-        setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-        legend->Draw();
-        
-        // Save the figure to a file
-        saveFigure(saveFigures,"trackSubleadingJetDeltaEtaDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString);
-        
-        // Change right margin back to 1D-drawing
-        drawer->SetRightMargin(0.06);
-        
-        // Change back to linear scale for z-axis
-        drawer->SetLogZ(false);
-        
-      } // pT weighted track-subleading jet correlation histograms
-      
-    } // Track pT loop
+    } // Correlation type loop
     
   } // Centrality loop
   
