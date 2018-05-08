@@ -21,7 +21,7 @@ JffCorrection::JffCorrection(bool ispp){
   }
   
   if(!fin) std::cout << "Input file for JffCorrection not found!! Aborting!!" << std::endl;
-  else std::cout << "using correction file: "<< fin->GetName()<<std::endl;
+  else std::cout << "JffCorrection: Using correction file: "<< fin->GetName()<<std::endl;
   
   if(ispp){
     for(int i=0; i<1; i++){

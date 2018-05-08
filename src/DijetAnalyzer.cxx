@@ -232,8 +232,12 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t eventsMixed;                                               // Number of events mixed
   Int_t nEventsInMixingFile;                                       // Number of events in the mixing file
   Bool_t allEventsWentThrough;                                     // Have we checked all the events in the mixing file
+  Bool_t checkForDuplicates;                                       // Check if we have already mixed with the corresponding event
+  Bool_t skipEvent;                                                // Skip the current mixing event
   std::vector<Double_t> mixedEventVz;                              // Vector for vz in mixing events
   std::vector<Int_t> mixedEventHiBin;                              // Vector for hiBin in mixing events
+  std::vector<Int_t> mixedEventIndices;                            // Indices for events that have already been mixed
+  Double_t additionalTolerance;                                    // Increased vz tolerance, if not enough events found from the mixing file
   
   // Initialize the mixed event randomizer
   mixedEventRandomizer->SetSeed(0);
@@ -505,9 +509,28 @@ void DijetAnalyzer::RunAnalysis(){
           mixedEventIndex = firstMixingEvent;
           eventsMixed = 0;
           allEventsWentThrough = false;
+          checkForDuplicates = false;   // Start checking for duplicates in the second round over the file
+          skipEvent = false;
+          additionalTolerance = 0;
+          mixedEventIndices.clear();
           
-          // Continue mixing until we have reached required number of event or no event candidates remain in the file
-          while (eventsMixed < nMixedEventsPerDijet && !allEventsWentThrough) {
+          // Continue mixing until we have reached required number of evens
+          while (eventsMixed < nMixedEventsPerDijet) {
+            
+            // By default, do not skip an event
+            skipEvent = false;
+            
+            // If we have checked all the events but not found enough event to mix with, increase vz tolerance
+            if(allEventsWentThrough){
+              if(debugLevel > 0){
+                cout << "Could only find " << eventsMixed << " events to mix with event " << iEvent << " in file " << currentFile.Data() << endl;
+                cout << "Increasing vz tolerance by 0.25" << endl;
+              }
+              
+              additionalTolerance += 0.25;
+              allEventsWentThrough = false;
+              checkForDuplicates = true;
+            }
             
             // Increment the counter for event index to be mixed with the current event
             mixedEventIndex++;
@@ -524,23 +547,27 @@ void DijetAnalyzer::RunAnalysis(){
             // Do not mix with the same event
             if((mixedEventIndex == iEvent) && (currentFile == currentMixedEventFile)) continue;
             
+            // Do not mix with events used in the previous iteration over the file
+            if(checkForDuplicates){
+              for(Int_t iMixedEvent : mixedEventIndices) {
+                if(iMixedEvent == mixedEventIndex) skipEvent = true;
+              }
+            }
+            if(skipEvent) continue;
+            
             // Match vz and hiBin between the dijet event and mixed event
-            if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > mixingVzTolerance) continue;
+            if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > (mixingVzTolerance + additionalTolerance)) continue;
             if(mixedEventHiBin.at(mixedEventIndex) != hiBin) continue;
             
-            // If match vz and hiBin, then load the event from the mixed event tree
+            // If match vz and hiBin, then load the event from the mixed event tree and mark that we have mixed this event
             mixedEventReader->GetEvent(mixedEventIndex);
+            mixedEventIndices.push_back(mixedEventIndex);
             
             // Do the correlations with the dijet from current event and track from mixing event
             CorrelateTracksAndJets(mixedEventReader,leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent);
             eventsMixed++;
             
           } // While loop for finding events to mix
-          
-          // Print out a message if we could not find 20 events to mix with the current event
-          if(allEventsWentThrough && (debugLevel > 0)){
-            cout << "Could only find " << eventsMixed << " events to mix with event " << iEvent << " in file " << currentFile.Data() << endl;
-          }
           
           // For the next event, start mixing the events from where we were left with in the previous event
           firstMixingEvent = mixedEventIndex;
