@@ -15,6 +15,7 @@
 #include "HighForestReader.h"
 #include "SkimForestReader.h"
 #include "TrkCorr.h"
+#include "JffCorrection.h"
 
 class DijetAnalyzer{
   
@@ -41,6 +42,7 @@ private:
   ConfigurationCard *fCard;          // Configuration card for the analysis
   DijetHistograms *fHistograms;      // Filled histograms
   TrkCorr *fTrackCorrection;         // Track correction class
+  JffCorrection *fJffCorrection;     // Jet fragmentation function correction for jet pT
   
   // Jet and track selection cuts
   Double_t fVzCut;                     // Cut for vertez z-position in an event

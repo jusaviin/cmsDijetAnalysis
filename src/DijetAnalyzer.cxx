@@ -18,6 +18,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fCard(0),
   fHistograms(0),
   fTrackCorrection(),
+  fJffCorrection(),
   fVzCut(0),
   fJetEtaCut(0),
   fJetSearchEtaCut(0),
@@ -72,13 +73,17 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Find the correct folder for track correction tables based on data type
   Int_t dataType = fCard->Get("DataType");
+  bool ppData = true;
   if(dataType == ForestReader::kPp || dataType == ForestReader::kPpMC || dataType == ForestReader::kLocalTest){
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
   } else if (dataType == ForestReader::kPbPb || dataType == ForestReader::kPbPbMC){
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_Jun7_Iterative_PbPb_etaLT2p4/");
+    ppData = false;
   } else {
     fTrackCorrection = new TrkCorr(""); // Bad data type, no corrections initialized
   }
+  
+  fJffCorrection = new JffCorrection(ppData);
 }
 
 /*
@@ -89,6 +94,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fCard(in.fCard),
   fHistograms(in.fHistograms),
   fTrackCorrection(in.fTrackCorrection),
+  fJffCorrection(in.fJffCorrection),
   fVzCut(in.fVzCut),
   fJetEtaCut(in.fJetEtaCut),
   fJetSearchEtaCut(in.fJetSearchEtaCut),
@@ -122,6 +128,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fCard = in.fCard;
   fHistograms = in.fHistograms;
   fTrackCorrection = in.fTrackCorrection;
+  fJffCorrection = in.fJffCorrection;
   fVzCut = in.fVzCut;
   fJetEtaCut = in.fJetEtaCut;
   fJetSearchEtaCut = in.fJetSearchEtaCut;
@@ -150,6 +157,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   // destructor
   delete fHistograms;
   delete fTrackCorrection;
+  delete fJffCorrection;
 }
 
 /*

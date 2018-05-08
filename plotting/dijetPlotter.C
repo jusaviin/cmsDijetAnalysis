@@ -188,7 +188,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool drawCorrected = true;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Logarithmic scales for figures for pT distributions
   bool logPt = true;          // pT distributions
@@ -716,6 +716,12 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TString correlationTypeString[3] = {"Same Event","Mixed Event"," "};
   TString compactCorrelationTypeString[3] = {"_SameEvent","_MixedEvent",""};
   
+  // Move the legend to different places depending on plot type
+  double legendX1 = 0;
+  double legendX2 = 0;
+  double legendY1 = 0;
+  double legendY2 = 0;
+  
   // =====================================================================
   // ================= Draw event information histograms =================
   // =====================================================================
@@ -1131,8 +1137,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           saveFigure(saveFigures,"trackLeadingJetDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // === Track-leading jet deltaEta ===
+          
+          // Move legend to different place for mixed event distributions
+          if(iCorrelationType == 1) {
+            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+          } else {
+            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          }
+          
           drawer->DrawHistogram(hTrackLeadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(0.52,0.75,0.82,0.9);
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
           legend->Draw();
           
@@ -1178,8 +1192,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           saveFigure(saveFigures,"trackLeadingJetDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // === Uncorrected track-leading jet deltaEta ===
+          
+          // Move legend to different place for mixed event distributions
+          if(iCorrelationType == 1) {
+            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+          } else {
+            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          }
+          
           drawer->DrawHistogram(hTrackLeadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(0.52,0.75,0.82,0.9);
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
           legend->Draw();
           
@@ -1225,8 +1247,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           saveFigure(saveFigures,"trackLeadingJetDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // === pT weighted track-leading jet deltaEta ===
+          
+          // Move legend to different place for mixed event distributions
+          if(iCorrelationType == 1) {
+            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+          } else {
+            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          }
+          
           drawer->DrawHistogram(hTrackLeadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(0.52,0.75,0.82,0.9);
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
           legend->Draw();
           
@@ -1272,8 +1302,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           saveFigure(saveFigures,"trackSubleadingJetDeltaPhi",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // === Track-subleading jet deltaEta ===
+          
+          // Move legend to different place for mixed event distributions
+          if(iCorrelationType == 1) {
+            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+          } else {
+            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          }
+          
           drawer->DrawHistogram(hTrackSubleadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(0.52,0.75,0.82,0.9);
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
           legend->Draw();
           
@@ -1319,8 +1357,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           saveFigure(saveFigures,"trackSubleadingJetDeltaPhiUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // === Uncorrected track-subleading jet deltaEta ===
+          
+          // Move legend to different place for mixed event distributions
+          if(iCorrelationType == 1) {
+            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+          } else {
+            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          }
+          
           drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(0.52,0.75,0.82,0.9);
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
           legend->Draw();
           
@@ -1366,8 +1412,16 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           saveFigure(saveFigures,"trackSubleadingJetDeltaPhiPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // === pT weighted track-subleading jet deltaEta ===
+          
+          // Move legend to different place for mixed event distributions
+          if(iCorrelationType == 1) {
+            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+          } else {
+            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          }
+          
           drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(0.52,0.75,0.82,0.9);
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
           legend->Draw();
           
