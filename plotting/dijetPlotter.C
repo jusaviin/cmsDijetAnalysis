@@ -123,7 +123,7 @@ TH2D* mixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEventHistogram){
  *  TString trackPtString = Informaiton about track pT
  *  TString correlationTypeString = Information about correlation type (same/mixed event)
  */
-void saveFigure(bool saveFigures, TString figureName, TString systemString, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = ""){
+void saveFigure(bool saveFigures, TString figureName, TString systemString, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""){
   
   // Only save the figures if flag is set
   if(!saveFigures) return;
@@ -133,6 +133,7 @@ void saveFigure(bool saveFigures, TString figureName, TString systemString, TStr
   if(systemString.Contains("PbPb")) figName.Append(centralityString);
   figName.Append(trackPtString);
   figName.Append(correlationTypeString);
+  figName.Append(deltaPhiString);
   gPad->GetCanvas()->SaveAs(Form("%s.png",figName.Data()));
   
 }
@@ -188,7 +189,7 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   bool drawCorrected = true;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Logarithmic scales for figures for pT distributions
   bool logPt = true;          // pT distributions
@@ -229,6 +230,13 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   
   // Define the number of correlation types (same event = 0, mixed event = 1, 2 = corrected same event)
   const int nCorrelationTypes = 3;
+  
+  // DeltaPhi slicing for deltaEta plots to separate leading jet, subleading jet and background regions
+  const int nDeltaPhiBins = 4;
+  double lowDeltaPhiBinBorders[nDeltaPhiBins] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1};
+  double highDeltaPhiBinBorders[nDeltaPhiBins] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1};
+  int lowDeltaPhiBinIndices[nDeltaPhiBins] = {0};
+  int highDeltaPhiBinIndices[nDeltaPhiBins] = {0};
   
   // ==================================================================
   // ====================== End of configuration ======================
@@ -276,6 +284,13 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
     trackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(trackPtBinBorders[iTrackPt]);
   }
   
+  // For deltaPhi binning, read the phi bin information from the track-leading jet histogram
+  TH1D* hDeltaPhiBinner = findHistogram(inputFile,"trackLeadingJet",1,4,firstDrawnCentralityBin,lastDrawnCentralityBin);
+  for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+    lowDeltaPhiBinIndices[iDeltaPhi] = hDeltaPhiBinner->GetXaxis()->FindBin(lowDeltaPhiBinBorders[iDeltaPhi]);
+    highDeltaPhiBinIndices[iDeltaPhi] = hDeltaPhiBinner->GetXaxis()->FindBin(highDeltaPhiBinBorders[iDeltaPhi]);
+  }
+  
   // Histograms for leading jets
   TH1D *hLeadingJetPt[nCentralityBins];               // Leading jet pT histograms
   TH1D *hLeadingJetPhi[nCentralityBins];              // Leading jet phi histograms
@@ -312,34 +327,34 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TH2D *hTrackEtaPhiUncorrected[nCorrelationTypes][nCentralityBins];     // 2D eta-phi histogram for all jets
   
   // Histograms for track-leading jet correlations
-  TH1D *hTrackLeadingJetDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackLeadingJetDeltaEta[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackLeadingJetDeltaEtaDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];                // DeltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaEta[nCorrelationTypes][nCentralityBins][nTrackPtBins][nDeltaPhiBins]; // DeltaEta between track and leading jet
+  TH2D *hTrackLeadingJetDeltaEtaDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];        // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for uncorrected track-leading jet correlations
-  TH1D *hTrackLeadingJetDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackLeadingJetDeltaEtaUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];                // DeltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaEtaUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins][nDeltaPhiBins]; // DeltaEta between track and leading jet
+  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];        // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for pT weighted track-leading jet correlations
-  TH1D *hTrackLeadingJetDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackLeadingJetDeltaEtaPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];                // DeltaPhi between track and leading jet
+  TH1D *hTrackLeadingJetDeltaEtaPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins][nDeltaPhiBins]; // DeltaEta between track and leading jet
+  TH2D *hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];        // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for track-subleading jet correlations
-  TH1D *hTrackSubleadingJetDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackSubleadingJetDeltaEta[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];                // DeltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaEta[nCorrelationTypes][nCentralityBins][nTrackPtBins][nDeltaPhiBins]; // DeltaEta between track and leading jet
+  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhi[nCorrelationTypes][nCentralityBins][nTrackPtBins];        // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for uncorrected track-subleading jet correlations
-  TH1D *hTrackSubleadingJetDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackSubleadingJetDeltaEtaUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];                // DeltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaEtaUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins][nDeltaPhiBins]; // DeltaEta between track and leading jet
+  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[nCorrelationTypes][nCentralityBins][nTrackPtBins];        // DeltaEta and deltaPhi between track and leading jet
   
   // Histograms for pT weighted track-subleading jet correlations
-  TH1D *hTrackSubleadingJetDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaPhi between track and leading jet
-  TH1D *hTrackSubleadingJetDeltaEtaPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];         // DeltaEta between track and leading jet
-  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins]; // DeltaEta and deltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];                // DeltaPhi between track and leading jet
+  TH1D *hTrackSubleadingJetDeltaEtaPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins][nDeltaPhiBins]; // DeltaEta between track and leading jet
+  TH2D *hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[nCorrelationTypes][nCentralityBins][nTrackPtBins];        // DeltaEta and deltaPhi between track and leading jet
   
   // Project the desired centrality bins out from THnSparses
   int duplicateRemoverCentrality = -1;
@@ -352,9 +367,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   int higherTrackPtBin = 0;
   
   // There are also histograms with projection needed for three different axes (centrality, track pT, correlation type)
-  int axisIndices[3];
-  int lowLimits[3];
-  int highLimits[3];
+  int axisIndices[4] = {0};
+  int lowLimits[4] = {0};
+  int highLimits[4] = {0};
   
   // Load only the bins and histograms that are drawn
   for(int iCentralityBin = firstDrawnCentralityBin; iCentralityBin <= lastDrawnCentralityBin; iCentralityBin++){
@@ -517,8 +532,15 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
            *   trackLeadingJet         Axis 5                Correlation type
            */
           hTrackLeadingJetDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",1,3,axisIndices,lowLimits,highLimits);
-          hTrackLeadingJetDeltaEta[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJet",2,3,axisIndices,lowLimits,highLimits);
           hTrackLeadingJetDeltaEtaDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJet",1,2,3,axisIndices,lowLimits,highLimits);
+          
+          // DeltaPhi binning for deltaEta histogram
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            axisIndices[3] = 1; lowLimits[3] = lowDeltaPhiBinIndices[iDeltaPhi]; highLimits[3] = highDeltaPhiBinIndices[iDeltaPhi];
+            hTrackLeadingJetDeltaEta[iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = findHistogram(inputFile,"trackLeadingJet",2,4,axisIndices,lowLimits,highLimits);
+
+          }
+          
         }
         
         if(drawUncorrectedTrackLeadingJetCorrelations){
@@ -538,8 +560,14 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
            *  trackLeadingJetUncorrected     Axis 5                        Correlation type
            */
           hTrackLeadingJetDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetUncorrected",1,3,axisIndices,lowLimits,highLimits);
-          hTrackLeadingJetDeltaEtaUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetUncorrected",2,3,axisIndices,lowLimits,highLimits);
           hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJetUncorrected",1,2,3,axisIndices,lowLimits,highLimits);
+          
+          // DeltaPhi binning for deltaEta histogram
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            axisIndices[3] = 1; lowLimits[3] = lowDeltaPhiBinIndices[iDeltaPhi]; highLimits[3] = highDeltaPhiBinIndices[iDeltaPhi];
+            hTrackLeadingJetDeltaEtaUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = findHistogram(inputFile,"trackLeadingJetUncorrected",2,4,axisIndices,lowLimits,highLimits);
+            
+          }
         }
         
         if(drawPtWeightedTrackLeadingJetCorrelations){
@@ -559,8 +587,14 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
            *  trackLeadingJetPtWeighted      Axis 5                        Correlation type
            */
           hTrackLeadingJetDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetPtWeighted",1,3,axisIndices,lowLimits,highLimits);
-          hTrackLeadingJetDeltaEtaPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackLeadingJetPtWeighted",2,3,axisIndices,lowLimits,highLimits);
           hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackLeadingJetPtWeighted",1,2,3,axisIndices,lowLimits,highLimits);
+          
+          // DeltaPhi binning for deltaEta histogram
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            axisIndices[3] = 1; lowLimits[3] = lowDeltaPhiBinIndices[iDeltaPhi]; highLimits[3] = highDeltaPhiBinIndices[iDeltaPhi];
+            hTrackLeadingJetDeltaEtaPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = findHistogram(inputFile,"trackLeadingJetPtWeighted",2,4,axisIndices,lowLimits,highLimits);
+            
+          }
         }
         
         if(drawTrackSubleadingJetCorrelations){
@@ -580,8 +614,14 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
            *   trackSubleadingJet         Axis 5                 Correlation type
            */
           hTrackSubleadingJetDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",1,3,axisIndices,lowLimits,highLimits);
-          hTrackSubleadingJetDeltaEta[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJet",2,3,axisIndices,lowLimits,highLimits);
           hTrackSubleadingJetDeltaEtaDeltaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJet",1,2,3,axisIndices,lowLimits,highLimits);
+          
+          // DeltaPhi binning for deltaEta histogram
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            axisIndices[3] = 1; lowLimits[3] = lowDeltaPhiBinIndices[iDeltaPhi]; highLimits[3] = highDeltaPhiBinIndices[iDeltaPhi];
+            hTrackSubleadingJetDeltaEta[iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = findHistogram(inputFile,"trackSubleadingJet",2,4,axisIndices,lowLimits,highLimits);
+            
+          }
         }
         
         if(drawUncorrectedTrackSubleadingJetCorrelations){
@@ -601,8 +641,14 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
            *  trackSubleadingJetUncorrected     Axis 5                          Correlation type
            */
           hTrackSubleadingJetDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",1,3,axisIndices,lowLimits,highLimits);
-          hTrackSubleadingJetDeltaEtaUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetUncorrected",2,3,axisIndices,lowLimits,highLimits);
           hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetUncorrected",1,2,3,axisIndices,lowLimits,highLimits);
+          
+          // DeltaPhi binning for deltaEta histogram
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            axisIndices[3] = 1; lowLimits[3] = lowDeltaPhiBinIndices[iDeltaPhi]; highLimits[3] = highDeltaPhiBinIndices[iDeltaPhi];
+            hTrackSubleadingJetDeltaEtaUncorrected[iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = findHistogram(inputFile,"trackSubleadingJetUncorrected",2,4,axisIndices,lowLimits,highLimits);
+            
+          }
         }
         
         if(drawPtWeightedTrackSubleadingJetCorrelations){
@@ -622,8 +668,14 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
            *  trackSubleadingJetPtWeighted      Axis 5                          Correlation type
            */
           hTrackSubleadingJetDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",1,3,axisIndices,lowLimits,highLimits);
-          hTrackSubleadingJetDeltaEtaPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",2,3,axisIndices,lowLimits,highLimits);
           hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin] = findHistogram2D(inputFile,"trackSubleadingJetPtWeighted",1,2,3,axisIndices,lowLimits,highLimits);
+          
+          // DeltaPhi binning for deltaEta histogram
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            axisIndices[3] = 1; lowLimits[3] = lowDeltaPhiBinIndices[iDeltaPhi]; highLimits[3] = highDeltaPhiBinIndices[iDeltaPhi];
+            hTrackSubleadingJetDeltaEtaPtWeighted[iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = findHistogram(inputFile,"trackSubleadingJetPtWeighted",2,4,axisIndices,lowLimits,highLimits);
+            
+          }
         }
         
       } // Loop over track pT
@@ -648,43 +700,54 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
       if(drawTrackLeadingJetCorrelations){
         hTrackLeadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackLeadingJetDeltaEtaDeltaPhi[0][iCentralityBin][iTrackPtBin],hTrackLeadingJetDeltaEtaDeltaPhi[1][iCentralityBin][iTrackPtBin]);
         hTrackLeadingJetDeltaPhi[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
-        hTrackLeadingJetDeltaEta[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+        for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+        hTrackLeadingJetDeltaEta[2][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionY(Form("trackLeadingJetDeltaEta%d",iDeltaPhi),lowDeltaPhiBinIndices[iDeltaPhi],highDeltaPhiBinIndices[iDeltaPhi])->Clone();
+        }
       }
       
       // Mixed event correction for uncorrected leading jet-track correlations
       if(drawUncorrectedTrackLeadingJetCorrelations){
         hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[0][iCentralityBin][iTrackPtBin],hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[1][iCentralityBin][iTrackPtBin]);
         hTrackLeadingJetDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
-        hTrackLeadingJetDeltaEtaUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+        for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+          hTrackLeadingJetDeltaEtaUncorrected[2][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionY(Form("trackLeadingJetDeltaEtaUncorrected%d",iDeltaPhi),lowDeltaPhiBinIndices[iDeltaPhi],highDeltaPhiBinIndices[iDeltaPhi])->Clone();
+        }
       }
       
       // Mixed event correction for pT weighted leading jet-track correlations
       if(drawPtWeightedTrackLeadingJetCorrelations){
         hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[0][iCentralityBin][iTrackPtBin],hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[1][iCentralityBin][iTrackPtBin]);
         hTrackLeadingJetDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
-        hTrackLeadingJetDeltaEtaPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+        for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+          hTrackLeadingJetDeltaEtaPtWeighted[2][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) hTrackLeadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionY(Form("trackLeadingJetDeltaEtaPtWeighted%d",iDeltaPhi),lowDeltaPhiBinIndices[iDeltaPhi],highDeltaPhiBinIndices[iDeltaPhi])->Clone();
+        }
       }
       
       // Mixed event correction for subleading jet-track correlations
       if(drawTrackSubleadingJetCorrelations){
         hTrackSubleadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackSubleadingJetDeltaEtaDeltaPhi[0][iCentralityBin][iTrackPtBin],hTrackSubleadingJetDeltaEtaDeltaPhi[1][iCentralityBin][iTrackPtBin]);
         hTrackSubleadingJetDeltaPhi[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
-        hTrackSubleadingJetDeltaEta[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+        for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+          hTrackSubleadingJetDeltaEta[2][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhi[2][iCentralityBin][iTrackPtBin]->ProjectionY(Form("trackSubleadingJetDeltaEta%d",iDeltaPhi),lowDeltaPhiBinIndices[iDeltaPhi],highDeltaPhiBinIndices[iDeltaPhi])->Clone();
+        }
       }
       
       // Mixed event correction for uncorrected subleading jet-track correlations
       if(drawUncorrectedTrackSubleadingJetCorrelations){
         hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[0][iCentralityBin][iTrackPtBin],hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[1][iCentralityBin][iTrackPtBin]);
         hTrackSubleadingJetDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
-        hTrackSubleadingJetDeltaEtaUncorrected[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
+        for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+          hTrackSubleadingJetDeltaEtaUncorrected[2][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiUncorrected[2][iCentralityBin][iTrackPtBin]->ProjectionY(Form("trackSubleadingJetDeltaEtaUncorrected%d",iDeltaPhi),lowDeltaPhiBinIndices[iDeltaPhi],highDeltaPhiBinIndices[iDeltaPhi])->Clone();
+        }
       }
       
       // Mixed event correction for pT weighted subleading jet-track correlations
       if(drawPtWeightedTrackSubleadingJetCorrelations){
         hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = mixedEventCorrect(hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[0][iCentralityBin][iTrackPtBin],hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[1][iCentralityBin][iTrackPtBin]);
         hTrackSubleadingJetDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionX()->Clone();
-        hTrackSubleadingJetDeltaEtaPtWeighted[2][iCentralityBin][iTrackPtBin] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionY()->Clone();
-        
+        for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+          hTrackSubleadingJetDeltaEtaPtWeighted[2][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) hTrackSubleadingJetDeltaEtaDeltaPhiPtWeighted[2][iCentralityBin][iTrackPtBin]->ProjectionY(Form("trackSubleadingJetDeltaEtaPtWeighted%d",iDeltaPhi),lowDeltaPhiBinIndices[iDeltaPhi],highDeltaPhiBinIndices[iDeltaPhi])->Clone();
+        }
       }
     }
   }
@@ -715,6 +778,8 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
   TString compactTrackPtString;
   TString correlationTypeString[3] = {"Same Event","Mixed Event"," "};
   TString compactCorrelationTypeString[3] = {"_SameEvent","_MixedEvent",""};
+  TString deltaPhiString[4] = {""," Near side", " Away side", " Between peaks"};
+  TString compactDeltaPhiString[4] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   // Move the legend to different places depending on plot type
   double legendX1 = 0;
@@ -1138,20 +1203,25 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           
           // === Track-leading jet deltaEta ===
           
-          // Move legend to different place for mixed event distributions
-          if(iCorrelationType == 1) {
-            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
-          } else {
-            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          // Apply deltaPhi binning for deltaEta histograms
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            
+            // Move legend to different place for mixed event distributions
+            if(iCorrelationType == 1 || iDeltaPhi > 1) {
+              legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+            } else {
+              legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+            }
+            
+            drawer->DrawHistogram(hTrackLeadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt][iDeltaPhi],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]+deltaPhiString[iDeltaPhi]);
+            legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+            setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+            legend->Draw();
+            
+            // Save the figure to a file
+            saveFigure(saveFigures,"trackLeadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType],compactDeltaPhiString[iDeltaPhi]);
+            
           }
-          
-          drawer->DrawHistogram(hTrackLeadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-          legend->Draw();
-          
-          // Save the figure to a file
-          saveFigure(saveFigures,"trackLeadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // Change the right margin better suited for 2D-drawing
           drawer->SetRightMargin(0.1);
@@ -1193,20 +1263,25 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           
           // === Uncorrected track-leading jet deltaEta ===
           
-          // Move legend to different place for mixed event distributions
-          if(iCorrelationType == 1) {
-            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
-          } else {
-            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          // Apply deltaPhi binning for deltaEta histograms
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            
+            // Move legend to different place for mixed event distributions
+            if(iCorrelationType == 1 || iDeltaPhi > 1) {
+              legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+            } else {
+              legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+            }
+            
+            drawer->DrawHistogram(hTrackLeadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt][iDeltaPhi],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]+deltaPhiString[iDeltaPhi]);
+            legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+            setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+            legend->Draw();
+            
+            // Save the figure to a file
+            saveFigure(saveFigures,"trackLeadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType],compactDeltaPhiString[iDeltaPhi]);
+            
           }
-          
-          drawer->DrawHistogram(hTrackLeadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-          legend->Draw();
-          
-          // Save the figure to a file
-          saveFigure(saveFigures,"trackLeadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // Change the right margin better suited for 2D-drawing
           drawer->SetRightMargin(0.1);
@@ -1248,20 +1323,25 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           
           // === pT weighted track-leading jet deltaEta ===
           
-          // Move legend to different place for mixed event distributions
-          if(iCorrelationType == 1) {
-            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
-          } else {
-            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          // Apply deltaPhi binning for deltaEta histograms
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            
+            // Move legend to different place for mixed event distributions
+            if(iCorrelationType == 1 || iDeltaPhi > 1) {
+              legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+            } else {
+              legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+            }
+            
+            drawer->DrawHistogram(hTrackLeadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt][iDeltaPhi],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]+deltaPhiString[iDeltaPhi]);
+            legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+            setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+            legend->Draw();
+            
+            // Save the figure to a file
+            saveFigure(saveFigures,"trackLeadingJetDeltaEtapTWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType],compactDeltaPhiString[iDeltaPhi]);
+            
           }
-          
-          drawer->DrawHistogram(hTrackLeadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-          legend->Draw();
-          
-          // Save the figure to a file
-          saveFigure(saveFigures,"trackLeadingJetDeltaEtaPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // Change the right margin better suited for 2D-drawing
           drawer->SetRightMargin(0.1);
@@ -1286,9 +1366,9 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           
         } // pT weighted track-leading jet correlation histograms
         
-        // =====================================================================
-        // =========== Draw track-leading jet correlation histograms ===========
-        // =====================================================================
+        // ========================================================================
+        // =========== Draw track-subleading jet correlation histograms ===========
+        // ========================================================================
         
         if(drawTrackSubleadingJetCorrelations){
           
@@ -1303,20 +1383,25 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           
           // === Track-subleading jet deltaEta ===
           
-          // Move legend to different place for mixed event distributions
-          if(iCorrelationType == 1) {
-            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
-          } else {
-            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          // Apply deltaPhi binning for deltaEta histograms
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            
+            // Move legend to different place for mixed event distributions
+            if(iCorrelationType == 1 || iDeltaPhi > 1) {
+              legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+            } else {
+              legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+            }
+            
+            drawer->DrawHistogram(hTrackSubleadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt][iDeltaPhi],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]+deltaPhiString[iDeltaPhi]);
+            legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+            setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+            legend->Draw();
+            
+            // Save the figure to a file
+            saveFigure(saveFigures,"trackSubleadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType],compactDeltaPhiString[iDeltaPhi]);
+            
           }
-          
-          drawer->DrawHistogram(hTrackSubleadingJetDeltaEta[iCorrelationType][iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-          legend->Draw();
-          
-          // Save the figure to a file
-          saveFigure(saveFigures,"trackSubleadingJetDeltaEta",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // Change the right margin better suited for 2D-drawing
           drawer->SetRightMargin(0.1);
@@ -1358,20 +1443,25 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           
           // === Uncorrected track-subleading jet deltaEta ===
           
-          // Move legend to different place for mixed event distributions
-          if(iCorrelationType == 1) {
-            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
-          } else {
-            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          // Apply deltaPhi binning for deltaEta histograms
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            
+            // Move legend to different place for mixed event distributions
+            if(iCorrelationType == 1 || iDeltaPhi > 1) {
+              legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+            } else {
+              legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+            }
+            
+            drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt][iDeltaPhi],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]+deltaPhiString[iDeltaPhi]);
+            legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+            setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+            legend->Draw();
+            
+            // Save the figure to a file
+            saveFigure(saveFigures,"trackSubleadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType],compactDeltaPhiString[iDeltaPhi]);
+            
           }
-          
-          drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaUncorrected[iCorrelationType][iCentrality][iTrackPt],"Uncorrected #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-          legend->Draw();
-          
-          // Save the figure to a file
-          saveFigure(saveFigures,"trackSubleadingJetDeltaEtaUncorrected",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // Change the right margin better suited for 2D-drawing
           drawer->SetRightMargin(0.1);
@@ -1413,20 +1503,25 @@ void dijetPlotter(TString inputFileName = "data/dijetSpectraTestPp_2018-04-27.ro
           
           // === pT weighted track-subleading jet deltaEta ===
           
-          // Move legend to different place for mixed event distributions
-          if(iCorrelationType == 1) {
-            legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
-          } else {
-            legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          // Apply deltaPhi binning for deltaEta histograms
+          for(int iDeltaPhi = 0; iDeltaPhi < nDeltaPhiBins; iDeltaPhi++){
+            
+            // Move legend to different place for mixed event distributions
+            if(iCorrelationType == 1 || iDeltaPhi > 1) {
+              legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
+            } else {
+              legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+            }
+            
+            drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt][iDeltaPhi],"#Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]+deltaPhiString[iDeltaPhi]);
+            legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+            setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
+            legend->Draw();
+            
+            // Save the figure to a file
+            saveFigure(saveFigures,"trackSubleadingJetDeltaEtaPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType],compactDeltaPhiString[iDeltaPhi]);
+            
           }
-          
-          drawer->DrawHistogram(hTrackSubleadingJetDeltaEtaPtWeighted[iCorrelationType][iCentrality][iTrackPt],"p_{T} weighted #Delta#eta","#frac{dN}{d#Delta#eta}",correlationTypeString[iCorrelationType]);
-          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-          setupLegend(legend,systemAndEnergy,centralityString,trackPtString);
-          legend->Draw();
-          
-          // Save the figure to a file
-          saveFigure(saveFigures,"trackSubleadingJetDeltaEtaPtWeighted",compactSystemAndEnergy,compactCentralityString,compactTrackPtString,compactCorrelationTypeString[iCorrelationType]);
           
           // Change the right margin better suited for 2D-drawing
           drawer->SetRightMargin(0.1);
