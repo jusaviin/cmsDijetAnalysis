@@ -1,6 +1,11 @@
 #ifndef DIJETCARD_H
 #define DIJETCARD_H
 
+// Root includes
+#include <TFile.h>
+#include <TString.h>
+#include <TVectorT.h>
+
 /*
  * Implementation of the DijetCard class
  *
@@ -39,7 +44,7 @@ public:
     fDataTypeString("")
   {
     fInputFile->cd(fCardDirectory.Data());
-    TVector *reader = (TVector*) gDirectory->Get("DataType");
+    TVectorT<float> *reader = (TVectorT<float>*) gDirectory->Get("DataType");
     fDataType = (*reader)[1];
     FindDataTypeString();
   }

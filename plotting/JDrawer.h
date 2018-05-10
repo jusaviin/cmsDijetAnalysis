@@ -1,12 +1,20 @@
 #ifndef JDRAWER_H
 #define JDRAWER_H
 
+// C++ includes
+#include <iostream>
+
+// Root includes
+#include <TROOT.h>
+#include <TStyle.h>
 #include <TCanvas.h>
 #include <TPad.h>
 #include <TString.h>
 #include <TH1.h>
 #include <TGraph.h>
 #include <TLegend.h>
+
+using namespace std;
 
 /*
  * Class for drawing histograms and graphs in the standard style of the group

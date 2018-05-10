@@ -1,4 +1,4 @@
-#include "DijetDrawer.h"
+#include "DijetDrawer.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so) 
 #include "DijetCard.h"
 
 /*
@@ -21,7 +21,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -51,6 +51,8 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   double trackPtBinBorders[] = {0.5,1,2,3,4,8,300};  // Bin borders for track pT
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1}; // Low bin borders for deltaPhi
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1}; // High bin borders for deltaPhi
+  TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
+  TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawCentralityBin = 0;
   int lastDrawnCentralityBin = 3;
@@ -90,27 +92,12 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   // Set the binning information
   resultDrawer->SetCentralityBins(centralityBinBorders);
   resultDrawer->SetTrackPtBins(trackPtBinBorders);
-  resultDrawer->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders);
+  resultDrawer->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
   resultDrawer->SetCentralityBinRange(firstDrawCentralityBin,lastDrawnCentralityBin);
   
   // Load the selected histograms
   resultDrawer->LoadHistograms();
+  resultDrawer->DoMixedEventCorrection();
   resultDrawer->DrawHistograms();
   
-  cout << "No typing errors" << endl;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
