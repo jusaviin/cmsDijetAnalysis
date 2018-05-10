@@ -95,6 +95,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   
   // Load the selected histograms
   resultDrawer->LoadHistograms();
+  resultDrawer->DrawHistograms();
   
   cout << "No typing errors" << endl;
 }

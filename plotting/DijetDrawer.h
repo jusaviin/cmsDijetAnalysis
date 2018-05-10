@@ -98,27 +98,6 @@ public:
   }
   
   /*
-   * Set up centrality bin indices according to provided bin borders
-   */
-  void SetCentralityBins(double *binBorders){
-    SetBinIndices(knCentralityBins,fCentralityBinIndices,binBorders,4);
-  }
-  
-  /*
-   * Set up track pT bin indices according to provided bin borders
-   */
-  void SetTrackPtBins(double *binBorders){
-    SetBinIndices(knTrackPtBins,fTrackPtBinIndices,binBorders,0);
-  }
-  
-  /*
-   * Set up deltaPhi bin indices according to provided bin borders
-   */
-  void SetDeltaPhiBins(double *lowBinBorders, double *highBinBorders){
-    SetBinIndices(knDeltaPhiBins,fLowDeltaPhiBinIndices,fHighDeltaPhiBinIndices,lowBinBorders,highBinBorders,1);
-  }
-  
-  /*
    * Loads the histograms from the inputfile
    */
   void LoadHistograms(){
@@ -147,6 +126,46 @@ public:
     if(fDrawLeadingJetHistograms){
       LoadSingleJetHistograms(fhLeadingJetPt,fhLeadingJetPhi,fhLeadingJetEta,fhLeadingJetEtaPhi,"leadingJet",4);
     }
+  }
+  
+  /*
+   * Draw the histograms that are selected and loaded
+   */
+  void DrawHistograms(){
+    
+    // Draw leading jet histograms
+    if(fDrawLeadingJetHistograms){
+      // Select logarithmic drawing for pT
+      JDrawer *drawer = new JDrawer();
+      drawer->SetLogY(fLogPt);
+      
+      // === Leading jet pT ===
+      drawer->DrawHistogram(fhLeadingJetPt[0],"Leading jet p_{T}  (GeV)","#frac{dN}{dp_{T}}  (1/GeV)"," ");
+      TLegend *legend = new TLegend(0.62,0.75,0.82,0.9);
+      SetupLegend(legend,"pp 5.02 TeV","");
+      legend->Draw();
+    }
+  }
+  
+  /*
+   * Set up centrality bin indices according to provided bin borders
+   */
+  void SetCentralityBins(double *binBorders){
+    SetBinIndices(knCentralityBins,fCentralityBinIndices,binBorders,4);
+  }
+  
+  /*
+   * Set up track pT bin indices according to provided bin borders
+   */
+  void SetTrackPtBins(double *binBorders){
+    SetBinIndices(knTrackPtBins,fTrackPtBinIndices,binBorders,0);
+  }
+  
+  /*
+   * Set up deltaPhi bin indices according to provided bin borders
+   */
+  void SetDeltaPhiBins(double *lowBinBorders, double *highBinBorders){
+    SetBinIndices(knDeltaPhiBins,fLowDeltaPhiBinIndices,fHighDeltaPhiBinIndices,lowBinBorders,highBinBorders,1);
   }
   
   // Setter for drawing event information
@@ -324,6 +343,7 @@ private:
   TFile *fInputFile;  // File from which the histograms are read
   DijetCard *fCard;   // Card inside the data file for binning, cut collision system etc. information
   TString fCollisionSystem;  // String for collision system (pp,PbPb,pp MC,PbPb MC,localTest)
+  JDrawer *fDrawer;   // JDrawer for drawing the histograms
   
   // ==============================================
   // ======== Flags for histograms to draw ========
@@ -613,7 +633,6 @@ private:
    *       Axis 3         Dijet asymmetry    (for anyJet: Centrality)
    *       Axis 4           Centrality       (for anyJet: Nothing)
    */
-   */
   void LoadSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* hJetPhi[knCentralityBins], TH1D* hJetEta[knCentralityBins], TH2D* hJetEtaPhi[knCentralityBins], const char* name, const int iCentralityAxis){
     
     // Define helper variables
@@ -633,6 +652,21 @@ private:
       hJetEta[iCentralityBin] = FindHistogram(fInputFile,name,2,iCentralityAxis,lowerCentralityBin,higherCentralityBin);
       hJetEtaPhi[iCentralityBin] = FindHistogram2D(fInputFile,name,1,2,iCentralityAxis,lowerCentralityBin,higherCentralityBin);
     }
+  }
+  
+  /*
+   * Common legend style setup for figures
+   *
+   *  TLegend *legend = Pointer to legend that needs setup
+   *  TString systemString = Collision system
+   *  TString centralityString = Collision centrality
+   *  TString trackString = Track pT information
+   */
+  void SetupLegend(TLegend *legend, TString systemString, TString centralityString = "", TString trackString = ""){
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry((TObject*) 0, systemString.Data(), "");
+    if(systemString.Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
+    if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
   }
   
 };
