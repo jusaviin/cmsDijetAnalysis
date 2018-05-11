@@ -151,6 +151,7 @@ private:
   int fCentralityBinIndices[knCentralityBins+1];
   double fCentralityBinBorders[knCentralityBins+1];
   int fTrackPtBinIndices[knTrackPtBins+1];
+  int fFineTrackPtBinIndices[knTrackPtBins+1];
   double fTrackPtBinBorders[knTrackPtBins+1];
   int fLowDeltaPhiBinIndices[knDeltaPhiBins];
   int fHighDeltaPhiBinIndices[knDeltaPhiBins];
@@ -201,15 +202,15 @@ private:
   
   // Histograms for tracks in dijet events
   TH1D *fhTrackPt[knCorrelationTypes][knCentralityBins];                    // Track pT histograms
-  TH1D *fhTrackPhi[knCorrelationTypes][knCentralityBins];                   // Track phi histograms
-  TH1D *fhTrackEta[knCorrelationTypes][knCentralityBins];                   // Track eta histograms
-  TH2D *fhTrackEtaPhi[knCorrelationTypes][knCentralityBins];                // 2D eta-phi histogram for track
+  TH1D *fhTrackPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1];                   // Track phi histograms
+  TH1D *fhTrackEta[knCorrelationTypes][knCentralityBins][knTrackPtBins+1];                   // Track eta histograms
+  TH2D *fhTrackEtaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1];                // 2D eta-phi histogram for track
   
   // Histograms for uncorrected tracks in dijet events
   TH1D *fhTrackPtUncorrected[knCorrelationTypes][knCentralityBins];         // Uncorrected track pT histograms
-  TH1D *fhTrackPhiUncorrected[knCorrelationTypes][knCentralityBins];        // Uncorrected track phi histograms
-  TH1D *fhTrackEtaUncorrected[knCorrelationTypes][knCentralityBins];        // Uncorrected track eta histograms
-  TH2D *fhTrackEtaPhiUncorrected[knCorrelationTypes][knCentralityBins];     // 2D eta-phi histogram for uncorrected tracks
+  TH1D *fhTrackPhiUncorrected[knCorrelationTypes][knCentralityBins][knTrackPtBins+1];        // Uncorrected track phi histograms
+  TH1D *fhTrackEtaUncorrected[knCorrelationTypes][knCentralityBins][knTrackPtBins+1];        // Uncorrected track eta histograms
+  TH2D *fhTrackEtaPhiUncorrected[knCorrelationTypes][knCentralityBins][knTrackPtBins+1];     // 2D eta-phi histogram for uncorrected tracks
   
   // Histograms for track-leading jet correlations
   TH1D *fhTrackLeadingJetDeltaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins];                // DeltaPhi between track and leading jet
@@ -254,14 +255,14 @@ private:
   // Loaders for different groups of histograms
   void LoadSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* hJetPhi[knCentralityBins], TH1D* hJetEta[knCentralityBins], TH2D* hJetEtaPhi[knCentralityBins], const char* name, const int iCentralityAxis); // Loader for single jet histograms
   void LoadDijetHistograms(TH1D *hDeltaPhi[knCentralityBins], TH1D* hAsymmetry[knCentralityBins], TH2D* hLeadingSubleadingPt[knCentralityBins], const char* name); // Loader for dijet histograms
-  void LoadTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins], const char* name); // Loader for track histograms
+  void LoadTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], const char* name); // Loader for track histograms
   void LoadJetTrackCorrelationHistograms(TH1D *hDeltaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins], TH1D *hDeltaEta[knCorrelationTypes][knCentralityBins][knTrackPtBins][knDeltaPhiBins], TH2D *hDeltaEtaDeltaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins], const char* name); // Loader for jet-track correlation histograms
   
   // Methods for drawing
   void DrawEventInformation(); // Draw the event information histograms
   void DrawDijetHistograms();  // Draw the dijet histograms
   void DrawSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* hJetPhi[knCentralityBins], TH1D* hJetEta[knCentralityBins], TH2D* hJetEtaPhi[knCentralityBins], const char* nameForAxis, const char* nameForSave); // Draw single jet histograms
-  void DrawTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins], const char* nameForAxis, const char* nameForSave); // Draw track histograms
+  void DrawTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], const char* nameForAxis, const char* nameForSave); // Draw track histograms
   void DrawJetTrackCorrelationHistograms(TH1D *hDeltaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins], TH1D *hDeltaEta[knCorrelationTypes][knCentralityBins][knTrackPtBins][knDeltaPhiBins], TH2D *hDeltaEtaDeltaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins], const char* nameForAxis, const char* nameForSave); // Draw jet-track correlation histograms
   void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file

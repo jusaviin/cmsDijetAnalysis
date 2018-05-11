@@ -66,6 +66,7 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   // Default binning for track pT
   for(int iTrackPt = 0; iTrackPt < knTrackPtBins + 1; iTrackPt++){
     fTrackPtBinIndices[iTrackPt] = iTrackPt + 1;
+    fFineTrackPtBinIndices[iTrackPt] = iTrackPt + 1;
     fTrackPtBinBorders[iTrackPt] = 0;
   }
   
@@ -351,14 +352,20 @@ void DijetDrawer::DrawDijetHistograms(){
  *    const char* nameForAxis = Name that will be added to x-axis
  *    const char* nameForSave = Name that will be added to saved figures
  */
-void DijetDrawer::DrawTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins], const char* nameForAxis, const char* nameForSave){
+void DijetDrawer::DrawTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], const char* nameForAxis, const char* nameForSave){
   
   // Legend helper variable
   TLegend *legend;
+  double legendX1;
+  double legendY1;
+  double legendX2;
+  double legendY2;
   
   // Helper variables for centrality naming in figures
   TString centralityString;
   TString compactCentralityString;
+  TString trackPtString;
+  TString compactTrackPtString;
   char namerX[100];
   char namerY[100];
   
@@ -392,48 +399,77 @@ void DijetDrawer::DrawTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentr
       // Select linear drawing
       fDrawer->SetLogY(false);
       
-      // === Track phi ===
-      sprintf(namerX,"%s #varphi",nameForAxis);
-      fDrawer->DrawHistogram(hTrackPhi[iCorrelationType][iCentrality],namerX,"#frac{dN}{d#varphi}",fCorrelationTypeString[iCorrelationType]);
-      legend = new TLegend(0.62,0.20,0.82,0.35);
-      SetupLegend(legend,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      sprintf(namerX,"%sPhi",nameForSave);
-      SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType]);
-      
-      // === Track eta ===
-      sprintf(namerX,"%s #eta",nameForAxis);
-      fDrawer->DrawHistogram(hTrackEta[iCorrelationType][iCentrality],namerX,"#frac{dN}{d#eta}",fCorrelationTypeString[iCorrelationType]);
-      legend = new TLegend(0.62,0.20,0.82,0.35);
-      SetupLegend(legend,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      sprintf(namerX,"%sEta",nameForSave);
-      SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType]);
-      
-      // Change the right margin better suited for 2D-drawing
-      fDrawer->SetRightMargin(0.1);
-      
-      // === Track eta-phi ===
-      sprintf(namerX,"%s #varphi",nameForAxis);
-      sprintf(namerY,"%s #eta",nameForAxis);
-      fDrawer->DrawHistogram(hTrackEtaPhi[iCorrelationType][iCentrality],namerX,namerY,fCorrelationTypeString[iCorrelationType],fStyle2D);
-      legend = new TLegend(0.17,0.78,0.37,0.93);
-      SetupLegend(legend,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      sprintf(namerX,"%sEtaPhi",nameForSave);
-      SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType]);
-      
-      // Change right margin back to 1D-drawing
-      fDrawer->SetRightMargin(0.06);
-      
-    }
-  }
+      // Loop over track pT bins
+      for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= knTrackPtBins; iTrackPt++){
+        
+        // Draw the selected track pT bins and the special bin containing integrated distributions
+        if(iTrackPt > fLastDrawnTrackPtBin && iTrackPt != knTrackPtBins) continue;
+        
+        // Set the correct track pT bins
+        trackPtString = Form("Track pT: %.1f-%.1f GeV",fTrackPtBinBorders[iTrackPt],fTrackPtBinBorders[iTrackPt+1]);
+        compactTrackPtString = Form("_pT=%.1f-%.1f",fTrackPtBinBorders[iTrackPt],fTrackPtBinBorders[iTrackPt+1]);
+        compactTrackPtString.ReplaceAll(".","v");
+        
+        // No pT selection for integrated distributions
+        if(iTrackPt == knTrackPtBins){
+          trackPtString = "";
+          compactTrackPtString = "";
+        }
+        
+        // === Track phi ===
+        sprintf(namerX,"%s #varphi",nameForAxis);
+        fDrawer->DrawHistogram(hTrackPhi[iCorrelationType][iCentrality][iTrackPt],namerX,"#frac{dN}{d#varphi}",fCorrelationTypeString[iCorrelationType]);
+        legend = new TLegend(0.17,0.20,0.37,0.35);
+        SetupLegend(legend,centralityString,trackPtString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sPhi",nameForSave);
+        SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType],compactTrackPtString);
+        
+        // === Track eta ===
+        
+        // Set nice position for the legend
+        legendY1 = 0.20; legendY2 = legendY1+0.15;
+        if(iTrackPt == knTrackPtBins){
+          legendX1 = 0.4; legendX2 = legendX1+0.2;
+        } else if (iTrackPt == knTrackPtBins - 1){
+          legendX1 = 0.32; legendX2 = legendX1+0.2;
+        } else {
+          legendX1 = 0.34; legendX2 = legendX1+0.2;
+        }
+        
+        sprintf(namerX,"%s #eta",nameForAxis);
+        fDrawer->DrawHistogram(hTrackEta[iCorrelationType][iCentrality][iTrackPt],namerX,"#frac{dN}{d#eta}",fCorrelationTypeString[iCorrelationType]);
+        legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+        SetupLegend(legend,centralityString,trackPtString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sEta",nameForSave);
+        SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType],compactTrackPtString);
+        
+        // Change the right margin better suited for 2D-drawing
+        fDrawer->SetRightMargin(0.1);
+        
+        // === Track eta-phi ===
+        sprintf(namerX,"%s #varphi",nameForAxis);
+        sprintf(namerY,"%s #eta",nameForAxis);
+        fDrawer->DrawHistogram(hTrackEtaPhi[iCorrelationType][iCentrality][iTrackPt],namerX,namerY,fCorrelationTypeString[iCorrelationType],fStyle2D);
+        legend = new TLegend(0.17,0.78,0.37,0.93);
+        SetupLegend(legend,centralityString,trackPtString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sEtaPhi",nameForSave);
+        SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType],compactTrackPtString);
+        
+        // Change right margin back to 1D-drawing
+        fDrawer->SetRightMargin(0.06);
+        
+      } // Track pT loop
+    } // Correlation type loop
+  } // Centrality loop
 }
 
 /*
@@ -599,8 +635,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(TH1D *hDeltaPhi[knCorrelatio
         
         // Return default settings to fDrawer
         fDrawer->Reset();
-      }
-    }
+      } // Track pT loop
+    } // If for drawing same to mixed event ratio
     
   } // Centrality loop
 }
@@ -873,12 +909,20 @@ void DijetDrawer::LoadDijetHistograms(TH1D *hDeltaPhi[knCentralityBins], TH1D* h
  *       Axis 3            Centrality
  *       Axis 4         Correlation type
  */
-void DijetDrawer::LoadTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins], const char* name){
+void DijetDrawer::LoadTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentralityBins], TH1D *hTrackPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH1D *hTrackEta[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], TH2D *hTrackEtaPhi[knCorrelationTypes][knCentralityBins][knTrackPtBins+1], const char* name){
+  
+  // Define arrays to help find the histograms
+  int axisIndices[3] = {0};
+  int lowLimits[3] = {0};
+  int highLimits[3] = {0};
   
   // Define helper variables
   int duplicateRemoverCentrality = -1;
   int lowerCentralityBin = 0;
   int higherCentralityBin = 0;
+  int duplicateRemoverTrackPt = -1;
+  int lowerTrackPtBin = 0;
+  int higherTrackPtBin = 0;
   
   for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes-1; iCorrelationType++){
     for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
@@ -888,10 +932,30 @@ void DijetDrawer::LoadTrackHistograms(TH1D *hTrackPt[knCorrelationTypes][knCentr
       lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
       higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
       
-      hTrackPt[iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,name,0,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
-      hTrackPhi[iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,name,1,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
-      hTrackEta[iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,name,2,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
-      hTrackEtaPhi[iCorrelationType][iCentralityBin] = FindHistogram2D(fInputFile,name,1,2,3,lowerCentralityBin,higherCentralityBin,4,iCorrelationType+1,iCorrelationType+1);
+      // Setup axes with restrictions, (3 = centrality, 4 = correlation type)
+      axisIndices[0] = 3; lowLimits[0] = lowerCentralityBin; highLimits[0] = higherCentralityBin;
+      axisIndices[1] = 4; lowLimits[1] = iCorrelationType+1; highLimits[1] = iCorrelationType+1;
+      
+      hTrackPt[iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,name,0,2,axisIndices,lowLimits,highLimits);
+      hTrackPhi[iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,name,1,2,axisIndices,lowLimits,highLimits);
+      hTrackEta[iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,name,2,2,axisIndices,lowLimits,highLimits);
+      hTrackEtaPhi[iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram2D(fInputFile,name,1,2,2,axisIndices,lowLimits,highLimits);
+      
+      for(int iTrackPtBin = fFirstDrawnTrackPtBin; iTrackPtBin <= fLastDrawnTrackPtBin; iTrackPtBin++){
+        
+        // Select the bin indices for track pT
+        lowerTrackPtBin = fFineTrackPtBinIndices[iTrackPtBin];
+        higherTrackPtBin = fFineTrackPtBinIndices[iTrackPtBin+1]+duplicateRemoverTrackPt;
+        
+        // Add restriction for pT axis (0)
+        axisIndices[2] = 0; lowLimits[2] = lowerTrackPtBin; highLimits[2] = higherTrackPtBin;
+        
+        // Read the angle histograms in track pT bins
+        hTrackPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,name,1,3,axisIndices,lowLimits,highLimits);
+        hTrackEta[iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,name,2,3,axisIndices,lowLimits,highLimits);
+        hTrackEtaPhi[iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,name,1,2,3,axisIndices,lowLimits,highLimits);
+        
+      } // Track pT loop
     } // Centrality loop
   } // Correlation type loop
 }
@@ -1110,6 +1174,12 @@ void DijetDrawer::SetCentralityBins(double *binBorders){
  */
 void DijetDrawer::SetTrackPtBins(double *binBorders){
   SetBinIndices(knTrackPtBins,fTrackPtBinBorders,fTrackPtBinIndices,binBorders,0);
+  
+  // The track histograms have finer pT binning, so we need to use different bin indices for them
+  TH1D* hTrackPtBinner = FindHistogram(fInputFile,"track",0,0,0,0);
+  for(int iTrackPt = 0; iTrackPt < knTrackPtBins+1; iTrackPt++){
+    fFineTrackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(binBorders[iTrackPt]);
+  }
 }
 
 /*

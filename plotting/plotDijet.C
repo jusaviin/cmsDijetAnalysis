@@ -16,12 +16,12 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = false;
+  bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -29,13 +29,13 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
-  bool drawMixedEvent = false;
+  bool drawSameEvent = true;
+  bool drawMixedEvent = true;
   bool drawCorrected = false;
-  bool drawSameMixedDeltaEtaRatio = true;
+  bool drawSameMixedDeltaEtaRatio = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "png";
   
   // Logarithmic scales for figures for pT distributions
