@@ -71,6 +71,7 @@ public:
   void SetDrawMixedEvent(bool drawOrNot);            // Setter for drawing mixed event correlation distributions
   void SetDrawCorrectedCorrelations(bool drawOrNot); // Setter for drawing corrected correlation distributions
   void SetDrawCorrelationTypes(bool sameEvent, bool mixedEvent, bool corrected); // Setter for drawing different correlation types
+  void SetDrawSameMixedDeltaEtaRatio(bool drawOrNot); // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
   
   // Setters for figure saving and logarithmic axes
   void SetSaveFigures(bool saveOrNot, const char *format);  // Setter for saving the figures to a file
@@ -123,6 +124,7 @@ private:
   bool fDrawSameEvent;
   bool fDrawMixedEvent;
   bool fDrawCorrected;
+  bool fDrawSameMixedDeltaEtaRatio;
   
   // Choose if you want to write the figures to pdf file
   bool fSaveFigures;

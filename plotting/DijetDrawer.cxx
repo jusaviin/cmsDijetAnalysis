@@ -30,6 +30,7 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   fDrawSameEvent(false),
   fDrawMixedEvent(false),
   fDrawCorrected(false),
+  fDrawSameMixedDeltaEtaRatio(false),
   fSaveFigures(false),
   fFigureFormat("pdf"),
   fLogPt(true),
@@ -462,6 +463,11 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(TH1D *hDeltaPhi[knCorrelatio
   char namerX[100];
   char namerY[100];
   
+  // Temporary histograms for ratio plots
+  TH1D *hRatio;
+  TH1D *hSameScaled;
+  TH1D *hMixedScaled;
+  
   // Loop over centrality
   for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
     
@@ -542,6 +548,60 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(TH1D *hDeltaPhi[knCorrelatio
         } // DeltaPhi loop
       } // Track pT loop
     } // Correlation type loop
+    
+    // Ratio for same and mixed event deltaEta for UE pairs
+    if(fDrawSameMixedDeltaEtaRatio){
+      
+      // Loop over track pT bins
+      for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
+        
+        // Set the correct track pT bins
+        trackPtString = Form("Track pT: %.1f-%.1f GeV",fTrackPtBinBorders[iTrackPt],fTrackPtBinBorders[iTrackPt+1]);
+        compactTrackPtString = Form("_pT=%.1f-%.1f",fTrackPtBinBorders[iTrackPt],fTrackPtBinBorders[iTrackPt+1]);
+        compactTrackPtString.ReplaceAll(".","v");
+        
+        // Read the same event histogram between the peaks and mixed event histogram from the whole phi region
+        sprintf(namerX,"%sSameScaled%d%d",nameForSave,iCentrality,iTrackPt);
+        hSameScaled = (TH1D*)hDeltaEta[0][iCentrality][iTrackPt][3]->Clone(namerX);
+        sprintf(namerX,"%sMixedScaled%d%d",nameForSave,iCentrality,iTrackPt);
+        hMixedScaled = (TH1D*)hDeltaEta[1][iCentrality][iTrackPt][0]->Clone(namerX);
+        
+        // Scale both to 1 and then divide to get the normalized ratio
+        hSameScaled->Scale(1.0/hSameScaled->Integral());
+        hMixedScaled->Scale(1.0/hMixedScaled->Integral());
+        sprintf(namerX,"%sSameMixedRatio%d%d",nameForSave,iCentrality,iTrackPt);
+        hRatio = (TH1D*)hSameScaled->Clone(namerX);
+        hRatio->Divide(hMixedScaled);
+        
+        // Draw the histogram to canvas
+        fDrawer->SetDefaultAppearanceSplitCanvas();
+        fDrawer->CreateSplitCanvas();
+        hSameScaled->GetYaxis()->SetRangeUser(0,0.03); // Set a good viewing range for the plot
+        sprintf(namerX,"%s #Delta#eta",nameForAxis);
+        fDrawer->DrawHistogramToUpperPad(hSameScaled,namerX,"#frac{dN}{d#Delta#eta}");
+        hMixedScaled->SetLineColor(kRed);
+        hMixedScaled->Draw("same");
+        
+        // Setup the legend
+        legend = new TLegend(0.50,0.72,0.80,0.97);
+        SetupLegend(legend,centralityString,trackPtString);
+        legend->AddEntry(hSameScaled,"SameEvent UE region","l");
+        legend->AddEntry(hMixedScaled,"MixedEvent, whole #Delta#phi","l");
+        legend->Draw();
+        
+        // Draw the ratio to lower pad of split canvas
+        hRatio->GetYaxis()->SetRangeUser(0.6,1.4); // Set a good viewing range for the plot
+        fDrawer->DrawHistogramToLowerPad(hRatio,namerX,"Same UE/Mixed", " ");
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sSameMixedDeltaEtaComparison",nameForSave);
+        SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+        
+        // Return default settings to fDrawer
+        fDrawer->Reset();
+      }
+    }
+    
   } // Centrality loop
 }
 
@@ -1175,6 +1235,11 @@ void DijetDrawer::SetDrawCorrelationTypes(bool sameEvent, bool mixedEvent, bool 
   SetDrawSameEvent(sameEvent);
   SetDrawMixedEvent(mixedEvent);
   SetDrawCorrectedCorrelations(corrected);
+}
+
+// Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
+void DijetDrawer::SetDrawSameMixedDeltaEtaRatio(bool drawOrNot){
+  fDrawSameMixedDeltaEtaRatio = drawOrNot;
 }
 
 // Setter for saving the figures to a file

@@ -16,12 +16,12 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -29,12 +29,13 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
-  bool drawMixedEvent = true;
-  bool drawCorrected = true;
+  bool drawSameEvent = false;
+  bool drawMixedEvent = false;
+  bool drawCorrected = false;
+  bool drawSameMixedDeltaEtaRatio = true;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "png";
   
   // Logarithmic scales for figures for pT distributions
@@ -85,6 +86,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   resultDrawer->SetDrawAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
   resultDrawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);
+  resultDrawer->SetDrawSameMixedDeltaEtaRatio(drawSameMixedDeltaEtaRatio);
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
   resultDrawer->SetLogAxes(logPt,logCorrelation);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
