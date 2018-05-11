@@ -161,6 +161,28 @@ DijetAnalyzer::~DijetAnalyzer(){
 }
 
 /*
+ * Get the number of particle flow candidates within a range of 0.4 of the given eta-phi angle
+ */
+Int_t DijetAnalyzer::GetNParticleFlowCandidatesInJet(ForestReader *treeReader, Double_t jetPhi, Double_t jetEta){
+  
+  // Start counting from zero
+  Int_t nParticleFlowCandidatesInThisJet = 0;
+  Double_t distanceToThisJet = 0;
+  
+  // Loop over all particle flow candidates
+  for(Int_t iParticleFlowCandidate = 0; iParticleFlowCandidate < treeReader->GetNParticleFlowCandidates(); iParticleFlowCandidate++){
+    if(treeReader->GetParticleFlowCandidateId(iParticleFlowCandidate) != 1) continue; // Require ID 1 for candidates
+    if(treeReader->GetParticleFlowCandidatePt(iParticleFlowCandidate) < 2) continue; // Require minimum pT of 2 GeV for candidates
+    distanceToThisJet = TMath::Power(TMath::Power(jetPhi-treeReader->GetParticleFlowCandidatePhi(iParticleFlowCandidate),2)+TMath::Power(jetEta-treeReader->GetParticleFlowCandidateEta(iParticleFlowCandidate),2),0.5);
+    if(distanceToThisJet > 0.4) continue;  // Require the particle to be inside the jet cone of R = 0.4
+    nParticleFlowCandidatesInThisJet++;
+  }
+  
+  // Return all we find
+  return nParticleFlowCandidatesInThisJet;
+}
+
+/*
  * Main analysis loop
  */
 void DijetAnalyzer::RunAnalysis(){
@@ -253,9 +275,14 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t secondHighestIndex = -1;   // Index of the subleading jet in the event
   Int_t highestIndex = -1;         // Index of the leading jet in the event
   Double_t jetPt = 0;              // pT of the i:th jet in the event
+  Double_t jetPhi = 0;             // phi of the i:th jet in the event
+  Double_t jetEta = 0;             // eta of the i:th jet in the event
   Double_t dphi = 0;               // deltaPhi for the considered jets
   Double_t leadingJetInfo[3];      // Array for leading jet pT, phi and eta
   Double_t subleadingJetInfo[3];   // Array for subleading jet pT, phi and eta
+  
+  // Variables for particle flow candidates
+  Int_t nParticleFlowCandidatesInThisJet;  // Number of particle flow candidates in the current jet
   
   // File name helper variables
   TString currentFile;
@@ -393,29 +420,28 @@ void DijetAnalyzer::RunAnalysis(){
       leadingJetPt = 0;
       subleadingJetPt = 0;
       
-      /*
-       * JFF correction:  pfId vector<int> (Should be 1)
-       *                  pfPt vector<float> (Should be > 2)
-       *                  pfEta vector<float> (Needs to be in jet radius R < 0.4)
-       *                  pfPhi vector<float> (Needs to be in jet radius R < 0.4)
-       */
-      
       // Search for leading jet and fill histograms for all jets within the eta vut
       for(Int_t jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
         jetPt = treeReader->GetJetPt(jetIndex);
-        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= fJetSearchEtaCut) continue; // Cut for search eta range
+        jetPhi = treeReader->GetJetPhi(jetIndex);
+        jetEta = treeReader->GetJetEta(jetIndex);
+        if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
         if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
+        // Apply JFF correction to jet pT
+        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);
+        jetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
+        
         // Fill the histogram for all jets within eta range
-        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) < fJetEtaCut){
+        if(TMath::Abs(jetEta) < fJetEtaCut){
           
           // Fill the axes in correct order
-          fillerJet[0] = jetPt;                             // Axis 0 = any jet pT
-          fillerJet[1] = treeReader->GetJetPhi(jetIndex);   // Axis 1 = any jet phi
-          fillerJet[2] = treeReader->GetJetEta(jetIndex);   // Axis 2 = any jet eta
-          fillerJet[3] = centrality;                        // Axis 3 = centrality
-          fHistograms->fhAnyJet->Fill(fillerJet);           // Fill the data point to histogram
+          fillerJet[0] = jetPt;                   // Axis 0 = any jet pT
+          fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
+          fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
+          fillerJet[3] = centrality;              // Axis 3 = centrality
+          fHistograms->fhAnyJet->Fill(fillerJet); // Fill the data point to histogram
           
         }
         
@@ -429,10 +455,17 @@ void DijetAnalyzer::RunAnalysis(){
       // Search for subleading jet
       for(Int_t jetIndex = 0 ; jetIndex < treeReader->GetNJets(); jetIndex++){
         jetPt = treeReader->GetJetPt(jetIndex);
+        jetPhi = treeReader->GetJetPhi(jetIndex);
+        jetEta = treeReader->GetJetEta(jetIndex);
         if(jetIndex == highestIndex) continue; // Do not consider leading particle
-        if(TMath::Abs(treeReader->GetJetEta(jetIndex)) >= fJetSearchEtaCut) continue; // Cut for search eta range
+        if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
         if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
+        
+        // Apply JFF correction to jet pT
+        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);
+        jetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
+        
         if(jetPt <= fSubleadingJetMinPtCut) continue; // Minimum subleading jet pT cut
         if(jetPt > subleadingJetPt){
           subleadingJetPt = jetPt;

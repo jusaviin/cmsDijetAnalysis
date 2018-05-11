@@ -335,3 +335,8 @@ Float_t ForestReader::GetParticleFlowCandidatePhi(Int_t iCandidate) const{
 Float_t ForestReader::GetParticleFlowCandidateEta(Int_t iCandidate) const{
   return fParticleFlowCandidateEtaArray->at(iCandidate);
 }
+
+// Getter number of particle flow candidates in an event
+Int_t ForestReader::GetNParticleFlowCandidates() const{
+  return fParticleFlowCandidateIdArray->size();
+}

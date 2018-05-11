@@ -88,6 +88,7 @@ public:
   Float_t GetParticleFlowCandidatePt(Int_t iCandidate) const;    // Getter for particle flow candidate pT
   Float_t GetParticleFlowCandidatePhi(Int_t iCandidate) const;   // Getter for particle flow candidate phi
   Float_t GetParticleFlowCandidateEta(Int_t iCandidate) const;   // Getter for particle flow candidate eta
+  Int_t GetNParticleFlowCandidates() const;                      // Getter for number of particle flow candidates in an event
   
   // Setter for data type
   void SetDataType(Int_t dataType); // Setter for data type

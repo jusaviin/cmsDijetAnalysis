@@ -13,7 +13,7 @@ class JffCorrection{
   
 public:
   JffCorrection(bool ispp);
-  double GetCorrection(bool ispp, int nCScand, int hiBin, double jtpt, double jteta);
+  double GetCorrection(int nCScand, int hiBin, double jtpt, double jteta);
   
 private:
   static const int nCentBins = 4;
@@ -24,6 +24,7 @@ private:
   double* centBins;
   TFile *fin;
   double corrpt;
+  bool fIsPpData;
 };
 
 #endif

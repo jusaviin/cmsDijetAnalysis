@@ -36,6 +36,7 @@ private:
   
   // Private methods
   void CorrelateTracksAndJets(ForestReader *treeReader, Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], Int_t correlationType);  // Do jet-track correlations
+  Int_t GetNParticleFlowCandidatesInJet(ForestReader *treeReader, Double_t jetPhi, Double_t jetEta);
   
   // Private data members
   std::vector<TString> fFileNames;   // Vector for all the files to loop over
