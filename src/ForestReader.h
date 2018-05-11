@@ -12,6 +12,7 @@
 // C++ includes
 #include <iostream>
 #include <assert.h>
+#include <vector>
 
 // Root includes
 #include <TString.h>
@@ -82,6 +83,12 @@ public:
   virtual Float_t GetTrackEnergyEcal(Int_t iTrack) const = 0;            // Getter for track energy in ECal
   virtual Float_t GetTrackEnergyHcal(Int_t iTrack) const = 0;            // Getter for track energy in HCal
   
+  // Getters for leaves in the particle flow candidate tree
+  Int_t GetParticleFlowCandidateId(Int_t iCandidate) const;      // Getter for particle flow candidate ID
+  Float_t GetParticleFlowCandidatePt(Int_t iCandidate) const;    // Getter for particle flow candidate pT
+  Float_t GetParticleFlowCandidatePhi(Int_t iCandidate) const;   // Getter for particle flow candidate phi
+  Float_t GetParticleFlowCandidateEta(Int_t iCandidate) const;   // Getter for particle flow candidate eta
+  
   // Setter for data type
   void SetDataType(Int_t dataType); // Setter for data type
   
@@ -130,6 +137,12 @@ protected:
   TBranch *fnHitsTrackBranch;                 // Branch for number of hits for the track
   TBranch *fTrackEnergyEcalBranch;            // Branch for track energy in ECal
   TBranch *fTrackEnergyHcalBranch;            // Branch for track energy in HCal
+  
+  // Branched for particle flow candidate tree
+  TBranch *fParticleFlowCandidateIdBranch;    // Branch for particle flow candidate ID
+  TBranch *fParticleFlowCandidatePtBranch;    // Branch for particle flow candidate pT
+  TBranch *fParticleFlowCandidatePhiBranch;   // Branch for particle flow candidate phi
+  TBranch *fParticleFlowCandidateEtaBranch;   // Branch for particle flow candidate eta
     
   // Leaves for heavy ion tree
   Float_t fVertexZ;    // Vertex z-position
@@ -150,8 +163,13 @@ protected:
   Int_t fClusterCompatibilityFilterBit;    // Filter bit for cluster compatibility
   
   // Leaves for the track tree
-  Int_t fnTracks;                                             // Number of tracks
+  Int_t fnTracks;  // Number of tracks
   
+  // Leaves for the particle flow candidate tree
+  vector<int> *fParticleFlowCandidateIdArray;     // Vector for particle flow candidate ID:s
+  vector<float> *fParticleFlowCandidatePtArray;   // Vector for particle flow candidate pT:s
+  vector<float> *fParticleFlowCandidatePhiArray;  // Vector for particle flow candidate phis
+  vector<float> *fParticleFlowCandidateEtaArray;  // Vector for particle flow candidate etas
 };
 
 #endif

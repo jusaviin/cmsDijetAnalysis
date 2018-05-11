@@ -37,6 +37,10 @@ ForestReader::ForestReader() :
   fnHitsTrackBranch(0),
   fTrackEnergyEcalBranch(0),
   fTrackEnergyHcalBranch(0),
+  fParticleFlowCandidateIdBranch(0),
+  fParticleFlowCandidatePtBranch(0),
+  fParticleFlowCandidatePhiBranch(0),
+  fParticleFlowCandidateEtaBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
   fnJets(0),
@@ -89,6 +93,10 @@ ForestReader::ForestReader(Int_t dataType) :
   fnHitsTrackBranch(0),
   fTrackEnergyEcalBranch(0),
   fTrackEnergyHcalBranch(0),
+  fParticleFlowCandidateIdBranch(0),
+  fParticleFlowCandidatePtBranch(0),
+  fParticleFlowCandidatePhiBranch(0),
+  fParticleFlowCandidateEtaBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
   fnJets(0),
@@ -141,6 +149,10 @@ ForestReader::ForestReader(const ForestReader& in) :
   fnHitsTrackBranch(in.fnHitsTrackBranch),
   fTrackEnergyEcalBranch(in.fTrackEnergyEcalBranch),
   fTrackEnergyHcalBranch(in.fTrackEnergyHcalBranch),
+  fParticleFlowCandidateIdBranch(in.fParticleFlowCandidateIdBranch),
+  fParticleFlowCandidatePtBranch(in.fParticleFlowCandidatePtBranch),
+  fParticleFlowCandidatePhiBranch(in.fParticleFlowCandidatePhiBranch),
+  fParticleFlowCandidateEtaBranch(in.fParticleFlowCandidateEtaBranch),
   fVertexZ(in.fVertexZ),
   fHiBin(in.fHiBin),
   fnJets(in.fnJets),
@@ -194,6 +206,10 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fnHitsTrackBranch = in.fnHitsTrackBranch;
   fTrackEnergyEcalBranch = in.fTrackEnergyEcalBranch;
   fTrackEnergyHcalBranch = in.fTrackEnergyHcalBranch;
+  fParticleFlowCandidateIdBranch = in.fParticleFlowCandidateIdBranch;
+  fParticleFlowCandidatePtBranch = in.fParticleFlowCandidatePtBranch;
+  fParticleFlowCandidatePhiBranch = in.fParticleFlowCandidatePhiBranch;
+  fParticleFlowCandidateEtaBranch = in.fParticleFlowCandidateEtaBranch;
   fVertexZ = in.fVertexZ;
   fHiBin = in.fHiBin;
   fnJets = in.fnJets;
@@ -298,4 +314,24 @@ Int_t ForestReader::GetClusterCompatibilityFilterBit() const{
 // Getter for number of tracks in an event
 Int_t ForestReader::GetNTracks() const{
   return fnTracks;
+}
+
+// Getter for particle flow candidate ID
+Int_t ForestReader::GetParticleFlowCandidateId(Int_t iCandidate) const{
+  return fParticleFlowCandidateIdArray->at(iCandidate);
+}
+
+// Getter for particle flow candidate pT
+Float_t ForestReader::GetParticleFlowCandidatePt(Int_t iCandidate) const{
+  return fParticleFlowCandidatePtArray->at(iCandidate);
+}
+
+// Getter for particle flow candidate phi
+Float_t ForestReader::GetParticleFlowCandidatePhi(Int_t iCandidate) const{
+  return fParticleFlowCandidatePhiArray->at(iCandidate);
+}
+
+// Getter for particle flow candidate eta
+Float_t ForestReader::GetParticleFlowCandidateEta(Int_t iCandidate) const{
+  return fParticleFlowCandidateEtaArray->at(iCandidate);
 }

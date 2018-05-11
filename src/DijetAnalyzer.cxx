@@ -393,6 +393,13 @@ void DijetAnalyzer::RunAnalysis(){
       leadingJetPt = 0;
       subleadingJetPt = 0;
       
+      /*
+       * JFF correction:  pfId vector<int> (Should be 1)
+       *                  pfPt vector<float> (Should be > 2)
+       *                  pfEta vector<float> (Needs to be in jet radius R < 0.4)
+       *                  pfPhi vector<float> (Needs to be in jet radius R < 0.4)
+       */
+      
       // Search for leading jet and fill histograms for all jets within the eta vut
       for(Int_t jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
         jetPt = treeReader->GetJetPt(jetIndex);
@@ -453,8 +460,8 @@ void DijetAnalyzer::RunAnalysis(){
         
         if((leadingJetPt >= fJetMaximumPtCut) ||              // Maximum leading jet pT cut
            (TMath::Abs(leadingJetEta) >= fJetEtaCut) ||       // Leading jet eta cut
-           (TMath::Abs(subleadingJetEta) >= fJetEtaCut)||  // Subleading jet eta cut
-           (TMath::Abs(dphi) <= fDeltaPhiCut)){                                     // DeltaPhi cut
+           (TMath::Abs(subleadingJetEta) >= fJetEtaCut)||     // Subleading jet eta cut
+           (TMath::Abs(dphi) <= fDeltaPhiCut)){               // DeltaPhi cut
           dijetFound = false;
         }
       } // End of dijet cuts

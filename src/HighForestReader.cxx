@@ -13,6 +13,7 @@ HighForestReader::HighForestReader() :
   fHltTree(0),
   fSkimTree(0),
   fTrackTree(0),
+  fParticleFlowCandidateTree(0),
   fnJetsBranch(0),
   fnTracksBranch(0),
   fJetPtArray(),
@@ -52,6 +53,7 @@ HighForestReader::HighForestReader(Int_t dataType) :
   fHltTree(0),
   fSkimTree(0),
   fTrackTree(0),
+  fParticleFlowCandidateTree(0),
   fnJetsBranch(0),
   fnTracksBranch(0),
   fJetPtArray(),
@@ -87,6 +89,7 @@ HighForestReader::HighForestReader(const HighForestReader& in) :
   fHltTree(in.fHltTree),
   fSkimTree(in.fSkimTree),
   fTrackTree(in.fTrackTree),
+  fParticleFlowCandidateTree(in.fParticleFlowCandidateTree),
   fnJetsBranch(in.fnJetsBranch),
   fnTracksBranch(in.fnTracksBranch)
 {
@@ -133,6 +136,7 @@ HighForestReader& HighForestReader::operator=(const HighForestReader& in){
   fHltTree = in.fHltTree;
   fSkimTree = in.fSkimTree;
   fTrackTree = in.fTrackTree;
+  fParticleFlowCandidateTree = in.fParticleFlowCandidateTree;
   fnJetsBranch = in.fnJetsBranch;
   fnTracksBranch = in.fnTracksBranch;
   
@@ -250,6 +254,12 @@ void HighForestReader::Initialize(){
   fTrackTree->SetBranchAddress("trkNHit",&fnHitsTrackArray,&fnHitsTrackBranch);
   fTrackTree->SetBranchAddress("pfEcal",&fTrackEnergyEcalArray,&fTrackEnergyEcalBranch);
   fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
+  
+  // Connect the branches to the particle flow candidate tree
+  fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdArray,&fParticleFlowCandidateIdBranch);
+  fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtArray,&fParticleFlowCandidatePtBranch);
+  fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiArray,&fParticleFlowCandidatePhiBranch);
+  fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaArray,&fParticleFlowCandidateEtaBranch);
 }
 
 /*
@@ -271,11 +281,13 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     fJetTree = (TTree*)inputFile->Get("ak4PFJetAnalyzer/t");
   }
   
-  // The track tree has different name for differant datasets
+  // The track tree and the particle flow candidate tree have different names for differant datasets
   if(fDataType == kPp || fDataType == kPpMC || fDataType == kLocalTest){
     fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree");
+    fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzer/pfTree");
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
     fTrackTree = (TTree*)inputFile->Get("anaTrack/trackTree");
+    fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzerCS/pfTree");
   }
   
   Initialize();
