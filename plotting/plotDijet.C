@@ -29,8 +29,8 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
-  bool drawMixedEvent = false;
+  bool drawSameEvent = true;
+  bool drawMixedEvent = true;
   bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
