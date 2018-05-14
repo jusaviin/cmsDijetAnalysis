@@ -748,6 +748,9 @@ void DijetDrawer::ApplyMixedEventCorrection(TH1D *hDeltaPhi[knCorrelationTypes][
  *
  *  TODO: In Hallie's code the scaling factor is the average of the leading and subleading factors.
  *        Decide if this is necessary or if we can do the correction separately.
+ *        Also there is some smoothening of the mixed event distribution by taking average of
+ *        different sides of deltaEta to suppress fluctuations on edges. See if something like
+ *        this needs to be implemented here.
  *
  * Arguments:
  *  TH2D* sameEventHistogram = Histogram with correlation from the same event

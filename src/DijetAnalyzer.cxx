@@ -272,8 +272,12 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t subleadingJetPt = 0;    // Subleading jet pT
   Double_t subleadingJetPhi = 0;   // Subleading jet phi
   Double_t subleadingJetEta = 0;   // Subleading jet eta
+  Double_t swapJetPt = 0;          // Swapping helper variable
+  Double_t swapJetPhi = 0;         // Swapping helper variable
+  Double_t swapJetEta = 0;         // Swapping helper variable
   Int_t secondHighestIndex = -1;   // Index of the subleading jet in the event
   Int_t highestIndex = -1;         // Index of the leading jet in the event
+  Int_t swapIndex = -1;            // Swapping helper variable
   Double_t jetPt = 0;              // pT of the i:th jet in the event
   Double_t jetPhi = 0;             // phi of the i:th jet in the event
   Double_t jetEta = 0;             // eta of the i:th jet in the event
@@ -429,15 +433,12 @@ void DijetAnalyzer::RunAnalysis(){
         if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
-        // Apply JFF correction to jet pT
-        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);
-        jetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
-        
         // Fill the histogram for all jets within eta range
         if(TMath::Abs(jetEta) < fJetEtaCut){
           
           // Fill the axes in correct order
-          fillerJet[0] = jetPt;                   // Axis 0 = any jet pT
+          nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);       // Apply JFF correction for jet pT
+          fillerJet[0] = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);  // Axis 0 = any jet pT
           fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
           fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
           fillerJet[3] = centrality;              // Axis 3 = centrality
@@ -445,7 +446,6 @@ void DijetAnalyzer::RunAnalysis(){
           
         }
         
-        if(jetPt <= fLeadingJetMinPtCut) continue; // Minimum leading jet pT cut
         if(jetPt > leadingJetPt){
           leadingJetPt = jetPt;
           highestIndex = jetIndex;
@@ -462,11 +462,6 @@ void DijetAnalyzer::RunAnalysis(){
         if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
-        // Apply JFF correction to jet pT
-        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);
-        jetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
-        
-        if(jetPt <= fSubleadingJetMinPtCut) continue; // Minimum subleading jet pT cut
         if(jetPt > subleadingJetPt){
           subleadingJetPt = jetPt;
           secondHighestIndex = jetIndex;
@@ -485,13 +480,29 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetPhi = treeReader->GetJetPhi(secondHighestIndex);
         subleadingJetEta = treeReader->GetJetEta(secondHighestIndex);
         
+        // Apply the JFF correction for leading and subleading jet pT
+        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,leadingJetPhi,leadingJetEta);
+        leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
+        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,subleadingJetPhi,subleadingJetEta);
+        subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
+        
+        // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info
+        if(subleadingJetPt > leadingJetPt){
+          swapJetPt = leadingJetPt;   leadingJetPt = subleadingJetPt;    subleadingJetPt = swapJetPt;
+          swapJetPhi = leadingJetPhi; leadingJetPhi = subleadingJetPhi;  subleadingJetPhi = swapJetPhi;
+          swapJetEta = leadingJetEta; leadingJetEta = subleadingJetEta;  subleadingJetEta = swapJetEta;
+          swapIndex = highestIndex;   highestIndex = secondHighestIndex; secondHighestIndex = swapIndex;
+        }
+        
         dijetFound = true;
         dphi =  leadingJetPhi - subleadingJetPhi;
         if(dphi < 0) dphi = -dphi;
         if(dphi > TMath::Pi()) dphi = 2*TMath::Pi() - dphi;
         
-        
+        // Apply dijet cuts
         if((leadingJetPt >= fJetMaximumPtCut) ||              // Maximum leading jet pT cut
+           (leadingJetPt <= fLeadingJetMinPtCut) ||           // Leading jet minimum pT cut
+           (subleadingJetPt <= fSubleadingJetMinPtCut) ||     // Subleading jet minimum pT cut
            (TMath::Abs(leadingJetEta) >= fJetEtaCut) ||       // Leading jet eta cut
            (TMath::Abs(subleadingJetEta) >= fJetEtaCut)||     // Subleading jet eta cut
            (TMath::Abs(dphi) <= fDeltaPhiCut)){               // DeltaPhi cut
