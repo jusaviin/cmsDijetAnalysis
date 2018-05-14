@@ -16,12 +16,12 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -29,9 +29,9 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
-  bool drawMixedEvent = true;
-  bool drawCorrected = false;
+  bool drawSameEvent = false;
+  bool drawMixedEvent = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Choose if you want to write the figures to pdf file
@@ -49,7 +49,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   
   // Bin borders
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
-  double trackPtBinBorders[] = {0.5,1,2,3,4,8,300};  // Bin borders for track pT
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1}; // Low bin borders for deltaPhi
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
@@ -57,6 +57,9 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   
   int firstDrawCentralityBin = 0;
   int lastDrawnCentralityBin = 3;
+  
+  // Mixed event
+  double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -90,6 +93,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
   resultDrawer->SetLogAxes(logPt,logCorrelation);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
+  resultDrawer->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
   
   // Set the binning information
   resultDrawer->SetCentralityBins(centralityBinBorders);

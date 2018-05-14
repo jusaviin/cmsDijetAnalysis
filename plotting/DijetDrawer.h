@@ -89,6 +89,9 @@ public:
   void SetCentralityBinRange(const int first, const int last); // Setter for drawn centrality bins
   void SetTrackPtBinRange(const int first, const int last);    // Setter for drawn track pT bins
   
+  // Setters for mixed event configuration
+  void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
+  
 private:
   
   // Data members
@@ -161,21 +164,20 @@ private:
   TString fCompactCorrelationTypeString[knCorrelationTypes];
   
   // =============================================
+  // =========== Mixed event correction ==========
+  // =============================================
+  double fMixedEventFitRegion;  // Region in deltaEta in which a constant fit is done to normalize mixed event distributions
+  
+  // =============================================
   // ===== Histograms for the dijet analysis =====
   // =============================================
   
-  // Vertex z position
-  TH1D *fhVertexZ;
-  
-  // Number of events surviving different event cuts
-  TH1D *fhEvents;
-  
-  // Number of tracks surviving different track cuts
-  TH1D *fhTrackCuts;
-  
-  // Centrality of all and dijet events
-  TH1D *fhCentrality;
-  TH1D *fhCentralityDijet;
+  // Event information histograms
+  TH1D *fhVertexZ;         // Vertex z position
+  TH1D *fhEvents;          // Number of events surviving different event cuts
+  TH1D *fhTrackCuts;       // Number of tracks surviving different track cuts
+  TH1D *fhCentrality;      // Centrality of all events
+  TH1D *fhCentralityDijet; // Centrality of dijet events
   
   // Histograms for leading jets
   TH1D *fhLeadingJetPt[knCentralityBins];               // Leading jet pT histograms
