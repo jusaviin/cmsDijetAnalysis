@@ -17,9 +17,6 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   fInputFile(inputFile),
   fDrawEventInformation(false),
   fDrawDijetHistograms(false),
-  fDrawLeadingJetHistograms(false),
-  fDrawSubleadingJetHistograms(false),
-  fDrawAnyJetHistograms(false),
   fDrawSameEvent(false),
   fDrawMixedEvent(false),
   fDrawCorrected(false),
@@ -58,6 +55,9 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   for(int iTrack = 0; iTrack < knTrackCategories; iTrack++){
     fDrawTracks[iTrack] = false;
   }
+  for(int iJet = 0; iJet < knSingleJetCategories; iJet++){
+    fDrawSingleJets[iJet] = false;
+  }
   
   // Default binning for centrality
   for(int iCentrality = 0; iCentrality < knCentralityBins + 1; iCentrality++){
@@ -89,6 +89,60 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
     fCorrelationTypeString[iCorrelationType] = tempCorrelationTypes[iCorrelationType];
     fCompactCorrelationTypeString[iCorrelationType] = tempCompactCorrelationTypes[iCorrelationType];
   }
+  
+  // Initialize all the histograms to null
+  fhVertexZ = NULL;         // Vertex z position
+  fhEvents = NULL;          // Number of events surviving different event cuts
+  fhTrackCuts = NULL;       // Number of tracks surviving different track cuts
+  fhCentrality = NULL;      // Centrality of all events
+  fhCentralityDijet = NULL; // Centrality of dijet events
+  
+  // Centrality loop
+  for(int iCentrality = 0; iCentrality < knCentralityBins; iCentrality++){
+    fhDijetDphi[iCentrality] = NULL;                  // Dijet deltaPhi histograms
+    fhDijetAsymmetry[iCentrality] = NULL;             // Dijet asymmetry histograms
+    fhDijetLeadingVsSubleadingPt[iCentrality] = NULL; // Leading versus subleading jet pT 2D histograms
+    
+    // Single jet category loop
+    for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
+      fhJetPt[iJetCategory][iCentrality] = NULL;      // Jet pT histograms
+      fhJetPhi[iJetCategory][iCentrality] = NULL;     // Jet phi histograms
+      fhJetEta[iJetCategory][iCentrality] = NULL;     // Jet eta histograms
+      fhJetEtaPhi[iJetCategory][iCentrality] = NULL;  // 2D eta-phi histogram for jets
+    } // Single jet categories loop
+    
+    // Event correlation type loop
+    for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+      
+      // Loop over track categories
+      for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
+        fhTrackPt[iTrackType][iCorrelationType][iCentrality] = NULL;   // Track pT histograms
+        
+        // Loop over track pT bins
+        for(int iTrackPt = 0; iTrackPt < knTrackPtBins + 1; iTrackPt++){
+          fhTrackPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt] = NULL;    // Track phi histograms
+          fhTrackEta[iTrackType][iCorrelationType][iCentrality][iTrackPt] = NULL;    // Track eta histograms
+          fhTrackEtaPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt] = NULL; // 2D eta-phi histogram for track
+        } // Track pT loop
+        
+      } // Track category loop
+      
+      // Loop over jet-track correlation types
+      for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+        
+        // Loop over track pT bins
+        for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt] = NULL;         // DeltaPhi between jet and track
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt] = NULL; // DeltaEta and deltaPhi between jet and track
+          
+          // Loop over deltaPhi bins
+          for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+            fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentrality][iTrackPt][iDeltaPhi] = NULL; // DeltaEta between jet and track
+          } // DeltaPhi loop
+        } // Track pT loop
+      } // Jet-track correlation type loop
+    } // Event correlation type loop
+  } // Centrality loop
 }
 
 /*
@@ -105,24 +159,18 @@ DijetDrawer::~DijetDrawer(){
 void DijetDrawer::DrawHistograms(){
   
   // Draw the event information histograms
-  if(fDrawEventInformation) DrawEventInformation();
+  DrawEventInformation();
   
-  // Draw the leading jet histograms
-  if(fDrawLeadingJetHistograms) DrawSingleJetHistograms(fhLeadingJetPt,fhLeadingJetPhi,fhLeadingJetEta,fhLeadingJetEtaPhi,"Leading jet","leadingJet");
-  
-  // Draw the subleading jet histograms
-  if(fDrawSubleadingJetHistograms) DrawSingleJetHistograms(fhSubleadingJetPt,fhSubleadingJetPhi,fhSubleadingJetEta,fhSubleadingJetEtaPhi,"Subleading jet","subleadingJet");
-  
-  // Draw the any jet histograms
-  if(fDrawAnyJetHistograms) DrawSingleJetHistograms(fhAnyJetPt,fhAnyJetPhi,fhAnyJetEta,fhAnyJetEtaPhi,"Any jet","anyJet");
+  // Draw the single jet histograms
+  DrawSingleJetHistograms();
   
   // Draw the dijet histograms
-  if(fDrawDijetHistograms) DrawDijetHistograms();
+  DrawDijetHistograms();
   
-  // Draw the selected track histograms
+  // Draw the track histograms
   DrawTrackHistograms();
   
-  // Draw the selected jet-track correlation histograms
+  // Draw the jet-track correlation histograms
   DrawJetTrackCorrelationHistograms();
   
 }
@@ -131,6 +179,8 @@ void DijetDrawer::DrawHistograms(){
  * Draw event information histograms
  */
 void DijetDrawer::DrawEventInformation(){
+  
+  if(!fDrawEventInformation) return;  // Only draw the event information histograms if they are selected for drawing
   
   // Helper variable for legend
   TLegend *legend;
@@ -187,16 +237,8 @@ void DijetDrawer::DrawEventInformation(){
 
 /*
  * Draw single jet histograms
- *
- *  Arguments:
- *    TH1D *hJetPt[knCentralityBins] = Array of jet pT histograms
- *    TH1D *hJetPhi[knCentralityBins] = Array of jet phi histograms
- *    TH1D *hJetEta[knCentralityBins] = Array of jet eta histograms
- *    TH2D *hJetEtaPhi[knCentralityBins] = Array of jet eta-phi histograms
- *    const char* nameForAxis = Name that will be added to x-axis
- *    const char* nameForSave = Name that will be added to saved figures
  */
-void DijetDrawer::DrawSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* hJetPhi[knCentralityBins], TH1D* hJetEta[knCentralityBins], TH2D* hJetEtaPhi[knCentralityBins], const char* nameForAxis, const char* nameForSave){
+void DijetDrawer::DrawSingleJetHistograms(){
   
   // Legend helper variable
   TLegend *legend;
@@ -207,76 +249,83 @@ void DijetDrawer::DrawSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* 
   char namerX[100];
   char namerY[100];
   
-  // Loop over centrality
-  for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+  // Loop over single jet categories
+  for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
+    if(!fDrawSingleJets[iJetCategory]) continue;  // Only draw selected jet categories
     
-    centralityString = Form("Cent: %.0f-%.0f%%",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
-    compactCentralityString = Form("_C=%.0f-%.0f",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
-    
-    // Select logarithmic drawing for pT
-    fDrawer->SetLogY(fLogPt);
-    
-    // === Jet pT ===
-    sprintf(namerX,"%s p_{T}  (GeV)",nameForAxis);
-    fDrawer->DrawHistogram(hJetPt[iCentrality],namerX,"#frac{dN}{dp_{T}}  (1/GeV)"," ");
-    legend = new TLegend(0.62,0.75,0.82,0.9);
-    SetupLegend(legend,centralityString);
-    legend->Draw();
-    
-    // Save the figure to a file
-    sprintf(namerX,"%sPt",nameForSave);
-    SaveFigure(namerX,compactCentralityString);
-    
-    // Set linear drawing
-    fDrawer->SetLogY(false);
-    
-    // === Jet phi ===
-    sprintf(namerX,"%s #varphi",nameForAxis);
-    fDrawer->DrawHistogram(hJetPhi[iCentrality],namerX,"#frac{dN}{d#varphi}"," ");
-    legend = new TLegend(0.62,0.75,0.82,0.9);
-    SetupLegend(legend,centralityString);
-    legend->Draw();
-    
-    // Save the figure to a file
-    sprintf(namerX,"%sPhi",nameForSave);
-    SaveFigure(namerX,compactCentralityString);
-    
-    // === Jet eta ===
-    sprintf(namerX,"%s #eta",nameForAxis);
-    fDrawer->DrawHistogram(hJetEta[iCentrality],namerX,"#frac{dN}{d#eta}"," ");
-    legend = new TLegend(0.62,0.20,0.82,0.35);
-    SetupLegend(legend,centralityString);
-    legend->Draw();
-    
-    // Save the figure to a file
-    sprintf(namerX,"%sEta",nameForSave);
-    SaveFigure(namerX,compactCentralityString);
-    
-    // Change the right margin better suited for 2D-drawing
-    fDrawer->SetRightMargin(0.1);
-    
-    // === Jet eta vs. phi ===
-    sprintf(namerX,"%s #varphi",nameForAxis);
-    sprintf(namerY,"%s #eta",nameForAxis);
-    fDrawer->DrawHistogram(hJetEtaPhi[iCentrality],namerX,namerY," ",fStyle2D);
-    legend = new TLegend(0.17,0.78,0.37,0.93);
-    SetupLegend(legend,centralityString);
-    legend->Draw();
-    
-    // Save the figures to file
-    sprintf(namerX,"%sEtaPhi",nameForSave);
-    SaveFigure(namerX,compactCentralityString);
-    
-    // Change right margin back to 1D-drawing
-    fDrawer->SetRightMargin(0.06);
-    
-  } // Centrality loop
+    // Loop over centrality
+    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+      
+      centralityString = Form("Cent: %.0f-%.0f%%",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
+      compactCentralityString = Form("_C=%.0f-%.0f",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
+      
+      // Select logarithmic drawing for pT
+      fDrawer->SetLogY(fLogPt);
+      
+      // === Jet pT ===
+      sprintf(namerX,"%s p_{T}  (GeV)",fSingleJetAxisNames[iJetCategory]);
+      fDrawer->DrawHistogram(fhJetPt[iJetCategory][iCentrality],namerX,"#frac{dN}{dp_{T}}  (1/GeV)"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      SetupLegend(legend,centralityString);
+      legend->Draw();
+      
+      // Save the figure to a file
+      sprintf(namerX,"%sPt",fSingleJetHistogramName[iJetCategory]);
+      SaveFigure(namerX,compactCentralityString);
+      
+      // Set linear drawing
+      fDrawer->SetLogY(false);
+      
+      // === Jet phi ===
+      sprintf(namerX,"%s #varphi",fSingleJetAxisNames[iJetCategory]);
+      fDrawer->DrawHistogram(fhJetPhi[iJetCategory][iCentrality],namerX,"#frac{dN}{d#varphi}"," ");
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      SetupLegend(legend,centralityString);
+      legend->Draw();
+      
+      // Save the figure to a file
+      sprintf(namerX,"%sPhi",fSingleJetHistogramName[iJetCategory]);
+      SaveFigure(namerX,compactCentralityString);
+      
+      // === Jet eta ===
+      sprintf(namerX,"%s #eta",fSingleJetAxisNames[iJetCategory]);
+      fDrawer->DrawHistogram(fhJetEta[iJetCategory][iCentrality],namerX,"#frac{dN}{d#eta}"," ");
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      SetupLegend(legend,centralityString);
+      legend->Draw();
+      
+      // Save the figure to a file
+      sprintf(namerX,"%sEta",fSingleJetHistogramName[iJetCategory]);
+      SaveFigure(namerX,compactCentralityString);
+      
+      // Change the right margin better suited for 2D-drawing
+      fDrawer->SetRightMargin(0.1);
+      
+      // === Jet eta vs. phi ===
+      sprintf(namerX,"%s #varphi",fSingleJetAxisNames[iJetCategory]);
+      sprintf(namerY,"%s #eta",fSingleJetAxisNames[iJetCategory]);
+      fDrawer->DrawHistogram(fhJetEtaPhi[iJetCategory][iCentrality],namerX,namerY," ",fStyle2D);
+      legend = new TLegend(0.17,0.78,0.37,0.93);
+      SetupLegend(legend,centralityString);
+      legend->Draw();
+      
+      // Save the figures to file
+      sprintf(namerX,"%sEtaPhi",fSingleJetHistogramName[iJetCategory]);
+      SaveFigure(namerX,compactCentralityString);
+      
+      // Change right margin back to 1D-drawing
+      fDrawer->SetRightMargin(0.06);
+      
+    } // Centrality loop
+  } // Single jet category loop
 }
 
 /*
  * Draw dijet histograms
  */
 void DijetDrawer::DrawDijetHistograms(){
+  
+  if(!fDrawDijetHistograms) return; // Only draw the dijet histograms if they are selected for drawing
   
   // Legend helper variable
   TLegend *legend;
@@ -737,17 +786,11 @@ void DijetDrawer::LoadHistograms(){
     fhCentralityDijet = (TH1D*) fInputFile->Get("centralityDijet"); // Centrality in dijet events
   }
   
-  // Load leading jet histograms
-  if(fDrawLeadingJetHistograms) LoadSingleJetHistograms(fhLeadingJetPt,fhLeadingJetPhi,fhLeadingJetEta,fhLeadingJetEtaPhi,"leadingJet",4);
-  
-  // Load subleading jet histograms
-  if(fDrawSubleadingJetHistograms) LoadSingleJetHistograms(fhSubleadingJetPt,fhSubleadingJetPhi,fhSubleadingJetEta,fhSubleadingJetEtaPhi,"subleadingJet",4);
-  
-  // Load any jet histograms
-  if(fDrawAnyJetHistograms) LoadSingleJetHistograms(fhAnyJetPt,fhAnyJetPhi,fhAnyJetEta,fhAnyJetEtaPhi,"anyJet",3);
+  // Load single jet histograms
+  LoadSingleJetHistograms();
   
   // Load dijet histograms
-  if(fDrawDijetHistograms) LoadDijetHistograms(fhDijetDphi,fhDijetAsymmetry,fhDijetLeadingVsSubleadingPt,"dijet");
+  LoadDijetHistograms();
   
   // Load track histograms
   LoadTrackHistograms();
@@ -760,45 +803,42 @@ void DijetDrawer::LoadHistograms(){
 /*
  * Loader for single jet histograms
  *
- *  Arguments:
- *    TH1D *hJetPt[knCentralityBins] = Array of jet pT histograms
- *    TH1D *hJetPhi[knCentralityBins] = Array of jet phi histograms
- *    TH1D *hJetEta[knCentralityBins] = Array of jet eta histograms
- *    TH2D *hJetEtaPhi[knCentralityBins] = Array of jet eta-phi histograms
- *    const char* name = Name of the histogram in the input file
- *    const int iCentralityAxis = Index of centrality axis in THnSparse
- *
  * THnSparse for single jets:
  *
  *   Histogram name: leadingJet/subleadingJet/anyJet
  *
  *     Axis index       Content of axis         Exception
  * ----------------------------------------------------------
- *       Axis 0         Leading jet pT
- *       Axis 1         Leading jet phi
- *       Axis 2         Leading jet eta
+ *       Axis 0             Jet pT
+ *       Axis 1             Jet phi
+ *       Axis 2             Jet eta
  *       Axis 3         Dijet asymmetry    (for anyJet: Centrality)
  *       Axis 4           Centrality       (for anyJet: Nothing)
  */
-void DijetDrawer::LoadSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* hJetPhi[knCentralityBins], TH1D* hJetEta[knCentralityBins], TH2D* hJetEtaPhi[knCentralityBins], const char* name, const int iCentralityAxis){
+void DijetDrawer::LoadSingleJetHistograms(){
   
   // Define helper variables
   int duplicateRemoverCentrality = -1;
   int lowerCentralityBin = 0;
   int higherCentralityBin = 0;
   
-  for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
-    
-    // Select the bin indices
-    if(iCentralityBin == fLastDrawnCentralityBin) duplicateRemoverCentrality = 0;
-    lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
-    higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
-    
-    hJetPt[iCentralityBin] = FindHistogram(fInputFile,name,0,iCentralityAxis,lowerCentralityBin,higherCentralityBin);
-    hJetPhi[iCentralityBin] = FindHistogram(fInputFile,name,1,iCentralityAxis,lowerCentralityBin,higherCentralityBin);
-    hJetEta[iCentralityBin] = FindHistogram(fInputFile,name,2,iCentralityAxis,lowerCentralityBin,higherCentralityBin);
-    hJetEtaPhi[iCentralityBin] = FindHistogram2D(fInputFile,name,1,2,iCentralityAxis,lowerCentralityBin,higherCentralityBin);
-  }
+  int centralityIndex[] = {4,4,3}; // TODO: Change the main analysis file such that anyJet has dummy axis for asymmetry to simplify loading here
+  
+  for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
+    if(!fDrawSingleJets[iJetCategory]) continue;  // Only load the selected histograms
+    for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
+      
+      // Select the bin indices
+      if(iCentralityBin == fLastDrawnCentralityBin) duplicateRemoverCentrality = 0;
+      lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
+      higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
+      
+      fhJetPt[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],0,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
+      fhJetPhi[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],1,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
+      fhJetEta[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],2,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
+      fhJetEtaPhi[iJetCategory][iCentralityBin] = FindHistogram2D(fInputFile,fSingleJetHistogramName[iJetCategory],1,2,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
+    } // Loop over centrality bins
+  } // Loop over single jet categories
 }
 
 /*
@@ -821,7 +861,9 @@ void DijetDrawer::LoadSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* 
  *        dijet              Axis 3         Dijet asymmetry
  *        dijet              Axis 4           Centrality
  */
-void DijetDrawer::LoadDijetHistograms(TH1D *hDeltaPhi[knCentralityBins], TH1D* hAsymmetry[knCentralityBins], TH2D* hLeadingSubleadingPt[knCentralityBins], const char* name){
+void DijetDrawer::LoadDijetHistograms(){
+  
+  if(!fDrawDijetHistograms) return; // Do not load the histograms if they are not selected for drawing
   
   // Define helper variables
   int duplicateRemoverCentrality = -1;
@@ -835,9 +877,9 @@ void DijetDrawer::LoadDijetHistograms(TH1D *hDeltaPhi[knCentralityBins], TH1D* h
     lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
     higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
     
-    hDeltaPhi[iCentralityBin] = FindHistogram(fInputFile,name,2,4,lowerCentralityBin,higherCentralityBin);
-    hAsymmetry[iCentralityBin] = FindHistogram(fInputFile,name,3,4,lowerCentralityBin,higherCentralityBin);
-    hLeadingSubleadingPt[iCentralityBin] = FindHistogram2D(fInputFile,name,0,1,4,lowerCentralityBin,higherCentralityBin);
+    fhDijetDphi[iCentralityBin] = FindHistogram(fInputFile,"dijet",2,4,lowerCentralityBin,higherCentralityBin);
+    fhDijetAsymmetry[iCentralityBin] = FindHistogram(fInputFile,"dijet",3,4,lowerCentralityBin,higherCentralityBin);
+    fhDijetLeadingVsSubleadingPt[iCentralityBin] = FindHistogram2D(fInputFile,"dijet",0,1,4,lowerCentralityBin,higherCentralityBin);
   }
 }
 
@@ -1154,17 +1196,17 @@ void DijetDrawer::SetDrawDijetHistograms(bool drawOrNot){
 
 // Setter for drawing leading jet histograms
 void DijetDrawer::SetDrawLeadingJetHistograms(bool drawOrNot){
-  fDrawLeadingJetHistograms = drawOrNot;
+  fDrawSingleJets[kLeadingJet] = drawOrNot;
 }
 
 // Setter for drawing subleading jet histograms
 void DijetDrawer::SetDrawSubleadingJetHistograms(bool drawOrNot){
-  fDrawSubleadingJetHistograms = drawOrNot;
+  fDrawSingleJets[kSubleadingJet] = drawOrNot;
 }
 
 // Setter for drawing all jet histograms
 void DijetDrawer::SetDrawAnyJetHistograms(bool drawOrNot){
-  fDrawAnyJetHistograms = drawOrNot;
+  fDrawSingleJets[kAnyJet] = drawOrNot;
 }
 
 // Setter for drawing jet histograms

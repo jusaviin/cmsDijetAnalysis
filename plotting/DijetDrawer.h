@@ -30,16 +30,23 @@ private:
   // Indices for different jet-track correlation categories
   enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, knJetTrackCorrelations};
   
+  // Indices for different track histogram categories
+  enum enumTrackHistograms{kTrack, kUncorrectedTrack, knTrackCategories};
+  
+  // Indices for different single jet histogram categories
+  enum enumSingleJet{kLeadingJet, kSubleadingJet, kAnyJet, knSingleJetCategories};
+  
   // Naming for jet-track correlation histograms
   const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted"}; // Names that different histograms have in the input file
   const char* fJetTrackAxisNames[knJetTrackCorrelations] = {"Track-LJet","UC Track-LJet","p_{T}w Track-LJet","Track-SJet","UC Track-SJet","p_{T}w Track-SJet"}; // Names attached to the figure axes
   
-  // Indices for different track histogram categories
-  enum enumTrackHistograms{kTrack, kUncorrectedTrack, knTrackCategories};
-  
   // Naming for track histograms
   const char* fTrackHistogramNames[knTrackCategories] = {"track","trackUncorrected"}; // Names that different track histograms have in the input file
   const char* fTrackAxisNames[knTrackCategories] = {"Track","Uncorrected track"}; // Names attached to the figure axes
+  
+  // Naming for single jet histograms
+  const char* fSingleJetHistogramName[knSingleJetCategories] = {"leadingJet","subleadingJet","anyJet"}; // Names that different single jet histograms have in the input file
+  const char* fSingleJetAxisNames[knSingleJetCategories] = {"Leading jet","Subeading jet","Any jet"}; // Names attached to the figure axes
   
 public:
   
@@ -123,9 +130,7 @@ private:
   
   bool fDrawEventInformation;
   bool fDrawDijetHistograms;
-  bool fDrawLeadingJetHistograms;
-  bool fDrawSubleadingJetHistograms;
-  bool fDrawAnyJetHistograms;
+  bool fDrawSingleJets[knSingleJetCategories];
   bool fDrawTracks[knTrackCategories];
   bool fDrawJetTrackCorrelations[knJetTrackCorrelations];
   
@@ -189,23 +194,11 @@ private:
   TH1D *fhCentrality;      // Centrality of all events
   TH1D *fhCentralityDijet; // Centrality of dijet events
   
-  // Histograms for leading jets
-  TH1D *fhLeadingJetPt[knCentralityBins];               // Leading jet pT histograms
-  TH1D *fhLeadingJetPhi[knCentralityBins];              // Leading jet phi histograms
-  TH1D *fhLeadingJetEta[knCentralityBins];              // Leading jet eta histograms
-  TH2D *fhLeadingJetEtaPhi[knCentralityBins];           // 2D eta-phi histogram for leading jet
-  
-  // Histograms for subleading jets
-  TH1D *fhSubleadingJetPt[knCentralityBins];            // Subleading jet pT histograms
-  TH1D *fhSubleadingJetPhi[knCentralityBins];           // Subleading jet phi histograms
-  TH1D *fhSubleadingJetEta[knCentralityBins];           // Subleading jet eta histograms
-  TH2D *fhSubleadingJetEtaPhi[knCentralityBins];        // 2D eta-phi histogram for subleading jet
-  
-  // Histograms for all jets
-  TH1D *fhAnyJetPt[knCentralityBins] ;                  // Any jet pT histograms
-  TH1D *fhAnyJetPhi[knCentralityBins];                  // Any jet phi histograms
-  TH1D *fhAnyJetEta[knCentralityBins];                  // Any jet eta histograms
-  TH2D *fhAnyJetEtaPhi[knCentralityBins];               // 2D eta-phi histogram for all jets
+  // Histograms for single jets
+  TH1D *fhJetPt[knSingleJetCategories][knCentralityBins];      // Jet pT histograms
+  TH1D *fhJetPhi[knSingleJetCategories][knCentralityBins];     // Jet phi histograms
+  TH1D *fhJetEta[knSingleJetCategories][knCentralityBins];     // Jet eta histograms
+  TH2D *fhJetEtaPhi[knSingleJetCategories][knCentralityBins];  // 2D eta-phi histogram for jets
   
   // Histograms for dijets
   TH1D *fhDijetDphi[knCentralityBins];                  // Dijet deltaPhi histograms
@@ -234,16 +227,16 @@ private:
   TH1D* FindHistogram(TFile *inputFile, const char *name, int xAxis, int restrictionAxis, int lowBinIndex, int highBinIndex, int restrictionAxis2 = 0, int lowBinIndex2 = 0, int highBinIndex2 = 0); // Extract a histogram using given axis restrictions from THnSparseD
   
   // Loaders for different groups of histograms
-  void LoadSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* hJetPhi[knCentralityBins], TH1D* hJetEta[knCentralityBins], TH2D* hJetEtaPhi[knCentralityBins], const char* name, const int iCentralityAxis); // Loader for single jet histograms
-  void LoadDijetHistograms(TH1D *hDeltaPhi[knCentralityBins], TH1D* hAsymmetry[knCentralityBins], TH2D* hLeadingSubleadingPt[knCentralityBins], const char* name); // Loader for dijet histograms
+  void LoadSingleJetHistograms(); // Loader for single jet histograms
+  void LoadDijetHistograms(); // Loader for dijet histograms
   void LoadTrackHistograms(); // Loader for track histograms
   void LoadJetTrackCorrelationHistograms(); // Loader for jet-track correlation histograms
   
   // Methods for drawing
-  void DrawEventInformation(); // Draw the event information histograms
-  void DrawDijetHistograms();  // Draw the dijet histograms
-  void DrawSingleJetHistograms(TH1D *hJetPt[knCentralityBins], TH1D* hJetPhi[knCentralityBins], TH1D* hJetEta[knCentralityBins], TH2D* hJetEtaPhi[knCentralityBins], const char* nameForAxis, const char* nameForSave); // Draw single jet histograms
-  void DrawTrackHistograms(); // Draw track histograms
+  void DrawEventInformation();    // Draw the event information histograms
+  void DrawDijetHistograms();     // Draw the dijet histograms
+  void DrawSingleJetHistograms(); // Draw single jet histograms
+  void DrawTrackHistograms();     // Draw track histograms
   void DrawJetTrackCorrelationHistograms(); // Draw jet-track correlation histograms
   void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
