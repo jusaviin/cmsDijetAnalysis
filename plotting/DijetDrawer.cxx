@@ -81,16 +81,6 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
     fCompactDeltaPhiString[iDeltaPhi] = "";
   }
   
-  // Strings describing different correlation types
-  TString tempCorrelationTypes[] = {"Same Event","Mixed Event"," "};
-  TString tempCompactCorrelationTypes[] = {"_SameEvent","_MixedEvent",""};
-  
-  // Default correlation type strings
-  for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
-    fCorrelationTypeString[iCorrelationType] = tempCorrelationTypes[iCorrelationType];
-    fCompactCorrelationTypeString[iCorrelationType] = tempCompactCorrelationTypes[iCorrelationType];
-  }
-  
   // Initialize all the histograms to null
   fhVertexZ = NULL;         // Vertex z position
   fhEvents = NULL;          // Number of events surviving different event cuts
@@ -408,7 +398,7 @@ void DijetDrawer::DrawTrackHistograms(){
       compactCentralityString = Form("_C=%.0f-%.0f",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
       
       // For tracks drawing only for same and mixed events. No additional corrections are applied.
-      for(int iCorrelationType = 0; iCorrelationType < kMixedEvent+1; iCorrelationType++){
+      for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){
         if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
         
         // Select logarithmic drawing for pT
@@ -708,15 +698,33 @@ void DijetDrawer::SaveFigure(TString figureName, TString centralityString, TStri
  */
 void DijetDrawer::DoMixedEventCorrection(){
   
+  // Helper variables to make the code more readably
+  char histogramName[200];
+  int nBins;
+  
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
       for(int iTrackPtBin = fFirstDrawnTrackPtBin; iTrackPtBin <= fLastDrawnTrackPtBin; iTrackPtBin++){
+        
+        // Do the mixed event correction for the two-dimensional histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
-        fhJetTrackDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->ProjectionX(Form("%sPhiCorrected",fhJetTrackDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin]->GetName()),1,fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->GetNbinsY())->Clone();  // Exclude underflow and overflow bins by specifying range
-        for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
-          fhJetTrackDeltaEta[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->ProjectionY(Form("%s%d",fhJetTrackDeltaEta[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin][iDeltaPhi]->GetName(),iDeltaPhi),fLowDeltaPhiBinIndices[iDeltaPhi],fHighDeltaPhiBinIndices[iDeltaPhi])->Clone();
-        } // DeltaPhi loop
+        
+        // Subtract the background from the mixed event corrected histogram
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]);
+        
+        // Project the deltaPhi and deltaEta histograms from the obtained two-dimensional histograms
+        for(int iCorrelationType = kCorrected; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+          
+          sprintf(histogramName,"%sDeltaPhiProjection",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName());
+          nBins = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetNbinsY();
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionX(histogramName,1,nBins)->Clone();  // Exclude underflow and overflow bins by specifying range
+          
+          for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+            sprintf(histogramName,"%sDeltaEtaProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),iDeltaPhi);
+            fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionY(histogramName,fLowDeltaPhiBinIndices[iDeltaPhi],fHighDeltaPhiBinIndices[iDeltaPhi])->Clone();
+          } // DeltaPhi loop
+        } // Correlation type loop
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation category loop
@@ -867,7 +875,7 @@ void DijetDrawer::LoadTrackHistograms(){
   // Loop over all track histograms
   for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
     if(!fDrawTracks[iTrackType]) continue;  // Only load the selected track types
-    for(int iCorrelationType = 0; iCorrelationType < kMixedEvent+1; iCorrelationType++){  // Data file contains only same and mixed event distributions
+    for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){  // Data file contains only same and mixed event distributions
       for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
         
         // Select the bin indices
@@ -939,7 +947,7 @@ void DijetDrawer::LoadJetTrackCorrelationHistograms(){
   // Load all the histograms from the files
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
-    for(int iCorrelationType = 0; iCorrelationType < kMixedEvent+1; iCorrelationType++){ // Data file contains only same and mixed event distributions
+    for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){ // Data file contains only same and mixed event distributions
       for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
         
         // Select the bin indices
@@ -1247,6 +1255,10 @@ void DijetDrawer::SetDrawCorrelationTypes(bool sameEvent, bool mixedEvent, bool 
   SetDrawSameEvent(sameEvent);
   SetDrawMixedEvent(mixedEvent);
   SetDrawCorrectedCorrelations(corrected);
+}
+
+void DijetDrawer::SetDrawBackgroundSubtracted(bool drawOrNot){
+  fDrawCorrelationType[kBackgroundSubtracted] = drawOrNot;
 }
 
 // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region

@@ -29,10 +29,13 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
-  bool drawMixedEvent = true;
+  bool drawSameEvent = false;
+  bool drawMixedEvent = false;
   bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
+  
+  // Draw the background subtracted jet-track correlations
+  bool drawBackgroundSubtracted = true;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -57,6 +60,9 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   
   int firstDrawCentralityBin = 0;
   int lastDrawnCentralityBin = 3;
+  
+  int firstDrawnTrackPtBin = 4;
+  int lastDrawnTrackPtBin = 4;
   
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
@@ -89,6 +95,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   resultDrawer->SetDrawAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
   resultDrawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);
+  resultDrawer->SetDrawBackgroundSubtracted(drawBackgroundSubtracted);
   resultDrawer->SetDrawSameMixedDeltaEtaRatio(drawSameMixedDeltaEtaRatio);
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
   resultDrawer->SetLogAxes(logPt,logCorrelation);
@@ -100,6 +107,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetTrackPtBins(trackPtBinBorders);
   resultDrawer->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
   resultDrawer->SetCentralityBinRange(firstDrawCentralityBin,lastDrawnCentralityBin);
+  resultDrawer->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
   
   // Load the selected histograms
   resultDrawer->LoadHistograms();

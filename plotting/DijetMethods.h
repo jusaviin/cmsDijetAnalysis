@@ -6,10 +6,14 @@
  * results produced by the dijet analysis
  */
 
+// C++ includes
+#include <iostream>
+
 // Root includes
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>
+#include <TMath.h>
 
 class DijetMethods{
   
@@ -18,10 +22,17 @@ public:
   DijetMethods();   // Constructor
   ~DijetMethods();  // Destructor
   
-  TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEventHistogram); // Mixed event correction for a two dimensional histogram
+  TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEventHistogram); // Mixed event correction for a two-dimensional histogram
+  TH2D* SubtractBackground(TH2D *histogramWithBackground);                      // Subtract background from a two-dimensional histogram
+  
+  // Getter for the most recent background distribution
+  TH2D* GetBackground() const; // Getter for the most recent background distribution used to subtract the background
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
+  
+  // Setters for background subtraction configuration
+  void SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta); // Setter for background deltaEta region
   
 private:
   
@@ -30,6 +41,14 @@ private:
   // =============================================
   
   double fMixedEventFitRegion;  // Region in deltaEta in which a constant fit is done to normalize mixed event distributions
+  
+  // =============================================
+  // =========== Background subtraction ==========
+  // =============================================
+  
+  TH2D *fBackgroundDistribution;  // Remember the background distribution from the most recent background subtraction
+  double fMinBackgroundDeltaEta;  // Minimum deltaEta for background subtraction region
+  double fMaxBackgroundDeltaEta;  // Maximum deltaEta for background subtraction region
   
 };
 

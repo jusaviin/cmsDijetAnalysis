@@ -26,7 +26,7 @@ private:
   static const int knDeltaPhiBins = 4;     // Number of delta phi slices (whole phi/near side/away side/between peaks)
   
   // Indices for different correlation types
-  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,knCorrelationTypes};
+  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,knCorrelationTypes};
   
   // Indices for different jet-track correlation categories
   enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, knJetTrackCorrelations};
@@ -36,6 +36,10 @@ private:
   
   // Indices for different single jet histogram categories
   enum enumSingleJet{kLeadingJet, kSubleadingJet, kAnyJet, knSingleJetCategories};
+  
+  // Naming for different correlation types
+  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted"};
+  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_Background subtracted"};
   
   // Naming for jet-track correlation histograms
   const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted"}; // Names that different histograms have in the input file
@@ -54,9 +58,9 @@ public:
   DijetDrawer(TFile *inputFile);  // Constructor
   ~DijetDrawer();                 // Destructor
   
-  void LoadHistograms();         // Load the histograms from the inputfile
-  void DoMixedEventCorrection(); // Apply mixed event correction for jet-track correlation histograms
-  void DrawHistograms();         // Draw the histograms
+  void LoadHistograms();          // Load the histograms from the inputfile
+  void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
+  void DrawHistograms();          // Draw the histograms
   
   // Setters for binning information
   void SetCentralityBins(double *binBorders); // Set up centrality bin indices according to provided bin borders
@@ -95,6 +99,7 @@ public:
   void SetDrawMixedEvent(bool drawOrNot);            // Setter for drawing mixed event correlation distributions
   void SetDrawCorrectedCorrelations(bool drawOrNot); // Setter for drawing corrected correlation distributions
   void SetDrawCorrelationTypes(bool sameEvent, bool mixedEvent, bool corrected); // Setter for drawing different correlation types
+  void SetDrawBackgroundSubtracted(bool drawOrNot);  // Setter for drawing background subtracted jet-track correlation histograms
   void SetDrawSameMixedDeltaEtaRatio(bool drawOrNot); // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
   
   // Setters for figure saving and logarithmic axes
@@ -175,8 +180,6 @@ private:
   int fHighDeltaPhiBinIndices[knDeltaPhiBins];
   TString fDeltaPhiString[knDeltaPhiBins];
   TString fCompactDeltaPhiString[knDeltaPhiBins];
-  TString fCorrelationTypeString[knCorrelationTypes];
-  TString fCompactCorrelationTypeString[knCorrelationTypes];
   
   // =============================================
   // ===== Histograms for the dijet analysis =====
