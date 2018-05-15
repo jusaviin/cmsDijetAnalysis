@@ -139,9 +139,7 @@ private:
   // ==============================================
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool fDrawSameEvent;
-  bool fDrawMixedEvent;
-  bool fDrawCorrected;
+  bool fDrawCorrelationType[knCorrelationTypes];
   bool fDrawSameMixedDeltaEtaRatio;
   
   // Choose if you want to write the figures to pdf file

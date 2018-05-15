@@ -17,9 +17,6 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   fInputFile(inputFile),
   fDrawEventInformation(false),
   fDrawDijetHistograms(false),
-  fDrawSameEvent(false),
-  fDrawMixedEvent(false),
-  fDrawCorrected(false),
   fDrawSameMixedDeltaEtaRatio(false),
   fSaveFigures(false),
   fFigureFormat("pdf"),
@@ -57,6 +54,9 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   }
   for(int iJet = 0; iJet < knSingleJetCategories; iJet++){
     fDrawSingleJets[iJet] = false;
+  }
+  for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+    fDrawCorrelationType[iCorrelationType] = false;
   }
   
   // Default binning for centrality
@@ -405,12 +405,9 @@ void DijetDrawer::DrawTrackHistograms(){
       centralityString = Form("Cent: %.0f-%.0f%%",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
       compactCentralityString = Form("_C=%.0f-%.0f",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
       
-      // Draw both same event and mixed event histograms. No correction for tracks.
-      for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes-1; iCorrelationType++){
-        
-        // Draw only types of correlations that are requested
-        if(!fDrawSameEvent && (iCorrelationType == 0)) continue;
-        if(!fDrawMixedEvent && (iCorrelationType == 1)) continue;
+      // For tracks drawing only for same and mixed events. No additional corrections are applied.
+      for(int iCorrelationType = 0; iCorrelationType < kMixedEvent+1; iCorrelationType++){
+        if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
         
         // Select logarithmic drawing for pT
         fDrawer->SetLogY(fLogPt);
@@ -538,13 +535,9 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
       centralityString = Form("Cent: %.0f-%.0f%%",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
       compactCentralityString = Form("_C=%.0f-%.0f",fCentralityBinBorders[iCentrality],fCentralityBinBorders[iCentrality+1]);
       
-      // Draw both same event and mixed event histograms. No correction for tracks.
+      // Draw both the selected event correlation types (same event/mixed event/corrected)
       for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
-        
-        // Draw only types of correlations that are requested
-        if(!fDrawSameEvent && (iCorrelationType == 0)) continue;
-        if(!fDrawMixedEvent && (iCorrelationType == 1)) continue;
-        if(!fDrawCorrected && (iCorrelationType == 2)) continue;
+        if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
         
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
@@ -916,7 +909,7 @@ void DijetDrawer::LoadTrackHistograms(){
   // Loop over all track histograms
   for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
     if(!fDrawTracks[iTrackType]) continue;  // Only load the selected track types
-    for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes-1; iCorrelationType++){
+    for(int iCorrelationType = 0; iCorrelationType < kMixedEvent+1; iCorrelationType++){  // Data file contains only same and mixed event distributions
       for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
         
         // Select the bin indices
@@ -988,7 +981,7 @@ void DijetDrawer::LoadJetTrackCorrelationHistograms(){
   // Load all the histograms from the files
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
-    for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes-1; iCorrelationType++){
+    for(int iCorrelationType = 0; iCorrelationType < kMixedEvent+1; iCorrelationType++){ // Data file contains only same and mixed event distributions
       for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
         
         // Select the bin indices
@@ -1278,17 +1271,17 @@ void DijetDrawer::SetDrawAllTrackSubleadingJetCorrelations(bool drawSubleading, 
 
 // Setter for drawing same event correlation distributions
 void DijetDrawer::SetDrawSameEvent(bool drawOrNot){
-  fDrawSameEvent = drawOrNot;
+  fDrawCorrelationType[kSameEvent] = drawOrNot;
 }
 
 // Setter for drawing mixed event correlation distributions
 void DijetDrawer::SetDrawMixedEvent(bool drawOrNot){
-  fDrawMixedEvent = drawOrNot;
+  fDrawCorrelationType[kMixedEvent] = drawOrNot;
 }
 
 // Setter for drawing corrected correlation distributions
 void DijetDrawer::SetDrawCorrectedCorrelations(bool drawOrNot){
-  fDrawCorrected = drawOrNot;
+  fDrawCorrelationType[kCorrected] = drawOrNot;
 }
 
 // Setter for drawing different correlation types
