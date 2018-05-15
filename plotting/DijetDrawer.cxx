@@ -5,7 +5,6 @@
 // Root includes
 #include <THnSparse.h>
 #include <TPad.h>
-#include <TF1.h>
 
 // Own includes
 #include "DijetDrawer.h"
@@ -28,8 +27,7 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   fFirstDrawnCentralityBin(0),
   fLastDrawnCentralityBin(knCentralityBins-1),
   fFirstDrawnTrackPtBin(0),
-  fLastDrawnTrackPtBin(knTrackPtBins-1),
-  fMixedEventFitRegion(0.2)
+  fLastDrawnTrackPtBin(knTrackPtBins-1)
 {
   
   // Read card from inputfile and collision system from card
@@ -45,15 +43,18 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   // Create a new drawer
   fDrawer = new JDrawer();
   
+  // Create a new DijetMethods
+  fMethods = new DijetMethods();
+  
   // Do not draw anything by default
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     fDrawJetTrackCorrelations[iJetTrack] = false;
   }
-  for(int iTrack = 0; iTrack < knTrackCategories; iTrack++){
-    fDrawTracks[iTrack] = false;
+  for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
+    fDrawTracks[iTrackType] = false;
   }
-  for(int iJet = 0; iJet < knSingleJetCategories; iJet++){
-    fDrawSingleJets[iJet] = false;
+  for(int iJetType = 0; iJetType < knSingleJetCategories; iJetType++){
+    fDrawSingleJets[iJetType] = false;
   }
   for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
     fDrawCorrelationType[iCorrelationType] = false;
@@ -151,6 +152,7 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
 DijetDrawer::~DijetDrawer(){
   delete fCard;
   delete fDrawer;
+  delete fMethods;
 }
 
 /*
@@ -710,7 +712,7 @@ void DijetDrawer::DoMixedEventCorrection(){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
       for(int iTrackPtBin = fFirstDrawnTrackPtBin; iTrackPtBin <= fLastDrawnTrackPtBin; iTrackPtBin++){
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
         fhJetTrackDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->ProjectionX(Form("%sPhiCorrected",fhJetTrackDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin]->GetName()),1,fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->GetNbinsY())->Clone();  // Exclude underflow and overflow bins by specifying range
         for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
           fhJetTrackDeltaEta[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->ProjectionY(Form("%s%d",fhJetTrackDeltaEta[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin][iDeltaPhi]->GetName(),iDeltaPhi),fLowDeltaPhiBinIndices[iDeltaPhi],fHighDeltaPhiBinIndices[iDeltaPhi])->Clone();
@@ -719,50 +721,6 @@ void DijetDrawer::DoMixedEventCorrection(){
     } // Centrality loop
   } // Jet-track correlation category loop
   
-}
-
-/*
- * Do the mixed event correction and return corrected TH2D.
- * The idea here is, that we divide the same event histogram with a normalized mixed event histogram.
- * The normalization is obtained by first projecting the deltaEta distribution out of the
- * two-dimensional histogram and then fitting a constant to the central region in deltaEta.
- * This gives the value of the highest bins in the two dimensional histogram while suppressing
- * single bin fluctuations.
- *
- *  TODO: In Hallie's code the scaling factor is the average of the leading and subleading factors.
- *        Decide if this is necessary or if we can do the correction separately.
- *        Also there is some smoothening of the mixed event distribution by taking average of
- *        different sides of deltaEta to suppress fluctuations on edges. See if something like
- *        this needs to be implemented here.
- *
- * Arguments:
- *  TH2D* sameEventHistogram = Histogram with correlation from the same event
- *  TH2D* mixedEventHistogram = Histogram with correlation from different events
- *
- *  return: Corrected same event histogram
- */
-TH2D* DijetDrawer::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEventHistogram){
-  
-  // Clone the same event histogram for correction
-  char newName[100];
-  sprintf(newName,"%sCorrected",sameEventHistogram->GetName());
-  TH2D* correctedHistogram = (TH2D*) sameEventHistogram->Clone(newName);
-  
-  // In the 2D histograms deltaPhi is x-axis and deltaEta y-axis. We need deltaEta for the correction
-  TH1D *hDeltaEtaMixed = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjection",1,mixedEventHistogram->GetNbinsX());
-  
-  // Use a constant fit function to fit the projected histogram
-  hDeltaEtaMixed->Fit("pol0","0Q","",-fMixedEventFitRegion,fMixedEventFitRegion);
-  
-  // The normalization scale is the fit result divided by the number of deltaPhi bins integrated for one deltaEta bin
-  double scale = hDeltaEtaMixed->GetFunction("pol0")->GetParameter(0) / mixedEventHistogram->GetNbinsX();
-  
-  // Normalize the mixed event histogram and do the correction
-  mixedEventHistogram->Scale(1.0/scale);
-  correctedHistogram->Divide(mixedEventHistogram);
-  
-  // Return the corrected histogram
-  return correctedHistogram;
 }
 
 /*
@@ -1368,5 +1326,5 @@ void DijetDrawer::BinSanityCheck(const int nBins, int first, int last){
 
 // Setter for deltaEta range used for normalizing the mixed event
 void DijetDrawer::SetMixedEventFitRegion(const double etaRange){
-  fMixedEventFitRegion = etaRange;
+  fMethods->SetMixedEventFitRegion(etaRange);
 }

@@ -12,6 +12,7 @@
 // Own includes
 #include "DijetCard.h"
 #include "JDrawer.h"
+#include "DijetMethods.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -123,6 +124,7 @@ private:
   TString fSystemAndEnergy;  // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
   TString fCompactSystemAndEnergy; // Same a before but without white spaces and dots
   JDrawer *fDrawer;   // JDrawer for drawing the histograms
+  DijetMethods *fMethods;  // DijetMethods for processing the loaded histograms
   
   // ==============================================
   // ======== Flags for histograms to draw ========
@@ -175,11 +177,6 @@ private:
   TString fCompactDeltaPhiString[knDeltaPhiBins];
   TString fCorrelationTypeString[knCorrelationTypes];
   TString fCompactCorrelationTypeString[knCorrelationTypes];
-  
-  // =============================================
-  // =========== Mixed event correction ==========
-  // =============================================
-  double fMixedEventFitRegion;  // Region in deltaEta in which a constant fit is done to normalize mixed event distributions
   
   // =============================================
   // ===== Histograms for the dijet analysis =====
@@ -241,10 +238,6 @@ private:
   
   // Methods for binning
   void BinSanityCheck(const int nBins, int first, int last); // Sanity check for given binning
-  
-  // Methods for mixed event correction
-  TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEventHistogram); // Mixed event correction for one two dimensional histogram
-
   
 };
 

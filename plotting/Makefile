@@ -13,7 +13,7 @@ LDFLAGS  = $(shell root-config --libs)
 
 CXXFLAGS  += $(INCS)
 
-HDRS	+= DijetDrawer.h
+HDRS	+= DijetDrawer.h DijetMethods.h
 
 
 SRCS = $(HDRS:.h=.cxx)
