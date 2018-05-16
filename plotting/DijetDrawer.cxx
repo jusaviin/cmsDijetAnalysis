@@ -721,10 +721,10 @@ void DijetDrawer::DoMixedEventCorrection(){
       for(int iTrackPtBin = fFirstDrawnTrackPtBin; iTrackPtBin <= fLastDrawnTrackPtBin; iTrackPtBin++){
         
         // Do the mixed event correction for leading jet-track correlation histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin]);
         
         // Do the mixed event correction for subleading jet-track correlation histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin]);
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
         
       } // Track pT loop
     } // Centrality loop

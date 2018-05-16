@@ -30,12 +30,12 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
-  bool drawMixedEvent = false;
-  bool drawCorrected = true;
+  bool drawMixedEvent = true;
+  bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = true;
+  bool drawBackgroundSubtracted = false;
   bool drawBackground = true;
   
   // Choose if you want to write the figures to pdf file
