@@ -70,61 +70,58 @@ TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEvent
 }
 
 /*
- * Subtract the background from the given TH2D distribution.
+ * Subtract the background from the given leading TH2D distribution.
  * It is assumed that the large deltaEta region defined by variables fMinBackgroundDeltaEta
- * and fMaxBackgroundDeltaEta is not correlated with the jet. Then the deltaPhi distribution
- * is projected out from this deltaEta region and a new two-dimensional distribution is
- * generated where every deltaEta value in a deltaPhi strip has the same value, given by the
- * distribution projected in the bakcground region. This background is then subtracted from
- * the distribution to get the signal distribution.
+ * and fMaxBackgroundDeltaEta is not correlated with the jet on the near side. The deltaPhi
+ * distribution is projected out from this deltaEta region from two histograms, one for the
+ * leading jet-track correlations and one for the subleading-jet track correlations. A new
+ * distribution is generated where every deltaEta value in a deltaPhi strip has the same value,
+ * given by the leading distribution projected in the background region for the near side and
+ * and the near side of the subleading distribution for the away side. This way the wide away
+ * side jet peak is avoided and we can generate the background for the whole deltaPhi region.
+ * This background is then subtracted from the distribution to get the signal distribution.
  *
  * Arguments:
- *  TH2D *histogramWithBackground = Two-dimensional histogram with deltaPhi as x-axis and deltaEta as y-axis
+ *  TH2D *leadingHistogramWithBackground = Leading-jet track correlation histogram with deltaPhi as x-axis and deltaEta as y-axis
+ *  TH2D *subleadingHistogramWithBackground = Subleading-jet track correlation histogram with deltaPhi as x-axis and deltaEta as y-axis
  *
- *  return: Background subtracted histogram
+ *  return: Background subtracted leading jet-track correlation histogram
  */
-TH2D* DijetMethods::SubtractBackground(TH2D *histogramWithBackground){
+TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground){
   
-  // TODO: Away side should not be used for background subtraction because of eta swing
-  
-  // Start by finding the bin indices for the defined deltaEta region
-  // Apply a little offset for the defined eta region borders to avoid bin border effects
-  int lowNegativeDeltaEtaBin  = histogramWithBackground->GetYaxis()->FindBin(-fMaxBackgroundDeltaEta+0.0001);
-  int highNegativeDeltaEtaBin = histogramWithBackground->GetYaxis()->FindBin(-fMinBackgroundDeltaEta-0.0001);
-  int lowPositiveDeltaEtaBin  = histogramWithBackground->GetYaxis()->FindBin(fMinBackgroundDeltaEta+0.0001);
-  int highPositiveDeltaEtaBin = histogramWithBackground->GetYaxis()->FindBin(fMaxBackgroundDeltaEta-0.0001);
- 
-  // Calculate the number of deltaEta bins in the background region
-  int nBinsBackgroundRegion = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
-  
-  // Project out the deltaPhi distribution in the background region in near side
-  char histogramName[200];
-  sprintf(histogramName,"%sBackgroundDeltaPhi",histogramWithBackground->GetName());
-  TH1D *backgroundDeltaPhi = histogramWithBackground->ProjectionX(histogramName,lowNegativeDeltaEtaBin,highNegativeDeltaEtaBin);
-  backgroundDeltaPhi->Add(histogramWithBackground->ProjectionX("dummyName",lowPositiveDeltaEtaBin,highPositiveDeltaEtaBin));
-  
-  // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over to retain normalization
-  backgroundDeltaPhi->Scale(1.0/nBinsBackgroundRegion);
+  // Start by projecting the deltaPhi distribution from the leading and subleading histograms in the background region
+  TH1D *backgroundDeltaPhiLeading = ProjectBackgroundDeltaPhi(leadingHistogramWithBackground);
+  TH1D *backgroundDeltaPhiSubleading = ProjectBackgroundDeltaPhi(subleadingHistogramWithBackground);
   
   // Construct the two-dimensional background histogram by populating the whole deltaEta region from background deltaPhi histogram
-  double deltaPhiValue;   // Value in the deltaPhi histogram bin
-  double deltaPhiError;   // Error of the deltaPhi histogram bin
-  sprintf(histogramName,"%sBackground",histogramWithBackground->GetName());
-  fBackgroundDistribution = (TH2D*)histogramWithBackground->Clone(histogramName);
+  char histogramName[200]; // Helper variable for histogram naming
+  double deltaPhiValueNear;    // Value in the leading deltaPhi histogram bin
+  double deltaPhiErrorNear;    // Error of the leading deltaPhi histogram bin
+  double deltaPhiValueAway;    // Value in the subleading deltaPhi histogram bin
+  double deltaPhiErrorAway;    // Error of the subleading deltaPhi histogram bin
   
-  // Loop over deltaPhi bins
-  for(int iDeltaPhi = 1; iDeltaPhi <= fBackgroundDistribution->GetNbinsX(); iDeltaPhi++){
+  sprintf(histogramName,"%sBackground",leadingHistogramWithBackground->GetName());
+  fBackgroundDistribution = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
+  int nDeltaPhiBins = fBackgroundDistribution->GetNbinsX(); // Number of deltaPhi bins
+
+  // Loop over deltaPhi bins and fill the leading jet-track correlation result in the near side
+  // and the subleading set-track correlation result in the away side
+  for(int iDeltaPhi = 1; iDeltaPhi <= nDeltaPhiBins/2; iDeltaPhi++){
     
     // Read the values from the deltaPhi background histogram
-    deltaPhiValue = backgroundDeltaPhi->GetBinContent(iDeltaPhi);
-    deltaPhiError = backgroundDeltaPhi->GetBinError(iDeltaPhi);
+    deltaPhiValueNear = backgroundDeltaPhiLeading->GetBinContent(iDeltaPhi);
+    deltaPhiErrorNear = backgroundDeltaPhiLeading->GetBinError(iDeltaPhi);
+    deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi);
+    deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi);
     
     // Loop over deltaEta bins
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
       
       // Insert the values to the two-dimensional background histogram
-      fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValue);
-      fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiError);
+      fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear);
+      fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear);
+      fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiValueAway);
+      fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiErrorAway);
       
       /*
        * Note: In Hallie's code there is a multiplication by sqrt(bins) for the bin error here
@@ -139,8 +136,8 @@ TH2D* DijetMethods::SubtractBackground(TH2D *histogramWithBackground){
   } // DeltaPhi loop
   
   // Subtract the generated background from the histogram including the background
-  sprintf(histogramName,"%sBackgroundSubtracted",histogramWithBackground->GetName());
-  TH2D *backgroundSubtractedHistogram = (TH2D*)histogramWithBackground->Clone();
+  sprintf(histogramName,"%sBackgroundSubtracted",leadingHistogramWithBackground->GetName());
+  TH2D *backgroundSubtractedHistogram = (TH2D*)leadingHistogramWithBackground->Clone();
   backgroundSubtractedHistogram->Add(fBackgroundDistribution,-1);
   
   // Set all the negative bins to zero
@@ -154,6 +151,39 @@ TH2D* DijetMethods::SubtractBackground(TH2D *histogramWithBackground){
   
   // Return the background subtracted histogram with negative values removed
   return backgroundSubtractedHistogram;
+}
+
+/*
+ * Project the deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+ *
+ *  Arguments:
+ *   TH2D* deltaPhiDeltaEtaHistogram = two-dimensional deltaPhi-deltaEta distribution
+ *
+ *   return: DeltaPhi distribution projected from the background deltaEta region
+ */
+TH1D* DijetMethods::ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
+  
+  // Start by finding the bin indices for the defined deltaEta region
+  // Apply a little offset for the defined eta region borders to avoid bin border effects
+  int lowNegativeDeltaEtaBin  = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(-fMaxBackgroundDeltaEta+0.0001);
+  int highNegativeDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(-fMinBackgroundDeltaEta-0.0001);
+  int lowPositiveDeltaEtaBin  = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(fMinBackgroundDeltaEta+0.0001);
+  int highPositiveDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(fMaxBackgroundDeltaEta-0.0001);
+  
+  // Calculate the number of deltaEta bins in the background region
+  int nBinsBackgroundRegion = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
+  
+  // Project out the deltaPhi distribution in the background
+  char histogramName[200];
+  sprintf(histogramName,"%sBackgroundDeltaPhi",deltaPhiDeltaEtaHistogram->GetName());
+  TH1D *backgroundDeltaPhi = deltaPhiDeltaEtaHistogram->ProjectionX(histogramName,lowNegativeDeltaEtaBin,highNegativeDeltaEtaBin);
+  backgroundDeltaPhi->Add(deltaPhiDeltaEtaHistogram->ProjectionX("dummyName",lowPositiveDeltaEtaBin,highPositiveDeltaEtaBin));
+  
+  // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over to retain normalization
+  backgroundDeltaPhi->Scale(1.0/nBinsBackgroundRegion);
+  
+  // Return the scaled projection
+  return backgroundDeltaPhi;
 }
 
 // Getter for the most recent background distribution used to subtract the background

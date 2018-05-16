@@ -23,7 +23,7 @@ public:
   ~DijetMethods();  // Destructor
   
   TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *mixedEventHistogram); // Mixed event correction for a two-dimensional histogram
-  TH2D* SubtractBackground(TH2D *histogramWithBackground);                      // Subtract background from a two-dimensional histogram
+  TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground); // Subtract background from a two-dimensional leading histogram
   
   // Getter for the most recent background distribution
   TH2D* GetBackground() const; // Getter for the most recent background distribution used to subtract the background
@@ -49,6 +49,9 @@ private:
   TH2D *fBackgroundDistribution;  // Remember the background distribution from the most recent background subtraction
   double fMinBackgroundDeltaEta;  // Minimum deltaEta for background subtraction region
   double fMaxBackgroundDeltaEta;  // Maximum deltaEta for background subtraction region
+  
+  // Private methods
+  TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
   
 };
 

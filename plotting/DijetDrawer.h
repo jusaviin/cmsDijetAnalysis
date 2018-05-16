@@ -26,7 +26,7 @@ private:
   static const int knDeltaPhiBins = 4;     // Number of delta phi slices (whole phi/near side/away side/between peaks)
   
   // Indices for different correlation types
-  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,knCorrelationTypes};
+  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,knCorrelationTypes};
   
   // Indices for different jet-track correlation categories
   enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, knJetTrackCorrelations};
@@ -38,8 +38,8 @@ private:
   enum enumSingleJet{kLeadingJet, kSubleadingJet, kAnyJet, knSingleJetCategories};
   
   // Naming for different correlation types
-  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted"};
-  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_Background subtracted"};
+  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background"};
+  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_BackgroundSubtracted","_Background"};
   
   // Naming for jet-track correlation histograms
   const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted"}; // Names that different histograms have in the input file
@@ -59,7 +59,7 @@ public:
   ~DijetDrawer();                 // Destructor
   
   void LoadHistograms();          // Load the histograms from the inputfile
-  void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
+  void ApplyCorrectionsAndSubtractBackground();  // Do the mixed event correction and subtract the background
   void DrawHistograms();          // Draw the histograms
   
   // Setters for binning information
@@ -100,6 +100,7 @@ public:
   void SetDrawCorrectedCorrelations(bool drawOrNot); // Setter for drawing corrected correlation distributions
   void SetDrawCorrelationTypes(bool sameEvent, bool mixedEvent, bool corrected); // Setter for drawing different correlation types
   void SetDrawBackgroundSubtracted(bool drawOrNot);  // Setter for drawing background subtracted jet-track correlation histograms
+  void SetDrawBackground(bool drawOrNot);            // Setter for drawing the generated background distributions
   void SetDrawSameMixedDeltaEtaRatio(bool drawOrNot); // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
   
   // Setters for figure saving and logarithmic axes
@@ -135,11 +136,17 @@ private:
   // ======== Flags for histograms to draw ========
   // ==============================================
   
-  bool fDrawEventInformation;
-  bool fDrawDijetHistograms;
-  bool fDrawSingleJets[knSingleJetCategories];
-  bool fDrawTracks[knTrackCategories];
-  bool fDrawJetTrackCorrelations[knJetTrackCorrelations];
+  bool fDrawEventInformation;                              // Draw the event information histograms
+  bool fDrawDijetHistograms;                               // Draw the dijet histograms
+  bool fDrawSingleJets[knSingleJetCategories];             // Draw the single jet histograms
+  bool fDrawTracks[knTrackCategories];                     // Draw the track histograms
+  bool fDrawJetTrackCorrelations[knJetTrackCorrelations];  // Draw the jet-track correlation histograms
+  
+  // ==============================================
+  // ======== Flags for histograms to load ========
+  // ==============================================
+  
+  bool fLoadJetTrackCorrelations[knJetTrackCorrelations];  // Load the jet-track correlation histograms
   
   // ==============================================
   // ============== Drawing settings ==============
@@ -217,6 +224,8 @@ private:
   // Private methods
   void SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis); // Read the bin indices for given bin borders
   void SetBinIndices(const int nBins, int *lowBinIndices, int *highBinIndices, const double *lowBinBorders, const double *highBinBorders, const int iAxis); // Read the bin indices for given bin borders
+  void SetDrawJetTrackCorrelations(const bool drawOrNot, const int primaryIndex, const int connectedIndex); // Setter for drawing and loading the jet-track correlation histograms
+  int GetConnectedIndex(const int jetTrackIndex) const;
   
   // Finders for histograms with different amount of restrictions
   TH2D* FindHistogram2D(TFile *inputFile, const char *name, int xAxis, int yAxis, int nAxes, int *axisNumber, int *lowBinIndex, int *highBinIndex); // Extract a 2D histogram using given axis restrictions from THnSparseD
@@ -241,6 +250,10 @@ private:
   
   // Methods for binning
   void BinSanityCheck(const int nBins, int first, int last); // Sanity check for given binning
+  
+  // Correction and background subtraction
+  void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
+  void SubtractBackground();      // Subtract the background from the distributions
   
 };
 

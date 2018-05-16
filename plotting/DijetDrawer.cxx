@@ -49,6 +49,7 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
   // Do not draw anything by default
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     fDrawJetTrackCorrelations[iJetTrack] = false;
+    fLoadJetTrackCorrelations[iJetTrack] = false;
   }
   for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
     fDrawTracks[iTrackType] = false;
@@ -694,26 +695,67 @@ void DijetDrawer::SaveFigure(TString figureName, TString centralityString, TStri
 }
 
 /*
+ * Apply the mixed event correction to all jet-track correlation histograms that are selected for analysis
+ * After that subtract the background form the mixed event corrected distributions
+ */
+void DijetDrawer::ApplyCorrectionsAndSubtractBackground(){
+  DoMixedEventCorrection();  // Mixed event correction needs to be done first, as we need the corrected histograms for the background subtraction
+  SubtractBackground(); // Subtract the background and take projections of processed two-dimensional histograms
+}
+
+/*
  * Apply mixed event correction to all jet-track correlation histograms that are selected for analysis
  */
 void DijetDrawer::DoMixedEventCorrection(){
   
-  // Helper variables to make the code more readably
+  /*
+   * Because background subtraction always needs information about leading and subleading jets, only loop over half the array
+   * and do mixed event correction and at the same time for corresponding leading and subleading jet track correlation histograms.
+   * Note that the array checks whether the correlation histogram is loaded instead of drawn, because the loop is only over
+   * the leading jet indices and these are loaded but not drawn in case only subleading jet track correlation histograms are
+   * selected to be drawn.
+   */
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations/2; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
+    for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
+      for(int iTrackPtBin = fFirstDrawnTrackPtBin; iTrackPtBin <= fLastDrawnTrackPtBin; iTrackPtBin++){
+        
+        // Do the mixed event correction for leading jet-track correlation histogram
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
+        
+        // Do the mixed event correction for subleading jet-track correlation histogram
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin]);
+        
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation category loop
+}
+
+/*
+ * Subtract the background and take projections of processed two-dimensional histograms
+ */
+void DijetDrawer::SubtractBackground(){
+  
+  // Helper variables to make the code more readable
   char histogramName[200];
   int nBins;
+  int connectedIndex;
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
       for(int iTrackPtBin = fFirstDrawnTrackPtBin; iTrackPtBin <= fLastDrawnTrackPtBin; iTrackPtBin++){
-        
-        // Do the mixed event correction for the two-dimensional histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
+
+        // Get the subleading/leading jet index connected to the currect leading/subleading correlation type
+        connectedIndex = GetConnectedIndex(iJetTrack);
         
         // Subtract the background from the mixed event corrected histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]);
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iCentralityBin][iTrackPtBin]);
         
-        // Project the deltaPhi and deltaEta histograms from the obtained two-dimensional histograms
+        // Get also the background for QA purposes
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
+        
+        // Project the deltaPhi and deltaEta histograms from the processed two-dimensional histograms
         for(int iCorrelationType = kCorrected; iCorrelationType < knCorrelationTypes; iCorrelationType++){
           
           sprintf(histogramName,"%sDeltaPhiProjection",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName());
@@ -728,7 +770,16 @@ void DijetDrawer::DoMixedEventCorrection(){
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation category loop
-  
+}
+
+/*
+ * Get the index that of the same type of leading/subleading jet-track correlation as the
+ * given subleading/leading jet-track correlation index.
+ */
+int DijetDrawer::GetConnectedIndex(const int jetTrackIndex) const{
+  int connectedIndex = jetTrackIndex + knJetTrackCorrelations/2;
+  if(connectedIndex >= knJetTrackCorrelations) connectedIndex -= knJetTrackCorrelations;
+  return connectedIndex;
 }
 
 /*
@@ -946,7 +997,7 @@ void DijetDrawer::LoadJetTrackCorrelationHistograms(){
   
   // Load all the histograms from the files
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
-    if(!fDrawJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
     for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){ // Data file contains only same and mixed event distributions
       for(int iCentralityBin = fFirstDrawnCentralityBin; iCentralityBin <= fLastDrawnCentralityBin; iCentralityBin++){
         
@@ -1191,19 +1242,49 @@ void DijetDrawer::SetDrawAllTracks(bool drawTracks, bool drawUncorrected){
   SetDrawTracksUncorrected(drawUncorrected);
 }
 
+/*
+ * Setter for drawing jet-track correlations.
+ *
+ * The method sets the drawing of the histogram defined by the primaryIndex.
+ * The background subtraction histograms are conntructed using buth leading and subleading jet histograms.
+ * Thus when drawing the leading/subleading jet histograms, we need to also load the subleading/leading jet
+ * histograms to be able to perform the background subtraction.
+ *
+ *  Arguments:
+ *   const bool drawOrNot = Flag whether these type or correlation should be drawn or not
+ *   const int primaryIndex = Index of the primary jet-track correlation type
+ *   const int connectedIndex = Index of the type connected to the primary type in background subtraction
+ */
+void DijetDrawer::SetDrawJetTrackCorrelations(const bool drawOrNot, const int primaryIndex, const int connectedIndex){
+  
+  // Set the drawing for the primary index
+  fDrawJetTrackCorrelations[primaryIndex] = drawOrNot;
+  
+  // If we are setting this to true, we need to also load connected jet-track correlation histograms for background subtraction
+  if(drawOrNot){
+    fLoadJetTrackCorrelations[primaryIndex] = drawOrNot;
+    fLoadJetTrackCorrelations[connectedIndex] = drawOrNot;
+  } else if (!fDrawJetTrackCorrelations[connectedIndex]){
+    // If we are not going to draw connected jet correlation and we are disabling the drawing of primary correlation
+    // we can disable the loading of both primary and connected jet track correlation histograms
+    fLoadJetTrackCorrelations[primaryIndex] = drawOrNot;
+    fLoadJetTrackCorrelations[connectedIndex] = drawOrNot;
+  }
+}
+
 // Setter for drawing leading jet-track correlations
 void DijetDrawer::SetDrawTrackLeadingJetCorrelations(bool drawOrNot){
-  fDrawJetTrackCorrelations[kTrackLeadingJet] = drawOrNot;
+  SetDrawJetTrackCorrelations(drawOrNot,kTrackLeadingJet,kTrackSubleadingJet);
 }
 
 // Setter for drawing uncorrected leading jet-track correlations
 void DijetDrawer::SetDrawTrackLeadingJetCorrelationsUncorrected(bool drawOrNot){
-  fDrawJetTrackCorrelations[kUncorrectedTrackLeadingJet] = drawOrNot;
+  SetDrawJetTrackCorrelations(drawOrNot,kUncorrectedTrackLeadingJet,kUncorrectedTrackSubleadingJet);
 }
 
 // Setter for drawing pT weighted leading jet-track correlations
 void DijetDrawer::SetDrawTrackLeadingJetCorrelationsPtWeighted(bool drawOrNot){
-  fDrawJetTrackCorrelations[kPtWeightedTrackLeadingJet] = drawOrNot;
+  SetDrawJetTrackCorrelations(drawOrNot,kPtWeightedTrackLeadingJet,kPtWeightedTrackSubleadingJet);
 }
 
 // Setter for drawing all correlations related to tracks and leading jets
@@ -1215,17 +1296,17 @@ void DijetDrawer::SetDrawAllTrackLeadingJetCorrelations(bool drawLeading, bool d
 
 // Setter for drawing subleading jet-track correlations
 void DijetDrawer::SetDrawTrackSubleadingJetCorrelations(bool drawOrNot){
-  fDrawJetTrackCorrelations[kTrackSubleadingJet] = drawOrNot;
+  SetDrawJetTrackCorrelations(drawOrNot,kTrackSubleadingJet,kTrackLeadingJet);
 }
 
 // Setter for drawing uncorrected subleading jet-track correlations
 void DijetDrawer::SetDrawTrackSubleadingJetCorrelationsUncorrected(bool drawOrNot){
-  fDrawJetTrackCorrelations[kUncorrectedTrackSubleadingJet] = drawOrNot;
+  SetDrawJetTrackCorrelations(drawOrNot,kUncorrectedTrackSubleadingJet,kUncorrectedTrackLeadingJet);
 }
 
 // Setter for drawing pT weighted subleading jet-track correlations
 void DijetDrawer::SetDrawTrackSubleadingJetCorrelationsPtWeighted(bool drawOrNot){
-  fDrawJetTrackCorrelations[kPtWeightedTrackSubleadingJet] = drawOrNot;
+  SetDrawJetTrackCorrelations(drawOrNot,kPtWeightedTrackSubleadingJet,kPtWeightedTrackLeadingJet);
 }
 
 // Setter for drawing all correlations related to tracks and subleading jets
@@ -1257,8 +1338,14 @@ void DijetDrawer::SetDrawCorrelationTypes(bool sameEvent, bool mixedEvent, bool 
   SetDrawCorrectedCorrelations(corrected);
 }
 
+// Setter for drawing background subtracted jet-track correlation histograms
 void DijetDrawer::SetDrawBackgroundSubtracted(bool drawOrNot){
   fDrawCorrelationType[kBackgroundSubtracted] = drawOrNot;
+}
+
+// Setter for drawing the generated background distributions
+void DijetDrawer::SetDrawBackground(bool drawOrNot){
+  fDrawCorrelationType[kBackground] = drawOrNot;
 }
 
 // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
