@@ -74,6 +74,10 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
   double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
+  
+  // Jet shape
+  const int nRBins = 16;  // Number of R-bins for jet shape histograms
+  double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
 
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -96,6 +100,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   DijetMethods *methods = new DijetMethods();
   methods->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
   methods->SetBackgroundDeltaEtaRegion(minBackgroundDeltaEta,maxBackgroundDeltaEta);
+  methods->SetJetShapeBinEdges(nRBins,rBins);
   
   // Create a new DijetDrawer
   DijetDrawer *resultDrawer = new DijetDrawer(inputFile);

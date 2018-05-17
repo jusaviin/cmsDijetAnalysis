@@ -82,7 +82,7 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
     fCompactDeltaPhiString[iDeltaPhi] = "";
   }
   
-  // Initialize all the histograms to null
+  // Initialize all the other histograms to null
   fhVertexZ = NULL;         // Vertex z position
   fhEvents = NULL;          // Number of events surviving different event cuts
   fhTrackCuts = NULL;       // Number of tracks surviving different track cuts
@@ -134,6 +134,13 @@ DijetDrawer::DijetDrawer(TFile *inputFile) :
         } // Track pT loop
       } // Jet-track correlation type loop
     } // Event correlation type loop
+    
+    // Jet shape histograms
+    for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+      for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
+        fhJetShape[iJetTrack][iCentrality][iTrackPt] = NULL;
+      } // Track pT loop
+    } // Jet-track correlation type loop
   } // Centrality loop
 }
 

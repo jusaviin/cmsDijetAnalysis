@@ -11,10 +11,12 @@
 DijetMethods::DijetMethods() :
   fMixedEventFitRegion(0.2),
   fMinBackgroundDeltaEta(1.5),
-  fMaxBackgroundDeltaEta(2.5)
+  fMaxBackgroundDeltaEta(2.5),
+  fnRBins(0)
 {
   // Constructor
   fBackgroundDistribution = NULL;
+  fRBins = nullptr;
 }
 
 /*
@@ -51,6 +53,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
 DijetMethods::~DijetMethods()
 {
   // Destructor
+  if(fRBins) delete [] fRBins;
 }
 
 /*
@@ -233,6 +236,83 @@ TH1D* DijetMethods::ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
   return backgroundDeltaPhi;
 }
 
+/*
+ * Extract the jet shape from two-dimensional histogram
+ *
+ *  Arguments:
+ *   TH2D *backgroundSubtractedHistogram = Background subtracted deltaPhi-deltaEta histogram
+ *
+ *   return: TH1D histogram with extracted jet shape
+ */
+TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram) const{
+  
+  // Create a new TH1D for the jet shape
+  char histogramName[200];
+  sprintf(histogramName,"%sJetShape",backgroundSubtractedHistogram->GetName());
+  TH1D *jetShapeHistogram = new TH1D(histogramName,histogramName,fnRBins,fRBins);
+  
+  // Create another histogram to count how many bins in two-dimensional histogram correspond to filled bins in jet shape histogram
+  sprintf(histogramName,"%sJetShapeCounts",backgroundSubtractedHistogram->GetName());
+  TH1D *jetShapeCounts = new TH1D(histogramName,histogramName,fnRBins,fRBins);
+  
+  // The jet shape is calculated from the region close to near side peak, so we need to find bin indices for that region
+  // Apply small offset to avoid problems with bin boundaries
+  int minBinPhi = backgroundSubtractedHistogram->GetXaxis()->FindBin((-TMath::Pi()/2.0)+0.0001);
+  int maxBinPhi = backgroundSubtractedHistogram->GetXaxis()->FindBin((TMath::Pi()/2.0)-0.0001);
+  int minBinEta = backgroundSubtractedHistogram->GetYaxis()->FindBin((-TMath::Pi()/2.0)+0.0001);
+  int maxBinEta = backgroundSubtractedHistogram->GetYaxis()->FindBin((TMath::Pi()/2.0)-0.0001);
+  
+  // Helper variables for calcalations inside the loop
+  double deltaEta;   // deltaEta
+  double deltaPhi;   // deltaPhi
+  double R;          // sqrt(deltaEta^2+deltaPhi^2)
+  int Rbin;          // Bin in jet shape histogram corresponding to calculated R
+  double newContent; // Content to be added to the jet shape histogram
+  double newError;   // Error of the new content to be added
+  double oldContent; // Content in the jet shape histogram before the new addition
+  double oldError;   // Error of the content already in the jet shape histogram
+  double oldCounts;  // Number pf counts in the count histogram
+  
+  // Loop over the selected bins, calculate R, and fill the bin content to histogram
+  for(int iPhiBin = minBinPhi; iPhiBin <= maxBinPhi; iPhiBin++){
+    deltaPhi = backgroundSubtractedHistogram->GetXaxis()->GetBinCenter(iPhiBin); // For deltaPhi value, use bin center
+    
+    for(int iEtaBin = minBinEta; iEtaBin <= maxBinEta; iEtaBin++){
+      deltaEta = backgroundSubtractedHistogram->GetYaxis()->GetBinCenter(iEtaBin); // For deltaEta value, use bin center
+      
+      // Calculate R = sqrt(deltaEta^2+deltaPhi^2)
+      R = TMath::Sqrt(TMath::Power(deltaPhi,2)+TMath::Power(deltaEta,2));
+      
+      // Find the correct bin in the jet shape histogram to fill for this R
+      Rbin = jetShapeHistogram->FindBin(R);
+      
+      // Get the content to be added from the two-dimensional histogram
+      newContent = backgroundSubtractedHistogram->GetBinContent(iPhiBin,iEtaBin);
+      newError = backgroundSubtractedHistogram->GetBinError(iPhiBin,iEtaBin);
+      
+      // Get the content already in the jet shape histogram
+      oldContent = jetShapeHistogram->GetBinContent(Rbin);
+      oldError = jetShapeHistogram->GetBinError(Rbin);
+      oldCounts = jetShapeCounts->GetBinContent(Rbin);
+      
+      // Add the new content on top of the old content. Add errors in quadrature
+      jetShapeHistogram->SetBinContent(Rbin,newContent+oldContent);
+      jetShapeHistogram->SetBinError(Rbin,TMath::Sqrt(TMath::Power(newError,2)+TMath::Power(oldError,2)));
+      
+      // Increment the counts by one. There is no error for counts, since we know the histogram binning exactly
+      jetShapeCounts->SetBinContent(Rbin,oldCounts+1);
+      jetShapeCounts->SetBinError(Rbin,0);
+    } // deltaEta loop
+  } // deltaPhi loop
+  
+  // Normalize each bin in the jet shape histogram by the number of bins in two-dimensional histogram corresponding to that bin
+  jetShapeHistogram->Divide(jetShapeCounts);
+  
+  // Return the calculated jet shape histogram
+  return jetShapeHistogram;
+  
+}
+
 // Getter for the most recent background distribution used to subtract the background
 TH2D* DijetMethods::GetBackground() const{
   return fBackgroundDistribution;
@@ -252,5 +332,19 @@ void DijetMethods::SetBackgroundDeltaEtaRegion(const double minDeltaEta, const d
   if(fMinBackgroundDeltaEta > fMaxBackgroundDeltaEta){
     fMinBackgroundDeltaEta = maxDeltaEta;
     fMaxBackgroundDeltaEta = minDeltaEta;
+  }
+}
+
+// Setter for R-binning for jet shape histograms
+void DijetMethods::SetJetShapeBinEdges(const int nBins, double *binBorders){
+  
+  // Remove old memory allocation before allocating new memory
+  if(fRBins) delete [] fRBins;
+  
+  // Copy the number of bins and bin contents
+  fnRBins = nBins;
+  fRBins = new double[nBins+1];
+  for(int iBin = 0; iBin < nBins+1; iBin++){
+    fRBins[iBin] = binBorders[iBin];
   }
 }
