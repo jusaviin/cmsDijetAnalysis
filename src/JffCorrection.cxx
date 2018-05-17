@@ -15,11 +15,11 @@ JffCorrection::JffCorrection(bool ispp){
   fIsPpData = ispp;
   
   if(fIsPpData) {
-    fin = new TFile("jffcorr_ptcut50/Pythia6jffcorr_file_May5.root");
+    fin = new TFile("jffcorr_ptcut50/Pythia6_jffcorr_file_May17.root");
   }
   else {
     //corr files id 145
-    fin = new TFile("jffcorr_ptcut50/PythiaHydjetjffcorr_file_May6.root");
+    fin = new TFile("jffcorr_ptcut50/PythiaHydjetjffcorr_file_May17.root");
   }
   
   if(!fin) std::cout << "Input file for JffCorrection not found!! Aborting!!" << std::endl;
@@ -65,7 +65,7 @@ JffCorrection::JffCorrection(bool ispp){
 double JffCorrection::GetCorrection(int nCScand, int hiBin, double jtpt, double jteta){
   
   if(!fin){ std::cout << "Correction file is not loaded! No correction done!" << std::endl; return jtpt; }
-  if(abs(jteta)>1.6) return jtpt; // TODO: I need correction for jets in eta < 2.0, or must change logic of analysis loops
+  if(abs(jteta)>1.6) return jtpt; // TODO: It would be better to have correction upto 2. Now cannot be sure that leading jets are actually leading jets.
   if(jtpt>600 || jtpt<20) return jtpt;
   if((hiBin>200 || hiBin<0) && !fIsPpData){ std::cout << "Warning! hiBin is not between 0 and 200!! (=" << hiBin << ")" << std::endl; return jtpt; }
   
