@@ -541,9 +541,24 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           compactTrackPtString.ReplaceAll(".","v");
           
           // === Track-leading jet deltaPhi ===
+          
+          // Move legend to different place for leading jet background figures
+          legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+          if(iJetTrack < knJetTrackCorrelations/2){
+            if(iCorrelationType == kBackground) { // Move legend to top left corner for leading jet-track background figures
+              legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
+            } else if (iCorrelationType == kCorrected || iCorrelationType == kBackgroundSubtracted){ // Move legend away from peaks
+              if(iTrackPt == 2 || iTrackPt == 3){
+                legendX1 = 0.31; legendY1 = 0.75; legendX2 = 0.61; legendY2 = 0.9;
+              } else if (iTrackPt < 2){
+                legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
+              }
+            }
+          }
+          
           sprintf(namerX,"%s #Delta#varphi",fJetTrackAxisNames[iJetTrack]);
           fDrawer->DrawHistogram(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt],namerX,"#frac{dN}{d#Delta#varphi}",fCorrelationTypeString[iCorrelationType]);
-          legend = new TLegend(0.52,0.75,0.82,0.9);
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           SetupLegend(legend,centralityString,trackPtString);
           legend->Draw();
           
@@ -578,8 +593,13 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // DeltaPhi binning for deltaEta histogram
           for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
             
+            // Do not draw the deltaEta histograms for background because they are flat by construction
+            if(iCorrelationType == kBackground) continue;
+            
             // Move legend to different place for mixed event distributions
-            if(iCorrelationType == 1 || iDeltaPhi > 1) {
+            if(iCorrelationType == kBackgroundSubtracted && iDeltaPhi == kBetweenPeaks){
+              legendX1 = 0.31; legendY1 = 0.75; legendX2 = 0.61; legendY2 = 0.9;
+            } else if(iCorrelationType == kMixedEvent || iDeltaPhi > kNearSide) {
               legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
             } else {
               legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
@@ -1426,4 +1446,9 @@ void DijetDrawer::BinSanityCheck(const int nBins, int first, int last){
 // Setter for deltaEta range used for normalizing the mixed event
 void DijetDrawer::SetMixedEventFitRegion(const double etaRange){
   fMethods->SetMixedEventFitRegion(etaRange);
+}
+
+// Setter for used DijetMethods
+void DijetDrawer::SetDijetMethods(DijetMethods* newMethods){
+  fMethods = newMethods;
 }

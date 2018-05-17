@@ -18,6 +18,34 @@ DijetMethods::DijetMethods() :
 }
 
 /*
+ *  Copy constructor
+ */
+DijetMethods::DijetMethods(const DijetMethods& in) :
+  fMixedEventFitRegion(in.fMixedEventFitRegion),
+  fBackgroundDistribution(in.fBackgroundDistribution),
+  fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
+  fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta)
+{
+  // Copy constructor
+}
+
+/*
+ * Assingment operator
+ */
+DijetMethods& DijetMethods::operator=(const DijetMethods& in){
+  // Assingment operator
+  
+  if (&in==this) return *this;
+  
+  fMixedEventFitRegion = in.fMixedEventFitRegion;
+  fBackgroundDistribution = in.fBackgroundDistribution;
+  fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
+  fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
+  
+  return *this;
+}
+
+/*
  *  Destructor
  */
 DijetMethods::~DijetMethods()
@@ -113,7 +141,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   TH1D *backgroundDeltaPhiSubleading = ProjectBackgroundDeltaPhi(subleadingHistogramWithBackground);
   
   // Construct the two-dimensional background histogram by populating the whole deltaEta region from background deltaPhi histogram
-  char histogramName[200]; // Helper variable for histogram naming
+  char histogramName[200];     // Helper variable for histogram naming
   double deltaPhiValueNear;    // Value in the leading deltaPhi histogram bin
   double deltaPhiErrorNear;    // Error of the leading deltaPhi histogram bin
   double deltaPhiValueAway;    // Value in the subleading deltaPhi histogram bin

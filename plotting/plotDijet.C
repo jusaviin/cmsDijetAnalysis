@@ -1,4 +1,5 @@
-#include "DijetDrawer.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so) 
+#include "DijetDrawer.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
+#include "DijetMethods.h"
 #include "DijetCard.h"
 
 /*
@@ -24,18 +25,18 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = true;
+  bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
-  bool drawMixedEvent = true;
-  bool drawCorrected = false;
+  bool drawMixedEvent = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = false;
+  bool drawBackgroundSubtracted = true;
   bool drawBackground = true;
   
   // Choose if you want to write the figures to pdf file
@@ -55,7 +56,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   const int nCentralityBins = 4;
   const int nTrackPtBins = 6;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
-  double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  double trackPtBinBorders[nTrackPtBins+1] = {0.5,1,2,3,4,8,300};  // Bin borders for track pT
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1}; // Low bin borders for deltaPhi
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
@@ -64,12 +65,16 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   int firstDrawCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 4;
-  int lastDrawnTrackPtBin = 4;
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = 0;
   
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   
+  // Background subtraction
+  double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
+  double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
+
   // ==================================================================
   // ===================== Configuration ready ========================
   // ==================================================================
@@ -86,6 +91,11 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
     lastDrawnCentralityBin = 0;
     centralityBinBorders[0] = -0.5;
   }
+  
+  // Create and setup DijetMethods for mixed event correction and background subtraction
+  DijetMethods *methods = new DijetMethods();
+  methods->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
+  methods->SetBackgroundDeltaEtaRegion(minBackgroundDeltaEta,maxBackgroundDeltaEta);
   
   // Create a new DijetDrawer
   DijetDrawer *resultDrawer = new DijetDrawer(inputFile);
@@ -104,7 +114,6 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
   resultDrawer->SetLogAxes(logPt,logCorrelation);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
-  resultDrawer->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
   
   // Set the binning information
   resultDrawer->SetCentralityBins(centralityBinBorders);
@@ -113,7 +122,10 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetCentralityBinRange(firstDrawCentralityBin,lastDrawnCentralityBin);
   resultDrawer->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
   
-  // Load the selected histograms
+  // Set the used dijet methods
+  resultDrawer->SetDijetMethods(methods);
+  
+  // Process and draw the selected histograms
   resultDrawer->LoadHistograms();
   resultDrawer->ApplyCorrectionsAndSubtractBackground();
   resultDrawer->DrawHistograms();

@@ -23,7 +23,6 @@ private:
   // Dimensions for histogram arrays
   static const int knCentralityBins = 4;   // Number of centrality bins
   static const int knTrackPtBins = 6;      // Number of track pT bins
-  static const int knDeltaPhiBins = 4;     // Number of delta phi slices (whole phi/near side/away side/between peaks)
   
   // Indices for different correlation types
   enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,knCorrelationTypes};
@@ -36,6 +35,9 @@ private:
   
   // Indices for different single jet histogram categories
   enum enumSingleJet{kLeadingJet, kSubleadingJet, kAnyJet, knSingleJetCategories};
+  
+  // Indices for different deltaPhi bins
+  enum enumDeltaPhiBins{kWholePhi, kNearSide, kAwaySide, kBetweenPeaks, knDeltaPhiBins};
   
   // Naming for different correlation types
   TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background"};
@@ -121,6 +123,9 @@ public:
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
+  
+  // Setter for used DijetMethods
+  void SetDijetMethods(DijetMethods* newMethods); // Setter for used DijetMethods
   
 private:
   

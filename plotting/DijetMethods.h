@@ -20,7 +20,9 @@ class DijetMethods{
 public:
   
   DijetMethods();   // Constructor
+  DijetMethods(const DijetMethods& in); // Copy constructor
   ~DijetMethods();  // Destructor
+  DijetMethods& operator=(const DijetMethods& in); // Equal sign operator
   
   TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram); // Mixed event correction for a two-dimensional histogram
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground); // Subtract background from a two-dimensional leading histogram
