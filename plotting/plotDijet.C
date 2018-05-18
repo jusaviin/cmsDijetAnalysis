@@ -22,17 +22,27 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
+  // Draw different jet-track correlation histograms
+  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  
+  // Draw jet shape histograms
+  bool drawJetShape = true;
+  bool drawJetShapeCounts = true;
+  bool drawJetShapeBinMap = true;
+  
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
-  bool drawCorrected = true;
+  bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
@@ -43,9 +53,10 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool saveFigures = false;
   const char* figureFormat = "png";
   
-  // Logarithmic scales for figures for pT distributions
+  // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
+  bool logJetShape = true;    // Jet shapes
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -65,8 +76,8 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   int firstDrawCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = 0;
+  int firstDrawnTrackPtBin = 3;
+  int lastDrawnTrackPtBin = 3;
   
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
@@ -76,9 +87,10 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
   
   // Jet shape
-  const int nRBins = 16;  // Number of R-bins for jet shape histograms
-  double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
-
+  const int nRBins = 12;  // Number of R-bins for jet shape histograms
+  //double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
+  double rBins[nRBins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
+  
   // ==================================================================
   // ===================== Configuration ready ========================
   // ==================================================================
@@ -112,12 +124,15 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetDrawAllTracks(drawTracks,drawUncorrectedTracks);
   resultDrawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   resultDrawer->SetDrawAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
+  resultDrawer->SetDrawJetTrackDeltas(drawJetTrackDeltaPhi,drawJetTrackDeltaEta,drawJetTrackDeltaEtaDeltaPhi);
+  resultDrawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeCounts);
   resultDrawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);
+  resultDrawer->SetDrawJetShapeBinMap(drawJetShapeBinMap);
   resultDrawer->SetDrawBackgroundSubtracted(drawBackgroundSubtracted);
   resultDrawer->SetDrawBackground(drawBackground);
   resultDrawer->SetDrawSameMixedDeltaEtaRatio(drawSameMixedDeltaEtaRatio);
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
-  resultDrawer->SetLogAxes(logPt,logCorrelation);
+  resultDrawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
   
   // Set the binning information
@@ -132,7 +147,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   
   // Process and draw the selected histograms
   resultDrawer->LoadHistograms();
-  resultDrawer->ApplyCorrectionsAndSubtractBackground();
+  resultDrawer->ProcessHistograms();
   resultDrawer->DrawHistograms();
   
 }

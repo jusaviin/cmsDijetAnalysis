@@ -16,6 +16,7 @@ DijetMethods::DijetMethods() :
 {
   // Constructor
   fBackgroundDistribution = NULL;
+  fhJetShapeCounts = NULL;
   fRBins = nullptr;
 }
 
@@ -187,7 +188,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   
   // Subtract the generated background from the histogram including the background
   sprintf(histogramName,"%sBackgroundSubtracted",leadingHistogramWithBackground->GetName());
-  TH2D *backgroundSubtractedHistogram = (TH2D*)leadingHistogramWithBackground->Clone();
+  TH2D *backgroundSubtractedHistogram = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
   backgroundSubtractedHistogram->Add(fBackgroundDistribution,-1);
   
   // Set all the negative bins to zero
@@ -244,7 +245,7 @@ TH1D* DijetMethods::ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
  *
  *   return: TH1D histogram with extracted jet shape
  */
-TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram) const{
+TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
   
   // Create a new TH1D for the jet shape
   char histogramName[200];
@@ -253,7 +254,19 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram) const{
   
   // Create another histogram to count how many bins in two-dimensional histogram correspond to filled bins in jet shape histogram
   sprintf(histogramName,"%sJetShapeCounts",backgroundSubtractedHistogram->GetName());
-  TH1D *jetShapeCounts = new TH1D(histogramName,histogramName,fnRBins,fRBins);
+  fhJetShapeCounts = (TH1D*) jetShapeHistogram->Clone(histogramName);
+  
+  // Create a two dimensional histogram to collect information on which Rbin each deltaEta-deltaPhi phi is assigned
+  sprintf(histogramName,"%sRbinMap",backgroundSubtractedHistogram->GetName());
+  fhJetShapeBinMap = (TH2D*) backgroundSubtractedHistogram->Clone(histogramName);
+  
+  // Set all the bins to zero for the RBin to deltaPhi-deltaEta mapping histogram
+  for(int iPhiBin = 0; iPhiBin < fhJetShapeBinMap->GetNbinsX(); iPhiBin++){
+    for(int iEtaBin = 0; iEtaBin < fhJetShapeBinMap->GetNbinsY(); iEtaBin++){
+      fhJetShapeBinMap->SetBinContent(iPhiBin,iEtaBin,0);
+      fhJetShapeBinMap->SetBinError(iPhiBin,iEtaBin,0);
+    }
+  }
   
   // The jet shape is calculated from the region close to near side peak, so we need to find bin indices for that region
   // Apply small offset to avoid problems with bin boundaries
@@ -293,24 +306,38 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram) const{
       // Get the content already in the jet shape histogram
       oldContent = jetShapeHistogram->GetBinContent(Rbin);
       oldError = jetShapeHistogram->GetBinError(Rbin);
-      oldCounts = jetShapeCounts->GetBinContent(Rbin);
+      oldCounts = fhJetShapeCounts->GetBinContent(Rbin);
       
       // Add the new content on top of the old content. Add errors in quadrature
       jetShapeHistogram->SetBinContent(Rbin,newContent+oldContent);
       jetShapeHistogram->SetBinError(Rbin,TMath::Sqrt(TMath::Power(newError,2)+TMath::Power(oldError,2)));
       
       // Increment the counts by one. There is no error for counts, since we know the histogram binning exactly
-      jetShapeCounts->SetBinContent(Rbin,oldCounts+1);
-      jetShapeCounts->SetBinError(Rbin,0);
+      fhJetShapeCounts->SetBinContent(Rbin,oldCounts+1);
+      fhJetShapeCounts->SetBinError(Rbin,0);
+      
+      // Set the Rbin mapping to deltaEta-deltaPhi bins
+      fhJetShapeBinMap->SetBinContent(iPhiBin,iEtaBin,Rbin);
+      
     } // deltaEta loop
   } // deltaPhi loop
   
   // Normalize each bin in the jet shape histogram by the number of bins in two-dimensional histogram corresponding to that bin
-  jetShapeHistogram->Divide(jetShapeCounts);
+  jetShapeHistogram->Divide(fhJetShapeCounts);
   
   // Return the calculated jet shape histogram
   return jetShapeHistogram;
   
+}
+
+// Getter for most recent two-dimensional jet shape count histogram
+TH2D* DijetMethods::GetJetShapeBinMap() const{
+  return fhJetShapeBinMap;
+}
+
+// Getter for most recent jet shape count histogram
+TH1D* DijetMethods::GetJetShapeCounts() const{
+  return fhJetShapeCounts;
 }
 
 // Getter for the most recent background distribution used to subtract the background

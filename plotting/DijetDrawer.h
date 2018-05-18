@@ -25,7 +25,7 @@ private:
   static const int knTrackPtBins = 6;      // Number of track pT bins
   
   // Indices for different correlation types
-  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,knCorrelationTypes};
+  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,kJetShapeBinMap,knCorrelationTypes};
   
   // Indices for different jet-track correlation categories
   enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, knJetTrackCorrelations};
@@ -39,9 +39,12 @@ private:
   // Indices for different deltaPhi bins
   enum enumDeltaPhiBins{kWholePhi, kNearSide, kAwaySide, kBetweenPeaks, knDeltaPhiBins};
   
+  // Indices for different jet shape histograms
+  enum enumJetShape{kJetShape, kJetShapeBinCount, knJetShapeTypes};
+  
   // Naming for different correlation types
-  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background"};
-  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_BackgroundSubtracted","_Background"};
+  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background","Jet Shape Bin Map"};
+  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_BackgroundSubtracted","_Background","_JetShapeBinMap"};
   
   // Naming for jet-track correlation histograms
   const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted"}; // Names that different histograms have in the input file
@@ -55,13 +58,17 @@ private:
   const char* fSingleJetHistogramName[knSingleJetCategories] = {"leadingJet","subleadingJet","anyJet"}; // Names that different single jet histograms have in the input file
   const char* fSingleJetAxisNames[knSingleJetCategories] = {"Leading jet","Subeading jet","Any jet"}; // Names attached to the figure axes
   
+  // Naming for jet shape histograms
+  const char* fJetShapeHistogramName[knJetShapeTypes] = {"JetShape","JetShapeCounts"};
+  const char* fJetShapeYAxisNames[knJetShapeTypes] = {"#rho(#DeltaR)","counts"};
+  
 public:
   
   DijetDrawer(TFile *inputFile);  // Constructor
   ~DijetDrawer();                 // Destructor
   
   void LoadHistograms();          // Load the histograms from the inputfile
-  void ApplyCorrectionsAndSubtractBackground();  // Do the mixed event correction and subtract the background
+  void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape
   void DrawHistograms();          // Draw the histograms
   
   // Setters for binning information
@@ -70,52 +77,63 @@ public:
   void SetDeltaPhiBins(double *lowBinBorders, double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins]); //  Set up deltaPhi bin indices according to provided bin borders and bin names
   
   // Setters for event information and dijets
-  void SetDrawEventInformation(bool drawOrNot); // Setter for drawing event information
-  void SetDrawDijetHistograms(bool drawOrNot);  // Setter for drawing dijet histograms
+  void SetDrawEventInformation(const bool drawOrNot); // Setter for drawing event information
+  void SetDrawDijetHistograms(const bool drawOrNot);  // Setter for drawing dijet histograms
   
   // Setters for single jets
-  void SetDrawLeadingJetHistograms(bool drawOrNot);    // Setter for drawing leading jet histograms
-  void SetDrawSubleadingJetHistograms(bool drawOrNot); // Setter for drawing subleading jet histograms
-  void SetDrawAnyJetHistograms(bool drawOrNot);        // Setter for drawing all jet histograms
-  void SetDrawAllJets(bool drawLeading, bool drawSubleading, bool drawAny);   // Setter for drawing jet histograms
+  void SetDrawLeadingJetHistograms(const bool drawOrNot);    // Setter for drawing leading jet histograms
+  void SetDrawSubleadingJetHistograms(const bool drawOrNot); // Setter for drawing subleading jet histograms
+  void SetDrawAnyJetHistograms(const bool drawOrNot);        // Setter for drawing all jet histograms
+  void SetDrawAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny);   // Setter for drawing jet histograms
   
   // Setters for tracks
-  void SetDrawTracks(bool drawOrNot);            // Setter for drawing tracks
-  void SetDrawTracksUncorrected(bool drawOrNot); // Setter for drawing uncorrected tracks
-  void SetDrawAllTracks(bool drawTracks, bool drawUncorrected); // Setter for drawing all track histograms
+  void SetDrawTracks(const bool drawOrNot);            // Setter for drawing tracks
+  void SetDrawTracksUncorrected(const bool drawOrNot); // Setter for drawing uncorrected tracks
+  void SetDrawAllTracks(const bool drawTracks, const bool drawUncorrected); // Setter for drawing all track histograms
   
   // Setters for leading jet-track correlations
-  void SetDrawTrackLeadingJetCorrelations(bool drawOrNot);            // Setter for drawing leading jet-track correlations
-  void SetDrawTrackLeadingJetCorrelationsUncorrected(bool drawOrNot); // Setter for drawing uncorrected leading jet-track correlations
-  void SetDrawTrackLeadingJetCorrelationsPtWeighted(bool drawOrNot);  // Setter for drawing pT weighted leading jet-track correlations
-  void SetDrawAllTrackLeadingJetCorrelations(bool drawLeading, bool drawUncorrected, bool drawPtWeighted); // Setter for drawing all correlations related to tracks and leading jets
+  void SetDrawTrackLeadingJetCorrelations(const bool drawOrNot);            // Setter for drawing leading jet-track correlations
+  void SetDrawTrackLeadingJetCorrelationsUncorrected(const bool drawOrNot); // Setter for drawing uncorrected leading jet-track correlations
+  void SetDrawTrackLeadingJetCorrelationsPtWeighted(const bool drawOrNot);  // Setter for drawing pT weighted leading jet-track correlations
+  void SetDrawAllTrackLeadingJetCorrelations(const bool drawLeading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for drawing all correlations related to tracks and leading jets
   
   // Setters for drawing subleading jet-track correlations
-  void SetDrawTrackSubleadingJetCorrelations(bool drawOrNot);            // Setter for drawing subleading jet-track correlations
-  void SetDrawTrackSubleadingJetCorrelationsUncorrected(bool drawOrNot); // Setter for drawing uncorrected subleading jet-track correlations
-  void SetDrawTrackSubleadingJetCorrelationsPtWeighted(bool drawOrNot);  // Setter for drawing pT weighted subleading jet-track correlations
-  void SetDrawAllTrackSubleadingJetCorrelations(bool drawSubleading, bool drawUncorrected, bool drawPtWeighted); // Setter for drawing all correlations related to tracks and subleading jets
+  void SetDrawTrackSubleadingJetCorrelations(const bool drawOrNot);            // Setter for drawing subleading jet-track correlations
+  void SetDrawTrackSubleadingJetCorrelationsUncorrected(const bool drawOrNot); // Setter for drawing uncorrected subleading jet-track correlations
+  void SetDrawTrackSubleadingJetCorrelationsPtWeighted(const bool drawOrNot);  // Setter for drawing pT weighted subleading jet-track correlations
+  void SetDrawAllTrackSubleadingJetCorrelations(const bool drawSubleading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for drawing all correlations related to tracks and subleading jets
+  
+  // Setters for drawing different histograms derived from jet-track correlations
+  void SetDrawJetTrackDeltaPhi(const bool drawOrNot);          // Setter for drawing jet-track deltaPhi correlations
+  void SetDrawJetTrackDeltaEta(const bool drawOrNot);          // Setter for drawing jet-track deltaEta correlations
+  void SetDrawJetTrackDeltaEtaDeltaPhi(const bool drawOrNot);  // Setter for drawing jet-track deltaEta-deltaPhi correlations
+  void SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi); // Setter for drawing all the jet-track deltaEta/Phi correlations
+  void SetDrawJetShape(const bool drawOrNot);                        // Setter for drawing jet shapes
+  void SetDrawJetShapeCounts(const bool drawOrNot);                  // Setter for drawing jet shape counts
+  void SetDrawAllJetShapes(const bool jetShape, const bool counts);  // Setter for drawing all different jet shape histograms
+  void SetDrawJetShapeBinMap(const bool drawOrNot);                  // Setter for drawing bin mapping between Rbins and deltaEta-deltaPhi bins
   
   // Setters for drawing different correlation types (same event, mixed event, corrected)
-  void SetDrawSameEvent(bool drawOrNot);             // Setter for drawing same event correlation distributions
-  void SetDrawMixedEvent(bool drawOrNot);            // Setter for drawing mixed event correlation distributions
-  void SetDrawCorrectedCorrelations(bool drawOrNot); // Setter for drawing corrected correlation distributions
-  void SetDrawCorrelationTypes(bool sameEvent, bool mixedEvent, bool corrected); // Setter for drawing different correlation types
-  void SetDrawBackgroundSubtracted(bool drawOrNot);  // Setter for drawing background subtracted jet-track correlation histograms
-  void SetDrawBackground(bool drawOrNot);            // Setter for drawing the generated background distributions
-  void SetDrawSameMixedDeltaEtaRatio(bool drawOrNot); // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
+  void SetDrawSameEvent(const bool drawOrNot);              // Setter for drawing same event correlation distributions
+  void SetDrawMixedEvent(const bool drawOrNot);             // Setter for drawing mixed event correlation distributions
+  void SetDrawCorrectedCorrelations(const bool drawOrNot);  // Setter for drawing corrected correlation distributions
+  void SetDrawCorrelationTypes(const bool sameEvent, const bool mixedEvent, const bool corrected); // Setter for drawing different correlation types
+  void SetDrawBackgroundSubtracted(const bool drawOrNot);   // Setter for drawing background subtracted jet-track correlation histograms
+  void SetDrawBackground(const bool drawOrNot);             // Setter for drawing the generated background distributions
+  void SetDrawSameMixedDeltaEtaRatio(const bool drawOrNot); // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
   
   // Setters for figure saving and logarithmic axes
-  void SetSaveFigures(bool saveOrNot, const char *format);  // Setter for saving the figures to a file
-  void SetLogPt(bool isLog); // Setter for logarithmic pT axis
-  void SetLogCorrelation(bool isLog); // Setter for logarithmic z axis for correlation plots
-  void SetLogAxes(bool pt, bool correlation); // Setter for logarithmic axes
+  void SetSaveFigures(const bool saveOrNot, const char *format);  // Setter for saving the figures to a file
+  void SetLogPt(const bool isLog);          // Setter for logarithmic pT axis
+  void SetLogCorrelation(const bool isLog); // Setter for logarithmic z axis for correlation plots
+  void SetLogJetShape(const bool isLog);    // Setter for logarithmic jet shape drawing
+  void SetLogAxes(const bool pt, const bool correlation, const bool jetShape); // Setter for logarithmic axes
   
   // Setters for drawing style and colors
-  void SetColorPalette(int color); // Setter for color palette
+  void SetColorPalette(const int color);     // Setter for color palette
   void SetDrawingStyle2D(const char* style); // Setter for 2D drawing style
   void SetDrawingStyle3D(const char* style); // Setter for 3D drawing style
-  void SetDrawingStyles(int color, const char* style2D, const char* style3D); // Setter for drawing styles
+  void SetDrawingStyles(const int color, const char* style2D, const char* style3D); // Setter for drawing styles
   
   // Setters for drawing ranges for different bins
   void SetCentralityBinRange(const int first, const int last); // Setter for drawn centrality bins
@@ -130,12 +148,12 @@ public:
 private:
   
   // Data members
-  TFile *fInputFile;  // File from which the histograms are read
-  DijetCard *fCard;   // Card inside the data file for binning, cut collision system etc. information
-  TString fSystemAndEnergy;  // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
+  TFile *fInputFile;               // File from which the histograms are read
+  DijetCard *fCard;                // Card inside the data file for binning, cut collision system etc. information
+  TString fSystemAndEnergy;        // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
   TString fCompactSystemAndEnergy; // Same a before but without white spaces and dots
-  JDrawer *fDrawer;   // JDrawer for drawing the histograms
-  DijetMethods *fMethods;  // DijetMethods for processing the loaded histograms
+  JDrawer *fDrawer;                // JDrawer for drawing the histograms
+  DijetMethods *fMethods;          // DijetMethods for processing the loaded histograms
   
   // ==============================================
   // ======== Flags for histograms to draw ========
@@ -157,41 +175,46 @@ private:
   // ============== Drawing settings ==============
   // ==============================================
   
-  // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool fDrawCorrelationType[knCorrelationTypes];
-  bool fDrawSameMixedDeltaEtaRatio;
+  // Flags for drawing individual histograms within histogram groups
+  bool fDrawCorrelationType[knCorrelationTypes];  // Draw different event correalation types
+  bool fDrawSameMixedDeltaEtaRatio;               // Draw the ratio of same event between peaks and mixed event
+  bool fDrawJetTrackDeltaPhi;                     // Draw the jet-track deltaPhi correlation
+  bool fDrawJetTrackDeltaEta;                     // Draw the jet-track deltaEta correlation
+  bool fDrawJetTrackDeltaEtaDeltaPhi;             // Draw the jet-track deltaEta-deltaPhi correlation
+  bool fDrawJetShape[knJetShapeTypes];            // Draw the jet shape histograms
   
   // Choose if you want to write the figures to pdf file
-  bool fSaveFigures;
-  const char* fFigureFormat;
+  bool fSaveFigures;           // Flag for saving the figures to file
+  const char* fFigureFormat;   // Format in which the figures are saved
   
-  // Logarithmic scales for figures for pT distributions
+  // Logarithmic scales for figures
   bool fLogPt;          // pT distributions
   bool fLogCorrelation; // track-jet deltaPhi-deltaEta distributions
+  bool fLogJetShape;    // Jet shape distributions
   
   // Plotting style for 2D and 3D plots
-  int fColorPalette;
-  const char* fStyle2D;
-  const char* fStyle3D;
+  int fColorPalette;      // Used color palatte for drawing
+  const char* fStyle2D;   // Used option for two-dimensional drawing style
+  const char* fStyle3D;   // Used option for three-dimensional drawing style
   
   // Drawn centrality bins
-  int fFirstDrawnCentralityBin;
-  int fLastDrawnCentralityBin;
-  int fFirstDrawnTrackPtBin;
-  int fLastDrawnTrackPtBin;
+  int fFirstDrawnCentralityBin;  // First centrality bin that is drawn
+  int fLastDrawnCentralityBin;   // Last centrality bin that is drawn
+  int fFirstDrawnTrackPtBin;     // First track pT bin that is drawn
+  int fLastDrawnTrackPtBin;      // Last track pT bin that is drawn
   
   // =============================================
   // ============ Binning information ============
   // =============================================
-  int fCentralityBinIndices[knCentralityBins+1];
-  double fCentralityBinBorders[knCentralityBins+1];
-  int fTrackPtBinIndices[knTrackPtBins+1];
-  int fFineTrackPtBinIndices[knTrackPtBins+1];
-  double fTrackPtBinBorders[knTrackPtBins+1];
-  int fLowDeltaPhiBinIndices[knDeltaPhiBins];
-  int fHighDeltaPhiBinIndices[knDeltaPhiBins];
-  TString fDeltaPhiString[knDeltaPhiBins];
-  TString fCompactDeltaPhiString[knDeltaPhiBins];
+  int fCentralityBinIndices[knCentralityBins+1];     // Indices for centrality bins in centrality binned histograms
+  double fCentralityBinBorders[knCentralityBins+1];  // Centrality bin borders, from which bin indices are obtained
+  int fTrackPtBinIndices[knTrackPtBins+1];           // Indices for track pT bins in track pT binned histograms
+  int fFineTrackPtBinIndices[knTrackPtBins+1];       // Indices for track pT bins in fine track pT binned histograms
+  double fTrackPtBinBorders[knTrackPtBins+1];        // Track pT bin borders, from which bin indices are obtained
+  int fLowDeltaPhiBinIndices[knDeltaPhiBins];        // Indices for low bin borders in deltaPhi binned histograms
+  int fHighDeltaPhiBinIndices[knDeltaPhiBins];       // Indices for high bin borders in deltaPhi binned histograms
+  TString fDeltaPhiString[knDeltaPhiBins];           // Names for different deltaPhi bins
+  TString fCompactDeltaPhiString[knDeltaPhiBins];    // Names added to figure names for deltaPhi bins
   
   // =============================================
   // ===== Histograms for the dijet analysis =====
@@ -227,7 +250,7 @@ private:
   TH2D *fhJetTrackDeltaEtaDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][knCentralityBins][knTrackPtBins];         // DeltaEta and deltaPhi between jet and track
   
   // Jet shape histograms
-  TH1D *fhJetShape[knJetTrackCorrelations][knCentralityBins][knTrackPtBins];  // Jet shape histograms
+  TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][knCentralityBins][knTrackPtBins];  // Jet shape histograms
   
   // Private methods
   void SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis); // Read the bin indices for given bin borders
@@ -253,15 +276,16 @@ private:
   void DrawSingleJetHistograms(); // Draw single jet histograms
   void DrawTrackHistograms();     // Draw track histograms
   void DrawJetTrackCorrelationHistograms(); // Draw jet-track correlation histograms
+  void DrawJetShapeHistograms();  // Draw jet shape histograms
   void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
   
   // Methods for binning
   void BinSanityCheck(const int nBins, int first, int last); // Sanity check for given binning
   
-  // Correction and background subtraction
+  // Mixed event correction, background subtraction and jet shape calculation
   void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
-  void SubtractBackground();      // Subtract the background from the distributions
+  void SubtractBackgroundAndCalculateJetShape();  // Subtract the background from the distributions and use these histograms to calculate jet shape
   
 };
 
