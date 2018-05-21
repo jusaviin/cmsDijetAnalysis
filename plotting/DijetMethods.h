@@ -20,6 +20,8 @@ class DijetMethods{
   
 public:
   
+  enum enumJetShapeNormalizatio{kBinWidth,kBinArea,knJetShapeNormalizations};  // Enumeration for used normalization for jet shape
+  
   DijetMethods();   // Constructor
   DijetMethods(const DijetMethods& in); // Copy constructor
   ~DijetMethods();  // Destructor
@@ -43,6 +45,7 @@ public:
   
   // Setters for jet shape calculation configuration
   void SetJetShapeBinEdges(const int nBins, double *binBorders); // Setter for R-binning for jet shape histograms
+  void SetJetShapeNormalization(const int normalizationType);    // Setter for jet shape normalization method
   
   // Setter for two-dimensional histogram rebinning information
   void SetRebinBoundaries(const int nRebinDeltaEta, double *deltaEtaBorders, const int nRebinDeltaPhi, double *deltaPhiBorders); // Setter for deltaEta and deltaPhi rebin borders
@@ -67,10 +70,11 @@ private:
   // =========== Jet shape calculation ===========
   // =============================================
   
-  TH1D *fhJetShapeCounts; // How many bins from the two-dimensional histogram correspond to one jet shape bin
-  TH2D *fhJetShapeBinMap; // Information to which jet shape bin each deltaPhi-deltaEta bin is assigned
-  int fnRBins;    // Number of R-bins for jet shape histograms
-  double *fRBins; // R-bin boundaries for jet shape histograms
+  int fNormalizationMethod; // Normalization method used for jet shape distribution, either bin area or bin width
+  TH1D *fhJetShapeCounts;   // How many bins from the two-dimensional histogram correspond to one jet shape bin
+  TH2D *fhJetShapeBinMap;   // Information to which jet shape bin each deltaPhi-deltaEta bin is assigned
+  int fnRBins;              // Number of R-bins for jet shape histograms
+  double *fRBins;           // R-bin boundaries for jet shape histograms
   
   // ==============================================
   // ==== Rebinning two-dimensional histograms ====

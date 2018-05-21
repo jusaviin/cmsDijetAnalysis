@@ -33,12 +33,11 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = true;
-  bool drawJetTrackDeltaEtaDeltaPhiRebinned = true;
   
   // Draw jet shape histograms
   bool drawJetShape = true;
-  bool drawJetShapeCounts = true;
-  bool drawJetShapeBinMap = true;
+  bool drawJetShapeCounts = false;
+  bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
@@ -47,11 +46,11 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = true;
-  bool drawBackground = true;
+  bool drawBackgroundSubtracted = false;
+  bool drawBackground = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "png";
   
   // Logarithmic scales for figures
@@ -92,6 +91,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
   //const int nRBins = 12; // Number of R-bins for jet shape histograms
   //double rBins[nRBins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
+  const int jetShapeNormalizationType = DijetMethods::kBinWidth;  // How to normalize jet shape histogram, kBinWidth or kBinArea
   
   // Rebinning deltaEta-deltaPhi histograms
   const int nRebinDeltaEta = 19;
@@ -123,6 +123,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   methods->SetBackgroundDeltaEtaRegion(minBackgroundDeltaEta,maxBackgroundDeltaEta);
   methods->SetJetShapeBinEdges(nRBins,rBins);
   methods->SetRebinBoundaries(nRebinDeltaEta,rebinDeltaEta,nRebinDeltaPhi,rebinDeltaPhi);
+  methods->SetJetShapeNormalization(jetShapeNormalizationType);
   
   // Create a new DijetDrawer
   DijetDrawer *resultDrawer = new DijetDrawer(inputFile);

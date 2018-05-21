@@ -1208,6 +1208,9 @@ TH2D* DijetDrawer::FindHistogram2D(TFile *inputFile, const char *name, int xAxis
   TH2D *projectedHistogram = (TH2D*) histogramArray->Projection(yAxis,xAxis);
   projectedHistogram->SetName(newName);
   
+  // Apply bin width normalization to the projected histogram
+  projectedHistogram->Scale(1.0,"width");
+  
   // Return the projected histogram
   return projectedHistogram;
 }
@@ -1232,7 +1235,7 @@ TH2D* DijetDrawer::FindHistogram2D(TFile *inputFile, const char *name, int xAxis
   int lowBinIndices[2] = {lowBinIndex,lowBinIndex2};
   int highBinIndices[2] = {highBinIndex,highBinIndex2};
   int nAxes = 2;
-  if(highBinIndex2 > 0 && lowBinIndex2 > 0) nAxes = 1;
+  if(highBinIndex2 == 0 && lowBinIndex2 == 0) nAxes = 1;
   return FindHistogram2D(inputFile,name,xAxis,yAxis,nAxes,restrictionAxes,lowBinIndices,highBinIndices);
 }
 
@@ -1267,6 +1270,9 @@ TH1D* DijetDrawer::FindHistogram(TFile *inputFile, const char *name, int xAxis, 
   TH1D *projectedHistogram = (TH1D*) histogramArray->Projection(xAxis);
   projectedHistogram->SetName(newName);
   
+  // Apply bin width normalization to the projected histogram
+  projectedHistogram->Scale(1.0,"width");
+  
   // Return the projected histogram
   return projectedHistogram;
 }
@@ -1290,7 +1296,7 @@ TH1D* DijetDrawer::FindHistogram(TFile *inputFile, const char *name, int xAxis, 
   int lowBinIndices[2] = {lowBinIndex,lowBinIndex2};
   int highBinIndices[2] = {highBinIndex,highBinIndex2};
   int nAxes = 2;
-  if(highBinIndex2 > 0 && lowBinIndex2 > 0) nAxes = 1;
+  if(highBinIndex2 == 0 && lowBinIndex2 == 0) nAxes = 1;
   return FindHistogram(inputFile,name,xAxis,nAxes,restrictionAxes,lowBinIndices,highBinIndices);
 }
 

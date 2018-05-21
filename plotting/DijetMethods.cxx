@@ -327,7 +327,11 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
   } // deltaPhi loop
   
   // Normalize each bin in the jet shape histogram by the number of bins in two-dimensional histogram corresponding to that bin
-  jetShapeHistogram->Divide(fhJetShapeCounts);
+  if(fNormalizationMethod == kBinWidth){
+    jetShapeHistogram->Scale(1.0,"width");
+  } else if (fNormalizationMethod == kBinArea){
+    jetShapeHistogram->Divide(fhJetShapeCounts);
+  }
   
   // Return the calculated jet shape histogram
   return jetShapeHistogram;
@@ -500,4 +504,11 @@ void DijetMethods::SetRebinBoundaries(const int nRebinDeltaEta, double *deltaEta
   SetBinBoundaries(nRebinDeltaEta,deltaEtaBorders,fnRebinDeltaEta,&fRebinDeltaEta);
   if(fRebinDeltaPhi) delete [] fRebinDeltaPhi;  // Delete the memory allocation before allocating new memory
   SetBinBoundaries(nRebinDeltaPhi,deltaPhiBorders,fnRebinDeltaPhi,&fRebinDeltaPhi);
+}
+
+// Setter for jet shape normalization method
+void DijetMethods::SetJetShapeNormalization(const int normalizationType){
+  if(normalizationType < 0) fNormalizationMethod = kBinWidth;
+  else if(normalizationType >= knJetShapeNormalizations) fNormalizationMethod = kBinArea;
+  else fNormalizationMethod = normalizationType;
 }
