@@ -739,7 +739,7 @@ void DijetDrawer::DrawJetShapeHistograms(){
   TString compactTrackPtString;
   char namerX[100];
   char namerY[100];
-  
+    
   // Loop over different types of jet shape histograms
   for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
     if(!fDrawJetShape[iJetShape]) continue;  // Only draw selected types of jet shape histograms
@@ -891,8 +891,11 @@ void DijetDrawer::SubtractBackgroundAndCalculateJetShape(){
         // Get also the background for QA purposes
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
         
+        // Rebin the background subtracted histogram to calculate jet shape
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kRebinned][iCentralityBin][iTrackPtBin] = fMethods->RebinHistogram(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]);
+        
         // Calculate the jet shape from the background subtracted histogram
-        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShape(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]);
+        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShape(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kRebinned][iCentralityBin][iTrackPtBin]);
         
         // Get the number of two-dimensional histogram bins used for each deltaR bin in the jet shape histogram
         fhJetShape[kJetShapeBinCount][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShapeCounts();
@@ -1498,12 +1501,19 @@ void DijetDrawer::SetDrawJetTrackDeltaEtaDeltaPhi(const bool drawOrNot){
   fDrawJetTrackDeltaEtaDeltaPhi = drawOrNot;
 }
 
+// Setter for drawing rebinned deltaPhi-deltaEta histograms
+void DijetDrawer::SetDrawJetTrackDeltaEtaDeltaPhiRebinned(const bool drawOrNot){
+  fDrawCorrelationType[kRebinned] = drawOrNot;
+}
+
 // Setter for drawing all the jet-track deltaEta/Phi correlations
-void DijetDrawer::SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi){
+void DijetDrawer::SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi, const bool rebinned){
   SetDrawJetTrackDeltaPhi(deltaPhi);
   SetDrawJetTrackDeltaEta(deltaEta);
   SetDrawJetTrackDeltaEtaDeltaPhi(deltaEtaDeltaPhi);
+  SetDrawJetTrackDeltaEtaDeltaPhiRebinned(rebinned);
 }
+
 
 // Setter for drawing jet shapes
 void DijetDrawer::SetDrawJetShape(const bool drawOrNot){

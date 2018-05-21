@@ -14,6 +14,7 @@
 #include <TH2.h>
 #include <TF1.h>
 #include <TMath.h>
+#include <TAxis.h>
 
 class DijetMethods{
   
@@ -27,6 +28,7 @@ public:
   TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram); // Mixed event correction for a two-dimensional histogram
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground); // Subtract background from a two-dimensional leading histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
+  TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   
   // Getters for produces distributions
   TH2D* GetBackground() const;      // Getter for the most recent background distribution used to subtract the background
@@ -41,6 +43,9 @@ public:
   
   // Setters for jet shape calculation configuration
   void SetJetShapeBinEdges(const int nBins, double *binBorders); // Setter for R-binning for jet shape histograms
+  
+  // Setter for two-dimensional histogram rebinning information
+  void SetRebinBoundaries(const int nRebinDeltaEta, double *deltaEtaBorders, const int nRebinDeltaPhi, double *deltaPhiBorders); // Setter for deltaEta and deltaPhi rebin borders
   
 private:
   
@@ -67,9 +72,19 @@ private:
   int fnRBins;    // Number of R-bins for jet shape histograms
   double *fRBins; // R-bin boundaries for jet shape histograms
   
+  // ==============================================
+  // ==== Rebinning two-dimensional histograms ====
+  // ==============================================
+  int fnRebinDeltaEta;    // Number of new deltaEta bins
+  double* fRebinDeltaEta; // Bin boundaries for the new deltaEta bins
+  int fnRebinDeltaPhi;    // Number of new deltaPhi bins
+  double* fRebinDeltaPhi; // Bin boundaries for the new deltaPhi bins
+  
   // Private methods
   double GetMixedEventScale(TH2D* mixedEventHistogram); // Find the normalization scale for the mixed event histogram
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+  void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
+  bool CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis); // Checker that new bin boundaries correspond to old ones
   
 };
 

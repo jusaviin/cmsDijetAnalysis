@@ -12,12 +12,16 @@ DijetMethods::DijetMethods() :
   fMixedEventFitRegion(0.2),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
-  fnRBins(0)
+  fnRBins(0),
+  fnRebinDeltaEta(0),
+  fnRebinDeltaPhi(0)
 {
   // Constructor
   fBackgroundDistribution = NULL;
   fhJetShapeCounts = NULL;
   fRBins = nullptr;
+  fRebinDeltaEta = nullptr;
+  fRebinDeltaPhi = nullptr;
 }
 
 /*
@@ -330,6 +334,117 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
   
 }
 
+/*
+ * Rebin a two-dimensional deltaPhi-deltaEta histogram
+ *
+ *  Arguments:
+ *   TH2D *histogramInNeedOfRebinning = DeltaPhi-deltaEta histogram to be rebinned
+ *
+ *   return: Rebinned histogram
+ */
+TH2D* DijetMethods::RebinHistogram(TH2D *histogramInNeedOfRebinning){
+  
+  // First, check that the new bin boundaries are also bin boundaries in the original histogram
+  bool binsGood = CheckBinBoundaries(fnRebinDeltaPhi,fRebinDeltaPhi,histogramInNeedOfRebinning->GetXaxis());
+  if(!binsGood){
+    std::cout << "Cannot rebin histogram " << histogramInNeedOfRebinning->GetName() << " because of a bin edge problem in deltaPhi axis!" << std::endl;
+    return histogramInNeedOfRebinning;
+  }
+  
+  binsGood = CheckBinBoundaries(fnRebinDeltaEta,fRebinDeltaEta,histogramInNeedOfRebinning->GetYaxis());
+  if(!binsGood){
+    std::cout << "Cannot rebin histogram " << histogramInNeedOfRebinning->GetName() << " because of a bin edge problem in deltaEta axis!" << std::endl;
+    return histogramInNeedOfRebinning;
+  }
+  
+  // Root does not offer a method to directly rebin a two-dimensional histogram, so I have implemented my own
+  // Helper variables for rebinning
+  double currentBinContent;
+  double currentBinError;
+  double nonRebinnedContent;
+  double nonRebinnedError;
+  int newHistogramIndex;
+  double deltaPhiValue;
+  double deltaEtaValue;
+  
+  // Create the histogram with new binning
+  char newName[200];
+  sprintf(newName,"%sRebinned",histogramInNeedOfRebinning->GetName());
+  TH2D *rebinnedHistogram = new TH2D(newName,newName,fnRebinDeltaPhi,fRebinDeltaPhi,fnRebinDeltaEta,fRebinDeltaEta);
+  
+  // Loop over all the bins in the old histogram and insert the content to the new histogram
+  for(int iDeltaPhi = 1; iDeltaPhi <= histogramInNeedOfRebinning->GetNbinsX(); iDeltaPhi++){
+    deltaPhiValue = histogramInNeedOfRebinning->GetXaxis()->GetBinCenter(iDeltaPhi);
+    for(int iDeltaEta = 1; iDeltaEta <= histogramInNeedOfRebinning->GetNbinsY(); iDeltaEta++){
+      deltaEtaValue = histogramInNeedOfRebinning->GetYaxis()->GetBinCenter(iDeltaEta);
+      
+      // Find the global bin index from the new histogram correcponding to the bin in the old histogram
+      newHistogramIndex = rebinnedHistogram->FindBin(deltaPhiValue,deltaEtaValue);
+      
+      // Add the bin content from the old histogram to the new histogram, adding errors in quadrature
+      nonRebinnedContent = histogramInNeedOfRebinning->GetBinContent(iDeltaPhi,iDeltaEta);
+      nonRebinnedError = histogramInNeedOfRebinning->GetBinError(iDeltaPhi,iDeltaEta);  
+      currentBinContent = rebinnedHistogram->GetBinContent(newHistogramIndex);
+      currentBinError = rebinnedHistogram->GetBinError(newHistogramIndex);
+      rebinnedHistogram->SetBinContent(newHistogramIndex,currentBinContent+nonRebinnedContent);
+      rebinnedHistogram->SetBinError(newHistogramIndex,TMath::Sqrt(TMath::Power(currentBinError,2)+TMath::Power(nonRebinnedError,2)));
+    } // DeltaEta loop
+  } // DeltaPhi loop
+  
+  // After rebinning, we need to do bin area normalization for each bin
+  double binWidthDeltaPhi;
+  double binWidthDeltaEta;
+  for(int iDeltaPhi = 1; iDeltaPhi <= rebinnedHistogram->GetNbinsX(); iDeltaPhi++){
+    binWidthDeltaPhi = rebinnedHistogram->GetXaxis()->GetBinWidth(iDeltaPhi);
+    for(int iDeltaEta = 1; iDeltaEta <= rebinnedHistogram->GetNbinsY(); iDeltaEta++){
+      binWidthDeltaEta = rebinnedHistogram->GetYaxis()->GetBinWidth(iDeltaEta);
+      currentBinContent = rebinnedHistogram->GetBinContent(iDeltaPhi,iDeltaEta);
+      currentBinError = rebinnedHistogram->GetBinError(iDeltaPhi,iDeltaEta);
+      rebinnedHistogram->SetBinContent(iDeltaPhi,iDeltaEta,currentBinContent/(binWidthDeltaEta*binWidthDeltaPhi));  // TODO: If already normalized by bin area, need to
+      rebinnedHistogram->SetBinError(iDeltaPhi,iDeltaEta,currentBinError/(binWidthDeltaEta*binWidthDeltaPhi));      // undo that here before renormalizing
+    }
+  }
+  
+  return rebinnedHistogram;
+}
+
+/*
+ * Checker that new bin boundaries correspond to old ones
+ *
+ *  Arguments:
+ *   const int nCheckedBins = Number of new bins to be checked
+ *   const double *checkedBins = Bin boundaries to be checked
+ *   TAxis *originalAxis = Original axis against with the new bins are checked
+ *
+ *   return: True, if all the new bin boundaries can be found from the original axis. False if not.
+ */
+bool DijetMethods::CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis){
+  
+  // Flag, if the current bin is a bin boundary in the histogram to be rebinned
+  bool binOK = false;
+  
+  // First, check that the bin boundaries for the rebinned histogram match with the old bin boundaries
+  for(int iCheckedBin = 0; iCheckedBin < nCheckedBins + 1; iCheckedBin++){
+    binOK = false;
+    for(int iOldBin = 1; iOldBin <= originalAxis->GetNbins()+1; iOldBin++){
+      
+      // We the bin edge is close enough to one original bin, accept the bin
+      if(TMath::Abs(originalAxis->GetBinLowEdge(iOldBin)-checkedBins[iCheckedBin]) < 1e-4){
+        binOK = true;
+        break;
+      }
+      
+    } // Loop over bins in the original axis
+    if(!binOK){ // If the bin is not in original histogram, print error message and return false
+      std::cout << "The bin boundary " << checkedBins[iCheckedBin] << " is not a bin boundary in the original histogram!" << std::endl;
+      return false;
+    }
+  } // Loop over bins to be checked
+  
+  // If all is good, return true
+  return true;
+}
+
 // Getter for most recent two-dimensional jet shape count histogram
 TH2D* DijetMethods::GetJetShapeBinMap() const{
   return fhJetShapeBinMap;
@@ -362,16 +477,27 @@ void DijetMethods::SetBackgroundDeltaEtaRegion(const double minDeltaEta, const d
   }
 }
 
-// Setter for R-binning for jet shape histograms
-void DijetMethods::SetJetShapeBinEdges(const int nBins, double *binBorders){
-  
-  // Remove old memory allocation before allocating new memory
-  if(fRBins) delete [] fRBins;
+// Setter for new bin borders
+void DijetMethods::SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]){
   
   // Copy the number of bins and bin contents
-  fnRBins = nBins;
-  fRBins = new double[nBins+1];
+  copyNbins = nBins;
+  *copyBinBorders = new double[nBins+1];
   for(int iBin = 0; iBin < nBins+1; iBin++){
-    fRBins[iBin] = binBorders[iBin];
+    (*copyBinBorders)[iBin] = binBorders[iBin];
   }
+}
+
+// Setter for R-binning for jet shape histograms
+void DijetMethods::SetJetShapeBinEdges(const int nBins, double *binBorders){
+  if(fRBins) delete [] fRBins;  // Delete the memory allocation before allocating new memory
+  SetBinBoundaries(nBins,binBorders,fnRBins,&fRBins);
+}
+
+// Setter for two-dimensional histogram rebinning information
+void DijetMethods::SetRebinBoundaries(const int nRebinDeltaEta, double *deltaEtaBorders, const int nRebinDeltaPhi, double *deltaPhiBorders){
+  if(fRebinDeltaEta) delete [] fRebinDeltaEta;  // Delete the memory allocation before allocating new memory
+  SetBinBoundaries(nRebinDeltaEta,deltaEtaBorders,fnRebinDeltaEta,&fRebinDeltaEta);
+  if(fRebinDeltaPhi) delete [] fRebinDeltaPhi;  // Delete the memory allocation before allocating new memory
+  SetBinBoundaries(nRebinDeltaPhi,deltaPhiBorders,fnRebinDeltaPhi,&fRebinDeltaPhi);
 }
