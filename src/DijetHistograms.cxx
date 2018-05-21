@@ -187,14 +187,14 @@ void DijetHistograms::CreateHistograms(){
   const Int_t nDeltaPhiBins = 31;             // Number of deltaPhi bins
   
   // DeltaPhi in [-pi/2,3pi/2]
-  const Double_t minDeltaPhiTrack = -TMath::Pi()/2.0;    // Minimum deltaPhi for two dimensional plots
-  const Double_t maxDeltaPhiTrack = 3.0*TMath::Pi()/2.0; // Maximum deltaPhi for two dimensional plots
-  const Int_t nDeltaPhiBinsTrack = 62;                   // Number of deltaPhi bins for two dimensional plots
+  const Double_t minDeltaPhiJetTrack = -TMath::Pi()/2.0;    // Minimum deltaPhi for jet-track correlations
+  const Double_t maxDeltaPhiJetTrack = 3.0*TMath::Pi()/2.0; // Maximum deltaPhi for jet-track correlations
+  const Int_t nDeltaPhiBinsJetTrack = 310;                  // Number of deltaPhi bins for jet-track correlations
   
   // DeltaEta
-  const Double_t minDeltaEta = -5.0;   // Minimum deltaEta
-  const Double_t maxDeltaEta = 5.0;    // Maximum deltaEta
-  const Int_t nDeltaEtaBins = 100;     // Number of deltaEta bins
+  const Double_t minDeltaEtaJetTrack = -5.0;   // Minimum deltaEta for jet-track correlations
+  const Double_t maxDeltaEtaJetTrack = 5.0;    // Maximum deltaEta for jet-track correlations
+  const Int_t nDeltaEtaBinsJetTrack = 500;     // Number of deltaEta bins for jet-track correlations
   
   // Dijet asymmetry
   const Double_t minAsymmetry = 0;     // Minimum asymmetry
@@ -393,14 +393,14 @@ void DijetHistograms::CreateHistograms(){
   highBinBorder6D[0] = maxPtTrack;   // high bin border for track pT
   
   // Axis 1 for the track-jet correlation histogram: deltaPhi between track and jet
-  nBins6D[1] = nDeltaPhiBinsTrack;       // nBins for deltaPhi between track and jet
-  lowBinBorder6D[1] = minDeltaPhiTrack;  // low bin border for deltaPhi between track and jet
-  highBinBorder6D[1] = maxDeltaPhiTrack; // high bin border for deltaPhi between track and jet
+  nBins6D[1] = nDeltaPhiBinsJetTrack;       // nBins for deltaPhi between track and jet
+  lowBinBorder6D[1] = minDeltaPhiJetTrack;  // low bin border for deltaPhi between track and jet
+  highBinBorder6D[1] = maxDeltaPhiJetTrack; // high bin border for deltaPhi between track and jet
   
   // Axis 2 for the track-jet correlation histogram: deltaEta between track and jet
-  nBins6D[2] = nDeltaEtaBins;         // nBins for deltaEta between track and jet
-  lowBinBorder6D[2] = minDeltaEta;    // low bin border deltaEta between track and jet
-  highBinBorder6D[2] = maxDeltaEta;   // high bin border deltaEta between track and jet
+  nBins6D[2] = nDeltaEtaBinsJetTrack;         // nBins for deltaEta between track and jet
+  lowBinBorder6D[2] = minDeltaEtaJetTrack;    // low bin border deltaEta between track and jet
+  highBinBorder6D[2] = maxDeltaEtaJetTrack;   // high bin border deltaEta between track and jet
   
   // Axis 3 for the track-jet correlation histogram: dijet asymmetry
   nBins6D[3] = nAsymmetryBins;         // nBins for dijet asymmetry
