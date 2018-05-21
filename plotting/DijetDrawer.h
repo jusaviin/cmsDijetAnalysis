@@ -25,7 +25,7 @@ private:
   static const int knTrackPtBins = 6;      // Number of track pT bins
   
   // Indices for different correlation types
-  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,kRebinned,kJetShapeBinMap,knCorrelationTypes};
+  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,kJetShapeBinMap,knCorrelationTypes};
   
   // Indices for different jet-track correlation categories
   enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, knJetTrackCorrelations};
@@ -43,8 +43,8 @@ private:
   enum enumJetShape{kJetShape, kJetShapeBinCount, knJetShapeTypes};
   
   // Naming for different correlation types
-  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background","Rebinned","Jet Shape Bin Map"};
-  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_BackgroundSubtracted","_Background","_Rebinned","_JetShapeBinMap"};
+  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background","Jet Shape Bin Map"};
+  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_BackgroundSubtracted","_Background","_JetShapeBinMap"};
   
   // Naming for jet-track correlation histograms
   const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted"}; // Names that different histograms have in the input file
@@ -107,8 +107,7 @@ public:
   void SetDrawJetTrackDeltaPhi(const bool drawOrNot);                 // Setter for drawing jet-track deltaPhi correlations
   void SetDrawJetTrackDeltaEta(const bool drawOrNot);                 // Setter for drawing jet-track deltaEta correlations
   void SetDrawJetTrackDeltaEtaDeltaPhi(const bool drawOrNot);         // Setter for drawing jet-track deltaEta-deltaPhi correlations
-  void SetDrawJetTrackDeltaEtaDeltaPhiRebinned(const bool drawOrNot); // Setter for drawing rebinned deltaPhi-deltaEta histograms
-  void SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi, const bool rebinned); // Setter for drawing all the jet-track deltaEta/Phi correlations
+  void SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi); // Setter for drawing all the jet-track deltaEta/Phi correlations
   void SetDrawJetShape(const bool drawOrNot);                         // Setter for drawing jet shapes
   void SetDrawJetShapeCounts(const bool drawOrNot);                   // Setter for drawing jet shape counts
   void SetDrawAllJetShapes(const bool jetShape, const bool counts);   // Setter for drawing all different jet shape histograms

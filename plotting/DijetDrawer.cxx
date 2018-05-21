@@ -891,11 +891,8 @@ void DijetDrawer::SubtractBackgroundAndCalculateJetShape(){
         // Get also the background for QA purposes
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
         
-        // Rebin the background subtracted histogram to calculate jet shape
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kRebinned][iCentralityBin][iTrackPtBin] = fMethods->RebinHistogram(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]);
-        
         // Calculate the jet shape from the background subtracted histogram
-        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShape(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kRebinned][iCentralityBin][iTrackPtBin]);
+        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShape(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]);
         
         // Get the number of two-dimensional histogram bins used for each deltaR bin in the jet shape histogram
         fhJetShape[kJetShapeBinCount][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShapeCounts();
@@ -1501,17 +1498,11 @@ void DijetDrawer::SetDrawJetTrackDeltaEtaDeltaPhi(const bool drawOrNot){
   fDrawJetTrackDeltaEtaDeltaPhi = drawOrNot;
 }
 
-// Setter for drawing rebinned deltaPhi-deltaEta histograms
-void DijetDrawer::SetDrawJetTrackDeltaEtaDeltaPhiRebinned(const bool drawOrNot){
-  fDrawCorrelationType[kRebinned] = drawOrNot;
-}
-
 // Setter for drawing all the jet-track deltaEta/Phi correlations
-void DijetDrawer::SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi, const bool rebinned){
+void DijetDrawer::SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi){
   SetDrawJetTrackDeltaPhi(deltaPhi);
   SetDrawJetTrackDeltaEta(deltaEta);
   SetDrawJetTrackDeltaEtaDeltaPhi(deltaEtaDeltaPhi);
-  SetDrawJetTrackDeltaEtaDeltaPhiRebinned(rebinned);
 }
 
 
