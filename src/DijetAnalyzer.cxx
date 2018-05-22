@@ -35,7 +35,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fCalorimeterSignalLimitPt(0),
   fHighPtEtFraction(0),
   fChi2QualityCut(0),
-  fMinimumTrackHits(0)
+  fMinimumTrackHits(0),
+  fFilledHistograms(kFillAll)
 {
   // Default constructor
   fHistograms = new DijetHistograms();
@@ -65,7 +66,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fCalorimeterSignalLimitPt(0),
   fHighPtEtFraction(0),
   fChi2QualityCut(0),
-  fMinimumTrackHits(0)
+  fMinimumTrackHits(0),
+  fFilledHistograms(kFillAll)
 {
   // Custom constructor
   fHistograms = new DijetHistograms(fCard);
@@ -84,6 +86,19 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   }
   
   fJffCorrection = new JffCorrection(ppData);
+  
+  // Read which histograms to fill this run
+  fFilledHistograms = fCard->Get("FilledHistograms");
+  if(fFilledHistograms < 0) {
+    cout << "WARNING: Negative value given for FilledHistograms in ConfigurationCard!" << endl;
+    cout << "Filling all histograms" << endl;
+    fFilledHistograms = kFillAll;
+  }
+  if(fFilledHistograms >= knFillModes){
+    cout << "WARNING: Integer larger than " << knFillModes-1 << " given for FilledHistograms in ConfigurationCard!" << endl;
+    cout << "Please give smaller positive integer. Will fill all histograms now" << endl;
+    fFilledHistograms = kFillAll;
+  }
 }
 
 /*
@@ -244,6 +259,9 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t centrality = 0;      // Event centrality
   Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
   
+  // Selecting which histogram to fill
+  Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack);
+  
   // Event mixing information
   Bool_t mixEvents = (fCard->Get("DoEventMixing") == 1);           // Do or do not do event mixing
   Int_t nMixedEventsPerDijet = fCard->Get("NMixedEventsPerDijet"); // Number of events mixed with each dijet event
@@ -371,48 +389,49 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Read the event to memory
       treeReader->GetEvent(iEvent);
-      
+
       // Get vz and centrality information from all events
       vz = treeReader->GetVz();
       centrality = treeReader->GetCentrality();
       hiBin = treeReader->GetHiBin();
-      fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
-      fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
-      fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
-      
+      if(fillMainLoopHistograms){
+        fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
+        fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
+        fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
+      }
       //  ===== Apply all the event quality cuts =====
       
       // Cut for primary vertex. Only applied for data.
       if(treeReader->GetPrimaryVertexFilterBit() == 0) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
       
       // Cut for HB/HE noise. Only applied for data.
       if(treeReader->GetHBHENoiseFilterBit() == 0) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
       
       // Cut for collision event selection. Only applied for PbPb data.
       if(treeReader->GetCollisionEventSelectionFilterBit() == 0) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
       
       // Cut for beam scraping. Only applied for pp data.
       if(treeReader->GetBeamScrapingFilterBit() == 0) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
       
       // Cut for energy deposition in at least 3 hadronic forward towers. Only applied for PbPb data.
       if(treeReader->GetHfCoincidenceFilterBit() == 0) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
       
       // Cut for cluster compatibility. Only applied for PbPb data.
       if(treeReader->GetClusterCompatibilityFilterBit() == 0) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
       
       // Cut for calirimeter jet quality. Only applied for data.
       if(treeReader->GetCaloJetFilterBit() == 0) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
       
       // Cut for vertex z-position
       if(TMath::Abs(vz) > fVzCut) continue;
-      fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);
+      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);
       
       // ===== Event quality cuts applied =====
       
@@ -433,18 +452,21 @@ void DijetAnalyzer::RunAnalysis(){
         if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
-        // Fill the histogram for all jets within eta range
-        if(TMath::Abs(jetEta) < fJetEtaCut){
+        // Only fill the any jet histogram if selected
+        if(fillMainLoopHistograms){
+          // Fill the histogram for all jets within eta range
+          if(TMath::Abs(jetEta) < fJetEtaCut){
           
-          // Fill the axes in correct order
-          nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);       // Apply JFF correction for jet pT
-          fillerJet[0] = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);  // Axis 0 = any jet pT
-          fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
-          fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
-          fillerJet[3] = centrality;              // Axis 3 = centrality
-          fHistograms->fhAnyJet->Fill(fillerJet); // Fill the data point to histogram
-          
-        }
+            // Fill the axes in correct order
+            nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);       // Apply JFF correction for jet pT
+            fillerJet[0] = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);  // Axis 0 = any jet pT
+            fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
+            fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
+            fillerJet[3] = centrality;              // Axis 3 = centrality
+            fHistograms->fhAnyJet->Fill(fillerJet); // Fill the data point to histogram
+        
+          } // Eta cut
+        } // Check if we want to fill any jet histograms
         
         if(jetPt > leadingJetPt){
           leadingJetPt = jetPt;
@@ -512,35 +534,40 @@ void DijetAnalyzer::RunAnalysis(){
       
       // If a dijet is found, fill some information to fHistograms
       if(dijetFound){
-        fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
-        fHistograms->fhCentralityDijet->Fill(centrality);
         
-        // Calculate the asymmetry
-        dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
-        
-        // Fill the leading jet histogram
-        fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
-        fillerDijet[1] = leadingJetPhi;                  // Axis 1: Leading jet phi
-        fillerDijet[2] = leadingJetEta;                  // Axis 2: Leading jet eta
-        fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
-        fillerDijet[4] = centrality;                     // Axis 4: Centrality
-        fHistograms->fhLeadingJet->Fill(fillerDijet);    // Fill the data point to leading jet histogram
-        
-        // Fill the subleading jet histogram
-        fillerDijet[0] = subleadingJetPt;                // Axis 0: Subleading jet pT
-        fillerDijet[1] = subleadingJetPhi;               // Axis 1: Subleading jet phi
-        fillerDijet[2] = subleadingJetEta;               // Axis 2: Subleading jet eta
-        fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
-        fillerDijet[4] = centrality;                     // Axis 4: Centrality
-        fHistograms->fhSubleadingJet->Fill(fillerDijet); // Fill the data point to subleading jet histogram
-
-        // Fill the dijet histogram
-        fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
-        fillerDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
-        fillerDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
-        fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
-        fillerDijet[4] = centrality;                     // Axis 4: Centrality
-        fHistograms->fhDijet->Fill(fillerDijet);         // Fill the data point to dijet histogram
+        // Only fill the dijet histograms if selected
+        if(fillMainLoopHistograms){
+          fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
+          fHistograms->fhCentralityDijet->Fill(centrality);
+          
+          // Calculate the asymmetry
+          dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
+          
+          // Fill the leading jet histogram
+          fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
+          fillerDijet[1] = leadingJetPhi;                  // Axis 1: Leading jet phi
+          fillerDijet[2] = leadingJetEta;                  // Axis 2: Leading jet eta
+          fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
+          fillerDijet[4] = centrality;                     // Axis 4: Centrality
+          fHistograms->fhLeadingJet->Fill(fillerDijet);    // Fill the data point to leading jet histogram
+          
+          // Fill the subleading jet histogram
+          fillerDijet[0] = subleadingJetPt;                // Axis 0: Subleading jet pT
+          fillerDijet[1] = subleadingJetPhi;               // Axis 1: Subleading jet phi
+          fillerDijet[2] = subleadingJetEta;               // Axis 2: Subleading jet eta
+          fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
+          fillerDijet[4] = centrality;                     // Axis 4: Centrality
+          fHistograms->fhSubleadingJet->Fill(fillerDijet); // Fill the data point to subleading jet histogram
+          
+          // Fill the dijet histogram
+          fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
+          fillerDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
+          fillerDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
+          fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
+          fillerDijet[4] = centrality;                     // Axis 4: Centrality
+          fHistograms->fhDijet->Fill(fillerDijet);         // Fill the data point to dijet histogram
+          
+        }
         
         // Fill the arrays with leading and subleading jet information for correlation with tracks
         leadingJetInfo[0] = leadingJetPt;
@@ -627,7 +654,7 @@ void DijetAnalyzer::RunAnalysis(){
       } // Dijet in event
       
     } // Event loop
-    
+
     // Close the input files after the event has been read
     inputFile->Close();
     mixedEventFile->Close();
@@ -637,6 +664,7 @@ void DijetAnalyzer::RunAnalysis(){
   // When we are done, delete ForestReaders
   delete treeReader;
   delete mixedEventReader;
+  delete mixedEventRandomizer;
 }
 
 /*
@@ -652,6 +680,10 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
   // Define a filler for THnSparses
   Double_t fillerJetTrack[6];
   Double_t fillerTrack[5];
+  
+  // Select which histograms to fill
+  Bool_t fillTrackHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack);
+  Bool_t fillJetTrackCorrelationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack);
   
   // Event information
   Int_t hiBin = treeReader->GetHiBin();
@@ -692,38 +724,38 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
     //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
     
     // Only fill the track cut histograms for same event data
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kAllTracks);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kAllTracks);
     
     // Cut for track pT
     if(trackPt <= fTrackMinPtCut) continue;                     // Minimum pT cut
     if(trackPt >= fJetMaximumPtCut) continue;                   // Maximum pT cut (same as for leading jets)
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtCuts);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtCuts);
     
     // Cut for track eta
     if(TMath::Abs(trackEta) >= fTrackEtaCut) continue;          // Eta cut
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kEtaCut);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kEtaCut);
     
     // Cut for high purity
     if(!treeReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kHighPurity);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kHighPurity);
     
     // Cut for relative error for track pT
     if(treeReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtError);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtError);
     
     // Cut for track distance from primary vertex
     if(treeReader->GetTrackVertexDistanceZ(iTrack)/treeReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
     if(treeReader->GetTrackVertexDistanceXY(iTrack)/treeReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kVertexDistance);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kVertexDistance);
     
     // Cut for energy deposition in calorimeters for high pT tracks
     if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) continue;  // For high pT tracks, require signal also in calorimeters
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kCaloSignal);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kCaloSignal);
     
     // Cuts for track reconstruction quality
     if(treeReader->GetTrackChi2(iTrack)/(1.0*treeReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*treeReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
     if(treeReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
-    if(correlationType == DijetHistograms::kSameEvent) fHistograms->fhTrackCuts->Fill(DijetHistograms::kReconstructionQuality);
+    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kReconstructionQuality);
     
     //     ==== Track cuts done ====
     
@@ -759,36 +791,42 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
     while(deltaPhiTrackLeadingJet < (-0.5*TMath::Pi())){deltaPhiTrackLeadingJet += 2*TMath::Pi();}
     while(deltaPhiTrackSubleadingJet < (-0.5*TMath::Pi())){deltaPhiTrackSubleadingJet += 2*TMath::Pi();}
     
-    // Fill track histograms
-    fillerTrack[0] = trackPt;                    // Axis 0: Track pT
-    fillerTrack[1] = trackPhi;                   // Axis 1: Track phi
-    fillerTrack[2] = trackEta;                   // Axis 2: Track eta
-    fillerTrack[3] = centrality;                 // Axis 3: Centrality
-    fillerTrack[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
-    fHistograms->fhTrack->Fill(fillerTrack,trackEfficiencyCorrection);  // Fill the track histogram
-    fHistograms->fhTrackUncorrected->Fill(fillerTrack);                 // Fill the uncorrected track histogram
+    // Fill track histograms if selected to do so
+    if(fillTrackHistograms){
+      fillerTrack[0] = trackPt;                    // Axis 0: Track pT
+      fillerTrack[1] = trackPhi;                   // Axis 1: Track phi
+      fillerTrack[2] = trackEta;                   // Axis 2: Track eta
+      fillerTrack[3] = centrality;                 // Axis 3: Centrality
+      fillerTrack[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
+      fHistograms->fhTrack->Fill(fillerTrack,trackEfficiencyCorrection);  // Fill the track histogram
+      fHistograms->fhTrackUncorrected->Fill(fillerTrack);                 // Fill the uncorrected track histogram
+    }
     
-    // Fill the track-leading jet correlation histograms
-    fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
-    fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
-    fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
-    fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
-    fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
-    fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-    fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection); // Fill the track-leading jet correlation histogram
-    fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack);                // Fill the uncorrected track-leading jet correlation histogram
-    fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-leading jet correlation histogram
-    
-    // Fill the track-subleading jet correlation histograms
-    fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
-    fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
-    fillerJetTrack[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
-    fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
-    fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
-    fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-    fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection); // Fill the track-subleading jet correlation histogram
-    fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack);                // Fill the uncorrected track-subleading jet correlation histogram
-    fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-subleading jet correlation histogram
+    // Fill all the jet-track correlation histograms if selected
+    if(fillJetTrackCorrelationHistograms){
+      
+      // Fill the track-leading jet correlation histograms
+      fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
+      fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
+      fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
+      fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+      fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
+      fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection); // Fill the track-leading jet correlation histogram
+      fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack);                // Fill the uncorrected track-leading jet correlation histogram
+      fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-leading jet correlation histogram
+      
+      // Fill the track-subleading jet correlation histograms
+      fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
+      fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
+      fillerJetTrack[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
+      fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+      fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
+      fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection); // Fill the track-subleading jet correlation histogram
+      fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack);                // Fill the uncorrected track-subleading jet correlation histogram
+      fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-subleading jet correlation histogram
+    }
     
   } // Loop over tracks
 }

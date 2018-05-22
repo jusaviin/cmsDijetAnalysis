@@ -175,5 +175,10 @@ int main(int argc, char **argv) {
   dijetCard->WriteCard(outputFile);
   outputFile->Close();
   
+  // After writing to the file, delete all created objects
+  delete dijetCard;
+  delete jetAnalysis;
+  delete outputFile;
+  
 }
 

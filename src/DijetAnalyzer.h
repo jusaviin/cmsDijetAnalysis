@@ -19,6 +19,10 @@
 
 class DijetAnalyzer{
   
+private:
+  
+  enum enumFilledHistograms{kFillAll,kFillAllButJetTrack,kFillJetTrack,knFillModes}; // Which kinds of histograms are filled
+  
 public:
   
   // Constructors and destructor
@@ -63,6 +67,9 @@ private:
   Double_t fHighPtEtFraction;          // For high pT tracks, minimum required Et as a fraction of track pT
   Double_t fChi2QualityCut;            // Quality cut for track reconstruction
   Double_t fMinimumTrackHits;          // Quality cut for track hits
+  
+  // Which histograms are filled. Do not fill all in order to save memory and not to crash jobs.
+  Int_t fFilledHistograms;             // Select which histograms are filled. See enumeration enumFilledHistograms
 
 };
 

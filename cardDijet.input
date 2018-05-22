@@ -3,6 +3,9 @@
 # Data type for the analysis
 DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
+# Select which histograms to save. Needed for memory issues.
+FilledHistograms 2 # 0 = All, 1 = All but jet-track correlation, 2 = Jet-track correlation
+
 # Cuts for dijets
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events

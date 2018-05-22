@@ -189,12 +189,12 @@ void DijetHistograms::CreateHistograms(){
   // DeltaPhi in [-pi/2,3pi/2]
   const Double_t minDeltaPhiJetTrack = -TMath::Pi()/2.0;    // Minimum deltaPhi for jet-track correlations
   const Double_t maxDeltaPhiJetTrack = 3.0*TMath::Pi()/2.0; // Maximum deltaPhi for jet-track correlations
-  const Int_t nDeltaPhiBinsJetTrack = 310;                  // Number of deltaPhi bins for jet-track correlations
+  const Int_t nDeltaPhiBinsJetTrack = 200;                  // Number of deltaPhi bins for jet-track correlations (match the common number in UIC group)
   
   // DeltaEta
   const Double_t minDeltaEtaJetTrack = -5.0;   // Minimum deltaEta for jet-track correlations
   const Double_t maxDeltaEtaJetTrack = 5.0;    // Maximum deltaEta for jet-track correlations
-  const Int_t nDeltaEtaBinsJetTrack = 500;     // Number of deltaEta bins for jet-track correlations
+  const Int_t nDeltaEtaBinsJetTrack = 500;     // Number of deltaEta bins for jet-track correlations (match the common number in UIC group)
   
   // Dijet asymmetry
   const Double_t minAsymmetry = 0;     // Minimum asymmetry
