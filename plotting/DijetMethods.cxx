@@ -10,8 +10,10 @@
  */
 DijetMethods::DijetMethods() :
   fMixedEventFitRegion(0.2),
+  fMixedEventNormalizationMethod(kSingle),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
+  fJetShapeNormalizationMethod(kBinWidth),
   fnRBins(0),
   fnRebinDeltaEta(0),
   fnRebinDeltaPhi(0)
@@ -19,6 +21,7 @@ DijetMethods::DijetMethods() :
   // Constructor
   fBackgroundDistribution = NULL;
   fhJetShapeCounts = NULL;
+  fhJetShapeBinMap = NULL;
   fRBins = nullptr;
   fRebinDeltaEta = nullptr;
   fRebinDeltaPhi = nullptr;
@@ -29,11 +32,18 @@ DijetMethods::DijetMethods() :
  */
 DijetMethods::DijetMethods(const DijetMethods& in) :
   fMixedEventFitRegion(in.fMixedEventFitRegion),
+  fMixedEventNormalizationMethod(in.fMixedEventNormalizationMethod),
   fBackgroundDistribution(in.fBackgroundDistribution),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
-  fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta)
+  fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta),
+  fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
+  fhJetShapeCounts(in.fhJetShapeCounts),
+  fhJetShapeBinMap(in.fhJetShapeBinMap)
 {
   // Copy constructor
+  SetBinBoundaries(in.fnRBins,in.fRBins,fnRBins,&fRBins);
+  SetBinBoundaries(in.fnRebinDeltaPhi,in.fRebinDeltaPhi,fnRebinDeltaPhi,&fRebinDeltaPhi);
+  SetBinBoundaries(in.fnRebinDeltaEta,in.fRebinDeltaEta,fnRebinDeltaEta,&fRebinDeltaEta);
 }
 
 /*
@@ -45,9 +55,17 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   if (&in==this) return *this;
   
   fMixedEventFitRegion = in.fMixedEventFitRegion;
+  fMixedEventNormalizationMethod = in.fMixedEventNormalizationMethod;
   fBackgroundDistribution = in.fBackgroundDistribution;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
   fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
+  fJetShapeNormalizationMethod = in.fJetShapeNormalizationMethod;
+  fhJetShapeCounts = in.fhJetShapeCounts;
+  fhJetShapeBinMap = in.fhJetShapeBinMap;
+  
+  SetBinBoundaries(in.fnRBins,in.fRBins,fnRBins,&fRBins);
+  SetBinBoundaries(in.fnRebinDeltaPhi,in.fRebinDeltaPhi,fnRebinDeltaPhi,&fRebinDeltaPhi);
+  SetBinBoundaries(in.fnRebinDeltaEta,in.fRebinDeltaEta,fnRebinDeltaEta,&fRebinDeltaEta);
   
   return *this;
 }
@@ -59,6 +77,8 @@ DijetMethods::~DijetMethods()
 {
   // Destructor
   if(fRBins) delete [] fRBins;
+  if(fRebinDeltaEta) delete [] fRebinDeltaEta;
+  if(fRebinDeltaPhi) delete [] fRebinDeltaPhi;
 }
 
 /*
@@ -92,13 +112,15 @@ TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMix
   double leadingScale = GetMixedEventScale(leadingMixedEventHistogram);
   double subleadingScale = GetMixedEventScale(subleadingMixedEventHistogram);
   double averageScale = (leadingScale+subleadingScale)/2.0;
+  double normalizationScale = leadingScale;
+  if(fMixedEventNormalizationMethod == kAverage) normalizationScale = averageScale;
   
   // Normalize the mixed event histogram and do the correction
-  leadingMixedEventHistogram->Scale(1.0/averageScale);
+  leadingMixedEventHistogram->Scale(1.0/normalizationScale);
   correctedHistogram->Divide(leadingMixedEventHistogram);
   
   // We need to rescale the mixed event histogram in the end, because it might later be used for another correction
-  leadingMixedEventHistogram->Scale(averageScale);
+  leadingMixedEventHistogram->Scale(normalizationScale);
   
   // Return the corrected histogram
   return correctedHistogram;
@@ -327,9 +349,9 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
   } // deltaPhi loop
   
   // Normalize each bin in the jet shape histogram by the number of bins in two-dimensional histogram corresponding to that bin
-  if(fNormalizationMethod == kBinWidth){
+  if(fJetShapeNormalizationMethod == kBinWidth){
     jetShapeHistogram->Scale(1.0,"width");
-  } else if (fNormalizationMethod == kBinArea){
+  } else if (fJetShapeNormalizationMethod == kBinArea){
     jetShapeHistogram->Divide(fhJetShapeCounts);
   }
   
@@ -506,9 +528,27 @@ void DijetMethods::SetRebinBoundaries(const int nRebinDeltaEta, double *deltaEta
   SetBinBoundaries(nRebinDeltaPhi,deltaPhiBorders,fnRebinDeltaPhi,&fRebinDeltaPhi);
 }
 
+/*
+ * Check the sanity of a given index for normalization methods
+ *
+ *  Arguments:
+ *   const int normalizationType = Index for which the saniry check is made
+ *   maxIndex = First index out of bounds
+ *
+ *   return: 0 for negative input, maxIndex-1 for too large input, just the input for valid input
+ */
+int DijetMethods::CheckNormalizationSanity(const int normalizationType, const int maxIndex){
+  if(normalizationType < 0) return 0;
+  if(normalizationType >= maxIndex) return maxIndex-1;
+  return normalizationType;
+}
+
 // Setter for jet shape normalization method
 void DijetMethods::SetJetShapeNormalization(const int normalizationType){
-  if(normalizationType < 0) fNormalizationMethod = kBinWidth;
-  else if(normalizationType >= knJetShapeNormalizations) fNormalizationMethod = kBinArea;
-  else fNormalizationMethod = normalizationType;
+  fJetShapeNormalizationMethod = CheckNormalizationSanity(normalizationType,knJetShapeNormalizations);
+}
+
+// Setter for mixed event normalization method
+void DijetMethods::SetMixedEventNormalization(const int normalizationType){
+  fMixedEventNormalizationMethod = CheckNormalizationSanity(normalizationType,knMixedEventNormalizations);
 }

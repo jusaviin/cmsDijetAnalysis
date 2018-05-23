@@ -20,7 +20,8 @@ class DijetMethods{
   
 public:
   
-  enum enumJetShapeNormalizatio{kBinWidth,kBinArea,knJetShapeNormalizations};  // Enumeration for used normalization for jet shape
+  enum enumJetShapeNormalization{kBinWidth,kBinArea,knJetShapeNormalizations};   // Enumeration for used normalization for jet shape
+  enum enumMixedEventNormalization{kSingle,kAverage,knMixedEventNormalizations}; // Enumeration for used normalization for mixed events
   
   DijetMethods();   // Constructor
   DijetMethods(const DijetMethods& in); // Copy constructor
@@ -39,6 +40,7 @@ public:
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
+  void SetMixedEventNormalization(const int normalizationType); // Setter for normalization method used for mixed event distributions
   
   // Setters for background subtraction configuration
   void SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta); // Setter for background deltaEta region
@@ -57,6 +59,7 @@ private:
   // =============================================
   
   double fMixedEventFitRegion;  // Region in deltaEta in which a constant fit is done to normalize mixed event distributions
+  int fMixedEventNormalizationMethod; // Normalization method used for mixed event distributions
   
   // =============================================
   // =========== Background subtraction ==========
@@ -70,7 +73,7 @@ private:
   // =========== Jet shape calculation ===========
   // =============================================
   
-  int fNormalizationMethod; // Normalization method used for jet shape distribution, either bin area or bin width
+  int fJetShapeNormalizationMethod; // Normalization method used for jet shape distribution, either bin area or bin width
   TH1D *fhJetShapeCounts;   // How many bins from the two-dimensional histogram correspond to one jet shape bin
   TH2D *fhJetShapeBinMap;   // Information to which jet shape bin each deltaPhi-deltaEta bin is assigned
   int fnRBins;              // Number of R-bins for jet shape histograms
@@ -89,6 +92,7 @@ private:
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
   void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
   bool CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis); // Checker that new bin boundaries correspond to old ones
+  int CheckNormalizationSanity(const int normalizationType, const int maxIndex); // Sanity check for input normalizations
   
 };
 
