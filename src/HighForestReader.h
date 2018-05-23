@@ -31,8 +31,8 @@ public:
   
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
-  
-  void GetEvent(Int_t nEvent);           // Get the nEventh event from the file
+  void BurnForest();                           // Burn the forest  
+  void GetEvent(Int_t nEvent);                 // Get the nEventh event from the file
   
   // Getters for leaves in jet tree
   Float_t GetJetPt(Int_t iJet) const;         // Getter for jet pT
@@ -61,7 +61,7 @@ public:
 private:
   
   // Methods
-  void Initialize();  // Connect the branches to the tree
+  void Initialize();   // Connect the branches to the tree
   
   // Trees in the forest
   TTree *fHeavyIonTree;    // Tree for heavy ion event information

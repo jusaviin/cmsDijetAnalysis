@@ -290,7 +290,20 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzerCS/pfTree");
   }
   
+  
   Initialize();
+}
+
+/*
+ * Burn the current forest.
+ */
+void HighForestReader::BurnForest(){
+  fHeavyIonTree->Delete();
+  fHltTree->Delete();
+  fSkimTree->Delete();
+  fJetTree->Delete();
+  fTrackTree->Delete();
+  fParticleFlowCandidateTree->Delete();
 }
 
 /*
@@ -302,6 +315,7 @@ void HighForestReader::GetEvent(Int_t nEvent){
   fHltTree->GetEntry(nEvent);
   fSkimTree->GetEntry(nEvent);
   fTrackTree->GetEntry(nEvent);
+  fParticleFlowCandidateTree->GetEntry(nEvent);
 }
 
 // Getter for jet pT

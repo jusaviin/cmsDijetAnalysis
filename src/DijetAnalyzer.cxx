@@ -244,13 +244,6 @@ void DijetAnalyzer::RunAnalysis(){
   HighForestReader *treeReader = new HighForestReader(fCard->Get("DataType"));
   ForestReader *mixedEventReader;
   
-  // For PbPb, the Forest in mixing file is in different format as for other datasets
-  if(fCard->Get("DataType") == ForestReader::kPbPb){
-    mixedEventReader = new SkimForestReader(ForestReader::kPbPb);
-  } else {
-    mixedEventReader = new HighForestReader(fCard->Get("DataType"));
-  }
-  
   // Event variables
   Int_t nEvents = 0;            // Number of events
   Bool_t dijetFound = false;    // Is there a dijet in the event?
@@ -314,6 +307,14 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerJet[4];
   Double_t fillerDijet[5];
   
+  // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
+  if(mixEvents){
+    if(fCard->Get("DataType") == ForestReader::kPbPb){
+      mixedEventReader = new SkimForestReader(ForestReader::kPbPb);
+    } else {
+      mixedEventReader = new HighForestReader(fCard->Get("DataType"));
+    }
+  }
   
   // Amount of debugging messages
   Int_t debugLevel = fCard->Get("DebugLevel");
@@ -363,7 +364,7 @@ void DijetAnalyzer::RunAnalysis(){
     if(debugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
     
     // If file is good, read the forest from the file
-    treeReader->ReadForestFromFile(inputFile);  // There seems to be a memory leak here...
+    treeReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
     nEvents = treeReader->GetNEvents();
     
     // Read also the forest for event mixing
@@ -654,7 +655,7 @@ void DijetAnalyzer::RunAnalysis(){
       } // Dijet in event
       
     } // Event loop
-
+        
     // Close the input files after the event has been read
     inputFile->Close();
     mixedEventFile->Close();
@@ -663,7 +664,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // When we are done, delete ForestReaders
   delete treeReader;
-  delete mixedEventReader;
+  if(mixEvents) delete mixedEventReader;
   delete mixedEventRandomizer;
 }
 

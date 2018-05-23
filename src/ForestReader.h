@@ -37,9 +37,10 @@ public:
   ForestReader& operator=(const ForestReader& obj); // Equal sign operator
   
   // Methods
-  virtual void GetEvent(Int_t nEvent) = 0;           // Get the nth event in tree
+  virtual void GetEvent(Int_t nEvent) = 0;                 // Get the nth event in tree
   Int_t GetNEvents() const;                                // Get the number of events
   virtual void ReadForestFromFile(TFile *inputFile) = 0;   // Read the forest from a file
+  virtual void BurnForest() = 0;                           // Burn the forest
   
   // Getters for leaves in heavy ion tree
   Float_t GetVz() const;              // Getter for vertex z position

@@ -226,6 +226,13 @@ void SkimForestReader::ReadForestFromFile(TFile *inputFile){
 }
 
 /*
+ * Burn the current forest.
+ */
+void SkimForestReader::BurnForest(){
+  fEventTree->Delete();
+}
+
+/*
  * Load an event to memory
  */
 void SkimForestReader::GetEvent(Int_t nEvent){
