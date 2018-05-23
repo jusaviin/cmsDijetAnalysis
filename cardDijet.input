@@ -4,7 +4,7 @@
 DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select which histograms to save. Needed for memory issues.
-FilledHistograms 2 # 0 = All, 1 = All but jet-track correlation, 2 = Jet-track correlation
+FilledHistograms 0 # 0 = All, 1 = All but jet-track correlation, 2 = Jet-track correlation
 
 # Cuts for dijets
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
@@ -30,8 +30,9 @@ MinimumTrackHits 0          # Require this many hits for each track
 ZVertexCut 15      # Maximum vz value for accepted tracks
 
 # Binning for THnSparses
-CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 100.25
-TrackPtBinEdges     0.5 1 2 3 4 8 300
+CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 100.25  # Centrality binning
+TrackPtBinEdges     0.5 1 2 3 4 8 300                   # Track pT binning
+AsymmetryBinEdges   0 0.11 0.22 0.33 0.75               # Dijet asymmetry binning
 
 # Event mixing
 DoEventMixing 1           # 0 = Do not mix events. 1 = Generate mixed events
