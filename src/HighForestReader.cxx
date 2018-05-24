@@ -184,6 +184,11 @@ void HighForestReader::Initialize(){
   // Connect the branches of the heavy ion tree
   fHeavyIonTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   fHeavyIonTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
+  if(fDataType == kPpMC || fDataType == kPbPbMC){
+    fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
+  } else {
+    fPtHat = 0; // We do not have pT hat information for real data
+  }
   
   // Connect the branches to the jet tree
   fJetTree->SetBranchAddress("jtpt",&fJetPtArray,&fJetPtBranch);
@@ -416,4 +421,14 @@ Float_t HighForestReader::GetTrackEnergyEcal(Int_t iTrack) const{
 // Getter for track energy in HCal
 Float_t HighForestReader::GetTrackEnergyHcal(Int_t iTrack) const{
   return fTrackEnergyHcalArray[iTrack];
+}
+
+// Getter for track charge. Charge is only relevant for generator level tracks.
+Int_t HighForestReader::GetTrackCharge(Int_t iTrack) const{
+  return 1;
+}
+
+// Getter for track subevent index. Relevant only for generator level tracks.
+Int_t HighForestReader::GetTrackSubevent(Int_t iTrack) const{
+  return -1;
 }

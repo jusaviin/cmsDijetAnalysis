@@ -149,6 +149,11 @@ void SkimForestReader::Initialize(){
   // Connect the branches related to event information
   fEventTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   fEventTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
+  if(fDataType == kPpMC || fDataType == kPbPbMC){
+    fEventTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
+  } else {
+    fPtHat = 0; // We do not have pT hat information for real data
+  }
   
   // Connect the branches to jet properties
   fEventTree->SetBranchAddress("calo_jtpt",&fJetPtArray,&fJetPtBranch);
@@ -343,3 +348,14 @@ Float_t SkimForestReader::GetTrackEnergyEcal(Int_t iTrack) const{
 Float_t SkimForestReader::GetTrackEnergyHcal(Int_t iTrack) const{
   return fTrackEnergyHcalArray->at(iTrack);
 }
+
+// Getter for track charge. Charge is only relevant for generator level tracks
+Int_t SkimForestReader::GetTrackCharge(Int_t iTrack) const{
+  return 1;
+}
+
+// Getter for track subevent index. Relevant only for generator level tracks.
+Int_t SkimForestReader::GetTrackSubevent(Int_t iTrack) const{
+  return -1;
+}
+

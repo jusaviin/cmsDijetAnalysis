@@ -14,6 +14,7 @@
 #include "DijetHistograms.h"
 #include "HighForestReader.h"
 #include "SkimForestReader.h"
+#include "GeneratorLevelForestReader.h"
 #include "TrkCorr.h"
 #include "JffCorrection.h"
 
@@ -22,6 +23,8 @@ class DijetAnalyzer{
 private:
   
   enum enumFilledHistograms{kFillAll,kFillAllButJetTrack,kFillJetTrack,knFillModes}; // Which kinds of histograms are filled
+  enum enumSubeventCuts{kSubeventZero,kSubeventNonZero,kSubeventAny,knSubeventCuts}; // Cuts for subevent index
+  enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
   
 public:
   
@@ -41,6 +44,7 @@ private:
   // Private methods
   void CorrelateTracksAndJets(ForestReader *treeReader, Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], Int_t correlationType);  // Do jet-track correlations
   Int_t GetNParticleFlowCandidatesInJet(ForestReader *treeReader, Double_t jetPhi, Double_t jetEta);
+  Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   
   // Private data members
   std::vector<TString> fFileNames;   // Vector for all the files to loop over
@@ -67,6 +71,10 @@ private:
   Double_t fHighPtEtFraction;          // For high pT tracks, minimum required Et as a fraction of track pT
   Double_t fChi2QualityCut;            // Quality cut for track reconstruction
   Double_t fMinimumTrackHits;          // Quality cut for track hits
+  Int_t fSubeventCut;                  // Cut for the subevent index
+  
+  // Correlation type for Monte Carlo
+  Int_t fMcCorrelationType;            // Correlation type for Monte Carlo. See enumeration enumMcCorrelationType
   
   // Which histograms are filled. Do not fill all in order to save memory and not to crash jobs.
   Int_t fFilledHistograms;             // Select which histograms are filled. See enumeration enumFilledHistograms

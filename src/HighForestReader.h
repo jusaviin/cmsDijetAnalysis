@@ -23,10 +23,10 @@ private:
 public:
   
   // Constructors and destructors
-  HighForestReader();                                   // Default constructor
-  HighForestReader(Int_t dataType);                       // Custom constructor
+  HighForestReader();                                       // Default constructor
+  HighForestReader(Int_t dataType);                         // Custom constructor
   HighForestReader(const HighForestReader& in);             // Copy constructor
-  virtual ~HighForestReader();                          // Destructor
+  virtual ~HighForestReader();                              // Destructor
   HighForestReader& operator=(const HighForestReader& obj); // Equal sign operator
   
   // Methods
@@ -52,17 +52,19 @@ public:
   Float_t GetTrackVertexDistanceXY(Int_t iTrack) const;      // Getter for track distance from primary vertex in xy-direction
   Float_t GetTrackVertexDistanceXYError(Int_t iTrack) const; // Getter for error of track distance from primary vertex in xy-direction
   Float_t GetTrackChi2(Int_t iTrack) const;                  // Getter for track chi2 value from reconstruction fit
-  Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const;     // Getter for number of degrees of freedom in reconstruction fit
-  Int_t GetNHitsTrackerLayer(Int_t iTrack) const;          // Getter for number of hits in tracker layers
-  Int_t GetNHitsTrack(Int_t iTrack) const;                 // Getter for number of hits for the track
+  Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const;       // Getter for number of degrees of freedom in reconstruction fit
+  Int_t GetNHitsTrackerLayer(Int_t iTrack) const;            // Getter for number of hits in tracker layers
+  Int_t GetNHitsTrack(Int_t iTrack) const;                   // Getter for number of hits for the track
   Float_t GetTrackEnergyEcal(Int_t iTrack) const;            // Getter for track energy in ECal
   Float_t GetTrackEnergyHcal(Int_t iTrack) const;            // Getter for track energy in HCal
+  Int_t GetTrackCharge(Int_t iTrack) const;                  // Getter for track charge (relevant only for generator level tracks)
+  Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
   
 private:
   
   // Methods
-  void Initialize();   // Connect the branches to the tree
-  
+  void Initialize();       // Connect the branches to the tree
+
   // Trees in the forest
   TTree *fHeavyIonTree;    // Tree for heavy ion event information
   TTree *fJetTree;         // Tree for jet information
@@ -102,25 +104,3 @@ private:
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

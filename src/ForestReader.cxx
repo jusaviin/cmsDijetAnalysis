@@ -10,6 +10,7 @@ ForestReader::ForestReader() :
   fDataType(0),
   fHiVzBranch(0),
   fHiBinBranch(0),
+  fPtHatBranch(0),
   fJetPtBranch(0),
   fJetPhiBranch(0),
   fJetEtaBranch(0),
@@ -43,6 +44,7 @@ ForestReader::ForestReader() :
   fParticleFlowCandidateEtaBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
+  fPtHat(0),
   fnJets(0),
   fCaloJetFilterBit(0),
   fPrimaryVertexFilterBit(0),
@@ -51,7 +53,11 @@ ForestReader::ForestReader() :
   fHBHENoiseFilterBit(0),
   fHfCoincidenceFilterBit(0),
   fClusterCompatibilityFilterBit(0),
-  fnTracks(0)
+  fnTracks(0),
+  fParticleFlowCandidateIdArray(0),
+  fParticleFlowCandidatePtArray(0),
+  fParticleFlowCandidatePhiArray(0),
+  fParticleFlowCandidateEtaArray(0)
 {
   // Default constructor
 }
@@ -66,6 +72,7 @@ ForestReader::ForestReader(Int_t dataType) :
   fDataType(0),
   fHiVzBranch(0),
   fHiBinBranch(0),
+  fPtHatBranch(0),
   fJetPtBranch(0),
   fJetPhiBranch(0),
   fJetEtaBranch(0),
@@ -99,6 +106,7 @@ ForestReader::ForestReader(Int_t dataType) :
   fParticleFlowCandidateEtaBranch(0),
   fVertexZ(-100),
   fHiBin(-1),
+  fPtHat(0),
   fnJets(0),
   fCaloJetFilterBit(0),
   fPrimaryVertexFilterBit(0),
@@ -107,7 +115,11 @@ ForestReader::ForestReader(Int_t dataType) :
   fHBHENoiseFilterBit(0),
   fHfCoincidenceFilterBit(0),
   fClusterCompatibilityFilterBit(0),
-  fnTracks(0)
+  fnTracks(0),
+  fParticleFlowCandidateIdArray(0),
+  fParticleFlowCandidatePtArray(0),
+  fParticleFlowCandidatePhiArray(0),
+  fParticleFlowCandidateEtaArray(0)
 {
   // Custom constructor
   
@@ -122,6 +134,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fDataType(in.fDataType),
   fHiVzBranch(in.fHiVzBranch),
   fHiBinBranch(in.fHiBinBranch),
+  fPtHatBranch(in.fPtHatBranch),
   fJetPtBranch(in.fJetPtBranch),
   fJetPhiBranch(in.fJetPhiBranch),
   fJetEtaBranch(in.fJetEtaBranch),
@@ -155,6 +168,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fParticleFlowCandidateEtaBranch(in.fParticleFlowCandidateEtaBranch),
   fVertexZ(in.fVertexZ),
   fHiBin(in.fHiBin),
+  fPtHat(in.fPtHat),
   fnJets(in.fnJets),
   fCaloJetFilterBit(in.fCaloJetFilterBit),
   fPrimaryVertexFilterBit(in.fPrimaryVertexFilterBit),
@@ -163,7 +177,11 @@ ForestReader::ForestReader(const ForestReader& in) :
   fHBHENoiseFilterBit(in.fHBHENoiseFilterBit),
   fHfCoincidenceFilterBit(in.fHfCoincidenceFilterBit),
   fClusterCompatibilityFilterBit(in.fClusterCompatibilityFilterBit),
-  fnTracks(in.fnTracks)
+  fnTracks(in.fnTracks),
+  fParticleFlowCandidateIdArray(in.fParticleFlowCandidateIdArray),
+  fParticleFlowCandidatePtArray(in.fParticleFlowCandidatePtArray),
+  fParticleFlowCandidatePhiArray(in.fParticleFlowCandidatePhiArray),
+  fParticleFlowCandidateEtaArray(in.fParticleFlowCandidateEtaArray)
 {
 
 }
@@ -179,6 +197,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fDataType = in.fDataType;
   fHiVzBranch = in.fHiVzBranch;
   fHiBinBranch = in.fHiBinBranch;
+  fPtHatBranch = in.fPtHatBranch;
   fJetPtBranch = in.fJetPtBranch;
   fJetPhiBranch = in.fJetPhiBranch;
   fJetEtaBranch = in.fJetEtaBranch;
@@ -212,6 +231,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fParticleFlowCandidateEtaBranch = in.fParticleFlowCandidateEtaBranch;
   fVertexZ = in.fVertexZ;
   fHiBin = in.fHiBin;
+  fPtHat = in.fPtHat;
   fnJets = in.fnJets;
   fCaloJetFilterBit = in.fCaloJetFilterBit;
   fPrimaryVertexFilterBit = in.fPrimaryVertexFilterBit;
@@ -221,6 +241,10 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fHfCoincidenceFilterBit = in.fHfCoincidenceFilterBit;
   fClusterCompatibilityFilterBit = in.fClusterCompatibilityFilterBit;
   fnTracks = in.fnTracks;
+  fParticleFlowCandidateIdArray = in.fParticleFlowCandidateIdArray;
+  fParticleFlowCandidatePtArray = in.fParticleFlowCandidatePtArray;
+  fParticleFlowCandidatePhiArray = in.fParticleFlowCandidatePhiArray;
+  fParticleFlowCandidateEtaArray = in.fParticleFlowCandidateEtaArray;
   
   return *this;
 }
@@ -274,6 +298,11 @@ Float_t ForestReader::GetCentrality() const{
 Int_t ForestReader::GetHiBin() const{
   if(fHiBin < 0) return 1;
   return fHiBin;
+}
+
+// Getter for pT hat
+Float_t ForestReader::GetPtHat() const{
+  return fPtHat;
 }
 
 // Getter for calorimeter jet filter bit. Always 1 for MC (set in the initializer).

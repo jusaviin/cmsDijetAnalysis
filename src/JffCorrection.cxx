@@ -65,6 +65,7 @@ JffCorrection::JffCorrection(bool ispp){
 double JffCorrection::GetCorrection(int nCScand, int hiBin, double jtpt, double jteta){
   
   if(!fin){ std::cout << "Correction file is not loaded! No correction done!" << std::endl; return jtpt; }
+  if(nCScand < 0) return jtpt; // No correction for generator level jets
   if(abs(jteta)>1.6) return jtpt; // TODO: It would be better to have correction upto 2. Now cannot be sure that leading jets are actually leading jets.
   if(jtpt>600 || jtpt<20) return jtpt;
   if((hiBin>200 || hiBin<0) && !fIsPpData){ std::cout << "Warning! hiBin is not between 0 and 200!! (=" << hiBin << ")" << std::endl; return jtpt; }

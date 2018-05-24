@@ -36,6 +36,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fHighPtEtFraction(0),
   fChi2QualityCut(0),
   fMinimumTrackHits(0),
+  fSubeventCut(0),
+  fMcCorrelationType(0),
   fFilledHistograms(kFillAll)
 {
   // Default constructor
@@ -67,6 +69,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fHighPtEtFraction(0),
   fChi2QualityCut(0),
   fMinimumTrackHits(0),
+  fSubeventCut(0),
+  fMcCorrelationType(0),
   fFilledHistograms(kFillAll)
 {
   // Custom constructor
@@ -126,7 +130,9 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fCalorimeterSignalLimitPt(in.fCalorimeterSignalLimitPt),
   fHighPtEtFraction(in.fHighPtEtFraction),
   fChi2QualityCut(in.fChi2QualityCut),
-  fMinimumTrackHits(in.fMinimumTrackHits)
+  fMinimumTrackHits(in.fMinimumTrackHits),
+  fSubeventCut(in.fSubeventCut),
+  fMcCorrelationType(in.fMcCorrelationType)
 {
   // Copy constructor
 }
@@ -161,6 +167,8 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fHighPtEtFraction = in.fHighPtEtFraction;
   fChi2QualityCut = in.fChi2QualityCut;
   fMinimumTrackHits = in.fMinimumTrackHits;
+  fSubeventCut = in.fSubeventCut;
+  fMcCorrelationType = in.fMcCorrelationType;
   
   return *this;
 }
@@ -179,6 +187,9 @@ DijetAnalyzer::~DijetAnalyzer(){
  * Get the number of particle flow candidates within a range of 0.4 of the given eta-phi angle
  */
 Int_t DijetAnalyzer::GetNParticleFlowCandidatesInJet(ForestReader *treeReader, Double_t jetPhi, Double_t jetEta){
+  
+  // No correction for generator level jets
+  if(treeReader->GetNParticleFlowCandidates() < 0) return -1;
   
   // Start counting from zero
   Int_t nParticleFlowCandidatesInThisJet = 0;
@@ -234,14 +245,22 @@ void DijetAnalyzer::RunAnalysis(){
   fChi2QualityCut = fCard->Get("Chi2QualityCut");     // Quality cut for track reconstruction
   fMinimumTrackHits = fCard->Get("MinimumTrackHits"); // Quality cut for track hits
   
+  fSubeventCut = fCard->Get("SubeventCut");     // Required subevent type
+  
+  //****************************************
+  //    Correlation type for Monte Carlo
+  //****************************************
+  fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
+  
   //****************************************
   //            All cuts set!
   //****************************************
 
-  // Input file and forest reader for analysis
+  // Input files and forest readers for analysis
   TFile *inputFile;
   TFile *mixedEventFile;
-  HighForestReader *treeReader = new HighForestReader(fCard->Get("DataType"));
+  ForestReader *jetReader;
+  ForestReader *trackReader;
   ForestReader *mixedEventReader;
   
   // Event variables
@@ -251,6 +270,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t vz = 0;              // Vertex z-position
   Double_t centrality = 0;      // Event centrality
   Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
+  Int_t dataType = fCard->Get("DataType"); // Type of data considered, see enumeration ForestReader::enumDataTypes
   
   // Selecting which histogram to fill
   Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack);
@@ -307,14 +327,35 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerJet[4];
   Double_t fillerDijet[5];
   
+  // Select the reader for jets
+  if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
+    jetReader = new GeneratorLevelForestReader(dataType);
+  } else {
+    jetReader = new HighForestReader(dataType);
+  }
+  
+  // Select the reader for tracks
+  if(fMcCorrelationType == kRecoGen){
+    trackReader = new GeneratorLevelForestReader(dataType);
+  } else if (fMcCorrelationType == kGenReco){
+    trackReader = new HighForestReader(dataType);
+  } else {
+    trackReader = jetReader;
+  }
+  
   // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
   if(mixEvents){
-    if(fCard->Get("DataType") == ForestReader::kPbPb){
+    if(dataType == ForestReader::kPbPb){
       mixedEventReader = new SkimForestReader(ForestReader::kPbPb);
+    } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType ==kGenGen) { // Mixed event reader for generator tracks
+      mixedEventReader = new GeneratorLevelForestReader(dataType);
     } else {
-      mixedEventReader = new HighForestReader(fCard->Get("DataType"));
+      mixedEventReader = new HighForestReader(dataType);
     }
   }
+  
+  // Set the track reader
+  trackReader = jetReader;
   
   // Amount of debugging messages
   Int_t debugLevel = fCard->Get("DebugLevel");
@@ -364,8 +405,9 @@ void DijetAnalyzer::RunAnalysis(){
     if(debugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
     
     // If file is good, read the forest from the file
-    treeReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
-    nEvents = treeReader->GetNEvents();
+    jetReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
+    if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco) trackReader->ReadForestFromFile(inputFile); // If we mix reco and gen, the reader for jets and tracks is different
+    nEvents = jetReader->GetNEvents();
     
     // Read also the forest for event mixing
     if(mixEvents){
@@ -389,12 +431,13 @@ void DijetAnalyzer::RunAnalysis(){
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
       
       // Read the event to memory
-      treeReader->GetEvent(iEvent);
+      jetReader->GetEvent(iEvent);
+      if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco) trackReader->GetEvent(iEvent);
 
       // Get vz and centrality information from all events
-      vz = treeReader->GetVz();
-      centrality = treeReader->GetCentrality();
-      hiBin = treeReader->GetHiBin();
+      vz = jetReader->GetVz();
+      centrality = jetReader->GetCentrality();
+      hiBin = jetReader->GetHiBin();
       if(fillMainLoopHistograms){
         fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
         fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
@@ -403,31 +446,31 @@ void DijetAnalyzer::RunAnalysis(){
       //  ===== Apply all the event quality cuts =====
       
       // Cut for primary vertex. Only applied for data.
-      if(treeReader->GetPrimaryVertexFilterBit() == 0) continue;
+      if(jetReader->GetPrimaryVertexFilterBit() == 0) continue;
       if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
       
       // Cut for HB/HE noise. Only applied for data.
-      if(treeReader->GetHBHENoiseFilterBit() == 0) continue;
+      if(jetReader->GetHBHENoiseFilterBit() == 0) continue;
       if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
       
       // Cut for collision event selection. Only applied for PbPb data.
-      if(treeReader->GetCollisionEventSelectionFilterBit() == 0) continue;
+      if(jetReader->GetCollisionEventSelectionFilterBit() == 0) continue;
       if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
       
       // Cut for beam scraping. Only applied for pp data.
-      if(treeReader->GetBeamScrapingFilterBit() == 0) continue;
+      if(jetReader->GetBeamScrapingFilterBit() == 0) continue;
       if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
       
       // Cut for energy deposition in at least 3 hadronic forward towers. Only applied for PbPb data.
-      if(treeReader->GetHfCoincidenceFilterBit() == 0) continue;
+      if(jetReader->GetHfCoincidenceFilterBit() == 0) continue;
       if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
       
       // Cut for cluster compatibility. Only applied for PbPb data.
-      if(treeReader->GetClusterCompatibilityFilterBit() == 0) continue;
+      if(jetReader->GetClusterCompatibilityFilterBit() == 0) continue;
       if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
       
       // Cut for calirimeter jet quality. Only applied for data.
-      if(treeReader->GetCaloJetFilterBit() == 0) continue;
+      if(jetReader->GetCaloJetFilterBit() == 0) continue;
       if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
       
       // Cut for vertex z-position
@@ -445,13 +488,13 @@ void DijetAnalyzer::RunAnalysis(){
       subleadingJetPt = 0;
       
       // Search for leading jet and fill histograms for all jets within the eta vut
-      for(Int_t jetIndex = 0; jetIndex < treeReader->GetNJets(); jetIndex++) {
-        jetPt = treeReader->GetJetPt(jetIndex);
-        jetPhi = treeReader->GetJetPhi(jetIndex);
-        jetEta = treeReader->GetJetEta(jetIndex);
+      for(Int_t jetIndex = 0; jetIndex < jetReader->GetNJets(); jetIndex++) {
+        jetPt = jetReader->GetJetPt(jetIndex);
+        jetPhi = jetReader->GetJetPhi(jetIndex);
+        jetEta = jetReader->GetJetEta(jetIndex);
         if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
-        if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
-        if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
+        if(fMinimumMaxTrackPtFraction >= jetReader->GetJetMaxTrackPt(jetIndex)/jetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
+        if(fMaximumMaxTrackPtFraction <= jetReader->GetJetMaxTrackPt(jetIndex)/jetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
         // Only fill the any jet histogram if selected
         if(fillMainLoopHistograms){
@@ -459,7 +502,7 @@ void DijetAnalyzer::RunAnalysis(){
           if(TMath::Abs(jetEta) < fJetEtaCut){
           
             // Fill the axes in correct order
-            nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,jetPhi,jetEta);       // Apply JFF correction for jet pT
+            nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(jetReader,jetPhi,jetEta);       // Apply JFF correction for jet pT
             fillerJet[0] = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);  // Axis 0 = any jet pT
             fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
@@ -476,14 +519,14 @@ void DijetAnalyzer::RunAnalysis(){
       } // End of search for leading jet loop
       
       // Search for subleading jet
-      for(Int_t jetIndex = 0 ; jetIndex < treeReader->GetNJets(); jetIndex++){
-        jetPt = treeReader->GetJetPt(jetIndex);
-        jetPhi = treeReader->GetJetPhi(jetIndex);
-        jetEta = treeReader->GetJetEta(jetIndex);
+      for(Int_t jetIndex = 0 ; jetIndex < jetReader->GetNJets(); jetIndex++){
+        jetPt = jetReader->GetJetPt(jetIndex);
+        jetPhi = jetReader->GetJetPhi(jetIndex);
+        jetEta = jetReader->GetJetEta(jetIndex);
         if(jetIndex == highestIndex) continue; // Do not consider leading particle
         if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
-        if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
-        if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(jetIndex)/treeReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
+        if(fMinimumMaxTrackPtFraction >= jetReader->GetJetMaxTrackPt(jetIndex)/jetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
+        if(fMaximumMaxTrackPtFraction <= jetReader->GetJetMaxTrackPt(jetIndex)/jetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
         if(jetPt > subleadingJetPt){
           subleadingJetPt = jetPt;
@@ -498,15 +541,15 @@ void DijetAnalyzer::RunAnalysis(){
       if(twoJetsFound){
         
         // Read the eta and phi values for leading and subleading jets
-        leadingJetPhi = treeReader->GetJetPhi(highestIndex);
-        leadingJetEta = treeReader->GetJetEta(highestIndex);
-        subleadingJetPhi = treeReader->GetJetPhi(secondHighestIndex);
-        subleadingJetEta = treeReader->GetJetEta(secondHighestIndex);
+        leadingJetPhi = jetReader->GetJetPhi(highestIndex);
+        leadingJetEta = jetReader->GetJetEta(highestIndex);
+        subleadingJetPhi = jetReader->GetJetPhi(secondHighestIndex);
+        subleadingJetEta = jetReader->GetJetEta(secondHighestIndex);
         
         // Apply the JFF correction for leading and subleading jet pT
-        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,leadingJetPhi,leadingJetEta);
+        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(jetReader,leadingJetPhi,leadingJetEta);
         leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
-        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(treeReader,subleadingJetPhi,subleadingJetEta);
+        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(jetReader,subleadingJetPhi,subleadingJetEta);
         subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
         
         // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info
@@ -579,7 +622,7 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetInfo[2] = subleadingJetEta;
         
         // Correlate jets with tracks in dijet events
-        CorrelateTracksAndJets(treeReader,leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
+        CorrelateTracksAndJets(trackReader,leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
         
         // Do event mixing
         if(mixEvents){
@@ -663,7 +706,8 @@ void DijetAnalyzer::RunAnalysis(){
   } // File loop
   
   // When we are done, delete ForestReaders
-  delete treeReader;
+  delete jetReader;
+  if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco) delete trackReader;
   if(mixEvents) delete mixedEventReader;
   delete mixedEventRandomizer;
 }
@@ -676,7 +720,7 @@ void DijetAnalyzer::RunAnalysis(){
  *  Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
  *  Int_t correlationType = DijetHistograms::kSameEvent for same event correlations, DijetHistograms::kMixedEvent for mixed event correlations
  */
-void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], Int_t correlationType){
+void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], Int_t correlationType){
   
   // Define a filler for THnSparses
   Double_t fillerJetTrack[6];
@@ -687,8 +731,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
   Bool_t fillJetTrackCorrelationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack);
   
   // Event information
-  Int_t hiBin = treeReader->GetHiBin();
-  Int_t centrality = treeReader->GetCentrality();
+  Int_t hiBin = trackReader->GetHiBin();
+  Int_t centrality = trackReader->GetCentrality();
   
   // Variables for tracks
   Double_t trackPt;       // Track pT
@@ -715,12 +759,17 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
   Double_t dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
   
   // Loop over all track in the event
-  Int_t nTracks = treeReader->GetNTracks();
+  Int_t nTracks = trackReader->GetNTracks();
   for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
-    trackPt = treeReader->GetTrackPt(iTrack);
-    trackPhi = treeReader->GetTrackPhi(iTrack);
-    trackEta = treeReader->GetTrackEta(iTrack);
-    trackEt = (treeReader->GetTrackEnergyEcal(iTrack)+treeReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
+    
+    // Only look at charged tracks
+    if(trackReader->GetTrackCharge(iTrack) == 0) continue;
+    if(!PassSubeventCut(trackReader->GetTrackSubevent(iTrack))) continue;
+    
+    trackPt = trackReader->GetTrackPt(iTrack);
+    trackPhi = trackReader->GetTrackPhi(iTrack);
+    trackEta = trackReader->GetTrackEta(iTrack);
+    trackEt = (trackReader->GetTrackEnergyEcal(iTrack)+trackReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
     
     //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
     
@@ -737,16 +786,16 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
     if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kEtaCut);
     
     // Cut for high purity
-    if(!treeReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
+    if(!trackReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
     if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kHighPurity);
     
     // Cut for relative error for track pT
-    if(treeReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
+    if(trackReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
     if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtError);
     
     // Cut for track distance from primary vertex
-    if(treeReader->GetTrackVertexDistanceZ(iTrack)/treeReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
-    if(treeReader->GetTrackVertexDistanceXY(iTrack)/treeReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
+    if(trackReader->GetTrackVertexDistanceZ(iTrack)/trackReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
+    if(trackReader->GetTrackVertexDistanceXY(iTrack)/trackReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
     if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kVertexDistance);
     
     // Cut for energy deposition in calorimeters for high pT tracks
@@ -754,25 +803,25 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
     if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kCaloSignal);
     
     // Cuts for track reconstruction quality
-    if(treeReader->GetTrackChi2(iTrack)/(1.0*treeReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*treeReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
-    if(treeReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
+    if(trackReader->GetTrackChi2(iTrack)/(1.0*trackReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*trackReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
+    if(trackReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
     if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kReconstructionQuality);
     
     //     ==== Track cuts done ====
     
     // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
     trackRMin = 666;   // Initialize the minimum distance to a jet to some very large value
-    for(Int_t iJet = 0; iJet < treeReader->GetNJets(); iJet++){
+    for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
       
       // Require the same jet quality cuts as when searching for dijets
-      if(TMath::Abs(treeReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
-      if(treeReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
-      if(fMinimumMaxTrackPtFraction >= treeReader->GetJetMaxTrackPt(iJet)/treeReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
-      if(fMaximumMaxTrackPtFraction <= treeReader->GetJetMaxTrackPt(iJet)/treeReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
+      if(TMath::Abs(trackReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
+      if(trackReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
+      if(fMinimumMaxTrackPtFraction >= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
+      if(fMaximumMaxTrackPtFraction <= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
       // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
       
       // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
-      trackR = TMath::Power(treeReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(treeReader->GetJetPhi(iJet)-trackPhi)),2);
+      trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
       if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
       
     } // Loop for calculating Rmin
@@ -830,6 +879,21 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *treeReader, Double_t le
     }
     
   } // Loop over tracks
+}
+
+/*
+ * Check is a track passes the required subevent cut
+ *
+ *  Arguments:
+ *   const Int_t subeventIndex = Subevent index for the track in consideration
+ *
+ *  return: true if subevent cut is passes, false if not
+ */
+Bool_t DijetAnalyzer::PassSubeventCut(const Int_t subeventIndex) const{
+  if(fSubeventCut == kSubeventAny) return true;
+  if(fSubeventCut == kSubeventZero && subeventIndex == 0) return true;
+  if(fSubeventCut == kSubeventNonZero && subeventIndex > 0) return true;
+  return false;
 }
 
 /*

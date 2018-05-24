@@ -46,6 +46,7 @@ public:
   Float_t GetVz() const;              // Getter for vertex z position
   Float_t GetCentrality() const;      // Getter for centrality
   Int_t GetHiBin() const;             // Getter for CMS hiBin
+  Float_t GetPtHat() const;           // Getter for pT hat
   
   // Getters for leaves in jet tree
   virtual Float_t GetJetPt(Int_t iJet) const = 0;         // Getter for jet pT
@@ -78,11 +79,13 @@ public:
   virtual Float_t GetTrackVertexDistanceXY(Int_t iTrack) const = 0;      // Getter for track distance from primary vertex in xy-direction
   virtual Float_t GetTrackVertexDistanceXYError(Int_t iTrack) const = 0; // Getter for error of track distance from primary vertex in xy-direction
   virtual Float_t GetTrackChi2(Int_t iTrack) const = 0;                  // Getter for track chi2 value from reconstruction fit
-  virtual Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const = 0;     // Getter for number of degrees of freedom in reconstruction fit
-  virtual Int_t GetNHitsTrackerLayer(Int_t iTrack) const = 0;          // Getter for number of hits in tracker layers
-  virtual Int_t GetNHitsTrack(Int_t iTrack) const = 0;                 // Getter for number of hits for the track
+  virtual Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const = 0;       // Getter for number of degrees of freedom in reconstruction fit
+  virtual Int_t GetNHitsTrackerLayer(Int_t iTrack) const = 0;            // Getter for number of hits in tracker layers
+  virtual Int_t GetNHitsTrack(Int_t iTrack) const = 0;                   // Getter for number of hits for the track
   virtual Float_t GetTrackEnergyEcal(Int_t iTrack) const = 0;            // Getter for track energy in ECal
   virtual Float_t GetTrackEnergyHcal(Int_t iTrack) const = 0;            // Getter for track energy in HCal
+  virtual Int_t GetTrackCharge(Int_t iTrack) const = 0;                  // Getter for track charge (only for generator level tracks)
+  virtual Int_t GetTrackSubevent(Int_t iTrack) const = 0;                // Getter for track subevent index (only for generator level tracks)
   
   // Getters for leaves in the particle flow candidate tree
   Int_t GetParticleFlowCandidateId(Int_t iCandidate) const;      // Getter for particle flow candidate ID
@@ -103,7 +106,8 @@ protected:
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;            // Branch for vertex z-position
-  TBranch *fHiBinBranch;    // Branch for centrality
+  TBranch *fHiBinBranch;           // Branch for centrality
+  TBranch *fPtHatBranch;           // Branch for pT hat
   
   // Branches for jet tree
   TBranch *fJetPtBranch;         // Branch for jet pT
@@ -149,6 +153,7 @@ protected:
   // Leaves for heavy ion tree
   Float_t fVertexZ;    // Vertex z-position
   Int_t fHiBin;        // HiBin = Centrality percentile * 2
+  Float_t fPtHat;      // pT hat
   
   // Leaves for jet tree
   Int_t fnJets;                                // number of jets in an event
