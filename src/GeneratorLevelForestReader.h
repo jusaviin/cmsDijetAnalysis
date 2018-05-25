@@ -18,7 +18,6 @@ class GeneratorLevelForestReader : public ForestReader{
   
 private:
   static const Int_t fnMaxJet = 60;        // Maximum number of jets in an event
-  static const Int_t fnMaxTrack = 60000;   // Maximum number of tracks in an event
   
 public:
   
@@ -80,9 +79,9 @@ private:
   TTree *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
   
   // Leaves for jet tree
-  vector<float> *fJetPtArray;         // pT:s of all the jets in an event
-  vector<float> *fJetPhiArray;        // phis of all the jets in an event
-  vector<float> *fJetEtaArray;        // etas of all the jets in an event
+  Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
+  Float_t fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
+  Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
   
   // Leaves for the track tree
   vector<float> *fTrackPtArray;       // Array for track pT:s

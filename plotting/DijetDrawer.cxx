@@ -602,7 +602,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // Special settings for jet shape bin map
             if(iCorrelationType == kJetShapeBinMap){
-              drawingStyle = "TEXT";    // Two-dimansional drawing style
+              drawingStyle = fStyle2D;    // Two-dimansional drawing style
               fDrawer->SetLogZ(false);  // Linear drawing
               fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-1,1);
               fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(-1,1);

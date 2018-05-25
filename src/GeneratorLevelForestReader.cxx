@@ -11,9 +11,9 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
   fHeavyIonTree(0),
   fJetTree(0),
   fTrackTree(0),
-  fJetPtArray(0),
-  fJetPhiArray(0),
-  fJetEtaArray(0),
+  fJetPtArray(),
+  fJetPhiArray(),
+  fJetEtaArray(),
   fTrackPtArray(0),
   fTrackPhiArray(0),
   fTrackEtaArray(0),
@@ -34,9 +34,9 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType) :
   fHeavyIonTree(0),
   fJetTree(0),
   fTrackTree(0),
-  fJetPtArray(0),
-  fJetPhiArray(0),
-  fJetEtaArray(0),
+  fJetPtArray(),
+  fJetPhiArray(),
+  fJetEtaArray(),
   fTrackPtArray(0),
   fTrackPhiArray(0),
   fTrackEtaArray(0),
@@ -55,9 +55,6 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(const GeneratorLevelFores
   fHeavyIonTree(in.fHeavyIonTree),
   fJetTree(in.fJetTree),
   fTrackTree(in.fTrackTree),
-  fJetPtArray(in.fJetPtArray),
-  fJetPhiArray(in.fJetPhiArray),
-  fJetEtaArray(in.fJetEtaArray),
   fTrackPtArray(in.fTrackPtArray),
   fTrackPhiArray(in.fTrackPhiArray),
   fTrackEtaArray(in.fTrackEtaArray),
@@ -65,7 +62,11 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(const GeneratorLevelFores
   fTrackSubeventArray(in.fTrackSubeventArray)
 {
   // Copy constructor
-
+  for(Int_t i = 0; i < fnMaxJet; i++){
+    fJetPtArray[i] = in.fJetPtArray[i];
+    fJetPhiArray[i] = in.fJetPhiArray[i];
+    fJetEtaArray[i] = in.fJetEtaArray[i];
+  }
 }
 
 /*
@@ -81,14 +82,17 @@ GeneratorLevelForestReader& GeneratorLevelForestReader::operator=(const Generato
   fHeavyIonTree = in.fHeavyIonTree;
   fJetTree = in.fJetTree;
   fTrackTree = in.fTrackTree;
-  fJetPtArray = in.fJetPtArray;
-  fJetPhiArray = in.fJetPhiArray;
-  fJetEtaArray = in.fJetEtaArray;
   fTrackPtArray = in.fTrackPtArray;
   fTrackPhiArray = in.fTrackPhiArray;
   fTrackEtaArray = in.fTrackEtaArray;
   fTrackChargeArray = in.fTrackChargeArray;
   fTrackSubeventArray = in.fTrackSubeventArray;
+  
+  for(Int_t i = 0; i < fnMaxJet; i++){
+    fJetPtArray[i] = in.fJetPtArray[i];
+    fJetPhiArray[i] = in.fJetPhiArray[i];
+    fJetEtaArray[i] = in.fJetEtaArray[i];
+  }
   
   return *this;
 }
@@ -111,9 +115,10 @@ void GeneratorLevelForestReader::Initialize(){
   fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   
   // Connect the branches to the jet tree
-  fJetTree->SetBranchAddress("jtpt",&fJetPtArray,&fJetPtBranch);
-  fJetTree->SetBranchAddress("jtphi",&fJetPhiArray,&fJetPhiBranch);
-  fJetTree->SetBranchAddress("jteta",&fJetEtaArray,&fJetEtaBranch);
+  fJetTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
+  fJetTree->SetBranchAddress("genphi",&fJetPhiArray,&fJetPhiBranch);
+  fJetTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
+  fJetTree->SetBranchAddress("ngen",&fnJets,&fJetRawPtBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   
   // Connect the branches to the HLT tree (only for real data)
   fCaloJetFilterBit = 1;  // No filter for Monte Carlo
@@ -147,6 +152,8 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
     fJetTree = (TTree*)inputFile->Get("ak4CaloJetAnalyzer/t");
   } else if (fDataType == kPbPbMC){
     fJetTree = (TTree*)inputFile->Get("akPu4CaloJetAnalyzer/t");
+  } else if (fDataType == kLocalTest){
+    fJetTree = (TTree*)inputFile->Get("ak4PFJetAnalyzer/t");
   }
   
   // The track tree is different than in other types of forests
@@ -174,23 +181,22 @@ void GeneratorLevelForestReader::GetEvent(Int_t nEvent){
   fTrackTree->GetEntry(nEvent);
   
   // Read the numbers of tracks and jets for this event
-  fnJets = fJetPtArray->size();
   fnTracks = fTrackPtArray->size();
 }
 
 // Getter for jet pT
 Float_t GeneratorLevelForestReader::GetJetPt(Int_t iJet) const{
-  return fJetPtArray->at(iJet);
+  return fJetPtArray[iJet];
 }
 
 // Getter for jet phi
 Float_t GeneratorLevelForestReader::GetJetPhi(Int_t iJet) const{
-  return fJetPhiArray->at(iJet);
+  return fJetPhiArray[iJet];
 }
 
 // Getter for jet eta
 Float_t GeneratorLevelForestReader::GetJetEta(Int_t iJet) const{
-  return fJetEtaArray->at(iJet);
+  return fJetEtaArray[iJet];
 }
 
 // Getter for jet raw pT (not relevant for generator jets, just return value that passes cuts)

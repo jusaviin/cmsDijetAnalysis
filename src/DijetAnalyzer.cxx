@@ -187,7 +187,7 @@ DijetAnalyzer::~DijetAnalyzer(){
  * Get the number of particle flow candidates within a range of 0.4 of the given eta-phi angle
  */
 Int_t DijetAnalyzer::GetNParticleFlowCandidatesInJet(ForestReader *treeReader, Double_t jetPhi, Double_t jetEta){
-  
+
   // No correction for generator level jets
   if(treeReader->GetNParticleFlowCandidates() < 0) return -1;
   
@@ -258,6 +258,7 @@ void DijetAnalyzer::RunAnalysis(){
 
   // Input files and forest readers for analysis
   TFile *inputFile;
+  TFile *copyInputFile; // If we read forest for tracks and jets with different readers, we need to give different file pointers to them
   TFile *mixedEventFile;
   ForestReader *jetReader;
   ForestReader *trackReader;
@@ -272,8 +273,9 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
   Int_t dataType = fCard->Get("DataType"); // Type of data considered, see enumeration ForestReader::enumDataTypes
   
-  // Selecting which histogram to fill
-  Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack);
+  // Combining bools to make the code more readable
+  Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack); // Select to fill the histograms in the main loop
+  Bool_t useDifferentReaderFotJetsAndTracks = (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco); // Use different forest reader for jets and tracks
   
   // Event mixing information
   Bool_t mixEvents = (fCard->Get("DoEventMixing") == 1);           // Do or do not do event mixing
@@ -354,9 +356,6 @@ void DijetAnalyzer::RunAnalysis(){
     }
   }
   
-  // Set the track reader
-  trackReader = jetReader;
-  
   // Amount of debugging messages
   Int_t debugLevel = fCard->Get("DebugLevel");
   
@@ -375,6 +374,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     // Open the file and check that everything goes fine
     inputFile = TFile::Open(currentFile);
+    if(useDifferentReaderFotJetsAndTracks) copyInputFile = TFile::Open(currentFile);
     mixedEventFile = TFile::Open(currentMixedEventFile);
     
     // Check that the file exists
@@ -406,7 +406,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     // If file is good, read the forest from the file
     jetReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
-    if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco) trackReader->ReadForestFromFile(inputFile); // If we mix reco and gen, the reader for jets and tracks is different
+    if(useDifferentReaderFotJetsAndTracks) trackReader->ReadForestFromFile(copyInputFile); // If we mix reco and gen, the reader for jets and tracks is different
     nEvents = jetReader->GetNEvents();
     
     // Read also the forest for event mixing
@@ -432,7 +432,9 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Read the event to memory
       jetReader->GetEvent(iEvent);
-      if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco) trackReader->GetEvent(iEvent);
+      
+      // If track reader is not the same as jet reader, read the event to memory in trackReader
+      if(useDifferentReaderFotJetsAndTracks) trackReader->GetEvent(iEvent);
 
       // Get vz and centrality information from all events
       vz = jetReader->GetVz();
@@ -701,6 +703,7 @@ void DijetAnalyzer::RunAnalysis(){
         
     // Close the input files after the event has been read
     inputFile->Close();
+    if(useDifferentReaderFotJetsAndTracks) copyInputFile->Close();
     mixedEventFile->Close();
     
   } // File loop
@@ -732,7 +735,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
   
   // Event information
   Int_t hiBin = trackReader->GetHiBin();
-  Int_t centrality = trackReader->GetCentrality();
+  Double_t centrality = trackReader->GetCentrality();
   
   // Variables for tracks
   Double_t trackPt;       // Track pT
