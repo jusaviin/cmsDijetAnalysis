@@ -275,6 +275,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Combining bools to make the code more readable
   Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack); // Select to fill the histograms in the main loop
+  Bool_t fillEventInformationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillOnlyEventInformation); // Need number of jets for normalizing jet-track correlation histograms
   Bool_t useDifferentReaderFotJetsAndTracks = (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco); // Use different forest reader for jets and tracks
   
   // Event mixing information
@@ -440,7 +441,7 @@ void DijetAnalyzer::RunAnalysis(){
       vz = jetReader->GetVz();
       centrality = jetReader->GetCentrality();
       hiBin = jetReader->GetHiBin();
-      if(fillMainLoopHistograms){
+      if(fillEventInformationHistograms){
         fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
         fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
         fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
@@ -449,35 +450,35 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Cut for primary vertex. Only applied for data.
       if(jetReader->GetPrimaryVertexFilterBit() == 0) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
       
       // Cut for HB/HE noise. Only applied for data.
       if(jetReader->GetHBHENoiseFilterBit() == 0) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
       
       // Cut for collision event selection. Only applied for PbPb data.
       if(jetReader->GetCollisionEventSelectionFilterBit() == 0) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
       
       // Cut for beam scraping. Only applied for pp data.
       if(jetReader->GetBeamScrapingFilterBit() == 0) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
       
       // Cut for energy deposition in at least 3 hadronic forward towers. Only applied for PbPb data.
       if(jetReader->GetHfCoincidenceFilterBit() == 0) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
       
       // Cut for cluster compatibility. Only applied for PbPb data.
       if(jetReader->GetClusterCompatibilityFilterBit() == 0) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
       
       // Cut for calirimeter jet quality. Only applied for data.
       if(jetReader->GetCaloJetFilterBit() == 0) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
       
       // Cut for vertex z-position
       if(TMath::Abs(vz) > fVzCut) continue;
-      if(fillMainLoopHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);
+      if(fillEventInformationHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);
       
       // ===== Event quality cuts applied =====
       
@@ -582,10 +583,11 @@ void DijetAnalyzer::RunAnalysis(){
       if(dijetFound){
         
         // Only fill the dijet histograms if selected
-        if(fillMainLoopHistograms){
+        if(fillEventInformationHistograms){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
           fHistograms->fhCentralityDijet->Fill(centrality);
-          
+        }
+        if(fillMainLoopHistograms){
           // Calculate the asymmetry
           dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
           
@@ -622,6 +624,9 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetInfo[0] = subleadingJetPt;
         subleadingJetInfo[1] = subleadingJetPhi;
         subleadingJetInfo[2] = subleadingJetEta;
+        
+        // Do not do the jet-track correlation if we are only filling the event information histograms
+        if(fFilledHistograms == kFillOnlyEventInformation) continue;
         
         // Correlate jets with tracks in dijet events
         CorrelateTracksAndJets(trackReader,leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
