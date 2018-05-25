@@ -20,6 +20,7 @@ DijetMethods::DijetMethods() :
 {
   // Constructor
   fBackgroundDistribution = NULL;
+  fBackgroundOverlap = NULL;
   fhJetShapeCounts = NULL;
   fhJetShapeBinMap = NULL;
   fRBins = nullptr;
@@ -34,6 +35,7 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fMixedEventFitRegion(in.fMixedEventFitRegion),
   fMixedEventNormalizationMethod(in.fMixedEventNormalizationMethod),
   fBackgroundDistribution(in.fBackgroundDistribution),
+  fBackgroundOverlap(in.fBackgroundOverlap),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
   fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta),
   fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
@@ -57,6 +59,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fMixedEventFitRegion = in.fMixedEventFitRegion;
   fMixedEventNormalizationMethod = in.fMixedEventNormalizationMethod;
   fBackgroundDistribution = in.fBackgroundDistribution;
+  fBackgroundOverlap = in.fBackgroundOverlap;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
   fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
   fJetShapeNormalizationMethod = in.fJetShapeNormalizationMethod;
@@ -180,6 +183,10 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   sprintf(histogramName,"%sBackground",leadingHistogramWithBackground->GetName());
   fBackgroundDistribution = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
   int nDeltaPhiBins = fBackgroundDistribution->GetNbinsX(); // Number of deltaPhi bins
+  
+  // Initialize also a distribution for background overlap for normalization level check
+  sprintf(histogramName,"%sBackgroundOverlap",leadingHistogramWithBackground->GetName());
+  fBackgroundOverlap = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
 
   // Loop over deltaPhi bins and fill the leading jet-track correlation result in the near side
   // and the subleading set-track correlation result in the away side
@@ -191,7 +198,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi);
     deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi);
     
-    // Loop over deltaEta bins
+    // Repopulate the deltaEta axis
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
       
       // Insert the values to the two-dimensional background histogram
@@ -199,6 +206,12 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
       fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear);
       fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiValueAway);
       fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiErrorAway);
+      
+      // Set the contants of the background overlap to zero
+      fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,0);
+      fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,0);
+      fBackgroundOverlap->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,0);
+      fBackgroundOverlap->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,0);
       
       /*
        * Note: In Hallie's code there is a multiplication by sqrt(bins) for the bin error here
@@ -209,6 +222,27 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
        *       which comes without sqrt(bins).
        */
       
+    } // DeltaEta loop
+  } // DeltaPhi loop
+  
+  // For the background overlap distribution, fill three bins on each side of the gluing point
+  for(int iDeltaPhi = nDeltaPhiBins/2 + 1; iDeltaPhi <= nDeltaPhiBins/2 + 3; iDeltaPhi++){
+    
+    // Read the values from the deltaPhi background histogram
+    deltaPhiValueNear = backgroundDeltaPhiLeading->GetBinContent(iDeltaPhi);
+    deltaPhiErrorNear = backgroundDeltaPhiLeading->GetBinError(iDeltaPhi);
+    
+    // For the away side we need to continue to the left, which rotates to the three last bins in deltaPhi
+    deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi + nDeltaPhiBins/2 - 3);
+    deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi + nDeltaPhiBins/2 - 3);
+    
+    // Repopulate the deltaEta axis
+    for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
+      // Set the contants of the background overlap to zero
+      fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear);
+      fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear);
+      fBackgroundOverlap->SetBinContent(iDeltaPhi-3,iDeltaEta,deltaPhiValueAway);
+      fBackgroundOverlap->SetBinError(iDeltaPhi-3,iDeltaEta,deltaPhiErrorAway);
     } // DeltaEta loop
   } // DeltaPhi loop
   
@@ -484,6 +518,11 @@ TH1D* DijetMethods::GetJetShapeCounts() const{
 // Getter for the most recent background distribution used to subtract the background
 TH2D* DijetMethods::GetBackground() const{
   return fBackgroundDistribution;
+}
+
+// Getter for the most recent background overlap distribution for normalization check
+TH2D* DijetMethods::GetBackgroundOverlap() const{
+  return fBackgroundOverlap;
 }
 
 // Setter for deltaEta range used for normalizing the mixed event

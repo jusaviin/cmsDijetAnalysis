@@ -34,9 +34,10 @@ public:
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   
   // Getters for produces distributions
-  TH2D* GetBackground() const;      // Getter for the most recent background distribution used to subtract the background
-  TH1D* GetJetShapeCounts() const;  // Getter for the jet shape count distribution
-  TH2D* GetJetShapeBinMap() const;  // Getter for the map between R bins and deltaEta-deltaPhi bins
+  TH2D* GetBackground() const;        // Getter for the most recent background distribution used to subtract the background
+  TH2D* GetBackgroundOverlap() const; // Getter for the most recent background overlap distribution for normalization check
+  TH1D* GetJetShapeCounts() const;    // Getter for the jet shape count distribution
+  TH2D* GetJetShapeBinMap() const;    // Getter for the map between R bins and deltaEta-deltaPhi bins
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
@@ -66,6 +67,7 @@ private:
   // =============================================
   
   TH2D *fBackgroundDistribution;  // Remember the background distribution from the most recent background subtraction
+  TH2D *fBackgroundOverlap;       // Fill a few points over the gluing point to see how well the gluing works
   double fMinBackgroundDeltaEta;  // Minimum deltaEta for background subtraction region
   double fMaxBackgroundDeltaEta;  // Maximum deltaEta for background subtraction region
   

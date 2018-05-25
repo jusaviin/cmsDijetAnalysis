@@ -583,6 +583,12 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             SetupLegend(legend,centralityString,trackPtString);
             legend->Draw();
             
+            // In case of background histogram, draw the background overlap to the same figure
+            if(iCorrelationType == kBackground){
+              fhJetTrackDeltaPhi[iJetTrack][kBackgroundOverlap][iCentrality][iTrackPt]->SetLineColor(kRed);
+              fhJetTrackDeltaPhi[iJetTrack][kBackgroundOverlap][iCentrality][iTrackPt]->Draw("same");
+            }
+            
             // Save the figure to a file
             sprintf(namerX,"%sDeltaPhi",fJetTrackHistogramNames[iJetTrack]);
             SaveFigure(namerX,compactCentralityString,compactTrackPtString,fCompactCorrelationTypeString[iCorrelationType]);
@@ -888,8 +894,9 @@ void DijetDrawer::SubtractBackgroundAndCalculateJetShape(){
         // Subtract the background from the mixed event corrected histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iCentralityBin][iTrackPtBin]);
         
-        // Get also the background for QA purposes
+        // Get also the background and background overlap region for QA purposes
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundOverlap][iCentralityBin][iTrackPtBin] = fMethods->GetBackgroundOverlap();
         
         // Calculate the jet shape from the background subtracted histogram
         fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShape(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]);
