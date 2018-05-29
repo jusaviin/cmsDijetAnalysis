@@ -819,23 +819,31 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
     
     // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
     trackRMin = 666;   // Initialize the minimum distance to a jet to some very large value
-    for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
-      
-      // Require the same jet quality cuts as when searching for dijets
-      if(TMath::Abs(trackReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
-      if(trackReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
-      if(fMinimumMaxTrackPtFraction >= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
-      if(fMaximumMaxTrackPtFraction <= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
-      // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
-      
-      // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
-      trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
-      if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
-      
-    } // Loop for calculating Rmin
     
-    // Get the track efficiency corrections
-    trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
+    // No efficiency correction for generator level tracks
+    if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen){
+      trackEfficiencyCorrection = 1;
+    } else { // Apply the correction for real data and reconstructed Monte Carlo tracks
+      
+      // Need distance to nearest jet for the efficiency correction
+      for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
+        
+        // Require the same jet quality cuts as when searching for dijets
+        if(TMath::Abs(trackReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
+        if(trackReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
+        if(fMinimumMaxTrackPtFraction >= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
+        if(fMaximumMaxTrackPtFraction <= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
+        // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
+        
+        // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
+        trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
+        if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
+        
+      } // Loop for calculating Rmin
+      
+      // Get the track efficiency corrections
+      trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
+    } // Track efficiency correction if
     
     // Calculate deltaEta and deltaPhi between track and leading and subleading jets
     deltaEtaTrackLeadingJet = leadingJetEta - trackEta;
