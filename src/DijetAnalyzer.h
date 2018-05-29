@@ -45,6 +45,9 @@ private:
   void CorrelateTracksAndJets(ForestReader *treeReader, Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], Int_t correlationType);  // Do jet-track correlations
   Int_t GetNParticleFlowCandidatesInJet(ForestReader *treeReader, Double_t jetPhi, Double_t jetEta);
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
+  Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
+  Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
+  Double_t GetPtHatWeight(const Int_t ptHat) const; // Get the proper pT hat weighting for MC
   
   // Private data members
   std::vector<TString> fFileNames;   // Vector for all the files to loop over
@@ -52,6 +55,11 @@ private:
   DijetHistograms *fHistograms;      // Filled histograms
   TrkCorr *fTrackCorrection;         // Track correction class
   JffCorrection *fJffCorrection;     // Jet fragmentation function correction for jet pT
+  TF1 *fVzWeightFunction;            // Weighting function for vz. Needed for MC.
+  TF1 *fCentralityWeightFunction;    // Weighting function for centrality. Needed for MC.
+  
+  // Analyzed data type
+  Int_t fDataType;                   // Analyzed data type
   
   // Jet and track selection cuts
   Double_t fVzCut;                     // Cut for vertez z-position in an event

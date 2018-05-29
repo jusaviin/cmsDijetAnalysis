@@ -19,6 +19,9 @@ DijetAnalyzer::DijetAnalyzer() :
   fHistograms(0),
   fTrackCorrection(),
   fJffCorrection(),
+  fVzWeightFunction(0),
+  fCentralityWeightFunction(0),
+  fDataType(-1),
   fVzCut(0),
   fJetEtaCut(0),
   fJetSearchEtaCut(0),
@@ -78,17 +81,44 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fHistograms->CreateHistograms();
   
   // Find the correct folder for track correction tables based on data type
-  Int_t dataType = fCard->Get("DataType");
+  fDataType = fCard->Get("DataType");
   bool ppData = true;
-  if(dataType == ForestReader::kPp || dataType == ForestReader::kPpMC || dataType == ForestReader::kLocalTest){
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest){
+    
+    // Track correction
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
-  } else if (dataType == ForestReader::kPbPb || dataType == ForestReader::kPbPbMC){
+    
+    // Common vz weight function used by UIC group for pp MC
+    fVzWeightFunction = new TF1("fvz","gaus",-15,15);
+    fVzWeightFunction->SetParameter(0,1.10477);
+    fVzWeightFunction->SetParameter(1,2.52738);
+    fVzWeightFunction->SetParameter(2,1.30296e1);
+    
+    fCentralityWeightFunction = NULL;
+    
+  } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
+    
+    // Track correction
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_Jun7_Iterative_PbPb_etaLT2p4/");
+    
+    // Flag for PbPb data
     ppData = false;
+    
+    // Common vz weight function used by UIC group for PbPb MC
+    fVzWeightFunction = new TF1("fvz","pol6",-15,15);
+    fVzWeightFunction->SetParameters(1.18472,-0.132675,0.00857998,-0.000326085,-1.48786e-06,4.68665e-07,-7.32942e-09);
+    
+    // Comment centrality weight function used by UIC group for PbPb MC
+    fCentralityWeightFunction = new TF1("fcent1","[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)",0,180);
+    fCentralityWeightFunction->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15);
+    
   } else {
     fTrackCorrection = new TrkCorr(""); // Bad data type, no corrections initialized
+    fVzWeightFunction = NULL;
+    fCentralityWeightFunction = NULL;
   }
   
+  // Initialize the class for JFF correction
   fJffCorrection = new JffCorrection(ppData);
   
   // Read which histograms to fill this run
@@ -114,6 +144,9 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fHistograms(in.fHistograms),
   fTrackCorrection(in.fTrackCorrection),
   fJffCorrection(in.fJffCorrection),
+  fVzWeightFunction(in.fVzWeightFunction),
+  fCentralityWeightFunction(in.fCentralityWeightFunction),
+  fDataType(in.fDataType),
   fVzCut(in.fVzCut),
   fJetEtaCut(in.fJetEtaCut),
   fJetSearchEtaCut(in.fJetSearchEtaCut),
@@ -150,6 +183,9 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fHistograms = in.fHistograms;
   fTrackCorrection = in.fTrackCorrection;
   fJffCorrection = in.fJffCorrection;
+  fVzWeightFunction = in.fVzWeightFunction;
+  fCentralityWeightFunction = in.fCentralityWeightFunction;
+  fDataType = in.fDataType;
   fVzCut = in.fVzCut;
   fJetEtaCut = in.fJetEtaCut;
   fJetSearchEtaCut = in.fJetSearchEtaCut;
@@ -181,6 +217,8 @@ DijetAnalyzer::~DijetAnalyzer(){
   delete fHistograms;
   delete fTrackCorrection;
   delete fJffCorrection;
+  if(fVzWeightFunction) delete fVzWeightFunction;
+  if(fCentralityWeightFunction) delete fCentralityWeightFunction;
 }
 
 /*
@@ -272,7 +310,6 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t centrality = 0;      // Event centrality
   Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
   Int_t pthat = 0;              // pT hat for MC events
-  Int_t dataType = fCard->Get("DataType"); // Type of data considered, see enumeration ForestReader::enumDataTypes
   
   // Combining bools to make the code more readable
   Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack); // Select to fill the histograms in the main loop
@@ -333,28 +370,28 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Select the reader for jets
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
-    jetReader = new GeneratorLevelForestReader(dataType);
+    jetReader = new GeneratorLevelForestReader(fDataType);
   } else {
-    jetReader = new HighForestReader(dataType);
+    jetReader = new HighForestReader(fDataType);
   }
   
   // Select the reader for tracks
   if(fMcCorrelationType == kRecoGen){
-    trackReader = new GeneratorLevelForestReader(dataType);
+    trackReader = new GeneratorLevelForestReader(fDataType);
   } else if (fMcCorrelationType == kGenReco){
-    trackReader = new HighForestReader(dataType);
+    trackReader = new HighForestReader(fDataType);
   } else {
     trackReader = jetReader;
   }
   
   // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
   if(mixEvents){
-    if(dataType == ForestReader::kPbPb){
+    if(fDataType == ForestReader::kPbPb){
       mixedEventReader = new SkimForestReader(ForestReader::kPbPb);
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType ==kGenGen) { // Mixed event reader for generator tracks
-      mixedEventReader = new GeneratorLevelForestReader(dataType);
+      mixedEventReader = new GeneratorLevelForestReader(fDataType);
     } else {
-      mixedEventReader = new HighForestReader(dataType);
+      mixedEventReader = new HighForestReader(fDataType);
     }
   }
   
@@ -368,7 +405,7 @@ void DijetAnalyzer::RunAnalysis(){
     currentFile = fFileNames.at(iFile);
     
     // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
-    if(fCard->Get("DataType") == ForestReader::kPbPb){
+    if(fDataType == ForestReader::kPbPb){
       currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
     } else {
       currentMixedEventFile = fFileNames.at(iFile);
@@ -898,6 +935,83 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
     }
     
   } // Loop over tracks
+}
+/*
+ * Get the proper vz weighting depending on analyzed system
+ *
+ *  Arguments:
+ *   const Double_t vz = Vertex z position for the event
+ *
+ *   return: Multiplicative correction factor for vz
+ */
+Double_t DijetAnalyzer::GetVzWeight(const Double_t vz) const{
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) return 1;  // No correction for real data
+  if(fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest) return 1.0/fVzWeightFunction->Eval(vz); // Weight for pp MC
+  if(fDataType == ForestReader::kPbPbMC) return fVzWeightFunction->Eval(vz); // Weight for PbPb MC
+  return -1; // Return crazy value for unknown data types, so user will not miss it
+}
+
+/*
+ * Get the proper centrality weighting depending on analyzed system
+ *
+ *  Arguments:
+ *   const Int_t hiBin = CMS hiBin
+ *
+ *   return: Multiplicative correction factor for the given CMS hiBin
+ */
+Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
+  if(fDataType != ForestReader::kPbPbMC) return 1;  // Centrality weighting only for PbPb MC
+  return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin) : 1;  // No weighting for the most peripheral centrality bins
+}
+
+/*
+ * Get the proper pT hat weighting for MC
+ *
+ *  Arguments:
+ *   const Int_t ptHat = pT hat value in the event
+ *
+ *   return: Multiplicative correction factor for the given pT hat
+ */
+Double_t DijetAnalyzer::GetPtHatWeight(const Int_t ptHat) const{
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb || fDataType == ForestReader::kLocalTest) return 1;
+  
+  // The event are counted for specific bin edges, so those edges will be used for correction
+  const Int_t nBins = 9;
+  Int_t correctionBinEdges[nBins] = {30, 50, 80, 120, 170, 220, 280, 370, 460};
+  
+  // Search the correct bin for the given pT hat value
+  Int_t currentBin = -1;
+  for(Int_t iBin = 0; iBin < nBins; iBin++){
+    if(ptHat < correctionBinEdges[iBin]){
+      currentBin = iBin;
+      break;
+    }
+  }
+  
+  // Cross sections for each bin are given in the twiki https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiForest2015
+  Double_t crossSections[nBins+1] = {2.403,3.378e-2,3.778e-3,4.423e-4,6.147e-5,1.018e-5,2.477e-6,6.160e-7,1.088e-7,2.537e-8};
+  
+  // Number of events for different pT hat bins in the forest file list ppMC_Pythia6_forest_5TeV.txt
+  Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};
+  
+  // Return the weight for pp
+  if(fDataType == ForestReader::kPpMC) {
+    if(ppMcEvents[currentBin] == 0){ // This should never happen
+      cout << "WARNING! No events found for pT hat bin " << currentBin << endl;
+      return 0;
+    }
+    return (crossSections[currentBin]-crossSections[currentBin+1])/ppMcEvents[currentBin];
+  }
+  
+  // Number of events for different pT hat bins in the forest file list PbPbMC_5TeVPythia6+Hydjet_forests.txt
+  Int_t PbPbMcEvents[nBins] = {0,0,0,2571563,2850815,2680567,2891375,781744,129417};
+  
+  // Return the weight for PbPb
+  if(PbPbMcEvents[currentBin] == 0) { // This should never happen
+    cout << "WARNING! No events found for pT hat bin " << currentBin << endl;
+    return 0;
+  }
+  return (crossSections[currentBin]-crossSections[currentBin+1])/PbPbMcEvents[currentBin];
 }
 
 /*
