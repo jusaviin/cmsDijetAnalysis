@@ -37,6 +37,7 @@ ZVertexCut 15      # Maximum vz value for accepted tracks
 CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 100.25  # Centrality binning
 TrackPtBinEdges     0.5 1 2 3 4 8 300                   # Track pT binning
 AsymmetryBinEdges   0 0.11 0.22 0.33 0.75               # Dijet asymmetry binning
+PtHatBinEdges       0 30 50 80 120 170 220 280 370 460  # pT hat binning
 
 # Event mixing
 DoEventMixing 0           # 0 = Do not mix events. 1 = Generate mixed events

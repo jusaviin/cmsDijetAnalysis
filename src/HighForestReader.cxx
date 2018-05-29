@@ -184,7 +184,7 @@ void HighForestReader::Initialize(){
   // Connect the branches of the heavy ion tree
   fHeavyIonTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   fHeavyIonTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
-  if(fDataType == kPpMC || fDataType == kPbPbMC){
+  if(fDataType == kPpMC || fDataType == kPbPbMC || fDataType == kLocalTest){
     fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   } else {
     fPtHat = 0; // We do not have pT hat information for real data

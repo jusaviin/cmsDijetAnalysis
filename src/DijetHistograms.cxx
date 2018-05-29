@@ -19,6 +19,7 @@ DijetHistograms::DijetHistograms() :
   fhTrackCuts(0),
   fhCentrality(0),
   fhCentralityDijet(0),
+  fhPtHat(0),
   fhLeadingJet(0),
   fhSubleadingJet(0),
   fhDijet(0),
@@ -45,6 +46,7 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhTrackCuts(0),
   fhCentrality(0),
   fhCentralityDijet(0),
+  fhPtHat(0),
   fhLeadingJet(0),
   fhSubleadingJet(0),
   fhDijet(0),
@@ -71,6 +73,7 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhTrackCuts(in.fhTrackCuts),
   fhCentrality(in.fhCentrality),
   fhCentralityDijet(in.fhCentralityDijet),
+  fhPtHat(in.fhPtHat),
   fhLeadingJet(in.fhLeadingJet),
   fhSubleadingJet(in.fhSubleadingJet),
   fhDijet(in.fhDijet),
@@ -101,6 +104,7 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhTrackCuts = in.fhTrackCuts;
   fhCentrality = in.fhCentrality;
   fhCentralityDijet = in.fhCentralityDijet;
+  fhPtHat = in.fhPtHat;
   fhLeadingJet = in.fhLeadingJet;
   fhSubleadingJet = in.fhSubleadingJet;
   fhDijet = in.fhDijet;
@@ -128,6 +132,7 @@ DijetHistograms::~DijetHistograms(){
   delete fhTrackCuts;
   delete fhCentrality;
   delete fhCentralityDijet;
+  delete fhPtHat;
   delete fhLeadingJet;
   delete fhSubleadingJet;
   delete fhDijet;
@@ -232,6 +237,13 @@ void DijetHistograms::CreateHistograms(){
     wideAsymmetryBins[iAsymmetryBin] = fCard->Get("AsymmetryBinEdges",iAsymmetryBin);
   }
   
+  // Bins for the pT hat histogram
+  const Int_t nPtHatBins = fCard->GetNBin("PtHatBinEdges");
+  Double_t ptHatBins[nPtHatBins+1];
+  for(Int_t iPtHat = 0; iPtHat < nPtHatBins+1; iPtHat++){
+    ptHatBins[iPtHat] = fCard->Get("PtHatBinEdges",iPtHat);
+  }
+  
   // Arrays for creating THnSparses
   Int_t nBins4D[4];
   Int_t nBins5D[5];
@@ -250,6 +262,7 @@ void DijetHistograms::CreateHistograms(){
   fhTrackCuts = new TH1F("trackCuts","trackCuts",knTrackCuts,-0.5,knTrackCuts-0.5); fhTrackCuts->Sumw2();
   fhCentrality = new TH1F("centrality","centrality",nCentralityBins,minCentrality,maxCentrality); fhCentrality->Sumw2();
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
+  fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -477,6 +490,7 @@ void DijetHistograms::Write() const{
   fhTrackCuts->Write();
   fhCentrality->Write();
   fhCentralityDijet->Write();
+  fhPtHat->Write();
   fhLeadingJet->Write();
   fhSubleadingJet->Write();
   fhDijet->Write();

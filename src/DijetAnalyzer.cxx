@@ -271,6 +271,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t vz = 0;              // Vertex z-position
   Double_t centrality = 0;      // Event centrality
   Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
+  Int_t pthat = 0;              // pT hat for MC events
   Int_t dataType = fCard->Get("DataType"); // Type of data considered, see enumeration ForestReader::enumDataTypes
   
   // Combining bools to make the code more readable
@@ -441,10 +442,12 @@ void DijetAnalyzer::RunAnalysis(){
       vz = jetReader->GetVz();
       centrality = jetReader->GetCentrality();
       hiBin = jetReader->GetHiBin();
+      pthat = jetReader->GetPtHat();
       if(fillEventInformationHistograms){
         fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
         fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
         fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
+        fHistograms->fhPtHat->Fill(pthat);                  // pT hat histogram
       }
       //  ===== Apply all the event quality cuts =====
       
