@@ -10,6 +10,7 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
   ForestReader(),
   fHeavyIonTree(0),
   fJetTree(0),
+  fSkimTree(0),
   fTrackTree(0),
   fJetPtArray(),
   fJetPhiArray(),
@@ -33,6 +34,7 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType) :
   ForestReader(dataType),
   fHeavyIonTree(0),
   fJetTree(0),
+  fSkimTree(0),
   fTrackTree(0),
   fJetPtArray(),
   fJetPhiArray(),
@@ -54,6 +56,7 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(const GeneratorLevelFores
   ForestReader(in),
   fHeavyIonTree(in.fHeavyIonTree),
   fJetTree(in.fJetTree),
+  fSkimTree(in.fSkimTree),
   fTrackTree(in.fTrackTree),
   fTrackPtArray(in.fTrackPtArray),
   fTrackPhiArray(in.fTrackPhiArray),
@@ -81,6 +84,7 @@ GeneratorLevelForestReader& GeneratorLevelForestReader::operator=(const Generato
   
   fHeavyIonTree = in.fHeavyIonTree;
   fJetTree = in.fJetTree;
+  fSkimTree = in.fSkimTree;
   fTrackTree = in.fTrackTree;
   fTrackPtArray = in.fTrackPtArray;
   fTrackPhiArray = in.fTrackPhiArray;
@@ -123,13 +127,29 @@ void GeneratorLevelForestReader::Initialize(){
   // Connect the branches to the HLT tree (only for real data)
   fCaloJetFilterBit = 1;  // No filter for Monte Carlo
   
-  // Connect the branches to the skim tree (different for pp and PbPb data, no connection for Monte Carlo)
-  fPrimaryVertexFilterBit = 1;            // No filter for Monte Carlo
-  fBeamScrapingFilterBit = 1;             // No filter for Monte Carlo
-  fCollisionEventSelectionFilterBit = 1;  // No filter for Monte Carlo
-  fHBHENoiseFilterBit = 1;                // No filter for Monte Carlo
-  fHfCoincidenceFilterBit = 1;            // No HF energy coincidence requirement for Monte Carlo
-  fClusterCompatibilityFilterBit = 1;     // No cluster compatibility requirement for Monte Carlo
+  // Connect the branches to the skim tree (different for pp and PbPb Monte Carlo)
+  if(fDataType == kPpMC){ // pp MC
+    fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
+    fSkimTree->SetBranchAddress("pBeamScrapingFilter",&fBeamScrapingFilterBit,&fBeamScrapingBranch);
+    fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp
+    fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
+    fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
+  } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb MC
+    fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
+    fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
+    fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
+    fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
+    fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
+  } else { // Local test
+    fPrimaryVertexFilterBit = 1;
+    fBeamScrapingFilterBit = 1;
+    fCollisionEventSelectionFilterBit = 1;
+    fHBHENoiseFilterBit = 1;
+    fHfCoincidenceFilterBit = 1;
+    fClusterCompatibilityFilterBit = 1;
+  }
   
   // Connect the branches to the track tree
   fTrackTree->SetBranchAddress("pt",&fTrackPtArray,&fTrackPtBranch);
@@ -146,6 +166,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
+  fSkimTree = (TTree*)inputFile->Get("skimanalysis/HltTree");
   
   // The jet tree has different name in different datasets
   if(fDataType == kPpMC){
@@ -169,6 +190,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
 void GeneratorLevelForestReader::BurnForest(){
   fHeavyIonTree->Delete();
   fJetTree->Delete();
+  fSkimTree->Delete();
   fTrackTree->Delete();
 }
 
@@ -178,6 +200,7 @@ void GeneratorLevelForestReader::BurnForest(){
 void GeneratorLevelForestReader::GetEvent(Int_t nEvent){
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
+  fSkimTree->GetEntry(nEvent);
   fTrackTree->GetEntry(nEvent);
   
   // Read the numbers of tracks and jets for this event

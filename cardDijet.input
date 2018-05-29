@@ -4,10 +4,10 @@
 DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
-McCorrelationType 3 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
+McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
 
 # Select which histograms to save. Needed for memory issues.
-FilledHistograms 3 # 0 = All, 1 = All but jet-track correlation, 2 = Jet-track correlation, 3 = Event information
+FilledHistograms 0 # 0 = All, 1 = All but jet-track correlation, 2 = Jet-track correlation, 3 = Event information
 
 # Cuts for dijets
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis

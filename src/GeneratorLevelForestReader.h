@@ -76,6 +76,7 @@ private:
   // Trees in the forest
   TTree *fHeavyIonTree;    // Tree for heavy ion event information
   TTree *fJetTree;         // Tree for jet information
+  TTree *fSkimTree;        // Tree for event selection information
   TTree *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
   
   // Leaves for jet tree

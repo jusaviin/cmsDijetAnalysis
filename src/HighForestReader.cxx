@@ -218,28 +218,28 @@ void HighForestReader::Initialize(){
     fCaloJetFilterBit = 1;  // No filter for Monte Carlo
   }
   
-  // Connect the branches to the skim tree (different for pp and PbPb data, no connection for Monte Carlo)
-  if(fDataType == kPp){ // pp data
+  // Connect the branches to the skim tree (different for pp and PbPb data and Monte Carlo)
+  if(fDataType == kPp || fDataType == kPpMC){ // pp data or MC
     fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchAddress("pBeamScrapingFilter",&fBeamScrapingFilterBit,&fBeamScrapingBranch);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
-  } else if (fDataType == kPbPb){ // PbPb data
+  } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
     fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
     fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
     fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
-  } else { // Monte Carlo
-    fPrimaryVertexFilterBit = 1;            // No filter for Monte Carlo
-    fBeamScrapingFilterBit = 1;             // No filter for Monte Carlo
-    fCollisionEventSelectionFilterBit = 1;  // No filter for Monte Carlo
-    fHBHENoiseFilterBit = 1;                // No filter for Monte Carlo
-    fHfCoincidenceFilterBit = 1;            // No HF energy coincidence requirement for Monte Carlo
-    fClusterCompatibilityFilterBit = 1;     // No cluster compatibility requirement for Monte Carlo
+  } else { // Local test
+    fPrimaryVertexFilterBit = 1;
+    fBeamScrapingFilterBit = 1;
+    fCollisionEventSelectionFilterBit = 1;
+    fHBHENoiseFilterBit = 1;
+    fHfCoincidenceFilterBit = 1;
+    fClusterCompatibilityFilterBit = 1;     
   }
   
   // Connect the branches to the track tree
