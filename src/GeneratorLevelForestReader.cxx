@@ -129,10 +129,14 @@ void GeneratorLevelForestReader::Initialize(){
   fJetTree->SetBranchAddress("ngen",&fnJets,&fJetRawPtBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   
   // Connect the branches to the HLT tree
-  if(fDataType == kPpMC){ // pp MC
+  if(fDataType == kPp){ // pp data
     fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPbMC){ // PbPb MC
+  } else if (fDataType == kPpMC){
+    fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPbPb){ // PbPb
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPbPbMC){
+    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }

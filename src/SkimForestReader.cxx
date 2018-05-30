@@ -162,11 +162,15 @@ void SkimForestReader::Initialize(){
   fEventTree->SetBranchAddress("calo_rawpt",&fJetRawPtArray,&fJetRawPtBranch);
   fEventTree->SetBranchAddress("calo_trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
-  // Connect the branches regarding jet trigger requirements
-  if(fDataType == kPp || fDataType == kPpMC){ // pp data of MC
-    fEventTree->SetBranchAddress("HLT_ak4CaloJet80",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
-    fEventTree->SetBranchAddress("HLT_ak4CaloJet100",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  // Connect the branches to the HLT tree
+  if(fDataType == kPp){ // pp data
+    fEventTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPpMC){
+    fEventTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPbPb){ // PbPb
+    fEventTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPbPbMC){
+    fEventTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }
