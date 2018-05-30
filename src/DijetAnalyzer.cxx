@@ -519,13 +519,13 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Fill the event information histograms
       if(fillEventInformationHistograms){
-        fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
-        fHistograms->fhVertexZWeighted->Fill(vz,fVzWeight); // z-vertex distribution weighted with the weight function
-        fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
-        fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
-        fHistograms->fhCentralityWeighted->Fill(centrality,fCentralityWeight); // Centrality weighted with the centrality weighting function
-        fHistograms->fhPtHat->Fill(ptHat);                      // pT hat histogram
-        fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight); // pT het histogram weighted with corresponding cross section and event number
+        fHistograms->fhVertexZ->Fill(vz);                            // z vertex distribution from all events
+        fHistograms->fhVertexZWeighted->Fill(vz,fTotalEventWeight);  // z-vertex distribution weighted with the weight function
+        fHistograms->fhEvents->Fill(DijetHistograms::kAll);          // All the events looped over
+        fHistograms->fhCentrality->Fill(centrality);                 // Centrality filled from all events
+        fHistograms->fhCentralityWeighted->Fill(centrality,fTotalEventWeight); // Centrality weighted with the centrality weighting function
+        fHistograms->fhPtHat->Fill(ptHat);                           // pT hat histogram
+        fHistograms->fhPtHatWeighted->Fill(ptHat,fTotalEventWeight); // pT het histogram weighted with corresponding cross section and event number
       }
       
       //  ===== Apply all the event quality cuts =====
@@ -667,7 +667,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Only fill the dijet histograms if selected
         if(fillEventInformationHistograms){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
-          fHistograms->fhCentralityDijet->Fill(centrality);
+          fHistograms->fhCentralityDijet->Fill(centrality,fTotalEventWeight);
         }
         if(fillMainLoopHistograms){
           // Calculate the asymmetry
