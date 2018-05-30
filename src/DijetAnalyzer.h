@@ -47,7 +47,7 @@ private:
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
-  Double_t GetPtHatWeight(const Int_t ptHat) const; // Get the proper pT hat weighting for MC
+  Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
   
   // Private data members
   std::vector<TString> fFileNames;   // Vector for all the files to loop over
@@ -61,8 +61,16 @@ private:
   // Analyzed data type
   Int_t fDataType;                   // Analyzed data type
   
+  // Weights for filling the MC histograms
+  Double_t fVzWeight;                // Weight for vz in MC
+  Double_t fCentralityWeight;        // Weight for centrality in MC
+  Double_t fPtHatWeight;             // Weight for pT hat in MC
+  Double_t fTotalEventWeight;        // Combined weight factor for MC
+  
   // Jet and track selection cuts
   Double_t fVzCut;                     // Cut for vertez z-position in an event
+  Double_t fMinimumPtHat;              // Minimum accepted pT hat value
+  Double_t fMaximumPtHat;              // Maximum accepted pT hat value
   Double_t fJetEtaCut;                 // Eta cut around midrapidity
   Double_t fJetSearchEtaCut;           // Eta cut when searching for a dijet
   Double_t fJetMaximumPtCut;           // Maximum pT accepted for leading jet (and tracks)

@@ -209,13 +209,13 @@ void HighForestReader::Initialize(){
   // skimanalysis/HltTree         pPAprimaryVertexFilter          Event selection for pp
   // skimanalysis/HltTree           pBeamScrapingFilter           Event selection for pp
   
-  // Connect the branches to the HLT tree (only for real data)
-  if(fDataType == kPp){ // pp data
+  // Connect the branches to the HLT tree
+  if(fDataType == kPp || fDataType == kPpMC){ // pp data or MC
     fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPb){ // PbPb data
+  } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else { // Monte Carlo
-    fCaloJetFilterBit = 1;  // No filter for Monte Carlo
+  } else { // Local test
+    fCaloJetFilterBit = 1;  // No filter for local test
   }
   
   // Connect the branches to the skim tree (different for pp and PbPb data and Monte Carlo)

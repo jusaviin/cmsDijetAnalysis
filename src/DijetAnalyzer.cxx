@@ -22,7 +22,13 @@ DijetAnalyzer::DijetAnalyzer() :
   fVzWeightFunction(0),
   fCentralityWeightFunction(0),
   fDataType(-1),
+  fVzWeight(1),
+  fCentralityWeight(1),
+  fPtHatWeight(1),
+  fTotalEventWeight(1),
   fVzCut(0),
+  fMinimumPtHat(0),
+  fMaximumPtHat(0),
   fJetEtaCut(0),
   fJetSearchEtaCut(0),
   fJetMaximumPtCut(0),
@@ -55,7 +61,13 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFileNames(fileNameVector),
   fCard(newCard),
   fHistograms(0),
+  fVzWeight(1),
+  fCentralityWeight(1),
+  fPtHatWeight(1),
+  fTotalEventWeight(1),
   fVzCut(0),
+  fMinimumPtHat(0),
+  fMaximumPtHat(0),
   fJetEtaCut(0),
   fJetSearchEtaCut(0),
   fJetMaximumPtCut(0),
@@ -147,7 +159,13 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fVzWeightFunction(in.fVzWeightFunction),
   fCentralityWeightFunction(in.fCentralityWeightFunction),
   fDataType(in.fDataType),
+  fVzWeight(in.fVzWeight),
+  fCentralityWeight(in.fCentralityWeight),
+  fPtHatWeight(in.fPtHatWeight),
+  fTotalEventWeight(in.fTotalEventWeight),
   fVzCut(in.fVzCut),
+  fMinimumPtHat(in.fMinimumPtHat),
+  fMaximumPtHat(in.fMaximumPtHat),
   fJetEtaCut(in.fJetEtaCut),
   fJetSearchEtaCut(in.fJetSearchEtaCut),
   fJetMaximumPtCut(in.fJetMaximumPtCut),
@@ -186,7 +204,13 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fVzWeightFunction = in.fVzWeightFunction;
   fCentralityWeightFunction = in.fCentralityWeightFunction;
   fDataType = in.fDataType;
+  fVzWeight = in.fVzWeight;
+  fCentralityWeight = in.fCentralityWeight;
+  fPtHatWeight = in.fPtHatWeight;
+  fTotalEventWeight = in.fTotalEventWeight;
   fVzCut = in.fVzCut;
+  fMinimumPtHat = in.fMinimumPtHat;
+  fMaximumPtHat = in.fMaximumPtHat;
   fJetEtaCut = in.fJetEtaCut;
   fJetSearchEtaCut = in.fJetSearchEtaCut;
   fJetMaximumPtCut = in.fJetMaximumPtCut;
@@ -255,7 +279,9 @@ void DijetAnalyzer::RunAnalysis(){
   //        Event selection cuts
   //****************************************
   
-  fVzCut = fCard->Get("ZVertexCut");  // Event cut vor the z-posiiton of the primary vertex
+  fVzCut = fCard->Get("ZVertexCut");          // Event cut vor the z-posiiton of the primary vertex
+  fMinimumPtHat = fCard->Get("LowPtHatCut");  // Minimum accepted pT hat value
+  fMaximumPtHat = fCard->Get("HighPtHatCut"); // MAximum accepted pT hat value
   
   //****************************************
   //        Dijet selection cuts
@@ -309,7 +335,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t vz = 0;              // Vertex z-position
   Double_t centrality = 0;      // Event centrality
   Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
-  Int_t pthat = 0;              // pT hat for MC events
+  Double_t ptHat = 0;           // pT hat for MC events
   
   // Combining bools to make the code more readable
   Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack); // Select to fill the histograms in the main loop
@@ -475,17 +501,33 @@ void DijetAnalyzer::RunAnalysis(){
       // If track reader is not the same as jet reader, read the event to memory in trackReader
       if(useDifferentReaderFotJetsAndTracks) trackReader->GetEvent(iEvent);
 
-      // Get vz and centrality information from all events
+      // Get vz, centrality and pT hat information
       vz = jetReader->GetVz();
       centrality = jetReader->GetCentrality();
       hiBin = jetReader->GetHiBin();
-      pthat = jetReader->GetPtHat();
+      ptHat = jetReader->GetPtHat();
+      
+      // We need to apply pT hat cuts before getting pT hat weight. There might be rare events above the upper
+      // limit from which the weights are calculated, which could cause the code to crash.
+      if(ptHat < fMinimumPtHat || ptHat >= fMaximumPtHat) continue;
+      
+      // Get the weighting for the event
+      fVzWeight = GetVzWeight(vz);
+      fCentralityWeight = GetCentralityWeight(hiBin);
+      fPtHatWeight = GetPtHatWeight(ptHat);
+      fTotalEventWeight = fVzWeight*fCentralityWeight*fPtHatWeight;
+      
+      // Fill the event information histograms
       if(fillEventInformationHistograms){
         fHistograms->fhVertexZ->Fill(vz);                   // z vertex distribution from all events
+        fHistograms->fhVertexZWeighted->Fill(vz,fVzWeight); // z-vertex distribution weighted with the weight function
         fHistograms->fhEvents->Fill(DijetHistograms::kAll); // All the events looped over
         fHistograms->fhCentrality->Fill(centrality);        // Centrality filled from all events
-        fHistograms->fhPtHat->Fill(pthat);                  // pT hat histogram
+        fHistograms->fhCentralityWeighted->Fill(centrality,fCentralityWeight); // Centrality weighted with the centrality weighting function
+        fHistograms->fhPtHat->Fill(ptHat);                      // pT hat histogram
+        fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight); // pT het histogram weighted with corresponding cross section and event number
       }
+      
       //  ===== Apply all the event quality cuts =====
       
       // Cut for primary vertex. Only applied for data.
@@ -550,7 +592,7 @@ void DijetAnalyzer::RunAnalysis(){
             fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
             fillerJet[3] = centrality;              // Axis 3 = centrality
-            fHistograms->fhAnyJet->Fill(fillerJet); // Fill the data point to histogram
+            fHistograms->fhAnyJet->Fill(fillerJet,fTotalEventWeight); // Fill the data point to histogram
         
           } // Eta cut
         } // Check if we want to fill any jet histograms
@@ -637,7 +679,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[2] = leadingJetEta;                  // Axis 2: Leading jet eta
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fHistograms->fhLeadingJet->Fill(fillerDijet);    // Fill the data point to leading jet histogram
+          fHistograms->fhLeadingJet->Fill(fillerDijet,fTotalEventWeight);    // Fill the data point to leading jet histogram
           
           // Fill the subleading jet histogram
           fillerDijet[0] = subleadingJetPt;                // Axis 0: Subleading jet pT
@@ -645,7 +687,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[2] = subleadingJetEta;               // Axis 2: Subleading jet eta
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fHistograms->fhSubleadingJet->Fill(fillerDijet); // Fill the data point to subleading jet histogram
+          fHistograms->fhSubleadingJet->Fill(fillerDijet,fTotalEventWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
@@ -653,7 +695,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fHistograms->fhDijet->Fill(fillerDijet);         // Fill the data point to dijet histogram
+          fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight);         // Fill the data point to dijet histogram
           
         }
         
@@ -904,8 +946,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
       fillerTrack[2] = trackEta;                   // Axis 2: Track eta
       fillerTrack[3] = centrality;                 // Axis 3: Centrality
       fillerTrack[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
-      fHistograms->fhTrack->Fill(fillerTrack,trackEfficiencyCorrection);  // Fill the track histogram
-      fHistograms->fhTrackUncorrected->Fill(fillerTrack);                 // Fill the uncorrected track histogram
+      fHistograms->fhTrack->Fill(fillerTrack,trackEfficiencyCorrection*fTotalEventWeight);  // Fill the track histogram
+      fHistograms->fhTrackUncorrected->Fill(fillerTrack,fTotalEventWeight);                 // Fill the uncorrected track histogram
     }
     
     // Fill all the jet-track correlation histograms if selected
@@ -918,9 +960,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
       fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-      fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection); // Fill the track-leading jet correlation histogram
-      fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack);                // Fill the uncorrected track-leading jet correlation histogram
-      fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-leading jet correlation histogram
+      fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
+      fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
+      fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
       
       // Fill the track-subleading jet correlation histograms
       fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
@@ -929,9 +971,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
       fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-      fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection); // Fill the track-subleading jet correlation histogram
-      fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack);                // Fill the uncorrected track-subleading jet correlation histogram
-      fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt); // Fill the pT weighted track-subleading jet correlation histogram
+      fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-subleading jet correlation histogram
+      fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-subleading jet correlation histogram
+      fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-subleading jet correlation histogram
     }
     
   } // Loop over tracks
@@ -972,8 +1014,8 @@ Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
  *
  *   return: Multiplicative correction factor for the given pT hat
  */
-Double_t DijetAnalyzer::GetPtHatWeight(const Int_t ptHat) const{
-  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb || fDataType == ForestReader::kLocalTest) return 1;
+Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) return 1; // No correction for real data
   
   // The event are counted for specific bin edges, so those edges will be used for correction
   const Int_t nBins = 9;
@@ -995,7 +1037,7 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Int_t ptHat) const{
   Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};
   
   // Return the weight for pp
-  if(fDataType == ForestReader::kPpMC) {
+  if(fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest) {
     if(ppMcEvents[currentBin] == 0){ // This should never happen
       cout << "WARNING! No events found for pT hat bin " << currentBin << endl;
       return 0;

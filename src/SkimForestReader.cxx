@@ -163,12 +163,12 @@ void SkimForestReader::Initialize(){
   fEventTree->SetBranchAddress("calo_trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
   // Connect the branches regarding jet trigger requirements
-  if(fDataType == kPp){ // pp data
+  if(fDataType == kPp || fDataType == kPpMC){ // pp data of MC
     fEventTree->SetBranchAddress("HLT_ak4CaloJet80",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPb){ // PbPb data
+  } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
     fEventTree->SetBranchAddress("HLT_ak4CaloJet100",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else { // Monte Carlo
-    fCaloJetFilterBit = 1;  // No filter for Monte Carlo
+  } else { // Local test
+    fCaloJetFilterBit = 1;  // No filter for local test
   }
   
   // Connect the branches containing event selection filter bits

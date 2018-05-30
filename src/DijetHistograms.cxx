@@ -15,11 +15,14 @@
  */
 DijetHistograms::DijetHistograms() :
   fhVertexZ(0),
+  fhVertexZWeighted(0),
   fhEvents(0),
   fhTrackCuts(0),
   fhCentrality(0),
+  fhCentralityWeighted(0),
   fhCentralityDijet(0),
   fhPtHat(0),
+  fhPtHatWeighted(0),
   fhLeadingJet(0),
   fhSubleadingJet(0),
   fhDijet(0),
@@ -42,11 +45,14 @@ DijetHistograms::DijetHistograms() :
  */
 DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhVertexZ(0),
+  fhVertexZWeighted(0),
   fhEvents(0),
   fhTrackCuts(0),
   fhCentrality(0),
+  fhCentralityWeighted(0),
   fhCentralityDijet(0),
   fhPtHat(0),
+  fhPtHatWeighted(0),
   fhLeadingJet(0),
   fhSubleadingJet(0),
   fhDijet(0),
@@ -69,11 +75,14 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
  */
 DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhVertexZ(in.fhVertexZ),
+  fhVertexZWeighted(in.fhVertexZWeighted),
   fhEvents(in.fhEvents),
   fhTrackCuts(in.fhTrackCuts),
   fhCentrality(in.fhCentrality),
+  fhCentralityWeighted(in.fhCentralityWeighted),
   fhCentralityDijet(in.fhCentralityDijet),
   fhPtHat(in.fhPtHat),
+  fhPtHatWeighted(in.fhPtHatWeighted),
   fhLeadingJet(in.fhLeadingJet),
   fhSubleadingJet(in.fhSubleadingJet),
   fhDijet(in.fhDijet),
@@ -100,11 +109,14 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   if (&in==this) return *this;
   
   fhVertexZ = in.fhVertexZ;
+  fhVertexZWeighted = in.fhVertexZWeighted;
   fhEvents = in.fhEvents;
   fhTrackCuts = in.fhTrackCuts;
   fhCentrality = in.fhCentrality;
+  fhCentralityWeighted = in.fhCentralityWeighted;
   fhCentralityDijet = in.fhCentralityDijet;
   fhPtHat = in.fhPtHat;
+  fhPtHatWeighted = in.fhPtHatWeighted;
   fhLeadingJet = in.fhLeadingJet;
   fhSubleadingJet = in.fhSubleadingJet;
   fhDijet = in.fhDijet;
@@ -128,11 +140,14 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
 DijetHistograms::~DijetHistograms(){
   // destructor
   delete fhVertexZ;
+  delete fhVertexZWeighted;
   delete fhEvents;
   delete fhTrackCuts;
   delete fhCentrality;
+  delete fhCentralityWeighted;
   delete fhCentralityDijet;
   delete fhPtHat;
+  delete fhPtHatWeighted;
   delete fhLeadingJet;
   delete fhSubleadingJet;
   delete fhDijet;
@@ -211,6 +226,11 @@ void DijetHistograms::CreateHistograms(){
   const Double_t maxVz = 20;    // Maximum vz
   const Int_t nVzBins = 80;     // Number of vz bins
   
+  // pT hat
+  const Double_t minPtHat = 0;     // Minimum pT hat
+  const Double_t maxPtHat = 460;   // Maximum pT hat
+  const Int_t nFinePtHatBins = 230; // Number of fine pT hat bins
+  
   // Correlation types
   const Double_t minCorrelationType = -0.5;                   // Correlation type indexing starts from zero
   const Double_t maxCorrelationType = knCorrelationTypes-0.5; // Maximum correlation type index
@@ -258,11 +278,14 @@ void DijetHistograms::CreateHistograms(){
   // ======== Plain TH1 histograms ========
   
   fhVertexZ = new TH1F("vertexZ","vertexZ",nVzBins,minVz,maxVz); fhVertexZ->Sumw2();
+  fhVertexZWeighted = new TH1F("vertexZweighted","vertexZweighted",nVzBins,minVz,maxVz); fhVertexZWeighted->Sumw2();
   fhEvents = new TH1F("nEvents","nEvents",knEventTypes,-0.5,knEventTypes-0.5); fhEvents->Sumw2();
   fhTrackCuts = new TH1F("trackCuts","trackCuts",knTrackCuts,-0.5,knTrackCuts-0.5); fhTrackCuts->Sumw2();
   fhCentrality = new TH1F("centrality","centrality",nCentralityBins,minCentrality,maxCentrality); fhCentrality->Sumw2();
+  fhCentralityWeighted = new TH1F("centralityWeighted","centralityWeighted",nCentralityBins,minCentrality,maxCentrality); fhCentralityWeighted->Sumw2();
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
+  fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -486,11 +509,14 @@ void DijetHistograms::Write() const{
   
   // Write the histograms to file
   fhVertexZ->Write();
+  fhVertexZWeighted->Write();
   fhEvents->Write();
   fhTrackCuts->Write();
   fhCentrality->Write();
+  fhCentralityWeighted->Write();
   fhCentralityDijet->Write();
   fhPtHat->Write();
+  fhPtHatWeighted->Write();
   fhLeadingJet->Write();
   fhSubleadingJet->Write();
   fhDijet->Write();

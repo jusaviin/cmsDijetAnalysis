@@ -10,6 +10,7 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
   ForestReader(),
   fHeavyIonTree(0),
   fJetTree(0),
+  fHltTree(0),
   fSkimTree(0),
   fTrackTree(0),
   fJetPtArray(),
@@ -34,6 +35,7 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType) :
   ForestReader(dataType),
   fHeavyIonTree(0),
   fJetTree(0),
+  fHltTree(0),
   fSkimTree(0),
   fTrackTree(0),
   fJetPtArray(),
@@ -56,6 +58,7 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(const GeneratorLevelFores
   ForestReader(in),
   fHeavyIonTree(in.fHeavyIonTree),
   fJetTree(in.fJetTree),
+  fHltTree(in.fHltTree),
   fSkimTree(in.fSkimTree),
   fTrackTree(in.fTrackTree),
   fTrackPtArray(in.fTrackPtArray),
@@ -84,6 +87,7 @@ GeneratorLevelForestReader& GeneratorLevelForestReader::operator=(const Generato
   
   fHeavyIonTree = in.fHeavyIonTree;
   fJetTree = in.fJetTree;
+  fHltTree = in.fHltTree;
   fSkimTree = in.fSkimTree;
   fTrackTree = in.fTrackTree;
   fTrackPtArray = in.fTrackPtArray;
@@ -124,8 +128,14 @@ void GeneratorLevelForestReader::Initialize(){
   fJetTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
   fJetTree->SetBranchAddress("ngen",&fnJets,&fJetRawPtBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   
-  // Connect the branches to the HLT tree (only for real data)
-  fCaloJetFilterBit = 1;  // No filter for Monte Carlo
+  // Connect the branches to the HLT tree
+  if(fDataType == kPpMC){ // pp MC
+    fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPbPbMC){ // PbPb MC
+    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else { // Local test
+    fCaloJetFilterBit = 1;  // No filter for local test
+  }
   
   // Connect the branches to the skim tree (different for pp and PbPb Monte Carlo)
   if(fDataType == kPpMC){ // pp MC
@@ -166,6 +176,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
+  fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree");
   fSkimTree = (TTree*)inputFile->Get("skimanalysis/HltTree");
   
   // The jet tree has different name in different datasets
@@ -190,6 +201,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
 void GeneratorLevelForestReader::BurnForest(){
   fHeavyIonTree->Delete();
   fJetTree->Delete();
+  fHltTree->Delete();
   fSkimTree->Delete();
   fTrackTree->Delete();
 }
@@ -200,6 +212,7 @@ void GeneratorLevelForestReader::BurnForest(){
 void GeneratorLevelForestReader::GetEvent(Int_t nEvent){
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
+  fHltTree->GetEntry(nEvent);
   fSkimTree->GetEntry(nEvent);
   fTrackTree->GetEntry(nEvent);
   

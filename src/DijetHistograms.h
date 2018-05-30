@@ -36,11 +36,14 @@ public:
   // Histograms defined public to allow easier access to them. Should not be abused
   // Notation in comments: l = leading jet, s = subleading jet, uc = uncorrected, ptw = pT weighted
   TH1F *fhVertexZ;             // Vertex z-position
+  TH1F *fhVertexZWeighted;     // Weighted vertex z-position (only meaningfull for MC)
   TH1F *fhEvents;              // Number of events. For binning see enumEventTypes.
   TH1F *fhTrackCuts;           // Number of tracks. For binning see enumTrackCuts.
   TH1F *fhCentrality;          // Centrality information. -0.5 for pp or PYTHIA.
+  TH1F *fhCentralityWeighted;  // Weighted centrality distribution (only meaningful for MC)
   TH1F *fhCentralityDijet;     // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
-  TH1F *fhPtHat;               // pT hat for MC events
+  TH1F *fhPtHat;               // pT hat for MC events (only meaningful for MC)
+  TH1F *fhPtHatWeighted;       // Weighted pT hat distribution
   THnSparseF *fhLeadingJet;    // Leading jet information [l-pT][l-phi][l-eta][Ajj][cent]
   THnSparseF *fhSubleadingJet; // Leading jet information [s-pT][s-phi][s-eta][Ajj][cent]
   THnSparseF *fhDijet;         // Dijet information. Axes: [l-pT][s-pT][dphi][Ajj][cent]
