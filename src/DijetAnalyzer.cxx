@@ -354,8 +354,6 @@ void DijetAnalyzer::RunAnalysis(){
   Bool_t allEventsWentThrough;                                     // Have we checked all the events in the mixing file
   Bool_t checkForDuplicates;                                       // Check if we have already mixed with the corresponding event
   Bool_t skipEvent;                                                // Skip the current mixing event
-  std::vector<Double_t> mixedEventVz;                              // Vector for vz in mixing events
-  std::vector<Int_t> mixedEventHiBin;                              // Vector for hiBin in mixing events
   std::vector<Int_t> mixedEventIndices;                            // Indices for events that have already been mixed
   Double_t additionalTolerance;                                    // Increased vz tolerance, if not enough events found from the mixing file
   
@@ -440,7 +438,7 @@ void DijetAnalyzer::RunAnalysis(){
     // Open the file and check that everything goes fine
     inputFile = TFile::Open(currentFile);
     if(useDifferentReaderFotJetsAndTracks) copyInputFile = TFile::Open(currentFile);
-    mixedEventFile = TFile::Open(currentMixedEventFile);
+    if(mixEvents) mixedEventFile = TFile::Open(currentMixedEventFile);
     
     // Check that the file exists
     if(!inputFile){
@@ -480,16 +478,6 @@ void DijetAnalyzer::RunAnalysis(){
       nEventsInMixingFile = mixedEventReader->GetNEvents(); // Read the number of events in the mixing file
       firstMixingEvent = nEventsInMixingFile*mixedEventRandomizer->Rndm();  // Start mixing from random spot in file
       if(firstMixingEvent == nEventsInMixingFile) firstMixingEvent--;  // Move the index to allowed range
-      
-      // Read vz and hiBin from each event in event mixing file to memory.
-      // This way we avoid loading different mixed events in a loop several times
-      mixedEventVz.clear();     // Clear the vectors for any possible
-      mixedEventHiBin.clear();  // contents they might have
-      for(Int_t iMixedEvent = 0; iMixedEvent < nEventsInMixingFile; iMixedEvent++){
-        mixedEventReader->GetEvent(iMixedEvent);
-        mixedEventVz.push_back(mixedEventReader->GetVz());
-        mixedEventHiBin.push_back(mixedEventReader->GetHiBin());
-      }
     }
 
     // Event loop
@@ -766,12 +754,14 @@ void DijetAnalyzer::RunAnalysis(){
             }
             if(skipEvent) continue;
             
-            // Match vz and hiBin between the dijet event and mixed event
-            if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > (mixingVzTolerance + additionalTolerance)) continue;
-            if(mixedEventHiBin.at(mixedEventIndex) != hiBin) continue;
-            
-            // If match vz and hiBin, then load the event from the mixed event tree and mark that we have mixed this event
+            // If the index has not been used, load the mixed event
             mixedEventReader->GetEvent(mixedEventIndex);
+            
+            // Match vz and hiBin between the dijet event and mixed event
+            if(TMath::Abs(mixedEventReader->GetVz() - vz) > (mixingVzTolerance + additionalTolerance)) continue;
+            if(mixedEventReader->GetHiBin() != hiBin) continue;
+            
+            // If vz and hiBin match, mark that we have mixed this event
             mixedEventIndices.push_back(mixedEventIndex);
             
             // Do the correlations with the dijet from current event and track from mixing event
@@ -791,7 +781,7 @@ void DijetAnalyzer::RunAnalysis(){
     // Close the input files after the event has been read
     inputFile->Close();
     if(useDifferentReaderFotJetsAndTracks) copyInputFile->Close();
-    mixedEventFile->Close();
+    if(mixEvents) mixedEventFile->Close();
     
   } // File loop
   
