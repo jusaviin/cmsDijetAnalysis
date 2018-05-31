@@ -354,6 +354,8 @@ void DijetAnalyzer::RunAnalysis(){
   Bool_t allEventsWentThrough;                                     // Have we checked all the events in the mixing file
   Bool_t checkForDuplicates;                                       // Check if we have already mixed with the corresponding event
   Bool_t skipEvent;                                                // Skip the current mixing event
+  std::vector<Double_t> mixedEventVz;                              // Vector for vz in mixing events
+  std::vector<Int_t> mixedEventHiBin;                              // Vector for hiBin in mixing events
   std::vector<Int_t> mixedEventIndices;                            // Indices for events that have already been mixed
   Double_t additionalTolerance;                                    // Increased vz tolerance, if not enough events found from the mixing file
   
@@ -385,6 +387,7 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t nParticleFlowCandidatesInThisJet;  // Number of particle flow candidates in the current jet
   
   // File name helper variables
+  Int_t iMixedEventFile;
   TString currentFile;
   TString currentMixedEventFile;
   
@@ -423,7 +426,8 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t debugLevel = fCard->Get("DebugLevel");
   
   // Loop over files
-  for(Int_t iFile = 0; iFile < (Int_t) fFileNames.size(); iFile++) {
+  Int_t nFiles = fFileNames.size();
+  for(Int_t iFile = 0; iFile < nFiles; iFile++) {
     
     // Find the filename
     currentFile = fFileNames.at(iFile);
@@ -432,7 +436,9 @@ void DijetAnalyzer::RunAnalysis(){
     if(fDataType == ForestReader::kPbPb){
       currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
     } else {
-      currentMixedEventFile = fFileNames.at(iFile);
+      iMixedEventFile = iFile+1;
+      if(iMixedEventFile == nFiles) iMixedEventFile = 0;
+      currentMixedEventFile = fFileNames.at(iMixedEventFile);
     }
     
     // Open the file and check that everything goes fine
@@ -478,6 +484,16 @@ void DijetAnalyzer::RunAnalysis(){
       nEventsInMixingFile = mixedEventReader->GetNEvents(); // Read the number of events in the mixing file
       firstMixingEvent = nEventsInMixingFile*mixedEventRandomizer->Rndm();  // Start mixing from random spot in file
       if(firstMixingEvent == nEventsInMixingFile) firstMixingEvent--;  // Move the index to allowed range
+      
+      // Read vz and hiBin from each event in event mixing file to memory.
+      // This way we avoid loading different mixed events in a loop several times
+      mixedEventVz.clear();     // Clear the vectors for any possible
+      mixedEventHiBin.clear();  // contents they might have
+      for(Int_t iMixedEvent = 0; iMixedEvent < nEventsInMixingFile; iMixedEvent++){
+        mixedEventReader->GetEvent(iMixedEvent);
+        mixedEventVz.push_back(mixedEventReader->GetVz());
+        mixedEventHiBin.push_back(mixedEventReader->GetHiBin());
+      }
     }
 
     // Event loop
@@ -754,14 +770,12 @@ void DijetAnalyzer::RunAnalysis(){
             }
             if(skipEvent) continue;
             
-            // If the index has not been used, load the mixed event
-            mixedEventReader->GetEvent(mixedEventIndex);
-            
             // Match vz and hiBin between the dijet event and mixed event
-            if(TMath::Abs(mixedEventReader->GetVz() - vz) > (mixingVzTolerance + additionalTolerance)) continue;
-            if(mixedEventReader->GetHiBin() != hiBin) continue;
+            if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > (mixingVzTolerance + additionalTolerance)) continue;
+            if(mixedEventHiBin.at(mixedEventIndex) != hiBin) continue;
             
-            // If vz and hiBin match, mark that we have mixed this event
+            // If match vz and hiBin, then load the event from the mixed event tree and mark that we have mixed this event
+            mixedEventReader->GetEvent(mixedEventIndex);
             mixedEventIndices.push_back(mixedEventIndex);
             
             // Do the correlations with the dijet from current event and track from mixing event
