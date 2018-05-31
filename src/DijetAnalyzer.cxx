@@ -358,6 +358,7 @@ void DijetAnalyzer::RunAnalysis(){
   std::vector<Int_t> mixedEventHiBin;                              // Vector for hiBin in mixing events
   std::vector<Int_t> mixedEventIndices;                            // Indices for events that have already been mixed
   Double_t additionalTolerance;                                    // Increased vz tolerance, if not enough events found from the mixing file
+  Int_t hiBinTolerance;                                            // Define how closely we need to match hiBin for heavy ions
   
   // Initialize the mixed event randomizer
   mixedEventRandomizer->SetSeed(0);
@@ -727,6 +728,7 @@ void DijetAnalyzer::RunAnalysis(){
           checkForDuplicates = false;   // Start checking for duplicates in the second round over the file
           skipEvent = false;
           additionalTolerance = 0;
+          hiBinTolerance = 0;
           mixedEventIndices.clear();
           
           // Continue mixing until we have reached required number of evens
@@ -735,13 +737,14 @@ void DijetAnalyzer::RunAnalysis(){
             // By default, do not skip an event
             skipEvent = false;
             
-            // If we have checked all the events but not found enough event to mix with, increase vz tolerance
+            // If we have checked all the events but not found enough event to mix with, increase vz and hiBin tolerance
             if(allEventsWentThrough){
               if(debugLevel > 0){
                 cout << "Could only find " << eventsMixed << " events to mix with event " << iEvent << " in file " << currentFile.Data() << endl;
-                cout << "Increasing vz tolerance by 0.25" << endl;
+                cout << "Increasing vz tolerance by 0.25 and hiBin tolerance by 1" << endl;
               }
               
+              hiBinTolerance += 1;
               additionalTolerance += 0.25;
               allEventsWentThrough = false;
               checkForDuplicates = true;
@@ -772,7 +775,7 @@ void DijetAnalyzer::RunAnalysis(){
             
             // Match vz and hiBin between the dijet event and mixed event
             if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > (mixingVzTolerance + additionalTolerance)) continue;
-            if(mixedEventHiBin.at(mixedEventIndex) != hiBin) continue;
+            if(TMath::Abs(mixedEventHiBin.at(mixedEventIndex) - hiBin) > hiBinTolerance + 1e-4) continue;
             
             // If match vz and hiBin, then load the event from the mixed event tree and mark that we have mixed this event
             mixedEventReader->GetEvent(mixedEventIndex);
