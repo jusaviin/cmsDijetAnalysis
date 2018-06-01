@@ -22,7 +22,7 @@ class DijetAnalyzer{
   
 private:
   
-  enum enumFilledHistograms{kFillAll,kFillAllButJetTrack,kFillJetTrack,kFillOnlyEventInformation,knFillModes}; // Which kinds of histograms are filled
+  enum enumFilledHistograms{kFillAll,kFillAllButJetTrack,kFillJetTrack,kFillOnlyEventInformation,kFillEventInformationAndRegularJetTrack,kFillJetTrackUncorrected,kFillJetTrackPtWeighted,knFillModes}; // Which kinds of histograms are filled
   enum enumSubeventCuts{kSubeventZero,kSubeventNonZero,kSubeventAny,knSubeventCuts}; // Cuts for subevent index
   enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
   

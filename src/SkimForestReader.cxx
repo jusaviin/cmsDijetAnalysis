@@ -165,12 +165,12 @@ void SkimForestReader::Initialize(){
   // Connect the branches to the HLT tree
   if(fDataType == kPp){ // pp data
     fEventTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPpMC){
-    fEventTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPpMC){ // pp MC
+    fEventTree->SetBranchAddress("HLT_ak4CaloJet80",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPb){ // PbPb
     fEventTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPbMC){
-    fEventTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else if (fDataType == kPbPbMC){ // PbPb MC
+    fEventTree->SetBranchAddress("HLT_ak4CaloJet100",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }
@@ -183,6 +183,13 @@ void SkimForestReader::Initialize(){
     fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
+  } else if (fDataType == kPpMC){
+    fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
+    fBeamScrapingFilterBit = 1; // No beam scraping filter for MC
+    fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp MC
+    fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp MC
+    fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp MC
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
     fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);

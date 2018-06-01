@@ -339,7 +339,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Combining bools to make the code more readable
   Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack); // Select to fill the histograms in the main loop
-  Bool_t fillEventInformationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillOnlyEventInformation); // Need number of jets for normalizing jet-track correlation histograms
+  Bool_t fillEventInformationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillOnlyEventInformation || fFilledHistograms == kFillEventInformationAndRegularJetTrack); // Need number of jets for normalizing jet-track correlation histograms
   Bool_t useDifferentReaderFotJetsAndTracks = (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco); // Use different forest reader for jets and tracks
   
   // Event mixing information
@@ -399,6 +399,8 @@ void DijetAnalyzer::RunAnalysis(){
   // Select the reader for jets
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     jetReader = new GeneratorLevelForestReader(fDataType);
+  } else if ((fMcCorrelationType == kRecoReco || fMcCorrelationType == kRecoGen) && fDataType != ForestReader::kLocalTest) {
+    jetReader = new SkimForestReader(fDataType);
   } else {
     jetReader = new HighForestReader(fDataType);
   }
@@ -414,9 +416,9 @@ void DijetAnalyzer::RunAnalysis(){
   
   // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
   if(mixEvents){
-    if(fDataType == ForestReader::kPbPb){
+    if((fDataType == ForestReader::kPbPb || fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoReco) && fDataType != ForestReader::kLocalTest){
       mixedEventReader = new SkimForestReader(ForestReader::kPbPb);
-    } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType ==kGenGen) { // Mixed event reader for generator tracks
+    } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
       mixedEventReader = new GeneratorLevelForestReader(fDataType);
     } else {
       mixedEventReader = new HighForestReader(fDataType);
@@ -825,7 +827,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
   
   // Select which histograms to fill
   Bool_t fillTrackHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack);
-  Bool_t fillJetTrackCorrelationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack);
+  Bool_t fillRegularJetTrackCorrelationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillEventInformationAndRegularJetTrack);
+  Bool_t fillUncorrectedJetTrackCorrelationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillJetTrackUncorrected);
+  Bool_t fillPtWeightedJetTrackCorrelationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillJetTrackPtWeighted);
   
   // Event information
   Int_t hiBin = trackReader->GetHiBin();
@@ -958,30 +962,28 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
     }
     
     // Fill all the jet-track correlation histograms if selected
-    if(fillJetTrackCorrelationHistograms){
-      
-      // Fill the track-leading jet correlation histograms
-      fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
-      fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
-      fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
-      fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
-      fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
-      fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-      fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
-      fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
-      fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
-      
-      // Fill the track-subleading jet correlation histograms
-      fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
-      fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
-      fillerJetTrack[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
-      fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
-      fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
-      fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-      fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-subleading jet correlation histogram
-      fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-subleading jet correlation histogram
-      fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-subleading jet correlation histogram
-    }
+    
+    // Fill the track-leading jet correlation histograms
+    fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
+    fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
+    fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
+    fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+    fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
+    fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+    if(fillRegularJetTrackCorrelationHistograms) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
+    if(fillUncorrectedJetTrackCorrelationHistograms) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
+    if(fillPtWeightedJetTrackCorrelationHistograms) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
+    
+    // Fill the track-subleading jet correlation histograms
+    fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
+    fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
+    fillerJetTrack[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
+    fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+    fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
+    fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+    if(fillRegularJetTrackCorrelationHistograms) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-subleading jet correlation histogram
+    if(fillUncorrectedJetTrackCorrelationHistograms) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-subleading jet correlation histogram
+    if(fillPtWeightedJetTrackCorrelationHistograms) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-subleading jet correlation histogram
     
   } // Loop over tracks
 }
