@@ -148,7 +148,11 @@ void SkimForestReader::Initialize(){
   
   // Connect the branches related to event information
   fEventTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
-  fEventTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
+  if(fDataType == kPp || fDataType == kPpMC){
+    fHiBin = -1;  // The skims for pp do not have hiBin
+  } else {
+    fEventTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
+  }
   if(fDataType == kPpMC || fDataType == kPbPbMC){
     fEventTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   } else {
@@ -176,7 +180,7 @@ void SkimForestReader::Initialize(){
   }
   
   // Connect the branches containing event selection filter bits
-  if(fDataType == kPp || fDataType == kPpMC){ // pp data pr MC
+  if(fDataType == kPp){ // pp data pr MC
     fEventTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fEventTree->SetBranchAddress("pBeamScrapingFilter",&fBeamScrapingFilterBit,&fBeamScrapingBranch);
     fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);

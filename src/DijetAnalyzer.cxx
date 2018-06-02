@@ -417,7 +417,7 @@ void DijetAnalyzer::RunAnalysis(){
   // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
   if(mixEvents){
     if((fDataType == ForestReader::kPbPb || fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoReco) && fDataType != ForestReader::kLocalTest){
-      mixedEventReader = new SkimForestReader(ForestReader::kPbPb);
+      mixedEventReader = new SkimForestReader(fDataType);
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
       mixedEventReader = new GeneratorLevelForestReader(fDataType);
     } else {
