@@ -15,6 +15,7 @@
 #include "HighForestReader.h"
 #include "SkimForestReader.h"
 #include "GeneratorLevelForestReader.h"
+#include "GeneratorLevelSkimForestReader.h"
 #include "TrkCorr.h"
 #include "JffCorrection.h"
 

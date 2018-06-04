@@ -398,7 +398,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Select the reader for jets
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
-    jetReader = new GeneratorLevelForestReader(fDataType);
+    jetReader = new GeneratorLevelSkimForestReader(fDataType);
   } else if ((fMcCorrelationType == kRecoReco || fMcCorrelationType == kRecoGen) && fDataType != ForestReader::kLocalTest) {
     jetReader = new SkimForestReader(fDataType);
   } else {
@@ -407,7 +407,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Select the reader for tracks
   if(fMcCorrelationType == kRecoGen){
-    trackReader = new GeneratorLevelForestReader(fDataType);
+    trackReader = new GeneratorLevelSkimForestReader(fDataType);
   } else if (fMcCorrelationType == kGenReco){
     trackReader = new HighForestReader(fDataType);
   } else {
@@ -419,7 +419,7 @@ void DijetAnalyzer::RunAnalysis(){
     if((fDataType == ForestReader::kPbPb || fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoReco) && fDataType != ForestReader::kLocalTest){
       mixedEventReader = new SkimForestReader(fDataType);
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
-      mixedEventReader = new GeneratorLevelForestReader(fDataType);
+      mixedEventReader = new GeneratorLevelSkimForestReader(fDataType);
     } else {
       mixedEventReader = new HighForestReader(fDataType);
     }
@@ -502,6 +502,8 @@ void DijetAnalyzer::RunAnalysis(){
     // Event loop
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
       
+      if(debugLevel > 1 && iEvent % 1000 == 0) cout << "Analyzing event " << iEvent << endl;
+      
       // Read the event to memory
       jetReader->GetEvent(iEvent);
       
@@ -527,12 +529,12 @@ void DijetAnalyzer::RunAnalysis(){
       // Fill the event information histograms
       if(fillEventInformationHistograms){
         fHistograms->fhVertexZ->Fill(vz);                            // z vertex distribution from all events
-        fHistograms->fhVertexZWeighted->Fill(vz,fTotalEventWeight);  // z-vertex distribution weighted with the weight function
+        fHistograms->fhVertexZWeighted->Fill(vz,fVzWeight);  // z-vertex distribution weighted with the weight function
         fHistograms->fhEvents->Fill(DijetHistograms::kAll);          // All the events looped over
         fHistograms->fhCentrality->Fill(centrality);                 // Centrality filled from all events
-        fHistograms->fhCentralityWeighted->Fill(centrality,fTotalEventWeight); // Centrality weighted with the centrality weighting function
+        fHistograms->fhCentralityWeighted->Fill(centrality,fCentralityWeight); // Centrality weighted with the centrality weighting function
         fHistograms->fhPtHat->Fill(ptHat);                           // pT hat histogram
-        fHistograms->fhPtHatWeighted->Fill(ptHat,fTotalEventWeight); // pT het histogram weighted with corresponding cross section and event number
+        fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight); // pT het histogram weighted with corresponding cross section and event number
       }
       
       //  ===== Apply all the event quality cuts =====
@@ -674,7 +676,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Only fill the dijet histograms if selected
         if(fillEventInformationHistograms){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
-          fHistograms->fhCentralityDijet->Fill(centrality,fTotalEventWeight);
+          fHistograms->fhCentralityDijet->Fill(centrality,fCentralityWeight);
         }
         if(fillMainLoopHistograms){
           // Calculate the asymmetry

@@ -31,35 +31,35 @@ public:
   void GetEvent(Int_t nEvent);                 // Get the nEventh event from the file
   
   // Getters for leaves in jet tree
-  Float_t GetJetPt(Int_t iJet) const;         // Getter for jet pT
-  Float_t GetJetPhi(Int_t iJet) const;        // Getter for jet phi
-  Float_t GetJetEta(Int_t iJet) const;        // Getter for jet eta
-  Float_t GetJetRawPt(Int_t iJet) const;      // Getter for jet raw pT
-  Float_t GetJetMaxTrackPt(Int_t iJet) const; // Getter for maximum track pT inside a jet
+  Float_t GetJetPt(Int_t iJet) const;                 // Getter for jet pT
+  Float_t GetJetPhi(Int_t iJet) const;                // Getter for jet phi
+  Float_t GetJetEta(Int_t iJet) const;                // Getter for jet eta
+  virtual Float_t GetJetRawPt(Int_t iJet) const;      // Getter for jet raw pT
+  virtual Float_t GetJetMaxTrackPt(Int_t iJet) const; // Getter for maximum track pT inside a jet
   
   // Getters for leaves in the track tree
-  Float_t GetTrackPt(Int_t iTrack) const;                    // Getter for track pT
-  Float_t GetTrackPtError(Int_t iTrack) const;               // Getter for track pT error
-  Float_t GetTrackPhi(Int_t iTrack) const;                   // Getter for track phi
-  Float_t GetTrackEta(Int_t iTrack) const;                   // Getter for track eta
-  Bool_t GetTrackHighPurity(Int_t iTrack) const;             // Getter for the high purity of the track
-  Float_t GetTrackVertexDistanceZ(Int_t iTrack) const;       // Getter for track distance from primary vertex in z-direction
-  Float_t GetTrackVertexDistanceZError(Int_t iTrack) const;  // Getter for error of track distance from primary vertex in z-direction
-  Float_t GetTrackVertexDistanceXY(Int_t iTrack) const;      // Getter for track distance from primary vertex in xy-direction
-  Float_t GetTrackVertexDistanceXYError(Int_t iTrack) const; // Getter for error of track distance from primary vertex in xy-direction
-  Float_t GetTrackChi2(Int_t iTrack) const;                  // Getter for track chi2 value from reconstruction fit
-  Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const;       // Getter for number of degrees of freedom in reconstruction fit
-  Int_t GetNHitsTrackerLayer(Int_t iTrack) const;            // Getter for number of hits in tracker layers
-  Int_t GetNHitsTrack(Int_t iTrack) const;                   // Getter for number of hits for the track
-  Float_t GetTrackEnergyEcal(Int_t iTrack) const;            // Getter for track energy in ECal
-  Float_t GetTrackEnergyHcal(Int_t iTrack) const;            // Getter for track energy in HCal
-  Int_t GetTrackCharge(Int_t iTrack) const;                  // Getter for track charge (relevant only for generator level tracks)
-  Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
+  Float_t GetTrackPt(Int_t iTrack) const;                            // Getter for track pT
+  virtual Float_t GetTrackPtError(Int_t iTrack) const;               // Getter for track pT error
+  Float_t GetTrackPhi(Int_t iTrack) const;                           // Getter for track phi
+  Float_t GetTrackEta(Int_t iTrack) const;                           // Getter for track eta
+  virtual Bool_t GetTrackHighPurity(Int_t iTrack) const;             // Getter for the high purity of the track
+  virtual Float_t GetTrackVertexDistanceZ(Int_t iTrack) const;       // Getter for track distance from primary vertex in z-direction
+  virtual Float_t GetTrackVertexDistanceZError(Int_t iTrack) const;  // Getter for error of track distance from primary vertex in z-direction
+  virtual Float_t GetTrackVertexDistanceXY(Int_t iTrack) const;      // Getter for track distance from primary vertex in xy-direction
+  virtual Float_t GetTrackVertexDistanceXYError(Int_t iTrack) const; // Getter for error of track distance from primary vertex in xy-direction
+  virtual Float_t GetTrackChi2(Int_t iTrack) const;                  // Getter for track chi2 value from reconstruction fit
+  virtual Int_t GetNTrackDegreesOfFreedom(Int_t iTrack) const;       // Getter for number of degrees of freedom in reconstruction fit
+  virtual Int_t GetNHitsTrackerLayer(Int_t iTrack) const;            // Getter for number of hits in tracker layers
+  virtual Int_t GetNHitsTrack(Int_t iTrack) const;                   // Getter for number of hits for the track
+  virtual Float_t GetTrackEnergyEcal(Int_t iTrack) const;            // Getter for track energy in ECal
+  virtual Float_t GetTrackEnergyHcal(Int_t iTrack) const;            // Getter for track energy in HCal
+  virtual Int_t GetTrackCharge(Int_t iTrack) const;                  // Getter for track charge (relevant only for generator level tracks)
+  virtual Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
   
-private:
+protected:
   
   // Methods
-  void Initialize();  // Connect the branches to the tree
+  virtual void Initialize();  // Connect the branches to the tree
   
   // Trees in the forest
   TTree *fEventTree;    // Tree for heavy ion event information

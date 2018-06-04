@@ -1,51 +1,37 @@
 // Reader for jet trees from CMS data
 //
 //===========================================================
-// GeneratorLevelForestReader.h
+// GeneratorLevelSkimForestReader.h
 //
 // Author: Jussi Viinikainen
 //===========================================================
 
-#ifndef GENERATORLEVELFORESTREADER_H
-#define GENERATORLEVELFORESTREADER_H
+#ifndef GENERATORLEVELSKIMFORESTREADER_H
+#define GENERATORLEVELSKIMFORESTREADER_H
 
 // Own includes
-#include "ForestReader.h"
+#include "SkimForestReader.h"
 
 using namespace std;
 
-class GeneratorLevelForestReader : public ForestReader{
-  
-private:
-  static const Int_t fnMaxJet = 60;        // Maximum number of jets in an event
+class GeneratorLevelSkimForestReader : public SkimForestReader{
   
 public:
   
   // Constructors and destructors
-  GeneratorLevelForestReader();                                       // Default constructor
-  GeneratorLevelForestReader(Int_t dataType);                         // Custom constructor
-  GeneratorLevelForestReader(const GeneratorLevelForestReader& in);             // Copy constructor
-  virtual ~GeneratorLevelForestReader();                              // Destructor
-  GeneratorLevelForestReader& operator=(const GeneratorLevelForestReader& obj); // Equal sign operator
-  
-  // Methods
-  void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
-  void BurnForest();                           // Burn the forest  
-  void GetEvent(Int_t nEvent);                 // Get the nEventh event from the file
+  GeneratorLevelSkimForestReader();                                   // Default constructor
+  GeneratorLevelSkimForestReader(Int_t dataType);                       // Custom constructor
+  GeneratorLevelSkimForestReader(const GeneratorLevelSkimForestReader& in);             // Copy constructor
+  virtual ~GeneratorLevelSkimForestReader();                          // Destructor
+  GeneratorLevelSkimForestReader& operator=(const GeneratorLevelSkimForestReader& obj); // Equal sign operator
   
   // Getters for leaves in jet tree
-  Float_t GetJetPt(Int_t iJet) const;         // Getter for jet pT
-  Float_t GetJetPhi(Int_t iJet) const;        // Getter for jet phi
-  Float_t GetJetEta(Int_t iJet) const;        // Getter for jet eta
   Float_t GetJetRawPt(Int_t iJet) const;      // Getter for jet raw pT (not relevant for generator jets, just return value that passes cuts)
   Float_t GetJetMaxTrackPt(Int_t iJet) const; // Getter for maximum track pT inside a jet (not relevant for generator jets, just return value that passes cuts)
   
   // Getters for leaves in the track tree relevant for generator level tracks
-  Float_t GetTrackPt(Int_t iTrack) const;          // Getter for track pT
-  Float_t GetTrackPhi(Int_t iTrack) const;         // Getter for track phi
-  Float_t GetTrackEta(Int_t iTrack) const;         // Getter for track eta
-  Int_t GetTrackCharge(Int_t iTrack) const;        // Getter for track charge
-  Int_t GetTrackSubevent(Int_t iTrack) const;      // Getter for track subevent index
+  Int_t GetTrackCharge(Int_t iTrack) const;                  // Getter for track charge (relevant only for generator level tracks)
+  Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
   
   // Getters for leaves in the track tree that are just there to provide values that pass cuts
   Float_t GetTrackPtError(Int_t iTrack) const;               // Getter for track pT error
@@ -71,27 +57,34 @@ public:
 private:
   
   // Methods
-  void Initialize();       // Connect the branches to the tree
-
-  // Trees in the forest
-  TTree *fHeavyIonTree;    // Tree for heavy ion event information
-  TTree *fJetTree;         // Tree for jet information
-  TTree *fHltTree;         // Tree for HLT information
-  TTree *fSkimTree;        // Tree for event selection information
-  TTree *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
+  void Initialize();  // Connect the branches to the tree
   
-  // Leaves for jet tree
-  Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
-  Float_t fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
-  Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
-  
-  // Leaves for the track tree
-  vector<float> *fTrackPtArray;       // Array for track pT:s
-  vector<float> *fTrackPhiArray;      // Array for track phis
-  vector<float> *fTrackEtaArray;      // Array for track etas
+  // Additional leaves for the track tree
   vector<int> *fTrackChargeArray;     // Array for track charges
   vector<int> *fTrackSubeventArray;   // Array for track subevent indices (0 = PYTHIA, (>0) = HYDJET)
   
 };
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

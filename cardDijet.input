@@ -1,10 +1,10 @@
 # Configuration card for leading-subleading jet analysis
 
 # Data type for the analysis
-DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
+DataType 3  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
-McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
+McCorrelationType 3 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
 
 # Select which histograms to save. Needed for memory issues.
 FilledHistograms 0 # 0 = All, 1 = All but jet-track correlation, 2 = Jet-track correlation, 3 = Event information, 4 = Event information and regular jet-track, 5 = Uncorrected jet-track, 6 = pT weighted jet-track

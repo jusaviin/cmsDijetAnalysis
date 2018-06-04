@@ -169,14 +169,12 @@ void SkimForestReader::Initialize(){
   // Connect the branches to the HLT tree
   if(fDataType == kPp){ // pp data
     fEventTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPpMC){ // pp MC
-    fEventTree->SetBranchAddress("HLT_ak4CaloJet80",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPb){ // PbPb
     fEventTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPbMC){ // PbPb MC
     fEventTree->SetBranchAddress("HLT_ak4CaloJet100",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else { // Local test
-    fCaloJetFilterBit = 1;  // No filter for local test
+    fCaloJetFilterBit = 1;  // No filter for local test or pp MC
   }
   
   // Connect the branches containing event selection filter bits
