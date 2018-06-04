@@ -409,7 +409,7 @@ void DijetAnalyzer::RunAnalysis(){
   if(fMcCorrelationType == kRecoGen){
     trackReader = new GeneratorLevelSkimForestReader(fDataType);
   } else if (fMcCorrelationType == kGenReco){
-    trackReader = new HighForestReader(fDataType);
+    trackReader = new SkimForestReader(fDataType);
   } else {
     trackReader = jetReader;
   }
