@@ -56,7 +56,7 @@ private:
   
   // Naming for single jet histograms
   const char* fSingleJetHistogramName[knSingleJetCategories] = {"leadingJet","subleadingJet","anyJet"}; // Names that different single jet histograms have in the input file
-  const char* fSingleJetAxisNames[knSingleJetCategories] = {"Leading jet","Subeading jet","Any jet"}; // Names attached to the figure axes
+  const char* fSingleJetAxisNames[knSingleJetCategories] = {"Leading jet","Subleading jet","Any jet"}; // Names attached to the figure axes
   
   // Naming for jet shape histograms
   const char* fJetShapeHistogramName[knJetShapeTypes] = {"JetShape","JetShapeCounts"};

@@ -194,7 +194,7 @@ void DijetHistograms::CreateHistograms(){
   // Phi
   const Double_t minPhi = -TMath::Pi();  // Minimum phi
   const Double_t maxPhi = TMath::Pi();   // Maximum phi
-  const Int_t nPhiBins = 62;             // Number of phi bins
+  const Int_t nPhiBins = 64;             // Number of phi bins
   
   // Eta
   const Double_t minEta = -2.5;    // Minimum eta (current eta cut for tracks = 2.4)
@@ -204,7 +204,7 @@ void DijetHistograms::CreateHistograms(){
   // DeltaPhi in [0,pi]
   const Double_t minDeltaPhi = 0;             // Minimum deltaPhi
   const Double_t maxDeltaPhi = TMath::Pi();   // Maximum deltaPhi
-  const Int_t nDeltaPhiBins = 31;             // Number of deltaPhi bins
+  const Int_t nDeltaPhiBins = 32;             // Number of deltaPhi bins
   
   // DeltaPhi in [-pi/2,3pi/2]
   const Double_t minDeltaPhiJetTrack = -TMath::Pi()/2.0;    // Minimum deltaPhi for jet-track correlations

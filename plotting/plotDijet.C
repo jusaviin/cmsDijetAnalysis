@@ -17,12 +17,12 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = false;
-  bool drawSubleadingJetHistograms = false;
+  bool drawLeadingJetHistograms = true;
+  bool drawSubleadingJetHistograms = true;
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -31,7 +31,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = true;
-  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaEta = true;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms

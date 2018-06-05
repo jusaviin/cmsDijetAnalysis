@@ -443,12 +443,12 @@ void DijetAnalyzer::RunAnalysis(){
       if(iMixedEventFile == nFiles) iMixedEventFile = 0;
       currentMixedEventFile = fFileNames.at(iMixedEventFile);
     }
-    
+    cout << " " <<  endl;
     // Open the file and check that everything goes fine
     inputFile = TFile::Open(currentFile);
     if(useDifferentReaderFotJetsAndTracks) copyInputFile = TFile::Open(currentFile);
     if(mixEvents) mixedEventFile = TFile::Open(currentMixedEventFile);
-    
+    cout << " " <<  endl;
     // Check that the file exists
     if(!inputFile){
       cout << "Warning! Could not open the file: " << currentFile.Data() << endl;
@@ -502,6 +502,7 @@ void DijetAnalyzer::RunAnalysis(){
     // Event loop
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
       
+      // Print to console how the analysis is progressing
       if(debugLevel > 1 && iEvent % 1000 == 0) cout << "Analyzing event " << iEvent << endl;
       
       // Read the event to memory
