@@ -42,7 +42,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   
   for(int iRatios = 0; iRatios < knMaxRatios; iRatios++){
     fAddedHistograms[iRatios] = NULL;
-    fAdditionalHistogam[iRatios] = NULL;
+    fComparisonHistogram[iRatios] = NULL;
     fRatioHistogram[iRatios] = NULL;
   }
   
@@ -575,11 +575,11 @@ void DijetComparingDrawer::PrepareRatio(TString name, int bin1, int bin2, int bi
   fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
   if(fApplyScaling) fMainHistogram->Scale(1.0/fMainHistogram->Integral());
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    fAdditionalHistogam[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
-    if(fApplyScaling) fAdditionalHistogam[iAdditional]->Scale(1.0/fAdditionalHistogam[iAdditional]->Integral());
+    fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
+    if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fComparisonHistogram[iAdditional]->Integral());
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
     fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
-    fRatioHistogram[iAdditional]->Divide(fAdditionalHistogam[iAdditional]);
+    fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
   }
 }
 
@@ -602,8 +602,8 @@ void DijetComparingDrawer::DrawToUpperPad(const char* xTitle, const char* yTitle
   fDrawer->SetLogY(logAxis);
   fDrawer->DrawHistogramToUpperPad(fMainHistogram,xTitle,yTitle," ");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    fAdditionalHistogam[iAdditional]->SetLineColor(fColors[iAdditional]);
-    fAdditionalHistogam[iAdditional]->Draw("same");
+    fComparisonHistogram[iAdditional]->SetLineColor(fColors[iAdditional]);
+    fComparisonHistogram[iAdditional]->Draw("same");
   }
   
   // Reset back to linear for ratio
@@ -642,7 +642,7 @@ void DijetComparingDrawer::SetupLegend(TLegend *legend, TString centralityString
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
   legend->AddEntry(fMainHistogram,fBaseHistograms->GetSystem(),"l");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    legend->AddEntry(fAdditionalHistogam[iAdditional],fAddedHistograms[iAdditional]->GetSystem(),"l");
+    legend->AddEntry(fComparisonHistogram[iAdditional],fAddedHistograms[iAdditional]->GetSystem(),"l");
   }
 }
 

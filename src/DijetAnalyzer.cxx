@@ -1048,6 +1048,9 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   // Number of events for different pT hat bins in the forest file list ppMC_Pythia6_forest_5TeV.txt
   Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};
   
+  // Event numbers change a bit in skims, since pT files for pT hat bin 30 are cut out. These numbers are good for list mergedSkimPpPythia5TeV.txt
+  //Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275}; // TODO: Change after counting finishes
+  
   // Return the weight for pp
   if(fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest) {
     if(ppMcEvents[currentBin] == 0){ // This should never happen

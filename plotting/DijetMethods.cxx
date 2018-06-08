@@ -385,6 +385,21 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
   // Normalize each bin in the jet shape histogram by the number of bins in two-dimensional histogram corresponding to that bin
   if(fJetShapeNormalizationMethod == kBinWidth){
     jetShapeHistogram->Scale(1.0,"width");
+    
+    // To correct for the fact the use rectangles to integrate a circular area, we need to weight the bins on how accurately
+    // the rectangular area reflects the actual circles.
+    double binWidthDeltaPhi = backgroundSubtractedHistogram->GetXaxis()->GetBinWidth(1);
+    double binWidthDeltaEta = backgroundSubtractedHistogram->GetYaxis()->GetBinWidth(1);
+    double oneBinArea = binWidthDeltaPhi*binWidthDeltaEta;
+    double totalBinArea;
+    double ringArea;
+    
+    for(int iRBin = 1; iRBin <= jetShapeHistogram->GetNbinsX(); iRBin++){
+      totalBinArea = fhJetShapeCounts->GetBinContent(iRBin)*oneBinArea;
+      ringArea = TMath::Pi()*fRBins[iRBin]*fRBins[iRBin] - TMath::Pi()*fRBins[iRBin-1]*fRBins[iRBin-1];
+      jetShapeHistogram->SetBinContent(iRBin,jetShapeHistogram->GetBinContent(iRBin)*(ringArea/totalBinArea));
+    }
+    
   } else if (fJetShapeNormalizationMethod == kBinArea){
     jetShapeHistogram->Divide(fhJetShapeCounts);
   }

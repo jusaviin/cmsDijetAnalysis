@@ -116,7 +116,7 @@ private:
   // == Helper variables to store histograms before drawing them ==
   // ==============================================================
   TH1D *fMainHistogram;
-  TH1D *fAdditionalHistogam[knMaxRatios];
+  TH1D *fComparisonHistogram[knMaxRatios];
   TH1D *fRatioHistogram[knMaxRatios];
   
   // ==============================================

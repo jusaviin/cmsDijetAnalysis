@@ -20,27 +20,27 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
-  bool drawTracks = true;
-  bool drawUncorrectedTracks = true;
+  bool drawTracks = false;
+  bool drawUncorrectedTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
-  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
-  bool drawJetShapeCounts = false;
+  bool drawJetShape = true;
+  bool drawJetShapeCounts = true;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
@@ -76,8 +76,8 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   int firstDrawCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int firstDrawnTrackPtBin = 3;
+  int lastDrawnTrackPtBin = 3;
   
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
