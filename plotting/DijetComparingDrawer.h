@@ -25,6 +25,7 @@ class DijetComparingDrawer {
   
 private:
   static const int knMaxRatios = 10;  // Maximum number or ratio plots per one canvas
+  int fColors[knMaxRatios] = {kRed,kBlue,kMagenta,kCyan,kGreen+4,kOrange,kViolet+3,kPink-7,kSpring+3,kAzure-7};
   
 public:
   
@@ -84,6 +85,15 @@ public:
   void SetLogJetShape(const bool isLog);    // Setter for logarithmic jet shape drawing
   void SetLogAxes(const bool pt, const bool correlation, const bool jetShape); // Setter for logarithmic axes
   
+  // Setter for scaling the histograms
+  void SetApplyScaling(const bool applyScaling); // Set if we should scale the histograms with their integral before comparing them
+  
+  // Setters for ratio plots
+  void SetRatioZoomMin(const double minValue);  // Setter for minimum value of y-axis in ratio plots
+  void SetRatioZoomMax(const double maxValue);  // Setter for maximum value of y-axis in ratio plots
+  void SetRatioZoom(const double minValue, const double maxValue);  // Setter for y-axis values in ratio plots
+  void SetRatioLabel(TString label);        // Setter for y-axis label in ratio plots
+  
   // Setters for drawing style and colors
   void SetColorPalette(const int color);     // Setter for color palette
   void SetDrawingStyle2D(const char* style); // Setter for 2D drawing style
@@ -101,6 +111,13 @@ private:
   DijetHistogramManager *fBaseHistograms; // Histograms with respect to which ratios are takes
   DijetHistogramManager *fAddedHistograms[knMaxRatios];  // Histograms drawn together with the base histogram
   int fnAddedHistograms;                  // Number of histograms added for drawing
+  
+  // ==============================================================
+  // == Helper variables to store histograms before drawing them ==
+  // ==============================================================
+  TH1D *fMainHistogram;
+  TH1D *fAdditionalHistogam[knMaxRatios];
+  TH1D *fRatioHistogram[knMaxRatios];
   
   // ==============================================
   // ======== Flags for histograms to draw ========
@@ -125,10 +142,18 @@ private:
   bool fSaveFigures;           // Flag for saving the figures to file
   const char* fFigureFormat;   // Format in which the figures are saved
   
+  // Choose if we should scale the histograms before comparing them
+  bool fApplyScaling;
+  
   // Logarithmic scales for figures
   bool fLogPt;          // pT distributions
   bool fLogCorrelation; // track-jet deltaPhi-deltaEta distributions
   bool fLogJetShape;    // Jet shape distributions
+  
+  // Zooming for ratio plots
+  double fRatioZoomMin;    // Lower y-axis boundary in ratio plots
+  double fRatioZoomMax;    // Upper y-axis boundary in ratio plots
+  TString fRatioLabel;     // Label given to ratio plots y-axes
   
   // Plotting style for 2D and 3D plots
   int fColorPalette;      // Used color palatte for drawing
@@ -149,10 +174,11 @@ private:
   void DrawTrackHistograms();     // Draw track histograms
   void DrawJetTrackCorrelationHistograms(); // Draw jet-track correlation histograms
   void DrawJetShapeHistograms();  // Draw jet shape histograms
-  void SetupLegend(TLegend *legend, TH1D *mainHistogram, TH1D *additionalHistogram[knMaxRatios], TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
+  void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
-  TH1D* PrepareRatio(TH1D *mainHistogram, TH1D *additionalHistogram[knMaxRatios], TH1D *hRatio[knMaxRatios], TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0); // Prepare the ratio histograms out of input histograms
-  void DrawToUpperPad(TH1D *mainHistogram, TH1D *additionalHistogram[knMaxRatios], const char* xTitle, const char* yTitle, bool logAxis); // Draw the histograms to the same figure in the upper pad of JDrawer
+  void PrepareRatio(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0); // Prepare the ratio histograms out of input histograms
+  void DrawToUpperPad(const char* xTitle, const char* yTitle, bool logAxis = false); // Draw the histograms to the same figure in the upper pad of JDrawer
+  void DrawToLowerPad(const char* xTitle, const char* yTitle); // Draw the ratios to the lower pad of the JDrawer
   
   
 };

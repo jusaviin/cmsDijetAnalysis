@@ -1,7 +1,7 @@
 # Configuration card for leading-subleading jet analysis
 
 # Data type for the analysis
-DataType 2  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
+DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
 McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen

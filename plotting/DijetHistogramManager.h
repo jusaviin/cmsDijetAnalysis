@@ -192,6 +192,7 @@ private:
   bool fLoadSingleJets[knSingleJetCategories];             // Draw the single jet histograms
   bool fLoadTracks[knTrackCategories];                     // Draw the track histograms
   bool fLoadJetTrackCorrelations[knJetTrackCorrelations];  // Draw the jet-track correlation histograms
+  bool fLoad2DHistograms;                                  // Load also two-dimensional (eta,phi) and (deltaEta,deltaPhi) histograms
   
   // ==============================================
   // ======== Ranges of histograms to load ========

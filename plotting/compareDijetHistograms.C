@@ -15,11 +15,11 @@ void compareDijetHistograms(){
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
-  bool drawSubleadingJetHistograms = true;
-  bool drawAnyJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
+  bool drawSubleadingJetHistograms = false;
+  bool drawAnyJetHistograms = false;
   bool drawTracks = false;
-  bool drawUncorrectedTracks = false;
+  bool drawUncorrectedTracks = true;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
@@ -38,7 +38,7 @@ void compareDijetHistograms(){
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
+  bool drawSameEvent = true;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
@@ -61,11 +61,20 @@ void compareDijetHistograms(){
   const char* style2D = "colz";
   const char* style3D = "surf1";
   
+  // Settings for ratios
+  double minZoom = 0.6;
+  double maxZoom = 1.4;
+  TString ratioLabel = "Reco/Gen";
+  
+  // Scaling for histograms
+  bool scaleHistograms = false;
+  if(ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase)) scaleHistograms = true;
+  
   // Bin borders
   const int nCentralityBins = 4;
   const int nTrackPtBins = 6;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
-  double trackPtBinBorders[nTrackPtBins+1] = {0.5,1,2,3,4,8,300};  // Bin borders for track pT
+  double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1}; // Low bin borders for deltaPhi
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
@@ -100,8 +109,8 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijetSpectraTestPp_2018-05-04.root","data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"};
-  // "data/dijet_ppMC_GenGen_2018-06-04_1-16.root"
+  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoReco_2018-06-01_1-16.root","data/dijet_ppMC_RecoGen_2018-06-04.root"};
+  //"data/dijetSpectraTestPp_2018-05-04.root",  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root"
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -178,6 +187,9 @@ void compareDijetHistograms(){
   drawer->SetSaveFigures(saveFigures,figureFormat);
   drawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   drawer->SetDrawingStyles(colorPalette,style2D,style3D);
+  drawer->SetRatioZoom(minZoom,maxZoom);
+  drawer->SetRatioLabel(ratioLabel);
+  drawer->SetApplyScaling(scaleHistograms);
   
   // Set the binning information
   drawer->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
@@ -185,6 +197,7 @@ void compareDijetHistograms(){
 
   // Draw the selected histograms
   drawer->DrawHistograms();
+  
   
 //
 //  // Example comparison between two histograms

@@ -16,6 +16,7 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
   fInputFile(inputFile),
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
+  fLoad2DHistograms(false),
   fFirstLoadedCentralityBin(0),
   fLastLoadedCentralityBin(knCentralityBins-1),
   fFirstLoadedTrackPtBin(0),
@@ -141,6 +142,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fMethods(in.fMethods),
   fLoadEventInformation(in.fLoadEventInformation),
   fLoadDijetHistograms(in.fLoadDijetHistograms),
+  fLoad2DHistograms(in.fLoad2DHistograms),
   fFirstLoadedCentralityBin(in.fFirstLoadedCentralityBin),
   fLastLoadedCentralityBin(in.fLastLoadedCentralityBin),
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
@@ -412,7 +414,7 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
       fhJetPt[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],0,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
       fhJetPhi[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],1,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
       fhJetEta[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],2,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
-      fhJetEtaPhi[iJetCategory][iCentralityBin] = FindHistogram2D(fInputFile,fSingleJetHistogramName[iJetCategory],1,2,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
+      if(fLoad2DHistograms) fhJetEtaPhi[iJetCategory][iCentralityBin] = FindHistogram2D(fInputFile,fSingleJetHistogramName[iJetCategory],1,2,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
     } // Loop over centrality bins
   } // Loop over single jet categories
 }
@@ -455,7 +457,7 @@ void DijetHistogramManager::LoadDijetHistograms(){
     
     fhDijetDphi[iCentralityBin] = FindHistogram(fInputFile,"dijet",2,4,lowerCentralityBin,higherCentralityBin);
     fhDijetAsymmetry[iCentralityBin] = FindHistogram(fInputFile,"dijet",3,4,lowerCentralityBin,higherCentralityBin);
-    fhDijetLeadingVsSubleadingPt[iCentralityBin] = FindHistogram2D(fInputFile,"dijet",0,1,4,lowerCentralityBin,higherCentralityBin);
+    if(fLoad2DHistograms) fhDijetLeadingVsSubleadingPt[iCentralityBin] = FindHistogram2D(fInputFile,"dijet",0,1,4,lowerCentralityBin,higherCentralityBin);
   }
 }
 
@@ -507,7 +509,7 @@ void DijetHistogramManager::LoadTrackHistograms(){
         fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],0,2,axisIndices,lowLimits,highLimits);
         fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,2,axisIndices,lowLimits,highLimits);
         fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,2,axisIndices,lowLimits,highLimits);
-        fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,2,axisIndices,lowLimits,highLimits);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,2,axisIndices,lowLimits,highLimits);
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
@@ -521,7 +523,7 @@ void DijetHistogramManager::LoadTrackHistograms(){
           // Read the angle histograms in track pT bins
           fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,3,axisIndices,lowLimits,highLimits);
           fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,3,axisIndices,lowLimits,highLimits);
-          fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,3,axisIndices,lowLimits,highLimits);
+          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,3,axisIndices,lowLimits,highLimits);
           
         } // Track pT loop
       } // Centrality loop
@@ -584,7 +586,7 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
           axisIndices[2] = 0; lowLimits[2] = lowerTrackPtBin;    highLimits[2] = higherTrackPtBin;     // Track pT
           
           fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fJetTrackHistogramNames[iJetTrack],1,3,axisIndices,lowLimits,highLimits);
-          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fJetTrackHistogramNames[iJetTrack],1,2,3,axisIndices,lowLimits,highLimits);
+          if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fJetTrackHistogramNames[iJetTrack],1,2,3,axisIndices,lowLimits,highLimits);
           
           // DeltaPhi binning for deltaEta histogram
           for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){

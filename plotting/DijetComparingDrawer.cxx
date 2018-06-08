@@ -15,14 +15,19 @@
 DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistograms) :
   fBaseHistograms(fBaseHistograms),
   fnAddedHistograms(0),
+  fMainHistogram(0),
   fDrawJetTrackDeltaPhi(false),
   fDrawJetTrackDeltaEta(false),
   fDrawJetTrackDeltaEtaDeltaPhi(false),
   fSaveFigures(false),
   fFigureFormat("pdf"),
+  fApplyScaling(false),
   fLogPt(true),
   fLogCorrelation(true),
   fLogJetShape(true),
+  fRatioZoomMin(0.6),
+  fRatioZoomMax(1.4),
+  fRatioLabel(""),
   fColorPalette(kRainBow),
   fStyle2D("colz"),
   fStyle3D("surf1"),
@@ -37,6 +42,8 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   
   for(int iRatios = 0; iRatios < knMaxRatios; iRatios++){
     fAddedHistograms[iRatios] = NULL;
+    fAdditionalHistogam[iRatios] = NULL;
+    fRatioHistogram[iRatios] = NULL;
   }
   
   // Do not draw anything by default
@@ -109,15 +116,6 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
   TString compactCentralityString;
   char namerX[100];
   
-  TH1D* mainHistogram = NULL;
-  TH1D* additionalHistogram[knMaxRatios];
-  TH1D* hRatio[knMaxRatios];
-  for(int i = 0; i < knMaxRatios; i++){
-    additionalHistogram[i] = NULL;
-    hRatio[i] = NULL;
-  }
-  
-  cout << "Going to loop" << endl;
   // Loop over single jet categories
   for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
     if(!fDrawSingleJets[iJetCategory]) continue;  // Only draw selected jet categories
@@ -132,49 +130,67 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       fDrawer->SetLogY(fLogPt);
       
       // === Jet pT ===
-      mainHistogram = PrepareRatio(mainHistogram, additionalHistogram, hRatio, "jetPt", iJetCategory, iCentrality);
       
+      // Prepare the jet pT histograms and ratio to be drawn
+      PrepareRatio("jetPt", iJetCategory, iCentrality);
+      
+      // Draw the jet pT distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
-      DrawToUpperPad(mainHistogram, additionalHistogram, namerX, "#frac{dN}{dp_{T}}  (1/GeV)", fLogPt);
-
+      DrawToUpperPad(namerX, "#frac{dN}{dp_{T}}  (1/GeV)", fLogPt);
+      
+      // Add a legend to the plot
       legend = new TLegend(0.62,0.75,0.82,0.9);
-      SetupLegend(legend,mainHistogram,additionalHistogram,centralityString);
+      SetupLegend(legend,centralityString);
       legend->Draw();
       
-      hRatio[0]->GetYaxis()->SetRangeUser(0.6,1.4); // Set a good viewing range for the plot TODO: Configure in macro
-      fDrawer->DrawHistogramToLowerPad(hRatio[0],namerX,"Data/MC", " ");
-      for(int iAdditional = 1; iAdditional < fnAddedHistograms; iAdditional++){
-        hRatio[iAdditional]->Draw("same");
-      }
+      // Draw the ratios to the lower portion of the split canvas
+      DrawToLowerPad(namerX,fRatioLabel.Data());
       
       // Save the figure to a file
-      sprintf(namerX,"%sPt",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
+      sprintf(namerX,"%sPtRatio",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
       SaveFigure(namerX,compactCentralityString);
       
-      // Set linear drawing
-      fDrawer->SetLogY(false);
+      // === Jet phi ===
       
-//      // === Jet phi ===
-//      sprintf(namerX,"%s #varphi",fSingleJetAxisNames[iJetCategory]);
-//      fDrawer->DrawHistogram(fhJetPhi[iJetCategory][iCentrality],namerX,"#frac{dN}{d#varphi}"," ");
-//      legend = new TLegend(0.62,0.75,0.82,0.9);
-//      SetupLegend(legend,centralityString);
-//      legend->Draw();
-//
-//      // Save the figure to a file
-//      sprintf(namerX,"%sPhi",fSingleJetHistogramName[iJetCategory]);
-//      SaveFigure(namerX,compactCentralityString);
-//
-//      // === Jet eta ===
-//      sprintf(namerX,"%s #eta",fSingleJetAxisNames[iJetCategory]);
-//      fDrawer->DrawHistogram(fhJetEta[iJetCategory][iCentrality],namerX,"#frac{dN}{d#eta}"," ");
-//      legend = new TLegend(0.62,0.20,0.82,0.35);
-//      SetupLegend(legend,centralityString);
-//      legend->Draw();
-//
-//      // Save the figure to a file
-//      sprintf(namerX,"%sEta",fSingleJetHistogramName[iJetCategory]);
-//      SaveFigure(namerX,compactCentralityString);
+      // Prepare the jet phi histograms and ratio to be drawn
+      PrepareRatio("jetPhi", iJetCategory, iCentrality);
+      
+      // Draw the jet phi distributions to the upper panel of a split canvas plot
+      sprintf(namerX,"%s #varphi",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
+      DrawToUpperPad(namerX,"#frac{dN}{d#varphi}");
+      
+      // Add a legend to the plot
+      legend = new TLegend(0.62,0.75,0.82,0.9);
+      SetupLegend(legend,centralityString);
+      legend->Draw();
+      
+      // Draw the ratios to the lower portion of the split canvas
+      DrawToLowerPad(namerX,fRatioLabel.Data());
+      
+      // Save the figure to a file
+      sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
+      SaveFigure(namerX,compactCentralityString);
+
+      // === Jet eta ===
+      
+      // Prepare the jet eta histograms and ratio to be drawn
+      PrepareRatio("jetEta", iJetCategory, iCentrality);
+      
+      // Draw the jet eta distributions to the upper panel of a split canvas plot
+      sprintf(namerX,"%s #eta",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
+      DrawToUpperPad(namerX,"#frac{dN}{d#eta}");
+      
+      // Add a legend to the plot
+      legend = new TLegend(0.62,0.20,0.82,0.35);
+      SetupLegend(legend,centralityString);
+      legend->Draw();
+
+      // Draw the ratios to the lower portion of the split canvas
+      DrawToLowerPad(namerX,fRatioLabel.Data());
+      
+      // Save the figure to a file
+      sprintf(namerX,"%sEtaRatio",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
+      SaveFigure(namerX,compactCentralityString);
       
     } // Centrality loop
   } // Single jet category loop
@@ -185,124 +201,126 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
  */
 void DijetComparingDrawer::DrawTrackHistograms(){
   
-//  // Legend helper variable
-//  TLegend *legend;
-//  double legendX1;
-//  double legendY1;
-//  double legendX2;
-//  double legendY2;
-//
-//  // Helper variables for centrality naming in figures
-//  TString centralityString;
-//  TString compactCentralityString;
-//  TString trackPtString;
-//  TString compactTrackPtString;
-//  char namerX[100];
-//  char namerY[100];
-//
-//  // Loop over track types
-//  for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
-//    if(!fDrawTracks[iTrackType]) continue;  // Only draw selected tracks
-//
-//    // Loop over centrality
-//    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
-//
-//      centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
-//      compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
-//
-//      // For tracks drawing only for same and mixed events. No additional corrections are applied.
-//      for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){
-//        if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
-//
-//        // Select logarithmic drawing for pT
-//        fDrawer->SetLogY(fLogPt);
-//
-//        // === Track pT ===
-//        sprintf(namerX,"%s p_{T}  (GeV)",fTrackAxisNames[iTrackType]);
-//        fDrawer->DrawHistogram(fhTrackPt[iTrackType][iCorrelationType][iCentrality],namerX,"#frac{dN}{dp_{T}}  (1/GeV)",fCorrelationTypeString[iCorrelationType]);
-//        legend = new TLegend(0.62,0.75,0.82,0.9);
-//        SetupLegend(legend,centralityString);
-//        legend->Draw();
-//
-//        // Save the figure to a file
-//        sprintf(namerX,"%sPt",fTrackHistogramNames[iTrackType]);
-//        SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType]);
-//
-//        // Select linear drawing
-//        fDrawer->SetLogY(false);
-//
-//        // Loop over track pT bins
-//        for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= knTrackPtBins; iTrackPt++){
-//
-//          // Draw the selected track pT bins and the special bin containing integrated distributions
-//          if(iTrackPt > fLastDrawnTrackPtBin && iTrackPt != knTrackPtBins) continue;
-//
-//          // Set the correct track pT bins
-//          trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
-//          compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
-//          compactTrackPtString.ReplaceAll(".","v");
-//
-//          // No pT selection for integrated distributions
-//          if(iTrackPt == knTrackPtBins){
-//            trackPtString = "";
-//            compactTrackPtString = "";
-//          }
-//
-//          // === Track phi ===
-//          sprintf(namerX,"%s #varphi",fTrackAxisNames[iTrackType]);
-//          fDrawer->DrawHistogram(fhTrackPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt],namerX,"#frac{dN}{d#varphi}",fCorrelationTypeString[iCorrelationType]);
-//          legend = new TLegend(0.17,0.20,0.37,0.35);
-//          SetupLegend(legend,centralityString,trackPtString);
-//          legend->Draw();
-//
-//          // Save the figure to a file
-//          sprintf(namerX,"%sPhi",fTrackHistogramNames[iTrackType]);
-//          SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType],compactTrackPtString);
-//
-//          // === Track eta ===
-//
-//          // Set nice position for the legend
-//          legendY1 = 0.20; legendY2 = legendY1+0.15;
-//          if(iTrackPt == knTrackPtBins){
-//            legendX1 = 0.4; legendX2 = legendX1+0.2;
-//          } else if (iTrackPt == knTrackPtBins - 1){
-//            legendX1 = 0.32; legendX2 = legendX1+0.2;
-//          } else {
-//            legendX1 = 0.34; legendX2 = legendX1+0.2;
-//          }
-//
-//          sprintf(namerX,"%s #eta",fTrackAxisNames[iTrackType]);
-//          fDrawer->DrawHistogram(fhTrackEta[iTrackType][iCorrelationType][iCentrality][iTrackPt],namerX,"#frac{dN}{d#eta}",fCorrelationTypeString[iCorrelationType]);
-//          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-//          SetupLegend(legend,centralityString,trackPtString);
-//          legend->Draw();
-//
-//          // Save the figure to a file
-//          sprintf(namerX,"%sEta",fTrackHistogramNames[iTrackType]);
-//          SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType],compactTrackPtString);
-//
-//          // Change the right margin better suited for 2D-drawing
-//          fDrawer->SetRightMargin(0.1);
-//
-//          // === Track eta-phi ===
-//          sprintf(namerX,"%s #varphi",fTrackAxisNames[iTrackType]);
-//          sprintf(namerY,"%s #eta",fTrackAxisNames[iTrackType]);
-//          fDrawer->DrawHistogram(fhTrackEtaPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt],namerX,namerY,fCorrelationTypeString[iCorrelationType],fStyle2D);
-//          legend = new TLegend(0.17,0.78,0.37,0.93);
-//          SetupLegend(legend,centralityString,trackPtString);
-//          legend->Draw();
-//
-//          // Save the figure to a file
-//          sprintf(namerX,"%sEtaPhi",fTrackHistogramNames[iTrackType]);
-//          SaveFigure(namerX,compactCentralityString,fCompactCorrelationTypeString[iCorrelationType],compactTrackPtString);
-//
-//          // Change right margin back to 1D-drawing
-//          fDrawer->SetRightMargin(0.06);
-//
-//        } // Track pT loop
-//      } // Correlation type loop
-//    } // Centrality loop
-//  } // Track type loop
+  // Legend helper variable
+  TLegend *legend;
+  double legendX1;
+  double legendY1;
+  double legendX2;
+  double legendY2;
+
+  // Helper variables for centrality naming in figures
+  TString centralityString;
+  TString compactCentralityString;
+  TString trackPtString;
+  TString compactTrackPtString;
+  char namerX[100];
+
+  // Loop over track types
+  for(int iTrackType = 0; iTrackType < DijetHistogramManager::knTrackCategories; iTrackType++){
+    if(!fDrawTracks[iTrackType]) continue;  // Only draw selected tracks
+
+    // Loop over centrality
+    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+
+      centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+
+      // For tracks drawing only for same and mixed events. No additional corrections are applied.
+      for(int iCorrelationType = 0; iCorrelationType <= DijetHistogramManager::kMixedEvent; iCorrelationType++){
+        if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
+
+        // Prepare the track pT histograms and ratio to be drawn
+        PrepareRatio("trackPt", iTrackType, iCorrelationType, iCentrality);
+        
+        // Draw the track pT distributions to the upper panel of a split canvas plot
+        sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetTrackAxisName(iTrackType));
+        DrawToUpperPad(namerX, "#frac{dN}{dp_{T}}  (1/GeV)", fLogPt); // TODO: Add correlation type to title
+        
+        // Add a legend to the plot
+        legend = new TLegend(0.62,0.75,0.82,0.9);
+        SetupLegend(legend,centralityString);
+        legend->Draw();
+        
+        // Draw the ratios to the lower portion of the split canvas
+        DrawToLowerPad(namerX,fRatioLabel.Data());
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sPtRatio",fBaseHistograms->GetTrackAxisName(iTrackType));
+        SaveFigure(namerX,compactCentralityString,fBaseHistograms->GetCompactCorrelationTypeString(iCorrelationType));
+
+        // Loop over track pT bins
+        for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fBaseHistograms->GetNTrackPtBins(); iTrackPt++){
+
+          // Draw the selected track pT bins and the special bin containing integrated distributions
+          if(iTrackPt > fLastDrawnTrackPtBin && iTrackPt != fBaseHistograms->GetNTrackPtBins()) continue;
+
+          // Set the correct track pT bins
+          trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+          compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+          compactTrackPtString.ReplaceAll(".","v");
+
+          // No pT selection for integrated distributions
+          if(iTrackPt == fBaseHistograms->GetNTrackPtBins()){
+            trackPtString = "";
+            compactTrackPtString = "";
+          }
+
+          // === Track phi ===
+          
+          // Prepare the track phi histograms to be drawn
+          PrepareRatio("trackPhi", iTrackType, iCorrelationType, iCentrality, iTrackPt);
+          
+          // Draw the track phi distributions to the upper panel of a split canvas plot
+          sprintf(namerX,"%s #varphi",fBaseHistograms->GetTrackAxisName(iTrackType));
+          DrawToUpperPad(namerX, "#frac{dN}{d#varphi}"); // TODO: Add correlation type to title
+
+          // Add a legend to the plot
+          legend = new TLegend(0.17,0.20,0.37,0.35);
+          SetupLegend(legend,centralityString,trackPtString);
+          legend->Draw();
+
+          // Draw the ratios to the lower portion of the split canvas
+          DrawToLowerPad(namerX,fRatioLabel.Data());
+          
+          // Save the figure to a file
+          sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetTrackAxisName(iTrackType));
+          SaveFigure(namerX,compactCentralityString,fBaseHistograms->GetCompactCorrelationTypeString(iCorrelationType),compactTrackPtString);
+
+          // === Track eta ===
+
+          // Set nice position for the legend
+          legendY1 = 0.20; legendY2 = legendY1+0.15;
+          if(iTrackPt == fBaseHistograms->GetNTrackPtBins()){
+            legendX1 = 0.4; legendX2 = legendX1+0.2;
+          } else if (iTrackPt == fBaseHistograms->GetNTrackPtBins() - 1){
+            legendX1 = 0.32; legendX2 = legendX1+0.2;
+          } else {
+            legendX1 = 0.34; legendX2 = legendX1+0.2;
+          }
+
+          // Prepare the track eta histograms to be drawn
+          PrepareRatio("trackEta", iTrackType, iCorrelationType, iCentrality, iTrackPt);
+          
+          // Draw the track eta distributions to the upper panel of a split canvas plot
+          sprintf(namerX,"%s #eta",fBaseHistograms->GetTrackAxisName(iTrackType));
+          DrawToUpperPad(namerX, "#frac{dN}{d#eta}"); // TODO: Add correlation type to title
+          
+          // Add a legend to the plot
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+          SetupLegend(legend,centralityString,trackPtString);
+          legend->Draw();
+
+          // Draw the ratios to the lower portion of the split canvas
+          DrawToLowerPad(namerX,fRatioLabel.Data());
+          
+          // Save the figure to a file
+          sprintf(namerX,"%sEtaRatio",fBaseHistograms->GetTrackAxisName(iTrackType));
+          SaveFigure(namerX,compactCentralityString,fBaseHistograms->GetCompactCorrelationTypeString(iCorrelationType),compactTrackPtString);
+
+        } // Track pT loop
+      } // Correlation type loop
+    } // Centrality loop
+  } // Track type loop
 }
 
 /*
@@ -541,9 +559,6 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
  * Prepare histograms for ratio plots
  *
  *  Arguments:
- *   TH1D *mainHistogram = Histogram that is drawn first and with respect to which the ratios are taken
- *   TH1D *additionalHistogram[knMaxRatios] = Array of histograms used to be drawn to same canvas as main histogram
- *   TH1D *hRatio[knMaxRatios] = Array of ratios between additional histograms and main histogram
  *   TString name = Name for the histograms to be filled in arrays
  *   int bin1 = First bin index for the loaded histograms
  *   int bin2 = Second bin index for the loaded histograms
@@ -551,53 +566,67 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
  *   int bin4 = Fourth bin index for the loaded histograms
  *   int bin5 = Fifth bin index for the loaded histograms
  */
-TH1D* DijetComparingDrawer::PrepareRatio(TH1D *mainHistogram, TH1D *additionalHistogram[knMaxRatios], TH1D *hRatio[knMaxRatios], TString name, int bin1, int bin2, int bin3, int bin4, int bin5){
+void DijetComparingDrawer::PrepareRatio(TString name, int bin1, int bin2, int bin3, int bin4, int bin5){
   
   // Helper variable
   char namer[100];
-  
+    
   // Read the histograms, scale them to one and take the ratio
-  cout << "Searching histograms with name " << name.Data() << endl;
-  mainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
-  mainHistogram->Scale(1.0/mainHistogram->Integral());
+  fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
+  if(fApplyScaling) fMainHistogram->Scale(1.0/fMainHistogram->Integral());
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    additionalHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
-    additionalHistogram[iAdditional]->Scale(1.0/additionalHistogram[iAdditional]->Integral());
-    sprintf(namer,"%sRatio%d",mainHistogram->GetName(),iAdditional);
-    hRatio[iAdditional] = (TH1D*)mainHistogram->Clone(namer);
-    hRatio[iAdditional]->Divide(additionalHistogram[iAdditional]);
+    fAdditionalHistogam[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
+    if(fApplyScaling) fAdditionalHistogam[iAdditional]->Scale(1.0/fAdditionalHistogam[iAdditional]->Integral());
+    sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
+    fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
+    fRatioHistogram[iAdditional]->Divide(fAdditionalHistogam[iAdditional]);
   }
-  return mainHistogram;
 }
 
 /*
- * Draw the histograms to the same figure in the upper pad of JDrawer
+ * Draw to upper pad the histograms that are most recently prepared for drawing
  *
  *  Arguments:
- *   TH1D *mainHistogram = Histogram that is drawn first and with respect to which the ratios are taken
- *   TH1D *additionalHistogram[knMaxRatios] = Array of histograms used to be drawn to same canvas as main histogram
  *   const char* xTitle = Title given to the x-axis
  *   const char* yTitle = Title given to the y-axis
  *   bool logAxis = True: logarithmic y-axis, false = linear y-axis
  */
-void DijetComparingDrawer::DrawToUpperPad(TH1D *mainHistogram, TH1D *additionalHistogram[knMaxRatios], const char* xTitle, const char* yTitle, bool logAxis){
+void DijetComparingDrawer::DrawToUpperPad(const char* xTitle, const char* yTitle, bool logAxis){
 
   // Define some nice colors for histograms
-  mainHistogram->SetLineColor(kBlack);
-  int colors[] = {kRed,kBlue,kMagenta,kCyan,kGreen+4,kOrange,kViolet+3,kPink-7,kSpring+3,kAzure-7};
+  fMainHistogram->SetLineColor(kBlack);
 
   // Create a split canvas and draw the histograms to the upped part of the canvas
   fDrawer->SetDefaultAppearanceSplitCanvas();
   fDrawer->CreateSplitCanvas();
   fDrawer->SetLogY(logAxis);
-  fDrawer->DrawHistogramToUpperPad(mainHistogram,xTitle,yTitle," ");
+  fDrawer->DrawHistogramToUpperPad(fMainHistogram,xTitle,yTitle," ");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    additionalHistogram[iAdditional]->SetLineColor(colors[iAdditional]);
-    additionalHistogram[iAdditional]->Draw("same");
+    fAdditionalHistogam[iAdditional]->SetLineColor(fColors[iAdditional]);
+    fAdditionalHistogam[iAdditional]->Draw("same");
   }
   
   // Reset back to linear for ratio
   fDrawer->SetLogY(false);
+}
+
+/*
+ * Draw to the lower pad the ratio histograms that are most recently prepared
+ *
+ *  Arguments:
+ *   const char* xTitle = Title given to the x-axis
+ *   const char* yTitle = Title given to the y-axis
+ */
+void DijetComparingDrawer::DrawToLowerPad(const char* xTitle, const char* yTitle){
+  if(fnAddedHistograms > 0){
+    fRatioHistogram[0]->SetLineColor(fColors[0]);
+    fRatioHistogram[0]->GetYaxis()->SetRangeUser(fRatioZoomMin,fRatioZoomMax);
+    fDrawer->DrawHistogramToLowerPad(fRatioHistogram[0],xTitle,yTitle, " ");
+  }
+  for(int iAdditional = 1; iAdditional < fnAddedHistograms; iAdditional++){
+    fRatioHistogram[iAdditional]->SetLineColor(fColors[iAdditional]);
+    fRatioHistogram[iAdditional]->Draw("same");
+  }
 }
 
 /*
@@ -607,13 +636,13 @@ void DijetComparingDrawer::DrawToUpperPad(TH1D *mainHistogram, TH1D *additionalH
  *  TString centralityString = Collision centrality
  *  TString trackString = Track pT information
  */
-void DijetComparingDrawer::SetupLegend(TLegend *legend, TH1D *mainHistogram, TH1D *additionalHistogram[knMaxRatios], TString centralityString, TString trackString){
+void DijetComparingDrawer::SetupLegend(TLegend *legend, TString centralityString, TString trackString){
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
-  legend->AddEntry(mainHistogram,fBaseHistograms->GetSystem(),"l");
+  legend->AddEntry(fMainHistogram,fBaseHistograms->GetSystem(),"l");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    legend->AddEntry(additionalHistogram[iAdditional],fAddedHistograms[iAdditional]->GetSystem(),"l");
+    legend->AddEntry(fAdditionalHistogam[iAdditional],fAddedHistograms[iAdditional]->GetSystem(),"l");
   }
 }
 
@@ -805,6 +834,11 @@ void DijetComparingDrawer::SetSaveFigures(const bool saveOrNot, const char *form
   fFigureFormat = format;
 }
 
+// Set if we should scale the histograms with their integral before comparing them
+void DijetComparingDrawer::SetApplyScaling(const bool applyScaling){
+  fApplyScaling = applyScaling;
+}
+
 // Setter for logarithmic pT axis
 void DijetComparingDrawer::SetLogPt(const bool isLog){
   fLogPt = isLog;
@@ -825,6 +859,27 @@ void DijetComparingDrawer::SetLogAxes(const bool pt, const bool correlation, con
   SetLogPt(pt);
   SetLogCorrelation(correlation);
   SetLogJetShape(jetShape);
+}
+
+// Setter for minimum value of y-axis in ratio plots
+void DijetComparingDrawer::SetRatioZoomMin(const double minValue){
+  fRatioZoomMin = minValue;
+}
+
+// Setter for maximum value of y-axis in ratio plots
+void DijetComparingDrawer::SetRatioZoomMax(const double maxValue){
+  fRatioZoomMax = maxValue;
+}
+
+// Setter for y-axis values in ratio plots
+void DijetComparingDrawer::SetRatioZoom(const double minValue, const double maxValue){
+  SetRatioZoomMin(minValue);
+  SetRatioZoomMax(maxValue);
+}
+
+// Setter for the y-axis label in ratio plots
+void DijetComparingDrawer::SetRatioLabel(TString label){
+  fRatioLabel = label;
 }
 
 // Setter for color palette
