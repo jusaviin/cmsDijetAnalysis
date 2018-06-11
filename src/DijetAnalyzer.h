@@ -26,6 +26,7 @@ private:
   enum enumFilledHistograms{kFillAll,kFillAllButJetTrack,kFillJetTrack,kFillOnlyEventInformation,kFillEventInformationAndRegularJetTrack,kFillJetTrackUncorrected,kFillJetTrackPtWeighted,knFillModes}; // Which kinds of histograms are filled
   enum enumSubeventCuts{kSubeventZero,kSubeventNonZero,kSubeventAny,knSubeventCuts}; // Cuts for subevent index
   enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
+  enum enumForestType{kHighForest,kSkimForest,knForestTypes}; // What type of forest is used for reader
   
 public:
   
@@ -59,8 +60,9 @@ private:
   TF1 *fVzWeightFunction;            // Weighting function for vz. Needed for MC.
   TF1 *fCentralityWeightFunction;    // Weighting function for centrality. Needed for MC.
   
-  // Analyzed data type
+  // Analyzed data and forest types
   Int_t fDataType;                   // Analyzed data type
+  Int_t fForestType;                 // Analyzed forest type
   
   // Weights for filling the MC histograms
   Double_t fVzWeight;                // Weight for vz in MC

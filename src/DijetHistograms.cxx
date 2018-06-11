@@ -18,6 +18,7 @@ DijetHistograms::DijetHistograms() :
   fhVertexZWeighted(0),
   fhEvents(0),
   fhTrackCuts(0),
+  fhTrackCutsInclusive(0),
   fhCentrality(0),
   fhCentralityWeighted(0),
   fhCentralityDijet(0),
@@ -28,9 +29,11 @@ DijetHistograms::DijetHistograms() :
   fhDijet(0),
   fhAnyJet(0),
   fhTrack(0),
+  fhTrackInclusive(0),
   fhTrackLeadingJet(0),
   fhTrackSubleadingJet(0),
   fhTrackUncorrected(0),
+  fhTrackInclusiveUncorrected(0),
   fhTrackLeadingJetUncorrected(0),
   fhTrackSubleadingJetUncorrected(0),
   fhTrackLeadingJetPtWeighted(0),
@@ -48,6 +51,7 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhVertexZWeighted(0),
   fhEvents(0),
   fhTrackCuts(0),
+  fhTrackCutsInclusive(0),
   fhCentrality(0),
   fhCentralityWeighted(0),
   fhCentralityDijet(0),
@@ -58,9 +62,11 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhDijet(0),
   fhAnyJet(0),
   fhTrack(0),
+  fhTrackInclusive(0),
   fhTrackLeadingJet(0),
   fhTrackSubleadingJet(0),
   fhTrackUncorrected(0),
+  fhTrackInclusiveUncorrected(0),
   fhTrackLeadingJetUncorrected(0),
   fhTrackSubleadingJetUncorrected(0),
   fhTrackLeadingJetPtWeighted(0),
@@ -78,6 +84,7 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhVertexZWeighted(in.fhVertexZWeighted),
   fhEvents(in.fhEvents),
   fhTrackCuts(in.fhTrackCuts),
+  fhTrackCutsInclusive(in.fhTrackCutsInclusive),
   fhCentrality(in.fhCentrality),
   fhCentralityWeighted(in.fhCentralityWeighted),
   fhCentralityDijet(in.fhCentralityDijet),
@@ -88,9 +95,11 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhDijet(in.fhDijet),
   fhAnyJet(in.fhAnyJet),
   fhTrack(in.fhTrack),
+  fhTrackInclusive(in.fhTrackInclusive),
   fhTrackLeadingJet(in.fhTrackLeadingJet),
   fhTrackSubleadingJet(in.fhTrackSubleadingJet),
   fhTrackUncorrected(in.fhTrackUncorrected),
+  fhTrackInclusiveUncorrected(in.fhTrackInclusiveUncorrected),
   fhTrackLeadingJetUncorrected(in.fhTrackLeadingJetUncorrected),
   fhTrackSubleadingJetUncorrected(in.fhTrackSubleadingJetUncorrected),
   fhTrackLeadingJetPtWeighted(in.fhTrackLeadingJetPtWeighted),
@@ -112,6 +121,7 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhVertexZWeighted = in.fhVertexZWeighted;
   fhEvents = in.fhEvents;
   fhTrackCuts = in.fhTrackCuts;
+  fhTrackCutsInclusive = in.fhTrackCutsInclusive;
   fhCentrality = in.fhCentrality;
   fhCentralityWeighted = in.fhCentralityWeighted;
   fhCentralityDijet = in.fhCentralityDijet;
@@ -122,9 +132,11 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhDijet = in.fhDijet;
   fhAnyJet = in.fhAnyJet;
   fhTrack = in.fhTrack;
+  fhTrackInclusive = in.fhTrackInclusive;
   fhTrackLeadingJet = in.fhTrackLeadingJet;
   fhTrackSubleadingJet = in.fhTrackSubleadingJet;
   fhTrackUncorrected = in.fhTrackUncorrected;
+  fhTrackInclusiveUncorrected = in.fhTrackInclusiveUncorrected;
   fhTrackLeadingJetUncorrected = in.fhTrackLeadingJetUncorrected;
   fhTrackSubleadingJetUncorrected = in.fhTrackSubleadingJetUncorrected;
   fhTrackLeadingJetPtWeighted = in.fhTrackLeadingJetPtWeighted;
@@ -143,6 +155,7 @@ DijetHistograms::~DijetHistograms(){
   delete fhVertexZWeighted;
   delete fhEvents;
   delete fhTrackCuts;
+  delete fhTrackCutsInclusive;
   delete fhCentrality;
   delete fhCentralityWeighted;
   delete fhCentralityDijet;
@@ -153,9 +166,11 @@ DijetHistograms::~DijetHistograms(){
   delete fhDijet;
   delete fhAnyJet;
   delete fhTrack;
+  delete fhTrackInclusive;
   delete fhTrackLeadingJet;
   delete fhTrackSubleadingJet;
   delete fhTrackUncorrected;
+  delete fhTrackInclusiveUncorrected;
   delete fhTrackLeadingJetUncorrected;
   delete fhTrackSubleadingJetUncorrected;
   delete fhTrackLeadingJetPtWeighted;
@@ -281,6 +296,7 @@ void DijetHistograms::CreateHistograms(){
   fhVertexZWeighted = new TH1F("vertexZweighted","vertexZweighted",nVzBins,minVz,maxVz); fhVertexZWeighted->Sumw2();
   fhEvents = new TH1F("nEvents","nEvents",knEventTypes,-0.5,knEventTypes-0.5); fhEvents->Sumw2();
   fhTrackCuts = new TH1F("trackCuts","trackCuts",knTrackCuts,-0.5,knTrackCuts-0.5); fhTrackCuts->Sumw2();
+  fhTrackCutsInclusive = new TH1F("trackCutsInclusive","trackCutsInclusive",knTrackCuts,-0.5,knTrackCuts-0.5); fhTrackCutsInclusive->Sumw2();
   fhCentrality = new TH1F("centrality","centrality",nCentralityBins,minCentrality,maxCentrality); fhCentrality->Sumw2();
   fhCentralityWeighted = new TH1F("centralityWeighted","centralityWeighted",nCentralityBins,minCentrality,maxCentrality); fhCentralityWeighted->Sumw2();
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
@@ -295,6 +311,7 @@ void DijetHistograms::CreateHistograms(){
   // For the track cut histogram, label each bin corresponding to a track cut
   for(Int_t i = 0; i < knTrackCuts; i++){
     fhTrackCuts->GetXaxis()->SetBinLabel(i+1,kTrackCutStrings[i]);
+    fhTrackCutsInclusive->GetXaxis()->SetBinLabel(i+1,kTrackCutStrings[i]);
   }
   
   // ======== THnSparses for leading and subleading jets ========
@@ -426,11 +443,15 @@ void DijetHistograms::CreateHistograms(){
   
   // Create the histograms for tracks and uncorrected tracks using the above binning information
   fhTrack = new THnSparseF("track","track",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrack->Sumw2();
+  fhTrackInclusive = new THnSparseF("trackInclusive","trackInclusive",4,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrackInclusive->Sumw2();
   fhTrackUncorrected = new THnSparseF("trackUncorrected","trackUncorrected",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrackUncorrected->Sumw2();
+  fhTrackInclusiveUncorrected = new THnSparseF("trackInclusiveUncorrected","trackInclusiveUncorrected",4,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrackInclusiveUncorrected->Sumw2();
 
   // Set custom centrality bins for histograms
   fhTrack->SetBinEdges(3,wideCentralityBins);
+  fhTrackInclusive->SetBinEdges(3,wideCentralityBins);
   fhTrackUncorrected->SetBinEdges(3,wideCentralityBins);
+  fhTrackInclusiveUncorrected->SetBinEdges(3,wideCentralityBins);
   
   // ======== THnSparses for correlation between tracks and leading or subleading jets ========
   
@@ -512,6 +533,7 @@ void DijetHistograms::Write() const{
   fhVertexZWeighted->Write();
   fhEvents->Write();
   fhTrackCuts->Write();
+  fhTrackCutsInclusive->Write();
   fhCentrality->Write();
   fhCentralityWeighted->Write();
   fhCentralityDijet->Write();
@@ -522,9 +544,11 @@ void DijetHistograms::Write() const{
   fhDijet->Write();
   fhAnyJet->Write();
   fhTrack->Write();
+  fhTrackInclusive->Write();
   fhTrackLeadingJet->Write();
   fhTrackSubleadingJet->Write();
   fhTrackUncorrected->Write();
+  fhTrackInclusiveUncorrected->Write();
   fhTrackLeadingJetUncorrected->Write();
   fhTrackSubleadingJetUncorrected->Write();
   fhTrackLeadingJetPtWeighted->Write();

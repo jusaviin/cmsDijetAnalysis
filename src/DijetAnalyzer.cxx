@@ -22,6 +22,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fVzWeightFunction(0),
   fCentralityWeightFunction(0),
   fDataType(-1),
+  fForestType(0),
   fVzWeight(1),
   fCentralityWeight(1),
   fPtHatWeight(1),
@@ -61,6 +62,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFileNames(fileNameVector),
   fCard(newCard),
   fHistograms(0),
+  fForestType(0),
   fVzWeight(1),
   fCentralityWeight(1),
   fPtHatWeight(1),
@@ -159,6 +161,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fVzWeightFunction(in.fVzWeightFunction),
   fCentralityWeightFunction(in.fCentralityWeightFunction),
   fDataType(in.fDataType),
+  fForestType(in.fForestType),
   fVzWeight(in.fVzWeight),
   fCentralityWeight(in.fCentralityWeight),
   fPtHatWeight(in.fPtHatWeight),
@@ -204,6 +207,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fVzWeightFunction = in.fVzWeightFunction;
   fCentralityWeightFunction = in.fCentralityWeightFunction;
   fDataType = in.fDataType;
+  fForestType = in.fForestType;
   fVzWeight = in.fVzWeight;
   fCentralityWeight = in.fCentralityWeight;
   fPtHatWeight = in.fPtHatWeight;
@@ -315,11 +319,11 @@ void DijetAnalyzer::RunAnalysis(){
   //    Correlation type for Monte Carlo
   //****************************************
   fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
-  
+
   //****************************************
   //            All cuts set!
   //****************************************
-
+  
   // Input files and forest readers for analysis
   TFile *inputFile;
   TFile *copyInputFile; // If we read forest for tracks and jets with different readers, we need to give different file pointers to them
@@ -396,59 +400,79 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerJet[4];
   Double_t fillerDijet[5];
   
-  // Select the reader for jets
+  // Select the reader for jets based on forest and MC correlation type
+  fForestType = fCard->Get("ForestType");
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
-    jetReader = new GeneratorLevelSkimForestReader(fDataType);
-  } else if ((fMcCorrelationType == kRecoReco || fMcCorrelationType == kRecoGen) && fDataType != ForestReader::kLocalTest) {
-    jetReader = new SkimForestReader(fDataType);
+    if(fForestType == kSkimForest) {
+      jetReader = new GeneratorLevelSkimForestReader(fDataType);
+    } else {
+      jetReader = new GeneratorLevelForestReader(fDataType);
+    }
   } else {
-    jetReader = new HighForestReader(fDataType);
+    if(fForestType == kSkimForest) {
+      jetReader = new SkimForestReader(fDataType);
+    } else {
+      jetReader = new HighForestReader(fDataType);
+    }
   }
   
-  // Select the reader for tracks
-  if(fMcCorrelationType == kRecoGen){
+  // Select the reader for tracks based on forest and MC correlation type
+  if(fMcCorrelationType == kRecoGen && fForestType == kSkimForest){
     trackReader = new GeneratorLevelSkimForestReader(fDataType);
-  } else if (fMcCorrelationType == kGenReco){
+  } else if(fMcCorrelationType == kRecoGen){
+    trackReader = new GeneratorLevelForestReader(fDataType);
+  } else if (fMcCorrelationType == kGenReco && fForestType == kSkimForest){
     trackReader = new SkimForestReader(fDataType);
+  } else if (fMcCorrelationType == kGenReco){
+    trackReader = new HighForestReader(fDataType);
   } else {
     trackReader = jetReader;
   }
   
   // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
   if(mixEvents){
-    if((fDataType == ForestReader::kPbPb || fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoReco) && fDataType != ForestReader::kLocalTest){
+    if(fDataType == ForestReader::kPbPb){
       mixedEventReader = new SkimForestReader(fDataType);
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
-      mixedEventReader = new GeneratorLevelSkimForestReader(fDataType);
+      if(fForestType == kSkimForest) {
+        mixedEventReader = new GeneratorLevelSkimForestReader(fDataType);
+      } else {
+        mixedEventReader = new GeneratorLevelForestReader(fDataType);
+      }
     } else {
-      mixedEventReader = new HighForestReader(fDataType);
+      if(fForestType == kSkimForest) {
+        mixedEventReader = new SkimForestReader(fDataType);
+      } else {
+        mixedEventReader = new HighForestReader(fDataType);
+      }
     }
   }
   
   // Amount of debugging messages
   Int_t debugLevel = fCard->Get("DebugLevel");
-  
+
   // Loop over files
   Int_t nFiles = fFileNames.size();
   for(Int_t iFile = 0; iFile < nFiles; iFile++) {
     
-    // Find the filename
+    // Find the filename and open the input file
     currentFile = fFileNames.at(iFile);
-    
-    // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
-    if(fDataType == ForestReader::kPbPb){
-      currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
-    } else {
-      iMixedEventFile = iFile+1;
-      if(iMixedEventFile == nFiles) iMixedEventFile = 0;
-      currentMixedEventFile = fFileNames.at(iMixedEventFile);
-    }
-    cout << " " <<  endl;
-    // Open the file and check that everything goes fine
     inputFile = TFile::Open(currentFile);
     if(useDifferentReaderFotJetsAndTracks) copyInputFile = TFile::Open(currentFile);
-    if(mixEvents) mixedEventFile = TFile::Open(currentMixedEventFile);
-    cout << " " <<  endl;
+    
+    // If we are doing mixing, find and open the mixing file
+    // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
+    if(mixEvents){
+      if(fDataType == ForestReader::kPbPb){
+        currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
+      } else {
+        iMixedEventFile = iFile+1;
+        if(iMixedEventFile == nFiles) iMixedEventFile = 0;
+        currentMixedEventFile = fFileNames.at(iMixedEventFile);
+      }
+      mixedEventFile = TFile::Open(currentMixedEventFile);
+    }
+
     // Check that the file exists
     if(!inputFile){
       cout << "Warning! Could not open the file: " << currentFile.Data() << endl;
@@ -460,19 +484,21 @@ void DijetAnalyzer::RunAnalysis(){
       cout << "Warning! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
       continue;
     }
-    
+
     // Check that the file is not zombie
     if(inputFile->IsZombie()){
       cout << "Warning! The following file is a zombie: " << currentFile.Data() << endl;
       continue;
     }
-    
+
     // Check that the file is not zombie
-    if(mixedEventFile->IsZombie() && mixEvents){
-      cout << "Warning! The following mixing file is a zombie: " << currentMixedEventFile.Data() << endl;
-      continue;
+    if(mixEvents){
+      if(mixedEventFile->IsZombie()){
+        cout << "Warning! The following mixing file is a zombie: " << currentMixedEventFile.Data() << endl;
+        continue;
+      }
     }
-    
+
     // Debug message, if wanted
     if(debugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
     
@@ -670,6 +696,112 @@ void DijetAnalyzer::RunAnalysis(){
           dijetFound = false;
         }
       } // End of dijet cuts
+      
+      // Inclusive track histograms
+      if(fillMainLoopHistograms){
+        
+        // Filler for tracks
+        Double_t fillerTrack[4];
+        
+        // Variables for tracks
+        Double_t trackPt;       // Track pT
+        Double_t trackEta;      // Track eta
+        Double_t trackPhi;      // Track phi
+        Double_t trackR;        // Distance of a track to the current jet
+        Double_t trackRMin;     // Minimum distance to a jet
+        Double_t trackEt;
+        Double_t trackEfficiencyCorrection; // Track efficiency correction
+        
+        // Loop over all track in the event
+        Int_t nTracks = jetReader->GetNTracks();
+        for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
+          
+          // Only look at charged tracks
+          if(jetReader->GetTrackCharge(iTrack) == 0) continue;
+          if(!PassSubeventCut(jetReader->GetTrackSubevent(iTrack))) continue;
+          
+          trackPt = jetReader->GetTrackPt(iTrack);
+          trackPhi = jetReader->GetTrackPhi(iTrack);
+          trackEta = jetReader->GetTrackEta(iTrack);
+          trackEt = (jetReader->GetTrackEnergyEcal(iTrack)+jetReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
+          
+          //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
+          
+          // Only fill the track cut histograms for same event data
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kAllTracks);
+          
+          // Cut for track pT
+          if(trackPt <= fTrackMinPtCut) continue;                     // Minimum pT cut
+          if(trackPt >= fJetMaximumPtCut) continue;                   // Maximum pT cut (same as for leading jets)
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kPtCuts);
+          
+          // Cut for track eta
+          if(TMath::Abs(trackEta) >= fTrackEtaCut) continue;          // Eta cut
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kEtaCut);
+          
+          // Cut for high purity
+          if(!jetReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kHighPurity);
+          
+          // Cut for relative error for track pT
+          if(jetReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kPtError);
+          
+          // Cut for track distance from primary vertex
+          if(jetReader->GetTrackVertexDistanceZ(iTrack)/jetReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
+          if(jetReader->GetTrackVertexDistanceXY(iTrack)/jetReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kVertexDistance);
+          
+          // Cut for energy deposition in calorimeters for high pT tracks
+          if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) continue;  // For high pT tracks, require signal also in calorimeters
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kCaloSignal);
+          
+          // Cuts for track reconstruction quality
+          if(jetReader->GetTrackChi2(iTrack)/(1.0*jetReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*jetReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
+          if(jetReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
+          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kReconstructionQuality);
+          
+          //     ==== Track cuts done ====
+          
+          // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
+          trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
+          
+          // No efficiency correction for generator level tracks
+          if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen){
+            trackEfficiencyCorrection = 1;
+          } else { // Apply the correction for real data and reconstructed Monte Carlo tracks
+            
+            /*// Need distance to nearest jet for the efficiency correction
+             for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
+             
+             // Require the same jet quality cuts as when searching for dijets
+             if(TMath::Abs(trackReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
+             if(trackReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
+             if(fMinimumMaxTrackPtFraction >= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
+             if(fMaximumMaxTrackPtFraction <= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
+             // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
+             
+             // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
+             trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
+             if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
+             
+             } // Loop for calculating Rmin*/
+            
+            // Get the track efficiency corrections
+            trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
+          } // Track efficiency correction if
+          
+          // Fill track histograms if selected to do so
+          fillerTrack[0] = trackPt;                    // Axis 0: Track pT
+          fillerTrack[1] = trackPhi;                   // Axis 1: Track phi
+          fillerTrack[2] = trackEta;                   // Axis 2: Track eta
+          fillerTrack[3] = centrality;                 // Axis 3: Centrality
+          fHistograms->fhTrackInclusive->Fill(fillerTrack,trackEfficiencyCorrection*fTotalEventWeight);  // Fill the track histogram
+          fHistograms->fhTrackInclusiveUncorrected->Fill(fillerTrack,fTotalEventWeight);                 // Fill the uncorrected track histogram
+          
+        }
+      }
+      
       
       // If a dijet is found, fill some information to fHistograms
       if(dijetFound){
@@ -914,14 +1046,14 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
     //     ==== Track cuts done ====
     
     // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
-    trackRMin = 666;   // Initialize the minimum distance to a jet to some very large value
+    trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
     
     // No efficiency correction for generator level tracks
     if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen){
       trackEfficiencyCorrection = 1;
     } else { // Apply the correction for real data and reconstructed Monte Carlo tracks
       
-      // Need distance to nearest jet for the efficiency correction
+      /*// Need distance to nearest jet for the efficiency correction
       for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
         
         // Require the same jet quality cuts as when searching for dijets
@@ -935,7 +1067,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
         trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
         if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
         
-      } // Loop for calculating Rmin
+      } // Loop for calculating Rmin*/
       
       // Get the track efficiency corrections
       trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
@@ -1049,7 +1181,12 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};
   
   // Event numbers change a bit in skims, since pT files for pT hat bin 30 are cut out. These numbers are good for list mergedSkimPpPythia5TeV.txt
-  //Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275}; // TODO: Change after counting finishes
+  if(fForestType == kSkimForest){
+    Int_t skimEvents[nBins] = {0,0,272976,377670,467966,447818,259188,234443,39272};
+    for(Int_t i = 0; i < nBins; i++){
+      ppMcEvents[i] = skimEvents[i];
+    }
+  }
   
   // Return the weight for pp
   if(fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest) {
