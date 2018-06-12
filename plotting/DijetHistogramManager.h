@@ -28,7 +28,7 @@ public:
   enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, knJetTrackCorrelations};
   
   // Indices for different track histogram categories
-  enum enumTrackHistograms{kTrack, kUncorrectedTrack, knTrackCategories};
+  enum enumTrackHistograms{kTrack, kUncorrectedTrack, kInclusiveTrack, kUncorrectedInclusiveTrack, knTrackCategories};
   
   // Indices for different single jet histogram categories
   enum enumSingleJet{kLeadingJet, kSubleadingJet, kAnyJet, knSingleJetCategories};
@@ -53,8 +53,8 @@ private:
   const char* fJetTrackAxisNames[knJetTrackCorrelations] = {"Track-LJet","UC Track-LJet","p_{T}w Track-LJet","Track-SJet","UC Track-SJet","p_{T}w Track-SJet"}; // Names attached to the figure axes
   
   // Naming for track histograms
-  const char* fTrackHistogramNames[knTrackCategories] = {"track","trackUncorrected"}; // Names that different track histograms have in the input file
-  const char* fTrackAxisNames[knTrackCategories] = {"Track","Uncorrected track"}; // Names attached to the figure axes
+  const char* fTrackHistogramNames[knTrackCategories] = {"track","trackUncorrected","trackInclusive","trackInclusiveUncorrected"}; // Names that different track histograms have in the input file
+  const char* fTrackAxisNames[knTrackCategories] = {"Track","Uncorrected track", "Inclusive track", "UC Inclusive Track"}; // Names attached to the figure axes
   
   // Naming for single jet histograms
   const char* fSingleJetHistogramName[knSingleJetCategories] = {"leadingJet","subleadingJet","anyJet"}; // Names that different single jet histograms have in the input file
@@ -92,6 +92,9 @@ public:
   void SetLoadTracks(const bool loadOrNot);            // Setter for drawing tracks
   void SetLoadTracksUncorrected(const bool loadOrNot); // Setter for drawing uncorrected tracks
   void SetLoadAllTracks(const bool drawTracks, const bool drawUncorrected); // Setter for drawing all track histograms
+  void SetLoadInclusiveTracks(const bool loadOrNot);            // Setter for drawing tracks
+  void SetLoadInclusiveTracksUncorrected(const bool loadOrNot); // Setter for drawing uncorrected tracks
+  void SetLoadAllInclusiveTracks(const bool drawTracks, const bool drawUncorrected); // Setter for drawing all track histograms
   
   // Setters for leading jet-track correlations
   void SetLoadTrackLeadingJetCorrelations(const bool loadOrNot);            // Setter for drawing leading jet-track correlations

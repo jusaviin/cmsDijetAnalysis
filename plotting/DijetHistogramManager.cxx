@@ -441,7 +441,7 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
  */
 void DijetHistogramManager::LoadDijetHistograms(){
   
-  if(!fLoadDijetHistograms) return; // Do not load the histograms if they are not selected for drawing
+  if(!fLoadDijetHistograms) return; // Do not load the histograms if they are not selected for loading
   
   // Define helper variables
   int duplicateRemoverCentrality = -1;
@@ -490,11 +490,18 @@ void DijetHistogramManager::LoadTrackHistograms(){
   int duplicateRemoverTrackPt = -1;
   int lowerTrackPtBin = 0;
   int higherTrackPtBin = 0;
+  int axisAdder = 0;
   
   // Loop over all track histograms
   for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
     if(!fLoadTracks[iTrackType]) continue;  // Only load the selected track types
     for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){  // Data file contains only same and mixed event distributions
+      if(iTrackType > kUncorrectedTrack && iCorrelationType == kMixedEvent) continue; // No mixed event histograms for inclusive tracks
+      if(iTrackType > kUncorrectedTrack){
+        axisAdder = -1;
+      } else {
+        axisAdder = 0;
+      }
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         
         // Select the bin indices
@@ -506,10 +513,12 @@ void DijetHistogramManager::LoadTrackHistograms(){
         axisIndices[0] = 3; lowLimits[0] = lowerCentralityBin; highLimits[0] = higherCentralityBin;
         axisIndices[1] = 4; lowLimits[1] = iCorrelationType+1; highLimits[1] = iCorrelationType+1;
         
-        fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],0,2,axisIndices,lowLimits,highLimits);
-        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,2,axisIndices,lowLimits,highLimits);
-        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,2,axisIndices,lowLimits,highLimits);
-        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,2,axisIndices,lowLimits,highLimits);
+        cout << "Finding track pT histogram" << endl;
+        fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],0,2+axisAdder,axisIndices,lowLimits,highLimits);
+        cout << "Finding track phi histogram" << endl;
+        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,2+axisAdder,axisIndices,lowLimits,highLimits);
+        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,2+axisAdder,axisIndices,lowLimits,highLimits);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,2+axisAdder,axisIndices,lowLimits,highLimits);
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
@@ -518,12 +527,12 @@ void DijetHistogramManager::LoadTrackHistograms(){
           higherTrackPtBin = fFineTrackPtBinIndices[iTrackPtBin+1]+duplicateRemoverTrackPt;
           
           // Add restriction for pT axis (0)
-          axisIndices[2] = 0; lowLimits[2] = lowerTrackPtBin; highLimits[2] = higherTrackPtBin;
+          axisIndices[2+axisAdder] = 0; lowLimits[2+axisAdder] = lowerTrackPtBin; highLimits[2+axisAdder] = higherTrackPtBin;
           
           // Read the angle histograms in track pT bins
-          fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,3,axisIndices,lowLimits,highLimits);
-          fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,3,axisIndices,lowLimits,highLimits);
-          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,3,axisIndices,lowLimits,highLimits);
+          fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,3+axisAdder,axisIndices,lowLimits,highLimits);
+          fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,3+axisAdder,axisIndices,lowLimits,highLimits);
+          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,3+axisAdder,axisIndices,lowLimits,highLimits);
           
         } // Track pT loop
       } // Centrality loop
@@ -790,60 +799,76 @@ void DijetHistogramManager::SetDeltaPhiBins(double *lowBinBorders, double *highB
   }
 }
 
-// Setter for drawing event information
+// Setter for loading event information
 void DijetHistogramManager::SetLoadEventInformation(const bool loadOrNot){
   fLoadEventInformation = loadOrNot;
 }
 
-// Setter for drawing dijet histograms
+// Setter for loading dijet histograms
 void DijetHistogramManager::SetLoadDijetHistograms(const bool loadOrNot){
   fLoadDijetHistograms = loadOrNot;
 }
 
-// Setter for drawing leading jet histograms
+// Setter for loading leading jet histograms
 void DijetHistogramManager::SetLoadLeadingJetHistograms(const bool loadOrNot){
   fLoadSingleJets[kLeadingJet] = loadOrNot;
 }
 
-// Setter for drawing subleading jet histograms
+// Setter for loading subleading jet histograms
 void DijetHistogramManager::SetLoadSubleadingJetHistograms(const bool loadOrNot){
   fLoadSingleJets[kSubleadingJet] = loadOrNot;
 }
 
-// Setter for drawing all jet histograms
+// Setter for loading all jet histograms
 void DijetHistogramManager::SetLoadAnyJetHistograms(const bool loadOrNot){
   fLoadSingleJets[kAnyJet] = loadOrNot;
 }
 
-// Setter for drawing jet histograms
+// Setter for loading jet histograms
 void DijetHistogramManager::SetLoadAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny){
   SetLoadLeadingJetHistograms(drawLeading);
   SetLoadSubleadingJetHistograms(drawSubleading);
   SetLoadAnyJetHistograms(drawAny);
 }
 
-// Setter for drawing tracks
+// Setter for loading tracks
 void DijetHistogramManager::SetLoadTracks(const bool loadOrNot){
   fLoadTracks[kTrack] = loadOrNot;
 }
 
-// Setter for drawing uncorrected tracks
+// Setter for loading uncorrected tracks
 void DijetHistogramManager::SetLoadTracksUncorrected(const bool loadOrNot){
   fLoadTracks[kUncorrectedTrack] = loadOrNot;
 }
 
-// Setter for drawing track histograms
+// Setter for loading all track histograms
 void DijetHistogramManager::SetLoadAllTracks(const bool drawTracks, const bool drawUncorrected){
   SetLoadTracks(drawTracks);
   SetLoadTracksUncorrected(drawUncorrected);
 }
 
+// Setter for loading inclusive tracks
+void DijetHistogramManager::SetLoadInclusiveTracks(const bool loadOrNot){
+  fLoadTracks[kInclusiveTrack] = loadOrNot;
+}
+
+// Setter for loading uncorrected inclusive tracks
+void DijetHistogramManager::SetLoadInclusiveTracksUncorrected(const bool loadOrNot){
+  fLoadTracks[kUncorrectedInclusiveTrack] = loadOrNot;
+}
+
+// Setter for loading all inclusive track histograms
+void DijetHistogramManager::SetLoadAllInclusiveTracks(const bool drawTracks, const bool drawUncorrected){
+  SetLoadInclusiveTracks(drawTracks);
+  SetLoadInclusiveTracksUncorrected(drawUncorrected);
+}
+
 /*
- * Setter for drawing jet-track correlations.
+ * Setter for loading jet-track correlations.
  *
- * The method sets the drawing of the histogram defined by the primaryIndex.
+ * The method sets the loading of the histogram defined by the primaryIndex.
  * The background subtraction histograms are conntructed using buth leading and subleading jet histograms.
- * Thus when drawing the leading/subleading jet histograms, we need to also load the subleading/leading jet
+ * Thus when loading the leading/subleading jet histograms, we need to also load the subleading/leading jet
  * histograms to be able to perform the background subtraction.
  *
  *  Arguments:
@@ -863,44 +888,44 @@ void DijetHistogramManager::SetLoadJetTrackCorrelations(const bool loadOrNot, co
   
 }
 
-// Setter for drawing leading jet-track correlations
+// Setter for loading leading jet-track correlations
 void DijetHistogramManager::SetLoadTrackLeadingJetCorrelations(const bool loadOrNot){
   SetLoadJetTrackCorrelations(loadOrNot,kTrackLeadingJet,kTrackSubleadingJet);
 }
 
-// Setter for drawing uncorrected leading jet-track correlations
+// Setter for loading uncorrected leading jet-track correlations
 void DijetHistogramManager::SetLoadTrackLeadingJetCorrelationsUncorrected(const bool loadOrNot){
   SetLoadJetTrackCorrelations(loadOrNot,kUncorrectedTrackLeadingJet,kUncorrectedTrackSubleadingJet);
 }
 
-// Setter for drawing pT weighted leading jet-track correlations
+// Setter for loading pT weighted leading jet-track correlations
 void DijetHistogramManager::SetLoadTrackLeadingJetCorrelationsPtWeighted(const bool loadOrNot){
   SetLoadJetTrackCorrelations(loadOrNot,kPtWeightedTrackLeadingJet,kPtWeightedTrackSubleadingJet);
 }
 
-// Setter for drawing all correlations related to tracks and leading jets
+// Setter for loading all correlations related to tracks and leading jets
 void DijetHistogramManager::SetLoadAllTrackLeadingJetCorrelations(const bool drawLeading, const bool drawUncorrected, const bool drawPtWeighted){
   SetLoadTrackLeadingJetCorrelations(drawLeading);
   SetLoadTrackLeadingJetCorrelationsUncorrected(drawUncorrected);
   SetLoadTrackLeadingJetCorrelationsPtWeighted(drawPtWeighted);
 }
 
-// Setter for drawing subleading jet-track correlations
+// Setter for loading subleading jet-track correlations
 void DijetHistogramManager::SetLoadTrackSubleadingJetCorrelations(const bool loadOrNot){
   SetLoadJetTrackCorrelations(loadOrNot,kTrackSubleadingJet,kTrackLeadingJet);
 }
 
-// Setter for drawing uncorrected subleading jet-track correlations
+// Setter for loading uncorrected subleading jet-track correlations
 void DijetHistogramManager::SetLoadTrackSubleadingJetCorrelationsUncorrected(const bool loadOrNot){
   SetLoadJetTrackCorrelations(loadOrNot,kUncorrectedTrackSubleadingJet,kUncorrectedTrackLeadingJet);
 }
 
-// Setter for drawing pT weighted subleading jet-track correlations
+// Setter for loading pT weighted subleading jet-track correlations
 void DijetHistogramManager::SetLoadTrackSubleadingJetCorrelationsPtWeighted(const bool loadOrNot){
   SetLoadJetTrackCorrelations(loadOrNot,kPtWeightedTrackSubleadingJet,kPtWeightedTrackLeadingJet);
 }
 
-// Setter for drawing all correlations related to tracks and subleading jets
+// Setter for loading all correlations related to tracks and subleading jets
 void DijetHistogramManager::SetLoadAllTrackSubleadingJetCorrelations(const bool drawSubleading, const bool drawUncorrected, const bool drawPtWeighted){
   SetLoadTrackSubleadingJetCorrelations(drawSubleading);
   SetLoadTrackSubleadingJetCorrelationsUncorrected(drawUncorrected);

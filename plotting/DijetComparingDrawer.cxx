@@ -245,7 +245,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
         DrawToLowerPad(namerX,fRatioLabel.Data());
         
         // Save the figure to a file
-        sprintf(namerX,"%sPtRatio",fBaseHistograms->GetTrackAxisName(iTrackType));
+        sprintf(namerX,"%sPtRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));
         SaveFigure(namerX,compactCentralityString,fBaseHistograms->GetCompactCorrelationTypeString(iCorrelationType));
 
         // Loop over track pT bins
@@ -283,7 +283,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           DrawToLowerPad(namerX,fRatioLabel.Data());
           
           // Save the figure to a file
-          sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetTrackAxisName(iTrackType));
+          sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));
           SaveFigure(namerX,compactCentralityString,fBaseHistograms->GetCompactCorrelationTypeString(iCorrelationType),compactTrackPtString);
 
           // === Track eta ===
@@ -314,7 +314,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           DrawToLowerPad(namerX,fRatioLabel.Data());
           
           // Save the figure to a file
-          sprintf(namerX,"%sEtaRatio",fBaseHistograms->GetTrackAxisName(iTrackType));
+          sprintf(namerX,"%sEtaRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));
           SaveFigure(namerX,compactCentralityString,fBaseHistograms->GetCompactCorrelationTypeString(iCorrelationType),compactTrackPtString);
 
         } // Track pT loop
@@ -706,6 +706,22 @@ void DijetComparingDrawer::SetDrawTracksUncorrected(const bool drawOrNot){
 void DijetComparingDrawer::SetDrawAllTracks(const bool drawTracks, const bool drawUncorrected){
   SetDrawTracks(drawTracks);
   SetDrawTracksUncorrected(drawUncorrected);
+}
+
+// Setter for drawing inclusive tracks
+void DijetComparingDrawer::SetDrawInclusiveTracks(const bool drawOrNot){
+  fDrawTracks[DijetHistogramManager::kInclusiveTrack] = drawOrNot;
+}
+
+// Setter for drawing uncorrected inclusive tracks
+void DijetComparingDrawer::SetDrawInclusiveTracksUncorrected(const bool drawOrNot){
+  fDrawTracks[DijetHistogramManager::kUncorrectedInclusiveTrack] = drawOrNot;
+}
+
+// Setter for drawing inclusive track histograms
+void DijetComparingDrawer::SetDrawAllInclusiveTracks(const bool drawTracks, const bool drawUncorrected){
+  SetDrawInclusiveTracks(drawTracks);
+  SetDrawInclusiveTracksUncorrected(drawUncorrected);
 }
 
 // Setter for drawing leading jet-track correlations

@@ -771,7 +771,7 @@ void DijetAnalyzer::RunAnalysis(){
             trackEfficiencyCorrection = 1;
           } else { // Apply the correction for real data and reconstructed Monte Carlo tracks
             
-            /*// Need distance to nearest jet for the efficiency correction
+            // Need distance to nearest jet for the efficiency correction
              for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
              
              // Require the same jet quality cuts as when searching for dijets
@@ -785,7 +785,7 @@ void DijetAnalyzer::RunAnalysis(){
              trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
              if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
              
-             } // Loop for calculating Rmin*/
+             } // Loop for calculating Rmin
             
             // Get the track efficiency corrections
             trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
@@ -1053,7 +1053,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
       trackEfficiencyCorrection = 1;
     } else { // Apply the correction for real data and reconstructed Monte Carlo tracks
       
-      /*// Need distance to nearest jet for the efficiency correction
+      // Need distance to nearest jet for the efficiency correction
       for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
         
         // Require the same jet quality cuts as when searching for dijets
@@ -1067,7 +1067,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
         trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
         if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
         
-      } // Loop for calculating Rmin*/
+      } // Loop for calculating Rmin
       
       // Get the track efficiency corrections
       trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
