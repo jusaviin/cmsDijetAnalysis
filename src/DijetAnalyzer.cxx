@@ -388,6 +388,11 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t leadingJetInfo[3];      // Array for leading jet pT, phi and eta
   Double_t subleadingJetInfo[3];   // Array for subleading jet pT, phi and eta
   
+  // Variables for tracks
+  Double_t fillerTrack[4];            // Track histogram filler
+  Double_t trackEfficiencyCorrection; // Track efficiency correction
+  Int_t nTracks;                      // Number of tracks in an event
+  
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet;  // Number of particle flow candidates in the current jet
   
@@ -700,102 +705,21 @@ void DijetAnalyzer::RunAnalysis(){
       // Inclusive track histograms
       if(fillMainLoopHistograms){
         
-        // Filler for tracks
-        Double_t fillerTrack[4];
-        
-        // Variables for tracks
-        Double_t trackPt;       // Track pT
-        Double_t trackEta;      // Track eta
-        Double_t trackPhi;      // Track phi
-        Double_t trackR;        // Distance of a track to the current jet
-        Double_t trackRMin;     // Minimum distance to a jet
-        Double_t trackEt;
-        Double_t trackEfficiencyCorrection; // Track efficiency correction
-        
         // Loop over all track in the event
-        Int_t nTracks = trackReader->GetNTracks();
-        for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
+        nTracks = trackReader->GetNTracks();
+        for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
           
-          // Only look at charged tracks
-          if(trackReader->GetTrackCharge(iTrack) == 0) continue;
-          if(!PassSubeventCut(trackReader->GetTrackSubevent(iTrack))) continue;
+          /// Check that all the trck cuts are passed
+          if(!PassTrackCuts(trackReader,iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent,fillMainLoopHistograms)) continue;
           
-          trackPt = trackReader->GetTrackPt(iTrack);
-          trackPhi = trackReader->GetTrackPhi(iTrack);
-          trackEta = trackReader->GetTrackEta(iTrack);
-          trackEt = (trackReader->GetTrackEnergyEcal(iTrack)+trackReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
+          // Get the efficiency correction
+          trackEfficiencyCorrection = GetTrackEfficiencyCorrection(trackReader,iTrack);
           
-          //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
-          
-          // Only fill the track cut histograms for same event data
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kAllTracks);
-          
-          // Cut for track pT
-          if(trackPt <= fTrackMinPtCut) continue;                     // Minimum pT cut
-          if(trackPt >= fJetMaximumPtCut) continue;                   // Maximum pT cut (same as for leading jets)
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kPtCuts);
-          
-          // Cut for track eta
-          if(TMath::Abs(trackEta) >= fTrackEtaCut) continue;          // Eta cut
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kEtaCut);
-          
-          // Cut for high purity
-          if(!trackReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kHighPurity);
-          
-          // Cut for relative error for track pT
-          if(trackReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kPtError);
-          
-          // Cut for track distance from primary vertex
-          if(trackReader->GetTrackVertexDistanceZ(iTrack)/trackReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
-          if(trackReader->GetTrackVertexDistanceXY(iTrack)/trackReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kVertexDistance);
-          
-          // Cut for energy deposition in calorimeters for high pT tracks
-          if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) continue;  // For high pT tracks, require signal also in calorimeters
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kCaloSignal);
-          
-          // Cuts for track reconstruction quality
-          if(trackReader->GetTrackChi2(iTrack)/(1.0*trackReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*trackReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
-          if(trackReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
-          fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kReconstructionQuality);
-          
-          //     ==== Track cuts done ====
-          
-          // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
-          trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
-          
-          // No efficiency correction for generator level tracks
-          if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen){
-            trackEfficiencyCorrection = 1;
-          } else { // Apply the correction for real data and reconstructed Monte Carlo tracks
-            
-            // Need distance to nearest jet for the efficiency correction
-             for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
-             
-             // Require the same jet quality cuts as when searching for dijets
-             if(TMath::Abs(trackReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
-             if(trackReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
-             if(fMinimumMaxTrackPtFraction >= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
-             if(fMaximumMaxTrackPtFraction <= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
-             // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
-             
-             // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
-             trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
-             if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
-             
-             } // Loop for calculating Rmin
-            
-            // Get the track efficiency corrections
-            trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
-          } // Track efficiency correction if
-          
-          // Fill track histograms if selected to do so
-          fillerTrack[0] = trackPt;                    // Axis 0: Track pT
-          fillerTrack[1] = trackPhi;                   // Axis 1: Track phi
-          fillerTrack[2] = trackEta;                   // Axis 2: Track eta
-          fillerTrack[3] = centrality;                 // Axis 3: Centrality
+          // Fill track histograms
+          fillerTrack[0] = trackReader->GetTrackPt(iTrack);   // Axis 0: Track pT
+          fillerTrack[1] = trackReader->GetTrackPhi(iTrack);  // Axis 1: Track phi
+          fillerTrack[2] = trackReader->GetTrackEta(iTrack);  // Axis 2: Track eta
+          fillerTrack[3] = centrality;                        // Axis 3: Centrality
           fHistograms->fhTrackInclusive->Fill(fillerTrack,trackEfficiencyCorrection*fTotalEventWeight);  // Fill the track histogram
           fHistograms->fhTrackInclusiveUncorrected->Fill(fillerTrack,fTotalEventWeight);                 // Fill the uncorrected track histogram
           
@@ -967,16 +891,12 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
   Bool_t fillPtWeightedJetTrackCorrelationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillJetTrackPtWeighted);
   
   // Event information
-  Int_t hiBin = trackReader->GetHiBin();
   Double_t centrality = trackReader->GetCentrality();
   
   // Variables for tracks
   Double_t trackPt;       // Track pT
   Double_t trackEta;      // Track eta
   Double_t trackPhi;      // Track phi
-  Double_t trackR;        // Distance of a track to the current jet
-  Double_t trackRMin;     // Minimum distance to a jet
-  Double_t trackEt;       // Track transverse energy
   Double_t trackEfficiencyCorrection;  // Efficiency correction for the track
   Double_t deltaPhiTrackLeadingJet;    // DeltaPhi between track and leading jet
   Double_t deltaEtaTrackLeadingJet;    // DeltaEta between track and leading jet
@@ -998,80 +918,14 @@ void DijetAnalyzer::CorrelateTracksAndJets(ForestReader *trackReader, Double_t l
   Int_t nTracks = trackReader->GetNTracks();
   for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
     
-    // Only look at charged tracks
-    if(trackReader->GetTrackCharge(iTrack) == 0) continue;
-    if(!PassSubeventCut(trackReader->GetTrackSubevent(iTrack))) continue;
+    // Check that all the trck cuts are passed
+    if(!PassTrackCuts(trackReader,iTrack,fHistograms->fhTrackCuts,correlationType,fillTrackHistograms)) continue;
     
+    // Get the most important track information to variables
     trackPt = trackReader->GetTrackPt(iTrack);
     trackPhi = trackReader->GetTrackPhi(iTrack);
     trackEta = trackReader->GetTrackEta(iTrack);
-    trackEt = (trackReader->GetTrackEnergyEcal(iTrack)+trackReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
-    
-    //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
-    
-    // Only fill the track cut histograms for same event data
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kAllTracks);
-    
-    // Cut for track pT
-    if(trackPt <= fTrackMinPtCut) continue;                     // Minimum pT cut
-    if(trackPt >= fJetMaximumPtCut) continue;                   // Maximum pT cut (same as for leading jets)
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtCuts);
-    
-    // Cut for track eta
-    if(TMath::Abs(trackEta) >= fTrackEtaCut) continue;          // Eta cut
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kEtaCut);
-    
-    // Cut for high purity
-    if(!trackReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kHighPurity);
-    
-    // Cut for relative error for track pT
-    if(trackReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kPtError);
-    
-    // Cut for track distance from primary vertex
-    if(trackReader->GetTrackVertexDistanceZ(iTrack)/trackReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
-    if(trackReader->GetTrackVertexDistanceXY(iTrack)/trackReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kVertexDistance);
-    
-    // Cut for energy deposition in calorimeters for high pT tracks
-    if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) continue;  // For high pT tracks, require signal also in calorimeters
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kCaloSignal);
-    
-    // Cuts for track reconstruction quality
-    if(trackReader->GetTrackChi2(iTrack)/(1.0*trackReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*trackReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
-    if(trackReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
-    if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) fHistograms->fhTrackCuts->Fill(DijetHistograms::kReconstructionQuality);
-    
-    //     ==== Track cuts done ====
-    
-    // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
-    trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
-    
-    // No efficiency correction for generator level tracks
-    if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen){
-      trackEfficiencyCorrection = 1;
-    } else { // Apply the correction for real data and reconstructed Monte Carlo tracks
-      
-      // Need distance to nearest jet for the efficiency correction
-      for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
-        
-        // Require the same jet quality cuts as when searching for dijets
-        if(TMath::Abs(trackReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
-        if(trackReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
-        if(fMinimumMaxTrackPtFraction >= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
-        if(fMaximumMaxTrackPtFraction <= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
-        // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
-        
-        // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
-        trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
-        if(trackRMin*trackRMin>trackR) trackRMin=TMath::Power(trackR,0.5);
-        
-      } // Loop for calculating Rmin
-      
-      // Get the track efficiency corrections
-      trackEfficiencyCorrection = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
-    } // Track efficiency correction if
+    trackEfficiencyCorrection = GetTrackEfficiencyCorrection(trackReader,iTrack);
     
     // Calculate deltaEta and deltaPhi between track and leading and subleading jets
     deltaEtaTrackLeadingJet = leadingJetEta - trackEta;
@@ -1221,6 +1075,110 @@ Bool_t DijetAnalyzer::PassSubeventCut(const Int_t subeventIndex) const{
   if(fSubeventCut == kSubeventZero && subeventIndex == 0) return true;
   if(fSubeventCut == kSubeventNonZero && subeventIndex > 0) return true;
   return false;
+}
+
+/*
+ * Check if a track passes all the track cuts
+ *
+ *  Arguments:
+ *   ForestReader *trackReader = Forest reader containing information about the checked track
+ *   const Int_t iTrack = Index of the checked track in reader
+ *   TH1F *trackCutHistogram = Histogram to which the track cut performance is filled
+ *   const Int_t correlationType = Same or mixed event. Histograms filled only for same event
+ *   Bool_t fillTrackHistograms = True: Fill track cut histograms, False: Do not fill track cut histograms
+ *
+ *   return: True if all track cuts are passed, false otherwise
+ */
+Bool_t DijetAnalyzer::PassTrackCuts(ForestReader *trackReader, const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType, const Bool_t fillTrackHistograms){
+  
+  // Only look at charged tracks
+  if(trackReader->GetTrackCharge(iTrack) == 0) return false;
+  if(!PassSubeventCut(trackReader->GetTrackSubevent(iTrack))) return false;
+  
+  Double_t trackPt = trackReader->GetTrackPt(iTrack);
+  Double_t trackEta = trackReader->GetTrackEta(iTrack);
+  Double_t trackEt = (trackReader->GetTrackEnergyEcal(iTrack)+trackReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
+  
+  //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
+  
+  // Only fill the track cut histograms for same event data
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kAllTracks);
+  
+  // Cut for track pT
+  if(trackPt <= fTrackMinPtCut) return false;                     // Minimum pT cut
+  if(trackPt >= fJetMaximumPtCut) return false;                   // Maximum pT cut (same as for leading jets)
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kPtCuts);
+  
+  // Cut for track eta
+  if(TMath::Abs(trackEta) >= fTrackEtaCut) return false;          // Eta cut
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kEtaCut);
+  
+  // Cut for high purity
+  if(!trackReader->GetTrackHighPurity(iTrack)) return false;     // High purity cut
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kHighPurity);
+  
+  // Cut for relative error for track pT
+  if(trackReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) return false; // Cut for track pT relative error
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kPtError);
+  
+  // Cut for track distance from primary vertex
+  if(trackReader->GetTrackVertexDistanceZ(iTrack)/trackReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in z-direction
+  if(trackReader->GetTrackVertexDistanceXY(iTrack)/trackReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in xy-direction
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kVertexDistance);
+  
+  // Cut for energy deposition in calorimeters for high pT tracks
+  if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) return false;  // For high pT tracks, require signal also in calorimeters
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
+  
+  // Cuts for track reconstruction quality
+  if(trackReader->GetTrackChi2(iTrack)/(1.0*trackReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*trackReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) return false; // Track reconstruction quality cut
+  if(trackReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
+  if(correlationType == DijetHistograms::kSameEvent && fillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
+  
+  // If passed all checks, return true
+  return true;
+}
+
+/*
+ * Get the track efficiency correction for a given track
+ *
+ *  Arguments:
+ *   ForestReader *trackReader = Reader containing the information about tracks
+ *   const Int_t iTrack = Index of the track for which the efficiency correction is obtained
+ *
+ *   return: Multiplicative track efficiency correction
+ */
+Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(ForestReader *trackReader, const Int_t iTrack){
+  
+  // No correction for generator level tracks
+  if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) return 1;
+  
+  // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
+  Double_t trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
+  Double_t trackR = 999;      // Distance of the track to current jet in the loop
+  Double_t trackPt = trackReader->GetTrackPt(iTrack);    // Track pT
+  Double_t trackEta = trackReader->GetTrackEta(iTrack);  // Track eta
+  Double_t trackPhi = trackReader->GetTrackPhi(iTrack);  // Track phi
+  
+  // Need distance to nearest jet for the efficiency correction
+  for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
+    
+    // Require the same jet quality cuts as when searching for dijets
+    if(TMath::Abs(trackReader->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
+    if(trackReader->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
+    if(fMinimumMaxTrackPtFraction >= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
+    if(fMaximumMaxTrackPtFraction <= trackReader->GetJetMaxTrackPt(iJet)/trackReader->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
+    // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
+    
+    // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
+    trackR = TMath::Power(trackReader->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(trackReader->GetJetPhi(iJet)-trackPhi)),2);
+    if(trackRMin*trackRMin>trackR) trackRMin=TMath::Sqrt(trackR);
+    
+  } // Loop for calculating Rmin
+  
+  // Find and return the track efficiency correction
+  return fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, trackReader->GetHiBin(), trackRMin);
+  
 }
 
 /*
