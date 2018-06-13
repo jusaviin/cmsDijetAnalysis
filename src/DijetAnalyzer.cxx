@@ -713,17 +713,17 @@ void DijetAnalyzer::RunAnalysis(){
         Double_t trackEfficiencyCorrection; // Track efficiency correction
         
         // Loop over all track in the event
-        Int_t nTracks = jetReader->GetNTracks();
+        Int_t nTracks = trackReader->GetNTracks();
         for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
           
           // Only look at charged tracks
-          if(jetReader->GetTrackCharge(iTrack) == 0) continue;
-          if(!PassSubeventCut(jetReader->GetTrackSubevent(iTrack))) continue;
+          if(trackReader->GetTrackCharge(iTrack) == 0) continue;
+          if(!PassSubeventCut(trackReader->GetTrackSubevent(iTrack))) continue;
           
-          trackPt = jetReader->GetTrackPt(iTrack);
-          trackPhi = jetReader->GetTrackPhi(iTrack);
-          trackEta = jetReader->GetTrackEta(iTrack);
-          trackEt = (jetReader->GetTrackEnergyEcal(iTrack)+jetReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
+          trackPt = trackReader->GetTrackPt(iTrack);
+          trackPhi = trackReader->GetTrackPhi(iTrack);
+          trackEta = trackReader->GetTrackEta(iTrack);
+          trackEt = (trackReader->GetTrackEnergyEcal(iTrack)+trackReader->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
           
           //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
           
@@ -740,16 +740,16 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kEtaCut);
           
           // Cut for high purity
-          if(!jetReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
+          if(!trackReader->GetTrackHighPurity(iTrack)) continue;     // High purity cut
           fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kHighPurity);
           
           // Cut for relative error for track pT
-          if(jetReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
+          if(trackReader->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) continue; // Cut for track pT relative error
           fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kPtError);
           
           // Cut for track distance from primary vertex
-          if(jetReader->GetTrackVertexDistanceZ(iTrack)/jetReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
-          if(jetReader->GetTrackVertexDistanceXY(iTrack)/jetReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
+          if(trackReader->GetTrackVertexDistanceZ(iTrack)/trackReader->GetTrackVertexDistanceZError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in z-direction
+          if(trackReader->GetTrackVertexDistanceXY(iTrack)/trackReader->GetTrackVertexDistanceXYError(iTrack) >= fMaxTrackDistanceToVertex) continue; // Mysterious cut about track proximity to vertex in xy-direction
           fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kVertexDistance);
           
           // Cut for energy deposition in calorimeters for high pT tracks
@@ -757,8 +757,8 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kCaloSignal);
           
           // Cuts for track reconstruction quality
-          if(jetReader->GetTrackChi2(iTrack)/(1.0*jetReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*jetReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
-          if(jetReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
+          if(trackReader->GetTrackChi2(iTrack)/(1.0*trackReader->GetNTrackDegreesOfFreedom(iTrack))/(1.0*trackReader->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) continue; // Track reconstruction quality cut
+          if(trackReader->GetNHitsTrack(iTrack) < fMinimumTrackHits) continue; // Cut for minimum number of hits per track
           fHistograms->fhTrackCutsInclusive->Fill(DijetHistograms::kReconstructionQuality);
           
           //     ==== Track cuts done ====
