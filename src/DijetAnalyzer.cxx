@@ -343,7 +343,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Combining bools to make the code more readable
   Bool_t fillMainLoopHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack); // Select to fill the histograms in the main loop
-  Bool_t fillEventInformationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillJetTrack || fFilledHistograms == kFillOnlyEventInformation || fFilledHistograms == kFillEventInformationAndRegularJetTrack); // Need number of jets for normalizing jet-track correlation histograms
+  Bool_t fillEventInformationHistograms = (fFilledHistograms == kFillAll || fFilledHistograms == kFillAllButJetTrack || fFilledHistograms == kFillOnlyEventInformation || fFilledHistograms == kFillEventInformationAndRegularJetTrack); // Need number of jets for normalizing jet-track correlation histograms
   Bool_t useDifferentReaderFotJetsAndTracks = (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco); // Use different forest reader for jets and tracks
   
   // Event mixing information
@@ -1091,9 +1091,10 @@ Bool_t DijetAnalyzer::PassSubeventCut(const Int_t subeventIndex) const{
  */
 Bool_t DijetAnalyzer::PassTrackCuts(ForestReader *trackReader, const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType, const Bool_t fillTrackHistograms){
   
-  // Only look at charged tracks
-  if(trackReader->GetTrackCharge(iTrack) == 0) return false;
-  if(!PassSubeventCut(trackReader->GetTrackSubevent(iTrack))) return false;
+  // Cuts specific to generator level MC tracks
+  if(trackReader->GetTrackCharge(iTrack) == 0) return false;  // Require that the track is charged
+  if(!PassSubeventCut(trackReader->GetTrackSubevent(iTrack))) return false;  // Require desired subevent
+  if(trackReader->GetTrackMCStatus(iTrack) != 1) return false;  // Require final state particles
   
   Double_t trackPt = trackReader->GetTrackPt(iTrack);
   Double_t trackEta = trackReader->GetTrackEta(iTrack);

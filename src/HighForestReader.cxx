@@ -436,3 +436,8 @@ Int_t HighForestReader::GetTrackCharge(Int_t iTrack) const{
 Int_t HighForestReader::GetTrackSubevent(Int_t iTrack) const{
   return -1;
 }
+
+// Getter for track MC status. Relevant only for generator level tracks.
+Int_t HighForestReader::GetTrackMCStatus(Int_t iTrack) const{
+  return 1;
+}

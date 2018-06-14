@@ -55,6 +55,7 @@ public:
   virtual Float_t GetTrackEnergyHcal(Int_t iTrack) const;            // Getter for track energy in HCal
   virtual Int_t GetTrackCharge(Int_t iTrack) const;                  // Getter for track charge (relevant only for generator level tracks)
   virtual Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
+  Int_t GetTrackMCStatus(Int_t iTrack) const;                        // Getter for track MC status (only for generator level tracks)
   
 protected:
   

@@ -20,7 +20,8 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
   fTrackPhiArray(0),
   fTrackEtaArray(0),
   fTrackChargeArray(0),
-  fTrackSubeventArray(0)
+  fTrackSubeventArray(0),
+  fTrackStatusArray(0)
 {
   // Default constructor
 }
@@ -45,7 +46,8 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType) :
   fTrackPhiArray(0),
   fTrackEtaArray(0),
   fTrackChargeArray(0),
-  fTrackSubeventArray(0)
+  fTrackSubeventArray(0),
+  fTrackStatusArray(0)
 {
   // Custom constructor
   
@@ -65,7 +67,8 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(const GeneratorLevelFores
   fTrackPhiArray(in.fTrackPhiArray),
   fTrackEtaArray(in.fTrackEtaArray),
   fTrackChargeArray(in.fTrackChargeArray),
-  fTrackSubeventArray(in.fTrackSubeventArray)
+  fTrackSubeventArray(in.fTrackSubeventArray),
+  fTrackStatusArray(in.fTrackStatusArray)
 {
   // Copy constructor
   for(Int_t i = 0; i < fnMaxJet; i++){
@@ -95,6 +98,7 @@ GeneratorLevelForestReader& GeneratorLevelForestReader::operator=(const Generato
   fTrackEtaArray = in.fTrackEtaArray;
   fTrackChargeArray = in.fTrackChargeArray;
   fTrackSubeventArray = in.fTrackSubeventArray;
+  fTrackStatusArray = in.fTrackStatusArray;
   
   for(Int_t i = 0; i < fnMaxJet; i++){
     fJetPtArray[i] = in.fJetPtArray[i];
@@ -169,8 +173,10 @@ void GeneratorLevelForestReader::Initialize(){
   fTrackTree->SetBranchAddress("pt",&fTrackPtArray,&fTrackPtBranch);
   fTrackTree->SetBranchAddress("phi",&fTrackPhiArray,&fTrackPhiBranch);
   fTrackTree->SetBranchAddress("eta",&fTrackEtaArray,&fTrackEtaBranch);
-  fTrackTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch); // Reuse a branch from ForestReader that is not otherwise needed here
-  fTrackTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch); // Reuse a branch from ForestReader that is not otherwise needed here
+  fTrackTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch);  // Reuse a branch from ForestReader that is not otherwise needed here
+  fTrackTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch);  // Reuse a branch from ForestReader that is not otherwise needed here
+  if(fDataType != kLocalTest) fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test
+
 }
 
 /*
@@ -272,6 +278,12 @@ Int_t GeneratorLevelForestReader::GetTrackCharge(Int_t iTrack) const{
 // Getter for track subevent index
 Int_t GeneratorLevelForestReader::GetTrackSubevent(Int_t iTrack) const{
   return fTrackSubeventArray->at(iTrack);
+}
+
+// Getter for track subevent index
+Int_t GeneratorLevelForestReader::GetTrackMCStatus(Int_t iTrack) const{
+  if(fDataType == kLocalTest) return 1;
+  return fTrackStatusArray->at(iTrack);
 }
 
 // Getter for track pT error (not relevant for generator tracks)

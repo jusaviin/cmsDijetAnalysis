@@ -46,6 +46,7 @@ public:
   Float_t GetTrackEta(Int_t iTrack) const;         // Getter for track eta
   Int_t GetTrackCharge(Int_t iTrack) const;        // Getter for track charge
   Int_t GetTrackSubevent(Int_t iTrack) const;      // Getter for track subevent index
+  Int_t GetTrackMCStatus(Int_t iTrack) const;      // Getter for track MC status (1 = final state particle, other number = not final state particle)
   
   // Getters for leaves in the track tree that are just there to provide values that pass cuts
   Float_t GetTrackPtError(Int_t iTrack) const;               // Getter for track pT error
@@ -91,6 +92,7 @@ private:
   vector<float> *fTrackEtaArray;      // Array for track etas
   vector<int> *fTrackChargeArray;     // Array for track charges
   vector<int> *fTrackSubeventArray;   // Array for track subevent indices (0 = PYTHIA, (>0) = HYDJET)
+  vector<int> *fTrackStatusArray;     // Array for Monte Carlo status (1 = final state, others = not final state)
   
 };
 
