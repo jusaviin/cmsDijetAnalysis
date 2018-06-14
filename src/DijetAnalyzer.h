@@ -23,7 +23,7 @@ class DijetAnalyzer{
   
 private:
   
-  enum enumFilledHistograms{kFillAll,kFillAllButJetTrack,kFillJetTrack,kFillOnlyEventInformation,kFillEventInformationAndRegularJetTrack,kFillJetTrackUncorrected,kFillJetTrackPtWeighted,knFillModes}; // Which kinds of histograms are filled
+  enum enumFilledHistograms{kFillEventInformation,kFillJets,kFillTracks,kFillRegularJetTrackCorrelation,kFillUncorrectedJetTrackCorrelation,kFillPtWeightedJetTrackCorrelation,knFillTypes}; // Histograms to fill
   enum enumSubeventCuts{kSubeventZero,kSubeventNonZero,kSubeventAny,knSubeventCuts}; // Cuts for subevent index
   enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
   enum enumForestType{kHighForest,kSkimForest,knForestTypes}; // What type of forest is used for reader
@@ -47,7 +47,7 @@ private:
   void CorrelateTracksAndJets(ForestReader *treeReader, Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], Int_t correlationType);  // Do jet-track correlations
   Int_t GetNParticleFlowCandidatesInJet(ForestReader *treeReader, Double_t jetPhi, Double_t jetEta);
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
-  Bool_t PassTrackCuts(ForestReader *trackReader, const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType, const Bool_t fillTrackHistograms); // Check if a track passes all the track cuts
+  Bool_t PassTrackCuts(ForestReader *trackReader, const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
   Double_t GetTrackEfficiencyCorrection(ForestReader *trackReader, const Int_t iTrack); // Get the track efficiency correction for a given track
   Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
@@ -98,7 +98,12 @@ private:
   Int_t fMcCorrelationType;            // Correlation type for Monte Carlo. See enumeration enumMcCorrelationType
   
   // Which histograms are filled. Do not fill all in order to save memory and not to crash jobs.
-  Int_t fFilledHistograms;             // Select which histograms are filled. See enumeration enumFilledHistograms
+  Bool_t fFillEventInformation;               // Fill event information histograms
+  Bool_t fFillJetHistograms;                  // Fill single and dijet histograms
+  Bool_t fFillTrackHistograms;                // Fill inclusive tracks and tracks in dijet events
+  Bool_t fFillRegularJetTrackCorrelation;     // Fill regular jet-track correlation histograms
+  Bool_t fFillUncorrectedJetTrackCorrelation; // Fill uncorrected jet-track correlation histograms
+  Bool_t fFillPtWeightedJetTrackCorrelation;  // Fill pT weighted jet-track correlation histograms
 
 };
 
