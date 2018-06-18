@@ -5,6 +5,7 @@
 // Root includes
 #include <THnSparse.h>
 #include <TPad.h>
+#include <TF1.h>
 
 // Own includes
 #include "DijetComparingDrawer.h"
@@ -132,7 +133,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // === Jet pT ===
       
       // Prepare the jet pT histograms and ratio to be drawn
-      PrepareRatio("jetPt", iJetCategory, iCentrality);
+      PrepareRatio("jetPt", 1, iJetCategory, iCentrality);
       
       // Draw the jet pT distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -153,7 +154,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // === Jet phi ===
       
       // Prepare the jet phi histograms and ratio to be drawn
-      PrepareRatio("jetPhi", iJetCategory, iCentrality);
+      PrepareRatio("jetPhi", 1, iJetCategory, iCentrality);
       
       // Draw the jet phi distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s #varphi",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -174,7 +175,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // === Jet eta ===
       
       // Prepare the jet eta histograms and ratio to be drawn
-      PrepareRatio("jetEta", iJetCategory, iCentrality);
+      PrepareRatio("jetEta", 1, iJetCategory, iCentrality);
       
       // Draw the jet eta distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s #eta",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
@@ -230,19 +231,21 @@ void DijetComparingDrawer::DrawTrackHistograms(){
         if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
 
         // Prepare the track pT histograms and ratio to be drawn
-        PrepareRatio("trackPt", iTrackType, iCorrelationType, iCentrality);
+        PrepareRatio("trackPt", 4, iTrackType, iCorrelationType, iCentrality);
         
         // Draw the track pT distributions to the upper panel of a split canvas plot
         sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetTrackAxisName(iTrackType));
         DrawToUpperPad(namerX, "#frac{dN}{dp_{T}}  (1/GeV)", fLogPt); // TODO: Add correlation type to title
         
         // Add a legend to the plot
-        legend = new TLegend(0.62,0.75,0.82,0.9);
+        legend = new TLegend(0.56,0.66,0.76,0.81);
         SetupLegend(legend,centralityString);
         legend->Draw();
         
         // Draw the ratios to the lower portion of the split canvas
+        fDrawer->SetGridY(true);
         DrawToLowerPad(namerX,fRatioLabel.Data());
+        fDrawer->SetGridY(false);
         
         // Save the figure to a file
         sprintf(namerX,"%sPtRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));
@@ -268,14 +271,14 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           // === Track phi ===
           
           // Prepare the track phi histograms to be drawn
-          PrepareRatio("trackPhi", iTrackType, iCorrelationType, iCentrality, iTrackPt);
+          PrepareRatio("trackPhi", 1, iTrackType, iCorrelationType, iCentrality, iTrackPt);
           
           // Draw the track phi distributions to the upper panel of a split canvas plot
           sprintf(namerX,"%s #varphi",fBaseHistograms->GetTrackAxisName(iTrackType));
           DrawToUpperPad(namerX, "#frac{dN}{d#varphi}"); // TODO: Add correlation type to title
 
           // Add a legend to the plot
-          legend = new TLegend(0.17,0.20,0.37,0.35);
+          legend = new TLegend(0.24,0.11,0.44,0.26);
           SetupLegend(legend,centralityString,trackPtString);
           legend->Draw();
 
@@ -299,7 +302,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           }
 
           // Prepare the track eta histograms to be drawn
-          PrepareRatio("trackEta", iTrackType, iCorrelationType, iCentrality, iTrackPt);
+          PrepareRatio("trackEta", 1, iTrackType, iCorrelationType, iCentrality, iTrackPt);
           
           // Draw the track eta distributions to the upper panel of a split canvas plot
           sprintf(namerX,"%s #eta",fBaseHistograms->GetTrackAxisName(iTrackType));
@@ -560,22 +563,25 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
  *
  *  Arguments:
  *   TString name = Name for the histograms to be filled in arrays
+ *   int rebin = Rebinning the histograms before taking the ratio
  *   int bin1 = First bin index for the loaded histograms
  *   int bin2 = Second bin index for the loaded histograms
  *   int bin3 = Third bin index for the loaded histograms
  *   int bin4 = Fourth bin index for the loaded histograms
  *   int bin5 = Fifth bin index for the loaded histograms
  */
-void DijetComparingDrawer::PrepareRatio(TString name, int bin1, int bin2, int bin3, int bin4, int bin5){
+void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int bin2, int bin3, int bin4, int bin5){
   
   // Helper variable
   char namer[100];
     
   // Read the histograms, scale them to one and take the ratio
   fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
+  if(rebin > 1) fMainHistogram->Rebin(rebin);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fMainHistogram->Integral());
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
+    if(rebin > 1) fComparisonHistogram[iAdditional]->Rebin(rebin);
     if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fComparisonHistogram[iAdditional]->Integral());
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
     fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);

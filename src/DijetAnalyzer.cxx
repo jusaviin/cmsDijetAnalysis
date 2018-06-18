@@ -1147,11 +1147,11 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(ForestReader *trackReader, 
   if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) return 1;
   
   // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
-  Double_t trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
-  Double_t trackR = 999;      // Distance of the track to current jet in the loop
-  Double_t trackPt = trackReader->GetTrackPt(iTrack);    // Track pT
-  Double_t trackEta = trackReader->GetTrackEta(iTrack);  // Track eta
-  Double_t trackPhi = trackReader->GetTrackPhi(iTrack);  // Track phi
+  Float_t trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
+  Float_t trackR = 999;      // Distance of the track to current jet in the loop
+  Float_t trackPt = trackReader->GetTrackPt(iTrack);    // Track pT
+  Float_t trackEta = trackReader->GetTrackEta(iTrack);  // Track eta
+  Float_t trackPhi = trackReader->GetTrackPhi(iTrack);  // Track phi
   
   // Need distance to nearest jet for the efficiency correction
   for(Int_t iJet = 0; iJet < trackReader->GetNJets(); iJet++){
