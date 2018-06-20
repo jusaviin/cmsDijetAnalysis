@@ -64,8 +64,8 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.6;
-  double maxZoom = 1.4;
+  double minZoom = 0.8;
+  double maxZoom = 1.2;
   TString ratioLabel = "Reco/Gen";
   
   // Scaling for histograms
@@ -111,7 +111,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoReco_noMixing_Skims_2018-06-13.root","data/dijet_ppMC_RecoGen_noMixing_Skims_2018-06-13.root"};
+  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoReco_noMixing_KurtsSkims_2018-06-18_part1.root","data/dijet_ppMC_RecoGen_noMixing_KurtsSkims_2018-06-18_part1.root"};
   //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
   //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
@@ -124,6 +124,7 @@ void compareDijetHistograms(){
   //  "data/dijetTestPbPb_noMixing_2018-06-13.root"
   //  "data/PbPbMC_RecoReco_noMixing_Skims_2018-06-14.root" "data/PbPbMC_GenGen_noMixing_Skims_2018-06-14.root"
   //  "data/PbPbMC_RecoGen_noMixing_Skims_2018-06-14.root"
+  //  "data/dijet_ppMC_RecoReco_noMixing_KurtsSkims_2018-06-18_part1.root"  "data/dijet_ppMC_RecoGen_noMixing_KurtsSkims_2018-06-18_part1.root"
   
   // ==================================================================
   // ===================== Configuration ready ========================

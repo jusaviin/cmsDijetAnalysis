@@ -5,6 +5,7 @@
 
 // C++ includes
 #include <vector>
+#include <bitset>
 
 // Root includes
 #include <TString.h>
