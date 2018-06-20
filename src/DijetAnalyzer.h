@@ -6,6 +6,8 @@
 // C++ includes
 #include <vector>
 #include <bitset>
+#include <assert.h>   // Standard c++ debugging tool. Terminates the program if expression given evaluates to 0.
+
 
 // Root includes
 #include <TString.h>

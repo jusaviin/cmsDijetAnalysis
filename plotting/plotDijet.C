@@ -6,7 +6,7 @@
 /*
  * Macro for configuring the DijetDrawer and defining which histograms are drawn
  */
-void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-20.root"){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;

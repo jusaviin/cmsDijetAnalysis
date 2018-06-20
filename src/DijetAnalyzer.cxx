@@ -396,7 +396,6 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t nParticleFlowCandidatesInThisJet;  // Number of particle flow candidates in the current jet
   
   // File name helper variables
-  Int_t iMixedEventFile;
   TString currentFile;
   TString currentMixedEventFile;
   
@@ -470,36 +469,34 @@ void DijetAnalyzer::RunAnalysis(){
       if(fDataType == ForestReader::kPbPb){
         currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
       } else {
-        iMixedEventFile = iFile+1;
-        if(iMixedEventFile == nFiles) iMixedEventFile = 0;
-        currentMixedEventFile = fFileNames.at(iMixedEventFile);
+        currentMixedEventFile = fFileNames.at(iFile);
       }
       mixedEventFile = TFile::Open(currentMixedEventFile);
     }
 
     // Check that the file exists
     if(!inputFile){
-      cout << "Warning! Could not open the file: " << currentFile.Data() << endl;
-      continue;
+      cout << "Error! Could not open the file: " << currentFile.Data() << endl;
+      assert(0);
     }
     
     // Check that the mixing file exists
     if(!mixedEventFile && mixEvents){
-      cout << "Warning! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
-      continue;
+      cout << "Error! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
+      assert(0);
     }
 
     // Check that the file is not zombie
     if(inputFile->IsZombie()){
-      cout << "Warning! The following file is a zombie: " << currentFile.Data() << endl;
-      continue;
+      cout << "Error! The following file is a zombie: " << currentFile.Data() << endl;
+      assert(0);
     }
 
     // Check that the file is not zombie
     if(mixEvents){
       if(mixedEventFile->IsZombie()){
-        cout << "Warning! The following mixing file is a zombie: " << currentMixedEventFile.Data() << endl;
-        continue;
+        cout << "Error! The following mixing file is a zombie: " << currentMixedEventFile.Data() << endl;
+        assert(0);
       }
     }
 
