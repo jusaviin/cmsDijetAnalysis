@@ -108,6 +108,9 @@ public:
   void SetLoadTrackSubleadingJetCorrelationsPtWeighted(const bool loadOrNot);  // Setter for drawing pT weighted subleading jet-track correlations
   void SetLoadAllTrackSubleadingJetCorrelations(const bool drawSubleading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for drawing all correlations related to tracks and subleading jets
   
+  // Setter for loading two-dimensional histograms
+  void SetLoad2DHistograms(const bool loadOrNot); // Setter for loading two-dimensional histograms
+  
   // Setters for drawing ranges for different bins
   void SetCentralityBinRange(const int first, const int last); // Setter for drawn centrality bins
   void SetTrackPtBinRange(const int first, const int last);    // Setter for drawn track pT bins
@@ -176,6 +179,12 @@ public:
   
   TH1D* GetOneDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0) const; // Getter for any one-dimensional histogram based on input string
   TH2D* GetTwoDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0) const; // Getter for any two-dimensional histogram based on input string
+  
+  // Getters for the loaded centrality and track pT bins
+  int GetFirstCentralityBin() const;  // Get the first loaded centrality bin
+  int GetLastCentralityBin() const;   // Get the last loaded centrality bin
+  int GetFirstTrackPtBin() const;     // Get the first loaded track pT bin
+  int GetLastTrackPtBin() const;      // Get the last loaded track pT bin
   
 private:
   

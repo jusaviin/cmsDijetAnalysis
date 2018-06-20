@@ -277,7 +277,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
-        
+
         // Do the mixed event correction for leading jet-track correlation histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin]);
         
@@ -930,6 +930,11 @@ void DijetHistogramManager::SetLoadAllTrackSubleadingJetCorrelations(const bool 
   SetLoadTrackSubleadingJetCorrelationsPtWeighted(drawPtWeighted);
 }
 
+ // Setter for loading two-dimensional histograms
+void DijetHistogramManager::SetLoad2DHistograms(const bool loadOrNot){
+  fLoad2DHistograms = loadOrNot;
+}
+
 // Setter for drawn centrality bins
 void DijetHistogramManager::SetCentralityBinRange(const int first, const int last){
   fFirstLoadedCentralityBin = first;
@@ -1225,4 +1230,24 @@ TH2D* DijetHistogramManager::GetTwoDimensionalHistogram(TString name, int bin1, 
   if(name.EqualTo("tracketaphi",TString::kIgnoreCase) || name.EqualTo("fhtracketaphi",TString::kIgnoreCase)) return GetHistogramTrackEtaPhi(bin1,bin2,bin3,bin4);
   if(name.EqualTo("jettrackdeltaetadeltaphi",TString::kIgnoreCase) || name.EqualTo("fhjettrackdeltaetadeltaphi",TString::kIgnoreCase)) return GetHistogramJetTrackDeltaEtaDeltaPhi(bin1,bin2,bin3,bin4);
   return NULL;
+}
+
+// Get the first loaded centrality bin
+int DijetHistogramManager::GetFirstCentralityBin() const{
+  return fFirstLoadedCentralityBin;
+}
+
+// Get the last loaded centrality bin
+int DijetHistogramManager::GetLastCentralityBin() const{
+  return fLastLoadedCentralityBin;
+}
+
+// Get the first loaded track pT bin
+int DijetHistogramManager::GetFirstTrackPtBin() const{
+  return fFirstLoadedTrackPtBin;
+}
+
+// Get the last loaded track pT bin
+int DijetHistogramManager::GetLastTrackPtBin() const{
+  return fLastLoadedTrackPtBin;
 }

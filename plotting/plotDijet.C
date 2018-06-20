@@ -1,6 +1,7 @@
 #include "DijetDrawer.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "DijetMethods.h"
 #include "DijetCard.h"
+#include "DijetHistogramManager.h"
 
 /*
  * Macro for configuring the DijetDrawer and defining which histograms are drawn
@@ -22,31 +23,33 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawInclusiveTracks = false;
+  bool drawUncorrectedInclusiveTracks = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = false;
+  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = true;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
-  bool drawJetShapeCounts = true;
+  bool drawJetShape = false;
+  bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
+  bool drawSameEvent = true;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = false;
+  bool drawBackgroundSubtracted = true;
   bool drawBackground = true;
   
   // Choose if you want to write the figures to pdf file
@@ -73,7 +76,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
-  int firstDrawCentralityBin = 0;
+  int firstDrawnCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 3;
@@ -118,6 +121,10 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
     centralityBinBorders[0] = -0.5;
   }
   
+  ////////////////////////////////
+  //        DijetMethods        //
+  ////////////////////////////////
+  
   // Create and setup DijetMethods for mixed event correction and background subtraction
   DijetMethods *methods = new DijetMethods();
   methods->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
@@ -127,8 +134,43 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   methods->SetRebinBoundaries(nRebinDeltaEta,rebinDeltaEta,nRebinDeltaPhi,rebinDeltaPhi);
   methods->SetJetShapeNormalization(jetShapeNormalizationType);
   
+  //////////////////////////////////
+  //     DijetHistogramManager    //
+  //////////////////////////////////
+  
+  // Create and setup a new histogram manager to handle the histograms
+  DijetHistogramManager *histograms = new DijetHistogramManager(inputFile);
+  
+  // Set which histograms to draw and the drawing style to use
+  histograms->SetLoadEventInformation(drawEventInformation);
+  histograms->SetLoadDijetHistograms(drawDijetHistograms);
+  histograms->SetLoadAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);
+  histograms->SetLoadAllTracks(drawTracks,drawUncorrectedTracks);
+  histograms->SetLoadAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
+  histograms->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
+  histograms->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
+  histograms->SetLoad2DHistograms(true);
+  
+  // Set the binning information
+  histograms->SetCentralityBins(centralityBinBorders);
+  histograms->SetTrackPtBins(trackPtBinBorders);
+  histograms->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
+  histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
+  histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
+  
+  // Set the used dijet methods
+  histograms->SetDijetMethods(methods);
+  
+  // Load and process the selected histograms
+  histograms->LoadHistograms();
+  histograms->ProcessHistograms();
+  
+  //////////////////////////////////
+  //          DijetDrawer         //
+  //////////////////////////////////
+  
   // Create a new DijetDrawer
-  DijetDrawer *resultDrawer = new DijetDrawer(inputFile);
+  DijetDrawer *resultDrawer = new DijetDrawer(histograms);
   
   // Set which histograms to draw and the drawing style to use
   resultDrawer->SetDrawEventInformation(drawEventInformation);
@@ -148,19 +190,7 @@ void plotDijet(TString inputFileName = "data/dijetSpectraTestPp_2018-05-04.root"
   resultDrawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
   
-  // Set the binning information
-  resultDrawer->SetCentralityBins(centralityBinBorders);
-  resultDrawer->SetTrackPtBins(trackPtBinBorders);
-  resultDrawer->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
-  resultDrawer->SetCentralityBinRange(firstDrawCentralityBin,lastDrawnCentralityBin);
-  resultDrawer->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
-  
-  // Set the used dijet methods
-  resultDrawer->SetDijetMethods(methods);
-  
-  // Process and draw the selected histograms
-  resultDrawer->LoadHistograms();
-  resultDrawer->ProcessHistograms();
+  // Draw the selected histograms
   resultDrawer->DrawHistograms();
   
 }
