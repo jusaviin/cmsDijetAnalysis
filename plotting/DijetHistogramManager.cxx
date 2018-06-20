@@ -355,10 +355,12 @@ int DijetHistogramManager::GetConnectedIndex(const int jetTrackIndex) const{
  */
 void DijetHistogramManager::LoadHistograms(){
   
+  // Always load the number of events histogram
+  fhEvents = (TH1D*) fInputFile->Get("nEvents");                    // Number of events surviving different event cuts
+  
   // Load the event information histograms
   if(fLoadEventInformation){
     fhVertexZ = (TH1D*) fInputFile->Get("vertexZ");                 // Vertex z position
-    fhEvents = (TH1D*) fInputFile->Get("nEvents");                  // Number of events surviving different event cuts
     fhTrackCuts = (TH1D*) fInputFile->Get("trackCuts");             // Number of tracks surviving different track cuts
     fhCentrality = (TH1D*) fInputFile->Get("centrality");           // Centrality in all events
     fhCentralityDijet = (TH1D*) fInputFile->Get("centralityDijet"); // Centrality in dijet events
@@ -1250,4 +1252,14 @@ int DijetHistogramManager::GetFirstTrackPtBin() const{
 // Get the last loaded track pT bin
 int DijetHistogramManager::GetLastTrackPtBin() const{
   return fLastLoadedTrackPtBin;
+}
+
+// Getter for the number of events passing the cuts
+int DijetHistogramManager::GetNEvents() const{
+  return fhEvents->GetBinContent(DijetHistograms::kVzCut);
+}
+
+// Getter for the number of dijets
+int DijetHistogramManager::GetNDijets() const{
+  return fhEvents->GetBinContent(DijetHistograms::kDijet);
 }

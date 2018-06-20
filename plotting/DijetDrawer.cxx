@@ -278,7 +278,8 @@ void DijetDrawer::DrawDijetHistograms(){
     
     // === Dijet DeltaPhi ===
     drawnHistogram = fHistograms->GetHistogramDijetDeltaPhi(iCentrality);
-    fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{dN}{d#Delta#varphi}"," ");
+    drawnHistogram->Scale(1.0/fHistograms->GetNDijets());   // Normalize by the number of dijets
+    fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jets}} #frac{dN}{d#Delta#varphi}"," ");
     legend = new TLegend(0.17,0.75,0.37,0.9);
     SetupLegend(legend,centralityString);
     legend->Draw();
@@ -288,7 +289,8 @@ void DijetDrawer::DrawDijetHistograms(){
     
     // === Dijet asymmetry ===
     drawnHistogram = fHistograms->GetHistogramDijetAsymmetry(iCentrality);
-    fDrawer->DrawHistogram(drawnHistogram,"A_{jj}","#frac{dN}{dA_{jj}}"," ");
+    drawnHistogram->Scale(1.0/fHistograms->GetNDijets());   // Normalize by the number of dijets
+    fDrawer->DrawHistogram(drawnHistogram,"A_{jj}","#frac{1}{N_{jets}} #frac{dN}{dA_{jj}}"," ");
     legend = new TLegend(0.62,0.75,0.82,0.9);
     SetupLegend(legend,centralityString);
     legend->Draw();
@@ -301,6 +303,7 @@ void DijetDrawer::DrawDijetHistograms(){
     
     // === Leading jet pT vs. subleading jet pT ===
     drawnHistogram2D = fHistograms->GetHistogramDijetLeadingVsSubleadingPt(iCentrality);
+    drawnHistogram2D->Scale(1.0/fHistograms->GetNDijets());   // Normalize by the number of dijets
     fDrawer->DrawHistogram(drawnHistogram2D,"Leading jet p_{T}","Subleading jet p_{T}"," ",fStyle2D);
     legend = new TLegend(0.17,0.75,0.37,0.9);
     SetupLegend(legend,centralityString);
@@ -336,10 +339,22 @@ void DijetDrawer::DrawTrackHistograms(){
   char namerX[100];
   char namerY[100];
   
+  // Number of events for normalization
+  int numberOfEvents;
+  TString trackTypeString;
+  
   // Loop over track types
   for(int iTrackType = 0; iTrackType < DijetHistogramManager::knTrackCategories; iTrackType++){
     if(!fDrawTracks[iTrackType]) continue;  // Only draw selected tracks
     
+    // Find the normalization for the given track type
+    trackTypeString = fHistograms->GetTrackHistogramName(iTrackType);
+    if(trackTypeString.Contains("Inclusive")){
+      numberOfEvents = fHistograms->GetNEvents();  // Normalize with the number of all events for inclusive histograms
+    } else {
+      numberOfEvents = fHistograms->GetNDijets();  // Normalize with the numbed of dijet events for tracks in dijet events
+    }
+
     // Loop over centrality
     for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
       
@@ -355,8 +370,9 @@ void DijetDrawer::DrawTrackHistograms(){
         
         // === Track pT ===
         drawnHistogram = fHistograms->GetHistogramTrackPt(iTrackType,iCorrelationType,iCentrality);
+        drawnHistogram->Scale(1.0/numberOfEvents);  // Normalize with the number of events
         sprintf(namerX,"%s p_{T}  (GeV)",fHistograms->GetTrackAxisName(iTrackType));
-        fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{dp_{T}}  (1/GeV)",fHistograms->GetCorrelationTypeString(iCorrelationType));
+        fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{event}} #frac{dN}{dp_{T}}  (1/GeV)",fHistograms->GetCorrelationTypeString(iCorrelationType));
         legend = new TLegend(0.62,0.75,0.82,0.9);
         SetupLegend(legend,centralityString);
         legend->Draw();
@@ -387,8 +403,9 @@ void DijetDrawer::DrawTrackHistograms(){
           
           // === Track phi ===
           drawnHistogram = fHistograms->GetHistogramTrackPhi(iTrackType,iCorrelationType,iCentrality,iTrackPt);
+          drawnHistogram->Scale(1.0/numberOfEvents);  // Normalize with the number of events
           sprintf(namerX,"%s #varphi",fHistograms->GetTrackAxisName(iTrackType));
-          fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
+          fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{event}} #frac{dN}{d#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
           legend = new TLegend(0.17,0.20,0.37,0.35);
           SetupLegend(legend,centralityString,trackPtString);
           legend->Draw();
@@ -399,6 +416,7 @@ void DijetDrawer::DrawTrackHistograms(){
           
           // === Track eta ===
           drawnHistogram = fHistograms->GetHistogramTrackEta(iTrackType,iCorrelationType,iCentrality,iTrackPt);
+          drawnHistogram->Scale(1.0/numberOfEvents);  // Normalize with the number of events
           
           // Set nice position for the legend
           legendY1 = 0.20; legendY2 = legendY1+0.15;
@@ -411,7 +429,7 @@ void DijetDrawer::DrawTrackHistograms(){
           }
           
           sprintf(namerX,"%s #eta",fHistograms->GetTrackAxisName(iTrackType));
-          fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#eta}",fHistograms->GetCorrelationTypeString(iCorrelationType));
+          fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{event}} #frac{dN}{d#eta}",fHistograms->GetCorrelationTypeString(iCorrelationType));
           legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           SetupLegend(legend,centralityString,trackPtString);
           legend->Draw();
@@ -425,6 +443,7 @@ void DijetDrawer::DrawTrackHistograms(){
           
           // === Track eta-phi ===
           drawnHistogram2D = fHistograms->GetHistogramTrackEtaPhi(iTrackType,iCorrelationType,iCentrality,iTrackPt);
+          drawnHistogram2D->Scale(1.0/numberOfEvents);  // Normalize with the number of events
           sprintf(namerX,"%s #varphi",fHistograms->GetTrackAxisName(iTrackType));
           sprintf(namerY,"%s #eta",fHistograms->GetTrackAxisName(iTrackType));
           fDrawer->DrawHistogram(drawnHistogram2D,namerX,namerY,fHistograms->GetCorrelationTypeString(iCorrelationType),fStyle2D);
@@ -499,6 +518,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
             drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt);
+            drawnHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
             
             // Move legend to different place for leading jet background figures
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
@@ -515,7 +535,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             }
             
             sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
-            fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
+            fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
             legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
             SetupLegend(legend,centralityString,trackPtString);
             legend->Draw();
@@ -535,6 +555,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi-deltaEta =====
           if(fDrawJetTrackDeltaEtaDeltaPhi){
             drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt);
+            drawnHistogram2D->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
             
             // Change the right margin better suited for 2D-drawing
             fDrawer->SetRightMargin(0.1);
@@ -580,6 +601,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           if(fDrawJetTrackDeltaEta){
             for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
               drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,iCorrelationType,iCentrality,iTrackPt,iDeltaPhi);
+              drawnHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
               
               // Do not draw the deltaEta histograms for background because they are flat by construction
               if(iCorrelationType == DijetHistogramManager::kBackground) continue;
@@ -594,7 +616,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               }
               
               sprintf(namerX,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));
-              fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#Delta#eta}",fHistograms->GetCorrelationTypeString(iCorrelationType)+fHistograms->GetDeltaPhiString(iDeltaPhi));
+              fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#eta}",fHistograms->GetCorrelationTypeString(iCorrelationType)+fHistograms->GetDeltaPhiString(iDeltaPhi));
               legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
               SetupLegend(legend,centralityString,trackPtString);
               legend->Draw();
@@ -707,6 +729,7 @@ void DijetDrawer::DrawJetShapeHistograms(){
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
           drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,iCentrality,iTrackPt);
+          if(iJetShape == DijetHistogramManager::kJetShape) drawnHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize by the number of dijets
           
           // Set the correct track pT bins
           trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));

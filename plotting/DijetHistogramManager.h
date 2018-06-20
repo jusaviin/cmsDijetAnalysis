@@ -13,6 +13,7 @@
 #include "DijetCard.h"
 #include "JDrawer.h"
 #include "DijetMethods.h"
+#include "../src/DijetHistograms.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -185,6 +186,10 @@ public:
   int GetLastCentralityBin() const;   // Get the last loaded centrality bin
   int GetFirstTrackPtBin() const;     // Get the first loaded track pT bin
   int GetLastTrackPtBin() const;      // Get the last loaded track pT bin
+  
+  // Getters for normalization information
+  int GetNEvents() const;  // Getter for the number of events passing the cuts
+  int GetNDijets() const;  // Getter for the number of dijets
   
 private:
   
