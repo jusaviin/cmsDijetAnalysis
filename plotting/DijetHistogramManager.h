@@ -295,6 +295,7 @@ private:
   // Mixed event correction, background subtraction and jet shape calculation
   void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
   void SubtractBackgroundAndCalculateJetShape();  // Subtract the background from the distributions and use these histograms to calculate jet shape
+  void NormalizeJetShape();  // Normalize the jet shape histograms
   
 };
 

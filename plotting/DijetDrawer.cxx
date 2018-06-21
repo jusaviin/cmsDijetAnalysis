@@ -729,7 +729,6 @@ void DijetDrawer::DrawJetShapeHistograms(){
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
           drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,iCentrality,iTrackPt);
-          if(iJetShape == DijetHistogramManager::kJetShape) drawnHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize by the number of dijets
           
           // Set the correct track pT bins
           trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
@@ -760,6 +759,75 @@ void DijetDrawer::DrawJetShapeHistograms(){
     fDrawer->SetLogY(false);
     
   } // Jet shape type loop
+  
+}
+
+/*
+ * Draw stack figures combining all pT bins for jet shape histograms
+ */
+void DijetDrawer::DrawJetShapeStack(){
+  
+  // Only draw the regular jet shape histograms to stack
+  if(!fDrawJetShape[DijetHistogramManager::kJetShape]) return;
+  
+  // Variable for the jet shape stack histograms
+  stackHist *jetShapeStack[DijetHistogramManager::knJetTrackCorrelations][fLastDrawnCentralityBin+1];
+  
+  // Helper variables for centrality naming in figures
+  TString centralityString;
+  TString compactCentralityString;
+  TString trackPtString;
+  TString compactTrackPtString;
+  
+  // Helper variables for legend
+  TLegend *legend;
+  TString legendString[fLastDrawnTrackPtBin+1];
+  
+  // Logarithmic drawing for jet shape histograms
+  fDrawer->SetLogY(fLogJetShape);
+
+  // Loop over jet-track correlation categories
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+    
+    // Loop over centrality
+    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+      
+      jetShapeStack[iJetTrack][iCentrality] = new stackHist(Form("jetShapeStack%d%d",iJetTrack,iCentrality));
+      
+      centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+      compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+      
+      // Loop over track pT bins
+      for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
+        
+        // Set the correct track pT bins
+        trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString = Form("_pT=%.1f-%.1f",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString.ReplaceAll(".","v");
+        legendString[iTrackPt] = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        
+        jetShapeStack[iJetTrack][iCentrality]->addHist(fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt));
+        
+      } // track pT bin loop
+      
+      // Set up the axes and draw the stack
+      fDrawer->CreateCanvas();
+      jetShapeStack[iJetTrack][iCentrality]->setRange(0, 0.99, "x");
+      jetShapeStack[iJetTrack][iCentrality]->setRange(0.005, 30, "y");
+      jetShapeStack[iJetTrack][iCentrality]->drawStack();
+      jetShapeStack[iJetTrack][iCentrality]->hst->GetXaxis()->SetTitle("#DeltaR");
+      jetShapeStack[iJetTrack][iCentrality]->hst->GetYaxis()->SetTitle("#rho(#DeltaR)");
+      jetShapeStack[iJetTrack][iCentrality]->hst->Draw();
+      
+      // Get legend from the stack and draw also that
+      legend = jetShapeStack[iJetTrack][iCentrality]->makeLegend(legendString,0.5,0.5,0.9,0.9,false,fLastDrawnTrackPtBin+1);
+      legend->Draw();
+      
+    } // centrality loop
+    
+  } // jet-track loop
+  
   
 }
 

@@ -259,6 +259,7 @@ DijetHistogramManager::~DijetHistogramManager(){
 void DijetHistogramManager::ProcessHistograms(){
   DoMixedEventCorrection();  // Mixed event correction needs to be done first, as we need the corrected histograms for the background subtraction
   SubtractBackgroundAndCalculateJetShape(); // Subtract the background and take projections of processed two-dimensional histograms. After that, calculate jet shape
+  NormalizeJetShape();  // Normalize the jet shape histograms such thaat pT integrated histogram is unity at deltaR < 1
 }
 
 /*
@@ -338,6 +339,38 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation category loop
+}
+
+/*
+ * Normalize the jet shape histograms such that the pT integrated result is unity in the range deltaR < 1
+ */
+void DijetHistogramManager::NormalizeJetShape(){
+  
+  // Helper variables for doing the normalization
+  TH1D *jetShapeSum;
+  double jetShapeIntegral;
+  
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only scale the histograms that are selected for analysis
+    for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      jetShapeSum = (TH1D*)fhJetShape[kJetShape][iJetTrack][iCentralityBin][fFirstLoadedTrackPtBin]->Clone(Form("jetShapeSum%d%d",iJetTrack,iCentralityBin));
+      
+      // First, sum all pT bins together
+      for(int iTrackPtBin = fFirstLoadedTrackPtBin+1; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+        jetShapeSum->Add(fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin]);
+      } // Track pT loop
+      
+      // Then calculate the integral for deltaR < 1
+      jetShapeIntegral = jetShapeSum->Integral(1,jetShapeSum->FindBin(0.99),"width");
+      
+      // Finally, normalize each pT bin with the intagral
+      for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin]->Scale(1.0/jetShapeIntegral);
+      } // Track pT loop
+      
+    } // Centrality loop
+  } // Jet-track correlation category loop
+  
 }
 
 /*

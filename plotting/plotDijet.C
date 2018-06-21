@@ -6,7 +6,7 @@
 /*
  * Macro for configuring the DijetDrawer and defining which histograms are drawn
  */
-void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-20.root"){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root"){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -25,9 +25,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-20.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -38,19 +38,19 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-20.root
   bool drawJetTrackDeltaEtaDeltaPhi = true;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = true;
-  bool drawBackground = true;
+  bool drawBackgroundSubtracted = false;
+  bool drawBackground = false;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -70,7 +70,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-20.root
   const int nCentralityBins = 4;
   const int nTrackPtBins = 6;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
-  double trackPtBinBorders[nTrackPtBins+1] = {0.5,1,2,3,4,8,300};  // Bin borders for track pT
+  double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1}; // Low bin borders for deltaPhi
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
@@ -79,8 +79,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-20.root
   int firstDrawnCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 3;
-  int lastDrawnTrackPtBin = 3;
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = nTrackPtBins-1;
   
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
@@ -192,5 +192,6 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-20.root
   
   // Draw the selected histograms
   resultDrawer->DrawHistograms();
+  resultDrawer->DrawJetShapeStack();
   
 }
