@@ -3,6 +3,7 @@
 
 // Root includes
 #include <TFile.h>
+#include <TDirectory.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TString.h>
@@ -73,6 +74,7 @@ public:
   
   void LoadHistograms();          // Load the histograms from the inputfile
   void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape
+  void Write(const char* fileName, const char* fileOption);  // Write all the loaded histograms into a file
   
   // Setters for binning information
   void SetCentralityBins(double *binBorders); // Set up centrality bin indices according to provided bin borders

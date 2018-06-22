@@ -25,9 +25,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -43,8 +43,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
-  bool drawMixedEvent = false;
+  bool drawSameEvent = true;
+  bool drawMixedEvent = true;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
@@ -164,6 +164,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   // Load and process the selected histograms
   histograms->LoadHistograms();
   histograms->ProcessHistograms();
+  histograms->Write("testoutput.root","RECREATE");
+  return;
   
   //////////////////////////////////
   //          DijetDrawer         //
