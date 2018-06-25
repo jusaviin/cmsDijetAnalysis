@@ -60,8 +60,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   bool drawBackground = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
-  const char* figureFormat = "png";
+  bool saveFigures = true;
+  const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions

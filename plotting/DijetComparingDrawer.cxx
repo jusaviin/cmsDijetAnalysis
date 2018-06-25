@@ -491,70 +491,107 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
  */
 void DijetComparingDrawer::DrawJetShapeHistograms(){
   
-//  // Legend helper variables
-//  TLegend *legend;
-//  double legendX1;
-//  double legendY1;
-//  double legendX2;
-//  double legendY2;
-//
-//  // Helper variables for centrality naming in figures
-//  TString centralityString;
-//  TString compactCentralityString;
-//  TString trackPtString;
-//  TString compactTrackPtString;
-//  char namerX[100];
-//  char namerY[100];
-//
-//  // Loop over different types of jet shape histograms
-//  for(int iJetShape = 0; iJetShape < DijetHistogramManager::knJetShapeTypes; iJetShape++){
-//    if(!fDrawJetShape[iJetShape]) continue;  // Only draw selected types of jet shape histograms
-//
-//    // Select logarithmic drawing for regular jet shape histograms
-//    if(iJetShape == kJetShape) fDrawer->SetLogY(fLogJetShape);
-//
-//    // Loop over jet-track correlation categories
-//    for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
-//      if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
-//
-//      // Loop over centrality
-//      for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
-//
-//        centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
-//        compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
-//
-//        // Loop over track pT bins
-//        for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
-//
-//          // Set the correct track pT bins
-//          trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
-//          compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
-//          compactTrackPtString.ReplaceAll(".","v");
-//
-//          legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
-//          sprintf(namerX,"%s #DeltaR",fJetTrackAxisNames[iJetTrack]);
-//          sprintf(namerY,"%s",fJetShapeYAxisNames[iJetShape]);
-//          fDrawer->DrawHistogram(fhJetShape[iJetShape][iJetTrack][iCentrality][iTrackPt],namerX,namerY," ");
-//
-//          // Do not draw the legend for jet shape bin counts
-//          if(iJetShape != kJetShapeBinCount){
-//            legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-//            SetupLegend(legend,centralityString,trackPtString);
-//            legend->Draw();
-//          }
-//
-//          // Save the figure to a file
-//          sprintf(namerX,"%s%s",fJetTrackHistogramNames[iJetTrack],fJetShapeHistogramName[iJetShape]);
-//          SaveFigure(namerX,compactCentralityString,compactTrackPtString);
-//
-//        } // Track pT loop
-//      } // Centrality loop
-//    } // Jet-track correlation category loop
-//
-//    // Go back to linear drawing
-//    fDrawer->SetLogY(false);
-//
-//  } // Jet shape type loop
+  // Legend helper variables
+  TLegend *legend;
+  double legendX1;
+  double legendY1;
+  double legendX2;
+  double legendY2;
+  
+  // Helper variables for centrality naming in figures
+  TString centralityString;
+  TString compactCentralityString;
+  TString trackPtString;
+  TString compactTrackPtString;
+  char namerX[100];
+  char namerY[100];
+  
+  TFile *comparisonFile = TFile::Open("data/JS5TeV_HIN_16_020.root");
+  const int nTrackPtBins = fBaseHistograms->GetNTrackPtBins();
+  TH1D *comparisonHistograms[nTrackPtBins];
+  TH1D *sumHistogram;
+  TH1D *helperHistogram;
+  
+  // Find the histograms to compare with from the comparison file
+  comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
+  sumHistogram = (TH1D*) comparisonHistograms[0]->Clone("normalizationSum");
+  for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
+    sprintf(namerX,"JS_pp_%d",iTrackPt);
+    comparisonHistograms[iTrackPt] = (TH1D*) comparisonFile->Get(namerX);
+    sumHistogram->Add(comparisonHistograms[iTrackPt]);
+  }
+  
+  // There are more pT bins in the comparison file, so sum them up to match the pT bins in this analysis
+  for(int iTrackPt = nTrackPtBins; iTrackPt < 9; iTrackPt++){
+    sprintf(namerX,"JS_pp_%d",iTrackPt);
+    helperHistogram = (TH1D*) comparisonFile->Get(namerX);
+    comparisonHistograms[nTrackPtBins-1]->Add(helperHistogram);
+    sumHistogram->Add(helperHistogram);
+  }
+  
+  // Normalize the jet shape histograms from the comparison file
+  double jetShapeIntegral = sumHistogram->Integral(1,sumHistogram->FindBin(0.99),"width");
+  for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    comparisonHistograms[iTrackPt]->Scale(1.0/jetShapeIntegral);
+  }
+  
+  // For the jet shape, there will be one added histogram
+  fnAddedHistograms = 1;
+  
+  // Loop over jet-track correlation categories
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+    
+    // Loop over centrality
+    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+      
+      centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      
+      // Loop over track pT bins
+      for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
+        
+        // Set the correct track pT bins
+        trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString.ReplaceAll(".","v");
+        
+        legendX1 = 0.48; legendY1 = 0.68; legendX2 = 0.82; legendY2 = 0.93;
+        sprintf(namerX,"#DeltaR");
+        sprintf(namerY,"%s",fBaseHistograms->GetJetShapeAxisName(DijetHistogramManager::kJetShape));
+        
+        // Prepare the histograms and draw then to the upper pad
+        fComparisonHistogram[0] = comparisonHistograms[iTrackPt];
+        fMainHistogram = (TH1D*) fComparisonHistogram[0]->Clone(Form("Klooni%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
+        for(int iBin = 1; iBin <= fMainHistogram->GetNbinsX(); iBin++){
+          fMainHistogram->SetBinContent(iBin,helperHistogram->GetBinContent(iBin));
+          fMainHistogram->SetBinError(iBin,helperHistogram->GetBinError(iBin));
+        }
+        
+        DrawToUpperPad(namerX,namerY,fLogJetShape);
+        
+        // Setup a legend to the plot
+        legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+        if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
+        legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
+        legend->AddEntry(fMainHistogram,"Leading jet","l");
+        legend->AddEntry(fComparisonHistogram[0],"Inclusive","l");
+        legend->Draw();
+        
+        // Prepare the ratio and draw it to the lower pad
+        fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("jetShapeRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+        DrawToLowerPad(namerX,fRatioLabel.Data());
+        
+        // Save the figure to a file
+        sprintf(namerX,"%s%sRatio",fBaseHistograms->GetJetTrackHistogramName(iJetTrack),fBaseHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape));
+        SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+        
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation category loop
   
 }
 

@@ -843,15 +843,14 @@ void DijetAnalyzer::RunAnalysis(){
             eventsMixed++;
             
           } // While loop for finding events to mix
-          
+
           // For the next event, start mixing the events from where we were left with in the previous event
           firstMixingEvent = mixedEventIndex;
           
         } // Event mixing
       } // Dijet in event
-      
     } // Event loop
-        
+    
     // Close the input files after the event has been read
     inputFile->Close();
     if(useDifferentReaderFotJetsAndTracks) copyInputFile->Close();

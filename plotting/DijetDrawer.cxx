@@ -776,11 +776,15 @@ void DijetDrawer::DrawJetShapeStack(){
   // Helper variables for centrality naming in figures
   TString centralityString;
   TString compactCentralityString;
-  TString trackPtString;
-  TString compactTrackPtString;
+  TString compactTrackPtString = "_ptStack";
+  char namerX[100];
   
   // Helper variables for legend
   TLegend *legend;
+  double legendX1;
+  double legendY1;
+  double legendX2;
+  double legendY2;
   TString legendString[fLastDrawnTrackPtBin+1];
   
   // Logarithmic drawing for jet shape histograms
@@ -801,10 +805,7 @@ void DijetDrawer::DrawJetShapeStack(){
       // Loop over track pT bins
       for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
         
-        // Set the correct track pT bins
-        trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
-        compactTrackPtString = Form("_pT=%.1f-%.1f",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
-        compactTrackPtString.ReplaceAll(".","v");
+        // Set the correct track pT bins for the legend
         legendString[iTrackPt] = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
         
         jetShapeStack[iJetTrack][iCentrality]->addHist(fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt));
@@ -821,8 +822,16 @@ void DijetDrawer::DrawJetShapeStack(){
       jetShapeStack[iJetTrack][iCentrality]->hst->Draw();
       
       // Get legend from the stack and draw also that
-      legend = jetShapeStack[iJetTrack][iCentrality]->makeLegend(legendString,0.5,0.5,0.9,0.9,false,fLastDrawnTrackPtBin+1);
+      legendX1 = 0.5; legendX2 = 0.9; legendY1 = 0.5; legendY2 = 0.9;
+      if(iJetTrack > DijetHistogramManager::kPtWeightedTrackLeadingJet){
+        legendY1 = 0.55; legendY2 = 0.95;  // Move the legend up for subleading jet shape
+      }
+      legend = jetShapeStack[iJetTrack][iCentrality]->makeLegend(legendString,legendX1,legendY1,legendX2,legendY2,false,fLastDrawnTrackPtBin+1);
       legend->Draw();
+      
+      // Save the figure to a file
+      sprintf(namerX,"%sJetShape",fHistograms->GetJetTrackHistogramName(iJetTrack));
+      SaveFigure(namerX,compactCentralityString,compactTrackPtString);
       
     } // centrality loop
     

@@ -18,36 +18,36 @@ void compareDijetHistograms(){
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
-  bool drawTracks = true;
+  bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
-  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
+  bool drawBackground = false;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = true;
@@ -66,7 +66,7 @@ void compareDijetHistograms(){
   // Settings for ratios
   double minZoom = 0.8;
   double maxZoom = 1.2;
-  TString ratioLabel = "Reco/Gen";
+  TString ratioLabel = "#frac{Leading jet}{Inclusive}";
   
   // Scaling for histograms
   bool scaleHistograms = false;
@@ -110,8 +110,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoReco_noMixing_KurtsSkims_2018-06-18_part1.root","data/dijet_ppMC_RecoGen_noMixing_KurtsSkims_2018-06-18_part1.root"};
+  const int nDatasets = 1;
+  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-06-21.root"};
   //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
   //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
@@ -173,9 +173,9 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
     
     // Set the binning information
-    histograms[iDataset]->SetCentralityBins(centralityBinBorders);
-    histograms[iDataset]->SetTrackPtBins(trackPtBinBorders);
-    histograms[iDataset]->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
+    histograms[iDataset]->SetCentralityBins(centralityBinBorders,false);
+    histograms[iDataset]->SetTrackPtBins(trackPtBinBorders,false);
+    histograms[iDataset]->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,false);
     histograms[iDataset]->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
     histograms[iDataset]->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
     
@@ -183,7 +183,7 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetDijetMethods(methods);
     
     // Process and draw the selected histograms
-    histograms[iDataset]->LoadHistograms();
+    histograms[iDataset]->LoadProcessedHistograms();
 
   } // Loop over datasets
 
