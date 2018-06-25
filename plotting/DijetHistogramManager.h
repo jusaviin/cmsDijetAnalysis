@@ -75,11 +75,12 @@ public:
   void LoadHistograms();          // Load the histograms from the inputfile
   void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape
   void Write(const char* fileName, const char* fileOption);  // Write all the loaded histograms into a file
+  void LoadProcessedHistograms(); // Load processed histograms from the inputfile
   
   // Setters for binning information
-  void SetCentralityBins(double *binBorders); // Set up centrality bin indices according to provided bin borders
-  void SetTrackPtBins(double *binBorders);    // Set up track pT bin indices according to provided bin borders
-  void SetDeltaPhiBins(double *lowBinBorders, double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins]); //  Set up deltaPhi bin indices according to provided bin borders and bin names
+  void SetCentralityBins(const double *binBorders, bool setIndices = true); // Set up centrality bin indices according to provided bin borders
+  void SetTrackPtBins(const double *binBorders, bool setIndices = true);    // Set up track pT bin indices according to provided bin borders
+  void SetDeltaPhiBins(const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], bool setIndices = true); //  Set up deltaPhi bin indices according to provided bin borders and bin names
   
   // Setters for event information and dijets
   void SetLoadEventInformation(const bool loadOrNot); // Setter for drawing event information
@@ -241,11 +242,16 @@ private:
   // =============================================
   
   // Event information histograms
-  TH1D *fhVertexZ;         // Vertex z position
-  TH1D *fhEvents;          // Number of events surviving different event cuts
-  TH1D *fhTrackCuts;       // Number of tracks surviving different track cuts
-  TH1D *fhCentrality;      // Centrality of all events
-  TH1D *fhCentralityDijet; // Centrality of dijet events
+  TH1D *fhVertexZ;            // Vertex z position
+  TH1D *fhVertexZWeighted;    // Weighted vertex z-position (only meaningfull for MC)
+  TH1D *fhEvents;             // Number of events surviving different event cuts
+  TH1D *fhTrackCuts;          // Number of tracks surviving different track cuts
+  TH1D *fhTrackCutsInclusive; // Number of inclusive tracks surviving different track cuts
+  TH1D *fhCentrality;         // Centrality of all events
+  TH1D *fhCentralityWeighted; // Weighted centrality distribution in all events (only meaningful for MC)
+  TH1D *fhCentralityDijet;    // Centrality of dijet events
+  TH1D *fhPtHat;              // pT hat for MC events (only meaningful for MC)
+  TH1D *fhPtHatWeighted;      // Weighted pT hat distribution (only meaningful for MC)
   
   // Histograms for single jets
   TH1D *fhJetPt[knSingleJetCategories][knCentralityBins];      // Jet pT histograms
@@ -273,7 +279,7 @@ private:
   TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][knCentralityBins][knTrackPtBins];  // Jet shape histograms
   
   // Private methods
-  void SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis); // Read the bin indices for given bin borders
+  void SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices); // Read the bin indices for given bin borders
   void SetBinIndices(const int nBins, int *lowBinIndices, int *highBinIndices, const double *lowBinBorders, const double *highBinBorders, const int iAxis); // Read the bin indices for given bin borders
   void SetLoadJetTrackCorrelations(const bool loadOrNot, const int primaryIndex, const int connectedIndex); // Setter for drawing and loading the jet-track correlation histograms
   int GetConnectedIndex(const int jetTrackIndex) const;

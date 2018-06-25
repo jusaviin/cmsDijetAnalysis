@@ -17,11 +17,10 @@ DijetCard::DijetCard(TFile *inFile):
   fDataTypeString("")
 {
   fInputFile->cd(fCardDirectory.Data());
-  TVectorT<float> *reader = (TVectorT<float>*) gDirectory->Get("DataType");
-  fDataType = (*reader)[1];
-  TVectorT<float> *monteCarloType = (TVectorT<float>*) gDirectory->Get("McCorrelationType");
-  if(monteCarloType) {
-    fMonteCarloType = (*monteCarloType)[1];
+  ReadVectors();
+  fDataType = (*fDataTypeVector)[1];
+  if(fMcCorrelationTypeVector) {
+    fMonteCarloType = (*fMcCorrelationTypeVector)[1];
   } else {
     fMonteCarloType = 0;
   }
@@ -33,6 +32,42 @@ DijetCard::DijetCard(TFile *inFile):
  */
 DijetCard::~DijetCard(){
 
+}
+
+/*
+ * Reader for all the vectors from the input file
+ */
+void DijetCard::ReadVectors(){
+  fDataTypeVector = (TVectorT<float>*) gDirectory->Get("DataType");
+  fMcCorrelationTypeVector = (TVectorT<float>*) gDirectory->Get("McCorrelationType");
+  fForestTypeVector = (TVectorT<float>*) gDirectory->Get("ForestType");
+  fJetEtaCutVector = (TVectorT<float>*) gDirectory->Get("JetEtaCut");
+  fSearchEtaCutVector = (TVectorT<float>*) gDirectory->Get("SearchEtaCut");
+  fMaxPtCutVector = (TVectorT<float>*) gDirectory->Get("MaxPtCut");
+  fMinPtCutVector = (TVectorT<float>*) gDirectory->Get("MinPtCut");
+  fSubleadingPtCutVector = (TVectorT<float>*) gDirectory->Get("SubleadingPtCut");
+  fDeltaPhiCutVector = (TVectorT<float>*) gDirectory->Get("DeltaPhiCut");
+  fMinMaxTrackPtFractionVector = (TVectorT<float>*) gDirectory->Get("MinMaxTrackPtFraction");
+  fMaxMaxTrackPtFractionVector = (TVectorT<float>*) gDirectory->Get("MaxMaxTrackPtFraction");
+  fTrackEtaCutVector = (TVectorT<float>*) gDirectory->Get("TrackEtaCut");
+  fMinTrackPtCutVector = (TVectorT<float>*) gDirectory->Get("MinTrackPtCut");
+  fMaxTrackPtRelativeErrorVector = (TVectorT<float>*) gDirectory->Get("MaxTrackPtRelativeError");
+  fVertexMaxDistanceVector = (TVectorT<float>*) gDirectory->Get("VertexMaxDistance");
+  fCalorimeterSignalLimitPtVector = (TVectorT<float>*) gDirectory->Get("CalorimeterSignalLimitPt");
+  fHighPtEtFractionVector = (TVectorT<float>*) gDirectory->Get("HighPtEtFraction");
+  fChi2QualityCutVector = (TVectorT<float>*) gDirectory->Get("Chi2QualityCut");
+  fMinimumTrackHitsVector = (TVectorT<float>*) gDirectory->Get("MinimumTrackHits");
+  fSubeventCutVector = (TVectorT<float>*) gDirectory->Get("SubeventCut");
+  fZVertexCutVector = (TVectorT<float>*) gDirectory->Get("ZVertexCut");
+  fLowPtHatCutVector = (TVectorT<float>*) gDirectory->Get("LowPtHatCut");
+  fHighPtHatCutVector = (TVectorT<float>*) gDirectory->Get("HighPtHatCut");
+  fCentralityBinEdgesVector = (TVectorT<float>*) gDirectory->Get("CentralityBinEdges");
+  fTrackPtBinEdgesVector = (TVectorT<float>*) gDirectory->Get("TrackPtBinEdges");
+  fAsymmetryBinEdgesVector = (TVectorT<float>*) gDirectory->Get("AsymmetryBinEdges");
+  fPtHatBinEdgesVector = (TVectorT<float>*) gDirectory->Get("PtHatBinEdges");
+  fDoEventMixingVector = (TVectorT<float>*) gDirectory->Get("DoEventMixing");
+  fNMixedEventsPerDijetVector = (TVectorT<float>*) gDirectory->Get("NMixedEventsPerDijet");
+  fVzToleranceVector = (TVectorT<float>*) gDirectory->Get("VzTolerance");
 }
 
 /*
@@ -69,3 +104,47 @@ TString DijetCard::GetDataType() const{
   return fDataTypeString;
 }
 
+/*
+ * Reader for all the vectors from the input file
+ */
+void DijetCard::Write(TDirectory *file){
+  
+  // Create a directory to store the card parameters
+  if(!file->GetDirectory("JCard")) file->mkdir("JCard");
+  file->cd("JCard");
+  
+  // Write all the vectors to the file
+  fDataTypeVector->Write("DataType");
+  fMcCorrelationTypeVector->Write("McCorrelationType");
+  fForestTypeVector->Write("ForestType");
+  fJetEtaCutVector->Write("JetEtaCut");
+  fSearchEtaCutVector->Write("SearchEtaCut");
+  fMaxPtCutVector->Write("MaxPtCut");
+  fMinPtCutVector->Write("MinPtCut");
+  fSubleadingPtCutVector->Write("SubleadingPtCut");
+  fDeltaPhiCutVector->Write("DeltaPhiCut");
+  fMinMaxTrackPtFractionVector->Write("MinMaxTrackPtFraction");
+  fMaxMaxTrackPtFractionVector->Write("MaxMaxTrackPtFraction");
+  fTrackEtaCutVector->Write("TrackEtaCut");
+  fMinTrackPtCutVector->Write("MinTrackPtCut");
+  fMaxTrackPtRelativeErrorVector->Write("MaxTrackPtRelativeError");
+  fVertexMaxDistanceVector->Write("VertexMaxDistance");
+  fCalorimeterSignalLimitPtVector->Write("CalorimeterSignalLimitPt");
+  fHighPtEtFractionVector->Write("HighPtEtFraction");
+  fChi2QualityCutVector->Write("Chi2QualityCut");
+  fMinimumTrackHitsVector->Write("MinimumTrackHits");
+  fSubeventCutVector->Write("SubeventCut");
+  fZVertexCutVector->Write("ZVertexCut");
+  fLowPtHatCutVector->Write("LowPtHatCut");
+  fHighPtHatCutVector->Write("HighPtHatCut");
+  fCentralityBinEdgesVector->Write("CentralityBinEdges");
+  fTrackPtBinEdgesVector->Write("TrackPtBinEdges");
+  fAsymmetryBinEdgesVector->Write("AsymmetryBinEdges");
+  fPtHatBinEdgesVector->Write("PtHatBinEdges");
+  fDoEventMixingVector->Write("DoEventMixing");
+  fNMixedEventsPerDijetVector->Write("NMixedEventsPerDijet");
+  fVzToleranceVector->Write("VzTolerance");
+  
+  // Return back to the main directory
+  file->cd("../");
+}

@@ -68,11 +68,16 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
   }
   
   // Initialize all the other histograms to null
-  fhVertexZ = NULL;         // Vertex z position
-  fhEvents = NULL;          // Number of events surviving different event cuts
-  fhTrackCuts = NULL;       // Number of tracks surviving different track cuts
-  fhCentrality = NULL;      // Centrality of all events
-  fhCentralityDijet = NULL; // Centrality of dijet events
+  fhVertexZ = NULL;            // Vertex z position
+  fhVertexZWeighted = NULL;    // Weighted vertex z-position (only meaningfull for MC)
+  fhEvents = NULL;             // Number of events surviving different event cuts
+  fhTrackCuts = NULL;          // Number of tracks surviving different track cuts
+  fhTrackCutsInclusive = NULL; // Number of inclusive tracks surviving different track cuts
+  fhCentrality = NULL;         // Centrality of all events
+  fhCentralityWeighted = NULL; // Weighted centrality distribution in all events (only meaningful for MC)
+  fhCentralityDijet = NULL;    // Centrality of dijet events
+  fhPtHat = NULL;              // pT hat for MC events (only meaningful for MC)
+  fhPtHatWeighted = NULL;      // Weighted pT hat distribution (only meaningful for MC)
   
   // Centrality loop
   for(int iCentrality = 0; iCentrality < knCentralityBins; iCentrality++){
@@ -389,14 +394,19 @@ int DijetHistogramManager::GetConnectedIndex(const int jetTrackIndex) const{
 void DijetHistogramManager::LoadHistograms(){
   
   // Always load the number of events histogram
-  fhEvents = (TH1D*) fInputFile->Get("nEvents");                    // Number of events surviving different event cuts
+  fhEvents = (TH1D*) fInputFile->Get("nEvents");                           // Number of events surviving different event cuts
   
   // Load the event information histograms
   if(fLoadEventInformation){
-    fhVertexZ = (TH1D*) fInputFile->Get("vertexZ");                 // Vertex z position
-    fhTrackCuts = (TH1D*) fInputFile->Get("trackCuts");             // Number of tracks surviving different track cuts
-    fhCentrality = (TH1D*) fInputFile->Get("centrality");           // Centrality in all events
-    fhCentralityDijet = (TH1D*) fInputFile->Get("centralityDijet"); // Centrality in dijet events
+    fhVertexZ = (TH1D*) fInputFile->Get("vertexZ");                        // Vertex z position
+    fhVertexZWeighted = (TH1D*) fInputFile->Get("vertexZweighted");        // MC weighted vertex z position
+    fhTrackCuts = (TH1D*) fInputFile->Get("trackCuts");                    // Number of tracks surviving different track cuts
+    fhTrackCutsInclusive = (TH1D*) fInputFile->Get("trackCutsInclusive");  // Number of inclusive tracks surviving different track cuts
+    fhCentrality = (TH1D*) fInputFile->Get("centrality");                  // Centrality in all events
+    fhCentralityWeighted = (TH1D*) fInputFile->Get("centralityWeighted");  // MC weighted centrality in all events
+    fhCentralityDijet = (TH1D*) fInputFile->Get("centralityDijet");        // Centrality in dijet events
+    fhPtHat = (TH1D*) fInputFile->Get("pthat");                            // pT hat for MC events
+    fhPtHatWeighted = (TH1D*) fInputFile->Get("pthatWeighted");            // Weighted pT hat for MC events
   }
   
   // Load single jet histograms
@@ -781,11 +791,16 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
   
   // Write the event information histograms to the output file
   if(fLoadEventInformation){
-    fhEvents->Write();           // Number of events surviving different event cuts
-    fhVertexZ->Write();          // Vertex z position
-    fhTrackCuts->Write();        // Number of tracks surviving different track cuts
-    fhCentrality->Write();       // Centrality in all events
-    fhCentralityDijet->Write();  // Centrality in dijet events
+    fhEvents->Write();             // Number of events surviving different event cuts
+    fhVertexZ->Write();            // Vertex z position
+    fhVertexZWeighted->Write();    // MC weighted vertex z position
+    fhTrackCuts->Write();          // Number of tracks surviving different track cuts
+    fhTrackCutsInclusive->Write(); // Number of inclusive tracks surviving different track cuts
+    fhCentrality->Write();         // Centrality in all events
+    fhCentralityWeighted->Write(); // MC weighted centrality in all events
+    fhCentralityDijet->Write();    // Centrality in dijet events
+    fhPtHat->Write();              // pT hat for MC events (only meaningful for MC)
+    fhPtHatWeighted->Write();      // Weighted pT hat distribution (only meaningful for MC)
   }
  
   // Write the single jet histograms to the output file
@@ -967,12 +982,181 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     
   } // Jet shape type loop
   
+  // Write the card to the output file if it is not already written
+  if(!gDirectory->GetDirectory("JCard")) fCard->Write(outputFile);
+  
   // Close the file after everything is written
   outputFile->Close();
   
   // Delete the outputFile object
   delete outputFile;
   
+}
+
+/*
+ * Load the selected histograms from a file containing readily processed histograms
+ */
+void DijetHistogramManager::LoadProcessedHistograms(){
+  
+  // Helper variable for finding names of loaded histograms
+  char histogramNamer[200];
+  
+  // Always load the number of events histogram
+  fhEvents = (TH1D*) fInputFile->Get("nEvents");                           // Number of events surviving different event cuts
+  
+  // Load the event information histograms
+  if(fLoadEventInformation){
+    fhVertexZ = (TH1D*) fInputFile->Get("vertexZ");                        // Vertex z position
+    fhVertexZWeighted = (TH1D*) fInputFile->Get("vertexZweighted");        // MC weighted vertex z position
+    fhTrackCuts = (TH1D*) fInputFile->Get("trackCuts");                    // Number of tracks surviving different track cuts
+    fhTrackCutsInclusive = (TH1D*) fInputFile->Get("trackCutsInclusive");  // Number of inclusive tracks surviving different track cuts
+    fhCentrality = (TH1D*) fInputFile->Get("centrality");                  // Centrality in all events
+    fhCentralityWeighted = (TH1D*) fInputFile->Get("centralityWeighted");  // MC weighted centrality in all events
+    fhCentralityDijet = (TH1D*) fInputFile->Get("centralityDijet");        // Centrality in dijet events
+    fhPtHat = (TH1D*) fInputFile->Get("pthat");                            // pT hat for MC events
+    fhPtHatWeighted = (TH1D*) fInputFile->Get("pthatWeighted");            // Weighted pT hat for MC events
+  }
+  
+  // Load the single jet histograms from the input file
+  for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
+    if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the loaded the selected histograms
+    
+    for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      
+      // Single jet pT
+      sprintf(histogramNamer,"%s/%sPt_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
+      fhJetPt[iJetCategory][iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      // Single jet phi
+      sprintf(histogramNamer,"%s/%sPhi_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
+      fhJetPhi[iJetCategory][iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      // Single jet eta
+      sprintf(histogramNamer,"%s/%sEta_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
+      fhJetEta[iJetCategory][iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      //Single jet eta-phi
+      sprintf(histogramNamer,"%s/%sEtaPhi_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
+      if(fLoad2DHistograms) fhJetEtaPhi[iJetCategory][iCentralityBin] = (TH2D*) fInputFile->Get(histogramNamer);
+    } // Loop over centrality bins
+    
+  } // Loop over single jet categories
+  
+  // Load the dijet histograms from the input file
+  if(fLoadDijetHistograms){
+    
+    for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      
+      // Dijet deltaPhi
+      sprintf(histogramNamer,"dijet/dijetDeltaPhi_C%d",iCentralityBin);
+      fhDijetDphi[iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      // Dijet asymmetry
+      sprintf(histogramNamer,"dijet/dijetAsymmetry_C%d",iCentralityBin);
+      fhDijetAsymmetry[iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      // Leading jet pT vs. subleading jet pT
+      sprintf(histogramNamer,"dijet/leadingVsSubleadingPt_C%d",iCentralityBin);
+      if(fLoad2DHistograms) fhDijetLeadingVsSubleadingPt[iCentralityBin] = (TH2D*) fInputFile->Get(histogramNamer);
+    }
+
+  }
+  
+  // Load the track histograms from the input file
+  for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
+    if(!fLoadTracks[iTrackType]) continue;  // Only load the selected track types
+    
+    for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){  // Tracks have only same and mixed event distributions
+      if(iTrackType > kUncorrectedTrack && iCorrelationType == kMixedEvent) continue; // No mixed event histograms for inclusive tracks
+      
+      for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+        
+        // Track pT
+        sprintf(histogramNamer,"%s/%sPt%s_C%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin);
+        fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+        
+        // pT integrated track phi
+        sprintf(histogramNamer,"%s/%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
+        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
+        
+        // pT integrated track eta
+        sprintf(histogramNamer,"%s/%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
+        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
+        
+        // pT integrated track eta-phi
+        sprintf(histogramNamer,"%s/%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = (TH2D*) fInputFile->Get(histogramNamer);
+        
+        for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+          
+          // Track phi in track pT bins
+          sprintf(histogramNamer,"%s/%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
+          fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fInputFile->Get(histogramNamer);
+          
+          // Track eta in track pT bins
+          sprintf(histogramNamer,"%s/%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
+          fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fInputFile->Get(histogramNamer);
+          
+          // Track eta-phi in track pT bins
+          sprintf(histogramNamer,"%s/%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
+          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH2D*) fInputFile->Get(histogramNamer);
+          
+        } // Track pT loop
+      } // Centrality loop
+    } // Correlation type loop
+  } // Track category loop
+  
+  // Load the jet-track correlation histograms from the input file
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
+    
+    // Loop over correlation types
+    for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+      
+      // Loop over centrality bins
+      for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+        
+        // Loop over track pT bins
+        for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+          
+          // Jet-track deltaPhi
+          sprintf(histogramNamer,"%s/%sDeltaPhi%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fInputFile->Get(histogramNamer);
+          
+          // Jet-track deltaEtaDeltaPhi
+          sprintf(histogramNamer,"%s/%sDeltaEtaDeltaPhi%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
+          if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH2D*) fInputFile->Get(histogramNamer);
+          
+          // DeltaPhi binning for deltaEta histogram
+          for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+            sprintf(histogramNamer,"%s/%sDeltaEta%s%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaPhiString[iDeltaPhi].Data(),iCentralityBin,iTrackPtBin);
+            fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fInputFile->Get(histogramNamer);
+          } // DeltaPhi loop
+        } // Track pT loop
+      } // Centrality loop
+    } // Correlation type loop
+  } // Jet-track correlation category loop
+  
+  // Write the jet shape histograms to the output file
+  for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
+    
+    // Loop over jet-track correlation categories
+    for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+      if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+      
+      // Loop over centrality
+      for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+        
+        // Loop over track pT bins
+        for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
+          sprintf(histogramNamer,"%s_%s/%s_%s_C%dT%d",fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack],fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack],iCentrality,iTrackPt);
+          fhJetShape[iJetShape][iJetTrack][iCentrality][iTrackPt] = (TH1D*) fInputFile->Get(histogramNamer);
+          
+        } // Track pT loop
+      } // Centrality loop
+    } // Jet-track correlation category loop
+  } // Jet shape type loop
+
 }
 
 /*
@@ -983,12 +1167,14 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
  *   int *binIndices = Array of integers to be filled with bin index information read from the file
  *   const double *binBorders = Array for bin borders that are searched from the file
  *   const int iAxis = Index of the axis used for reading bin indices
+ *   const bool setIndices = true: Set both bin indices and bin borders, false: Set only bin borders
  */
-void DijetHistogramManager::SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis){
-  TH1D* hBinner = FindHistogram(fInputFile,"trackLeadingJet",iAxis,0,0,0);
+void DijetHistogramManager::SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices){
+  TH1D* hBinner;
+  if(setIndices) hBinner = FindHistogram(fInputFile,"trackLeadingJet",iAxis,0,0,0);
   for(int iBin = 0; iBin < nBins+1; iBin++){
     copyBinBorders[iBin] = binBorders[iBin];
-    binIndices[iBin] = hBinner->GetXaxis()->FindBin(binBorders[iBin]);
+    if(setIndices) binIndices[iBin] = hBinner->GetXaxis()->FindBin(binBorders[iBin]);
   }
 }
 
@@ -1012,30 +1198,34 @@ void DijetHistogramManager::SetBinIndices(const int nBins, int *lowBinIndices, i
 }
 
 /*
- * Set up centrality bin indices according to provided bin borders
+ * Set up centrality bin borders and indices according to provided bin borders
+ *
+ *
  */
-void DijetHistogramManager::SetCentralityBins(double *binBorders){
-  SetBinIndices(knCentralityBins,fCentralityBinBorders,fCentralityBinIndices,binBorders,4);
+void DijetHistogramManager::SetCentralityBins(const double *binBorders, const bool setIndices){
+  SetBinIndices(knCentralityBins,fCentralityBinBorders,fCentralityBinIndices,binBorders,4,setIndices);
 }
 
 /*
  * Set up track pT bin indices according to provided bin borders
  */
-void DijetHistogramManager::SetTrackPtBins(double *binBorders){
-  SetBinIndices(knTrackPtBins,fTrackPtBinBorders,fTrackPtBinIndices,binBorders,0);
+void DijetHistogramManager::SetTrackPtBins(const double *binBorders, const bool setIndices){
+  SetBinIndices(knTrackPtBins,fTrackPtBinBorders,fTrackPtBinIndices,binBorders,0,setIndices);
   
   // The track histograms have finer pT binning, so we need to use different bin indices for them
-  TH1D* hTrackPtBinner = FindHistogram(fInputFile,"track",0,0,0,0);
-  for(int iTrackPt = 0; iTrackPt < knTrackPtBins+1; iTrackPt++){
-    fFineTrackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(binBorders[iTrackPt]);
+  if(setIndices){
+    TH1D* hTrackPtBinner = FindHistogram(fInputFile,"track",0,0,0,0);
+    for(int iTrackPt = 0; iTrackPt < knTrackPtBins+1; iTrackPt++){
+      fFineTrackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(binBorders[iTrackPt]);
+    }
   }
 }
 
 /*
  * Set up deltaPhi bin indices according to provided bin borders
  */
-void DijetHistogramManager::SetDeltaPhiBins(double *lowBinBorders, double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins]){
-  SetBinIndices(knDeltaPhiBins,fLowDeltaPhiBinIndices,fHighDeltaPhiBinIndices,lowBinBorders,highBinBorders,1);
+void DijetHistogramManager::SetDeltaPhiBins(const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], const bool setIndices){
+  if(setIndices) SetBinIndices(knDeltaPhiBins,fLowDeltaPhiBinIndices,fHighDeltaPhiBinIndices,lowBinBorders,highBinBorders,1);
   for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
     fDeltaPhiString[iDeltaPhi] = deltaPhiStrings[iDeltaPhi];
     fCompactDeltaPhiString[iDeltaPhi] = compactDeltaPhiStrings[iDeltaPhi];

@@ -15,6 +15,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   // ========================= Configuration ==========================
   // ==================================================================
   
+  // Choose to either process or draw the histograms
+  int executionMode = 2; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  
+  // We do not need to set bin indices if we use processed histograms
+  bool setIndices = true;
+  if(executionMode == 2) setIndices = false;
+  
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
@@ -25,9 +32,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -43,8 +50,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
-  bool drawMixedEvent = true;
+  bool drawSameEvent = false;
+  bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
@@ -150,22 +157,33 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   histograms->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   histograms->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
   histograms->SetLoad2DHistograms(true);
-  
+
   // Set the binning information
-  histograms->SetCentralityBins(centralityBinBorders);
-  histograms->SetTrackPtBins(trackPtBinBorders);
-  histograms->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
+  histograms->SetCentralityBins(centralityBinBorders,setIndices);
+  histograms->SetTrackPtBins(trackPtBinBorders,setIndices);
+  histograms->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,setIndices);
   histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
-  
+
   // Set the used dijet methods
   histograms->SetDijetMethods(methods);
   
-  // Load and process the selected histograms
-  histograms->LoadHistograms();
-  histograms->ProcessHistograms();
-  histograms->Write("testoutput.root","RECREATE");
-  return;
+  // With execution mode 0, only process the histograms and write them to file
+  if(executionMode == 0){
+    histograms->LoadHistograms();
+    histograms->ProcessHistograms();
+    histograms->Write("data/dijet_pp_highForest_processed_2018-06-21.root","UPDATE");
+    return;
+  }
+  
+  // Load the histograms and process them, unless already processed in the file
+  if(executionMode == 1){
+    histograms->LoadHistograms();
+    histograms->ProcessHistograms();
+  } else if(executionMode == 2){
+    histograms->LoadProcessedHistograms();
+  }
+  
   
   //////////////////////////////////
   //          DijetDrawer         //
