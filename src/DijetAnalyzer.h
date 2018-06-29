@@ -68,6 +68,7 @@ private:
   // Analyzed data and forest types
   Int_t fDataType;                   // Analyzed data type
   Int_t fForestType;                 // Analyzed forest type
+  Int_t fReadMode;                   // Read mode. 0 = Regular forest, 1 = PYTHIA8 forest
   
   // Weights for filling the MC histograms
   Double_t fVzWeight;                // Weight for vz in MC

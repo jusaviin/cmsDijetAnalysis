@@ -45,9 +45,10 @@ HighForestReader::HighForestReader() :
  *
  *  Arguments:
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
+ *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  */
-HighForestReader::HighForestReader(Int_t dataType) :
-  ForestReader(dataType),
+HighForestReader::HighForestReader(Int_t dataType, Int_t readMode) :
+  ForestReader(dataType,readMode),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -213,7 +214,11 @@ void HighForestReader::Initialize(){
   if(fDataType == kPp){ // pp data
     fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
-    fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    if(fReadMode == 0){
+      fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
+    } else {
+      fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
+    }
   } else if (fDataType == kPbPb){ // PbPb
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPbMC){
@@ -265,10 +270,19 @@ void HighForestReader::Initialize(){
   fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
   
   // Connect the branches to the particle flow candidate tree
-  fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdArray,&fParticleFlowCandidateIdBranch);
-  fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtArray,&fParticleFlowCandidatePtBranch);
-  fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiArray,&fParticleFlowCandidatePhiBranch);
-  fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaArray,&fParticleFlowCandidateEtaBranch);
+  if(fReadMode == 0){ // Regular forests have vectors for particle flow candidate tree
+    fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdVector,&fParticleFlowCandidateIdBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtVector,&fParticleFlowCandidatePtBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiVector,&fParticleFlowCandidatePhiBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaVector,&fParticleFlowCandidateEtaBranch);
+  } else { // PYTHIA8 forest has arrays instead of vectors for particle flow candidate tree
+    fParticleFlowCandidateTree->SetBranchAddress("nPFpart",&fnParticleFlowCandidates,&nfParticleFlowCandidateBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdArray,&fParticleFlowCandidateIdBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtArray,&fParticleFlowCandidatePtBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiArray,&fParticleFlowCandidatePhiBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaArray,&fParticleFlowCandidateEtaBranch);
+  }
+  
 }
 
 /*

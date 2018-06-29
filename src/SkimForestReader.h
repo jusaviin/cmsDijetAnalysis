@@ -19,10 +19,10 @@ class SkimForestReader : public ForestReader{
 public:
   
   // Constructors and destructors
-  SkimForestReader();                                   // Default constructor
-  SkimForestReader(Int_t dataType);                       // Custom constructor
+  SkimForestReader();                                       // Default constructor
+  SkimForestReader(Int_t dataType, Int_t readMode);         // Custom constructor
   SkimForestReader(const SkimForestReader& in);             // Copy constructor
-  virtual ~SkimForestReader();                          // Destructor
+  virtual ~SkimForestReader();                              // Destructor
   SkimForestReader& operator=(const SkimForestReader& obj); // Equal sign operator
   
   // Methods

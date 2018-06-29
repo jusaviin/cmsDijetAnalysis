@@ -24,6 +24,9 @@ using namespace std;
 
 class ForestReader{
   
+protected:
+  static const Int_t fnMaxParticleFlowCandidates = 10000;        // Maximum number of particle flow candidat4es
+  
 public:
   
   // Possible data types to be read with the reader class
@@ -31,7 +34,7 @@ public:
   
   // Constructors and destructors
   ForestReader();                                   // Default constructor
-  ForestReader(Int_t dataType);                     // Custom constructor
+  ForestReader(Int_t dataType, Int_t readMode);     // Custom constructor
   ForestReader(const ForestReader& in);             // Copy constructor
   virtual ~ForestReader();                          // Destructor
   ForestReader& operator=(const ForestReader& obj); // Equal sign operator
@@ -104,6 +107,7 @@ protected:
   virtual void Initialize() = 0;  // Connect the branches to the tree
   
   Int_t fDataType;  // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
+  Int_t fReadMode;  // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;            // Branch for vertex z-position
@@ -146,6 +150,7 @@ protected:
   TBranch *fTrackEnergyHcalBranch;            // Branch for track energy in HCal
   
   // Branched for particle flow candidate tree
+  TBranch *nfParticleFlowCandidateBranch;     // Branch for the number of particle flow candidates, needed for PYTHIA8 forest
   TBranch *fParticleFlowCandidateIdBranch;    // Branch for particle flow candidate ID
   TBranch *fParticleFlowCandidatePtBranch;    // Branch for particle flow candidate pT
   TBranch *fParticleFlowCandidatePhiBranch;   // Branch for particle flow candidate phi
@@ -174,10 +179,15 @@ protected:
   Int_t fnTracks;  // Number of tracks
   
   // Leaves for the particle flow candidate tree
-  vector<int> *fParticleFlowCandidateIdArray;     // Vector for particle flow candidate ID:s
-  vector<float> *fParticleFlowCandidatePtArray;   // Vector for particle flow candidate pT:s
-  vector<float> *fParticleFlowCandidatePhiArray;  // Vector for particle flow candidate phis
-  vector<float> *fParticleFlowCandidateEtaArray;  // Vector for particle flow candidate etas
+  Int_t fnParticleFlowCandidates;                                      // For PYTHIA8 forest an array is needed instead of vector
+  Int_t fParticleFlowCandidateIdArray[fnMaxParticleFlowCandidates];    // For PYTHIA8 forest an array is needed instead of vector
+  Float_t fParticleFlowCandidatePtArray[fnMaxParticleFlowCandidates];  // For PYTHIA8 forest an array is needed instead of vector
+  Float_t fParticleFlowCandidatePhiArray[fnMaxParticleFlowCandidates]; // For PYTHIA8 forest an array is needed instead of vector
+  Float_t fParticleFlowCandidateEtaArray[fnMaxParticleFlowCandidates]; // For PYTHIA8 forest an array is needed instead of vector
+  vector<int> *fParticleFlowCandidateIdVector;                         // Vector for particle flow candidate ID:s
+  vector<float> *fParticleFlowCandidatePtVector;                       // Vector for particle flow candidate pT:s
+  vector<float> *fParticleFlowCandidatePhiVector;                      // Vector for particle flow candidate phis
+  vector<float> *fParticleFlowCandidateEtaVector;                      // Vector for particle flow candidate etas
 };
 
 #endif

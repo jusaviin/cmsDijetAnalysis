@@ -38,9 +38,10 @@ SkimForestReader::SkimForestReader() :
  *
  *  Arguments:
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
+ *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  */
-SkimForestReader::SkimForestReader(Int_t dataType) :
-  ForestReader(dataType),
+SkimForestReader::SkimForestReader(Int_t dataType, Int_t readMode) :
+  ForestReader(dataType,readMode),
   fEventTree(0),
   fJetPtArray(0),
   fJetPhiArray(0),
@@ -225,10 +226,10 @@ void SkimForestReader::Initialize(){
   fEventTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
   
   // Connect branches related to particle flow candidates
-  fEventTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdArray,&fParticleFlowCandidateIdBranch);
-  fEventTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtArray,&fParticleFlowCandidatePtBranch);
-  fEventTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiArray,&fParticleFlowCandidatePhiBranch);
-  fEventTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaArray,&fParticleFlowCandidateEtaBranch);
+  fEventTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdVector,&fParticleFlowCandidateIdBranch);
+  fEventTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtVector,&fParticleFlowCandidatePtBranch);
+  fEventTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiVector,&fParticleFlowCandidatePhiBranch);
+  fEventTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaVector,&fParticleFlowCandidateEtaBranch);
 }
 
 /*

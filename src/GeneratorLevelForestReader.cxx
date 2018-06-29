@@ -31,9 +31,10 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
  *
  *  Arguments:
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
+ *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  */
-GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType) :
-  ForestReader(dataType),
+GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode) :
+  ForestReader(dataType,readMode),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -136,7 +137,11 @@ void GeneratorLevelForestReader::Initialize(){
   if(fDataType == kPp){ // pp data
     fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
-    fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    if(fReadMode == 0){
+      fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
+    } else {
+      fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
+    }
   } else if (fDataType == kPbPb){ // PbPb
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPbMC){
@@ -175,7 +180,7 @@ void GeneratorLevelForestReader::Initialize(){
   fTrackTree->SetBranchAddress("eta",&fTrackEtaArray,&fTrackEtaBranch);
   fTrackTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch);  // Reuse a branch from ForestReader that is not otherwise needed here
   fTrackTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch);  // Reuse a branch from ForestReader that is not otherwise needed here
-  if(fDataType != kLocalTest) fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test
+  if(fDataType != kLocalTest && fReadMode == 0) fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test or PYTHIA8 forest
 
 }
 
@@ -282,7 +287,7 @@ Int_t GeneratorLevelForestReader::GetTrackSubevent(Int_t iTrack) const{
 
 // Getter for track subevent index
 Int_t GeneratorLevelForestReader::GetTrackMCStatus(Int_t iTrack) const{
-  if(fDataType == kLocalTest) return 1;
+  if(fDataType == kLocalTest || fReadMode == 1) return 1;
   return fTrackStatusArray->at(iTrack);
 }
 

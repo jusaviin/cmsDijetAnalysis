@@ -20,7 +20,7 @@ public:
   
   // Constructors and destructors
   GeneratorLevelSkimForestReader();                                   // Default constructor
-  GeneratorLevelSkimForestReader(Int_t dataType);                       // Custom constructor
+  GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode);     // Custom constructor
   GeneratorLevelSkimForestReader(const GeneratorLevelSkimForestReader& in);             // Copy constructor
   virtual ~GeneratorLevelSkimForestReader();                          // Destructor
   GeneratorLevelSkimForestReader& operator=(const GeneratorLevelSkimForestReader& obj); // Equal sign operator

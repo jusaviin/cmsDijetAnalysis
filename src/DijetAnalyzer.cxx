@@ -405,29 +405,30 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Select the reader for jets based on forest and MC correlation type
   fForestType = fCard->Get("ForestType");
+  fReadMode = fCard->Get("ReadMode");
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
-      jetReader = new GeneratorLevelSkimForestReader(fDataType);
+      jetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode);
     } else {
-      jetReader = new GeneratorLevelForestReader(fDataType);
+      jetReader = new GeneratorLevelForestReader(fDataType,fReadMode);
     }
   } else {
     if(fForestType == kSkimForest) {
-      jetReader = new SkimForestReader(fDataType);
+      jetReader = new SkimForestReader(fDataType,fReadMode);
     } else {
-      jetReader = new HighForestReader(fDataType);
+      jetReader = new HighForestReader(fDataType,fReadMode);
     }
   }
   
   // Select the reader for tracks based on forest and MC correlation type
   if(fMcCorrelationType == kRecoGen && fForestType == kSkimForest){
-    trackReader = new GeneratorLevelSkimForestReader(fDataType);
+    trackReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode);
   } else if(fMcCorrelationType == kRecoGen){
-    trackReader = new GeneratorLevelForestReader(fDataType);
+    trackReader = new GeneratorLevelForestReader(fDataType,fReadMode);
   } else if (fMcCorrelationType == kGenReco && fForestType == kSkimForest){
-    trackReader = new SkimForestReader(fDataType);
+    trackReader = new SkimForestReader(fDataType,fReadMode);
   } else if (fMcCorrelationType == kGenReco){
-    trackReader = new HighForestReader(fDataType);
+    trackReader = new HighForestReader(fDataType,fReadMode);
   } else {
     trackReader = jetReader;
   }
@@ -435,18 +436,18 @@ void DijetAnalyzer::RunAnalysis(){
   // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
   if(mixEvents){
     if(fDataType == ForestReader::kPbPb){
-      mixedEventReader = new SkimForestReader(fDataType);
+      mixedEventReader = new SkimForestReader(fDataType,fReadMode);
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
       if(fForestType == kSkimForest) {
-        mixedEventReader = new GeneratorLevelSkimForestReader(fDataType);
+        mixedEventReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode);
       } else {
-        mixedEventReader = new GeneratorLevelForestReader(fDataType);
+        mixedEventReader = new GeneratorLevelForestReader(fDataType,fReadMode);
       }
     } else {
       if(fForestType == kSkimForest) {
-        mixedEventReader = new SkimForestReader(fDataType);
+        mixedEventReader = new SkimForestReader(fDataType,fReadMode);
       } else {
-        mixedEventReader = new HighForestReader(fDataType);
+        mixedEventReader = new HighForestReader(fDataType,fReadMode);
       }
     }
   }
@@ -1018,13 +1019,34 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   }
   
   // Cross sections for each bin are given in the twiki https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiForest2015
-  Double_t crossSections[nBins+1] = {2.403,3.378e-2,3.778e-3,4.423e-4,6.147e-5,1.018e-5,2.477e-6,6.160e-7,1.088e-7,2.537e-8};
+  //                        pT hat =    15       30       50       80       120      170      220      280      370     460
+  Double_t crossSections[nBins+1] = {5.335e-1,3.378e-2,3.778e-3,4.423e-4,6.147e-5,1.018e-5,2.477e-6,6.160e-7,1.088e-7,2.537e-8}; // PYTHIA6 tune Z2
   
-  // Number of events for different pT hat bins in the forest file list ppMC_Pythia6_forest_5TeV.txt
-  Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};
+  // Different cross sections for PYTHIA8
+  if(fReadMode == 1){
+    //                               pT hat =    15       30       50       80       120      170      220      280      370     460
+    Double_t pythia8CrossSections[nBins+1] = {5.269e-1,3.455e-2,4.068e-3,4.959e-4,7.096e-5,1.223e-5,3.031e-6,7.746e-7,1.410e-7,3.216e-8}; // PYTHIA8 tune CUETP8M1
+    for(int iCrossSection = 0; iCrossSection < nBins+1; iCrossSection++){
+      crossSections[iCrossSection] = pythia8CrossSections[iCrossSection];
+    }
+  }
+  
+  // Number of events for different pT hat bins in the high forest files
+  //  pT hat =            15 30     50     80     120    170    220    280    370   460
+  Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};  // File list ppMC_Pythia6_forest_5TeV.txt
+  
+  // Different number of events for PYTHIA8
+  if(fReadMode == 1){
+    //  pT hat =               15 30 50 80    120     170    220    280    370     460
+    Int_t pythia8Events[nBins] = {0,0,0,1704437,1063981,833592,953778,1083837,183494};  // File list officialPythia8Forest5TeV.txt
+    for(int iPtHatBin = 0; iPtHatBin < nBins; iPtHatBin++){
+      ppMcEvents[iPtHatBin] = pythia8Events[iPtHatBin];
+    }
+  }
   
   // Event numbers change a bit in skims, since pT files for pT hat bin 30 are cut out. These numbers are good for list mergedSkimPpPythia5TeV.txt
   if(fForestType == kSkimForest){
+    //  pT hat =             15 30 50   80     120     170   220    280    370   460
     Int_t skimEvents[nBins] = {0,0,272976,377670,467966,447818,259188,234443,39272};
     for(Int_t i = 0; i < nBins; i++){
       ppMcEvents[i] = skimEvents[i];
