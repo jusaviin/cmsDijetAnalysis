@@ -1023,7 +1023,7 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   Double_t crossSections[nBins+1] = {5.335e-1,3.378e-2,3.778e-3,4.423e-4,6.147e-5,1.018e-5,2.477e-6,6.160e-7,1.088e-7,2.537e-8}; // PYTHIA6 tune Z2
   
   // Different cross sections for PYTHIA8
-  if(fReadMode == 1){
+  if(fReadMode == 1 || fReadMode == 2){
     //                               pT hat =    15       30       50       80       120      170      220      280      370     460
     Double_t pythia8CrossSections[nBins+1] = {5.269e-1,3.455e-2,4.068e-3,4.959e-4,7.096e-5,1.223e-5,3.031e-6,7.746e-7,1.410e-7,3.216e-8}; // PYTHIA8 tune CUETP8M1
     for(int iCrossSection = 0; iCrossSection < nBins+1; iCrossSection++){
@@ -1041,6 +1041,15 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
     Int_t pythia8Events[nBins] = {0,0,0,1704437,1063981,833592,953778,1083837,183494};  // File list officialPythia8Forest5TeV.txt
     for(int iPtHatBin = 0; iPtHatBin < nBins; iPtHatBin++){
       ppMcEvents[iPtHatBin] = pythia8Events[iPtHatBin];
+    }
+  }
+  
+  // Different number of events for PYTHIA8 made by Dhanush
+  if(fReadMode == 2){
+    //  pT hat =               15 30 50    80     120    170    220    280   370  460
+    Int_t pythia8Events2[nBins] = {0,0,175666,305545,258399,189794,196579,54724,9359};  // File list Pythia8_ak4Calo_5TeV.txt
+    for(int iPtHatBin = 0; iPtHatBin < nBins; iPtHatBin++){
+      ppMcEvents[iPtHatBin] = pythia8Events2[iPtHatBin];
     }
   }
   

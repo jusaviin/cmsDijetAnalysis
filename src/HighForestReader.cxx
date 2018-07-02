@@ -214,7 +214,7 @@ void HighForestReader::Initialize(){
   if(fDataType == kPp){ // pp data
     fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
-    if(fReadMode == 0){
+    if(fReadMode == 0 || fReadMode == 2){
       fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
     } else {
       fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
@@ -270,7 +270,7 @@ void HighForestReader::Initialize(){
   fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
   
   // Connect the branches to the particle flow candidate tree
-  if(fReadMode == 0){ // Regular forests have vectors for particle flow candidate tree
+  if(fReadMode == 0 || fReadMode == 2){ // Regular forests have vectors for particle flow candidate tree
     fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdVector,&fParticleFlowCandidateIdBranch);
     fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtVector,&fParticleFlowCandidatePtBranch);
     fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiVector,&fParticleFlowCandidatePhiBranch);

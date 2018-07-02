@@ -137,7 +137,7 @@ void GeneratorLevelForestReader::Initialize(){
   if(fDataType == kPp){ // pp data
     fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
-    if(fReadMode == 0){
+    if(fReadMode == 0 || fReadMode == 2){
       fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
     } else {
       fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
@@ -285,9 +285,9 @@ Int_t GeneratorLevelForestReader::GetTrackSubevent(Int_t iTrack) const{
   return fTrackSubeventArray->at(iTrack);
 }
 
-// Getter for track subevent index
+// Getter for track MC status
 Int_t GeneratorLevelForestReader::GetTrackMCStatus(Int_t iTrack) const{
-  if(fDataType == kLocalTest || fReadMode == 1) return 1;
+  if(fDataType == kLocalTest || fReadMode == 1 || fReadMode == 2) return 1;
   return fTrackStatusArray->at(iTrack);
 }
 
