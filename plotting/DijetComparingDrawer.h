@@ -81,6 +81,9 @@ public:
   void SetDrawBackgroundSubtracted(const bool drawOrNot);   // Setter for drawing background subtracted jet-track correlation histograms
   void SetDrawBackground(const bool drawOrNot);             // Setter for drawing the generated background distributions
   
+  // Setter for drawing the event mixing check
+  void SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom);  // Setter for drawing the event mixing check 
+  
   // Setters for figure saving and logarithmic axes
   void SetSaveFigures(const bool saveOrNot, const char *format);  // Setter for saving the figures to a file
   void SetLogPt(const bool isLog);          // Setter for logarithmic pT axis
@@ -140,6 +143,7 @@ private:
   bool fDrawJetTrackDeltaEta;                     // Draw the jet-track deltaEta correlation
   bool fDrawJetTrackDeltaEtaDeltaPhi;             // Draw the jet-track deltaEta-deltaPhi correlation
   bool fDrawJetShape[DijetHistogramManager::knJetShapeTypes];            // Draw the jet shape histograms
+  bool fDrawEventMixingCheck;                     // Draw the event mixing check histograms
   
   // Choose if you want to write the figures to pdf file
   bool fSaveFigures;           // Flag for saving the figures to file
@@ -157,6 +161,7 @@ private:
   double fRatioZoomMin;    // Lower y-axis boundary in ratio plots
   double fRatioZoomMax;    // Upper y-axis boundary in ratio plots
   TString fRatioLabel;     // Label given to ratio plots y-axes
+  bool fEventMixingZoom;   // Zoom closer to background region for event mixing check figures
   
   // Plotting style for 2D and 3D plots
   int fColorPalette;      // Used color palatte for drawing
@@ -177,6 +182,7 @@ private:
   void DrawTrackHistograms();     // Draw track histograms
   void DrawJetTrackCorrelationHistograms(); // Draw jet-track correlation histograms
   void DrawJetShapeHistograms();  // Draw jet shape histograms
+  void DrawEventMixingCheck();  // Draw different deltaEta regions in deltaPhi histograms to the same figure to ensure event mixing gives good background
   void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
   void PrepareRatio(TString name, int rebin, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0); // Prepare the ratio histograms out of input histograms

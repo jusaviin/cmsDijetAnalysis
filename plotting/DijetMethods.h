@@ -32,6 +32,8 @@ public:
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground); // Subtract background from a two-dimensional leading histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
+  TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
+  TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   
   // Getters for produces distributions
   TH2D* GetBackground() const;        // Getter for the most recent background distribution used to subtract the background
@@ -45,6 +47,7 @@ public:
   
   // Setters for background subtraction configuration
   void SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta); // Setter for background deltaEta region
+  void SetSignalDeltaEtaRegion(const double maxDeltaEta);                               // Setter for signal deltaEta region
   
   // Setters for jet shape calculation configuration
   void SetJetShapeBinEdges(const int nBins, double *binBorders); // Setter for R-binning for jet shape histograms
@@ -72,6 +75,11 @@ private:
   double fMaxBackgroundDeltaEta;  // Maximum deltaEta for background subtraction region
   
   // =============================================
+  // ============ DeltaPhi projections ===========
+  // =============================================
+  double fMaxSignalDeltaEta;      // Maximum deltaEta value accepted for the signal region
+  
+  // =============================================
   // =========== Jet shape calculation ===========
   // =============================================
   
@@ -91,7 +99,7 @@ private:
   
   // Private methods
   double GetMixedEventScale(TH2D* mixedEventHistogram); // Find the normalization scale for the mixed event histogram
-  TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+  TH1D* ProjectRegionDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
   void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
   bool CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis); // Checker that new bin boundaries correspond to old ones
   int CheckNormalizationSanity(const int normalizationType, const int maxIndex); // Sanity check for input normalizations

@@ -13,6 +13,7 @@ DijetMethods::DijetMethods() :
   fMixedEventNormalizationMethod(kSingle),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
+  fMaxSignalDeltaEta(1.0),
   fJetShapeNormalizationMethod(kBinWidth),
   fnRBins(0),
   fnRebinDeltaEta(0),
@@ -38,6 +39,7 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fBackgroundOverlap(in.fBackgroundOverlap),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
   fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta),
+  fMaxSignalDeltaEta(in.fMaxSignalDeltaEta),
   fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
   fhJetShapeCounts(in.fhJetShapeCounts),
   fhJetShapeBinMap(in.fhJetShapeBinMap)
@@ -62,6 +64,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fBackgroundOverlap = in.fBackgroundOverlap;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
   fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
+  fMaxSignalDeltaEta = in.fMaxSignalDeltaEta;
   fJetShapeNormalizationMethod = in.fJetShapeNormalizationMethod;
   fhJetShapeCounts = in.fhJetShapeCounts;
   fhJetShapeBinMap = in.fhJetShapeBinMap;
@@ -93,10 +96,6 @@ DijetMethods::~DijetMethods()
  * is taken from these. This is done to ensure that the normalization is the same, because both
  * leading and subleading distributions are needed for the background subrtaction.
  *
- *  TODO: There is some smoothening of the mixed event distribution by taking average of
- *        different sides of deltaEta to suppress fluctuations on edges in Hallie's code.
- *        See if something like this needs to be implemented here.
- *
  * Arguments:
  *  TH2D* sameEventHistogram = Histogram with correlation from the same event
  *  TH2D* leadingMixedEventHistogram = Leading jet-mixed event track histogram
@@ -105,7 +104,7 @@ DijetMethods::~DijetMethods()
  *  return: Corrected same event histogram
  */
 TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram){
-  
+
   // Clone the same event histogram for correction
   char newName[100];
   sprintf(newName,"%sCorrected",sameEventHistogram->GetName());
@@ -117,7 +116,7 @@ TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMix
   double averageScale = (leadingScale+subleadingScale)/2.0;
   double normalizationScale = leadingScale;
   if(fMixedEventNormalizationMethod == kAverage) normalizationScale = averageScale;
-  
+
   // Normalize the mixed event histogram and do the correction
   leadingMixedEventHistogram->Scale(1.0/normalizationScale);
   correctedHistogram->Divide(leadingMixedEventHistogram);
@@ -269,32 +268,68 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
  *
  *  Arguments:
  *   TH2D* deltaPhiDeltaEtaHistogram = two-dimensional deltaPhi-deltaEta distribution
+ *   const double minDeltaEta = Minimum deltaEta value for the projected region
+ *   const double maxDeltaEta = Maximum deltaEta value for the projected region
+ *   const char* newName = Name that is added to the projected histogram
+ *
+ *   return: DeltaPhi distribution projected from the input deltaEta region
+ */
+TH1D* DijetMethods::ProjectRegionDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName){
+  
+  // If the minimum is zero, do the projection from -maxDeltaEta to maxDeltaEta
+  bool oneRegion = (minDeltaEta < 0.01);
+  
+  // Start by finding the bin indices for the defined deltaEta region
+  // Apply a little offset for the defined eta region borders to avoid bin border effects
+  int lowNegativeDeltaEtaBin  = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(-maxDeltaEta+0.0001);
+  int highNegativeDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(-minDeltaEta-0.0001);
+  int lowPositiveDeltaEtaBin  = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(minDeltaEta+0.0001);
+  int highPositiveDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(maxDeltaEta-0.0001);
+  
+  // Calculate the number of deltaEta bins in the background region
+  int nBinsBackgroundRegion = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
+  if(oneRegion) nBinsBackgroundRegion = nBinsBackgroundRegion-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
+  
+  // Project out the deltaPhi distribution in the background
+  char histogramName[200];
+  sprintf(histogramName,"%s%s",deltaPhiDeltaEtaHistogram->GetName(),newName);
+  TH1D *projectedDeltaPhi;
+  if(oneRegion) {
+    projectedDeltaPhi = deltaPhiDeltaEtaHistogram->ProjectionX(histogramName,lowNegativeDeltaEtaBin,highPositiveDeltaEtaBin);
+  } else {
+    projectedDeltaPhi = deltaPhiDeltaEtaHistogram->ProjectionX(histogramName,lowNegativeDeltaEtaBin,highNegativeDeltaEtaBin);
+    projectedDeltaPhi->Add(deltaPhiDeltaEtaHistogram->ProjectionX("dummyName",lowPositiveDeltaEtaBin,highPositiveDeltaEtaBin));
+  }
+  
+  // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over to retain normalization
+  projectedDeltaPhi->Scale(1.0/nBinsBackgroundRegion);
+  
+  // Return the scaled projection
+  return projectedDeltaPhi;
+}
+
+/*
+ * Project the background deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+ *
+ *  Arguments:
+ *   TH2D* deltaPhiDeltaEtaHistogram = two-dimensional deltaPhi-deltaEta distribution
  *
  *   return: DeltaPhi distribution projected from the background deltaEta region
  */
 TH1D* DijetMethods::ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
-  
-  // Start by finding the bin indices for the defined deltaEta region
-  // Apply a little offset for the defined eta region borders to avoid bin border effects
-  int lowNegativeDeltaEtaBin  = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(-fMaxBackgroundDeltaEta+0.0001);
-  int highNegativeDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(-fMinBackgroundDeltaEta-0.0001);
-  int lowPositiveDeltaEtaBin  = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(fMinBackgroundDeltaEta+0.0001);
-  int highPositiveDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(fMaxBackgroundDeltaEta-0.0001);
-  
-  // Calculate the number of deltaEta bins in the background region
-  int nBinsBackgroundRegion = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
-  
-  // Project out the deltaPhi distribution in the background
-  char histogramName[200];
-  sprintf(histogramName,"%sBackgroundDeltaPhi",deltaPhiDeltaEtaHistogram->GetName());
-  TH1D *backgroundDeltaPhi = deltaPhiDeltaEtaHistogram->ProjectionX(histogramName,lowNegativeDeltaEtaBin,highNegativeDeltaEtaBin);
-  backgroundDeltaPhi->Add(deltaPhiDeltaEtaHistogram->ProjectionX("dummyName",lowPositiveDeltaEtaBin,highPositiveDeltaEtaBin));
-  
-  // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over to retain normalization
-  backgroundDeltaPhi->Scale(1.0/nBinsBackgroundRegion);
-  
-  // Return the scaled projection
-  return backgroundDeltaPhi;
+  return ProjectRegionDeltaPhi(deltaPhiDeltaEtaHistogram,fMinBackgroundDeltaEta,fMaxBackgroundDeltaEta,"BackgroundDeltaPhi");
+}
+
+/*
+ * Project the signal deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+ *
+ *  Arguments:
+ *   TH2D* deltaPhiDeltaEtaHistogram = two-dimensional deltaPhi-deltaEta distribution
+ *
+ *   return: DeltaPhi distribution projected from the signal deltaEta region
+ */
+TH1D* DijetMethods::ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
+  return ProjectRegionDeltaPhi(deltaPhiDeltaEtaHistogram,0,fMaxSignalDeltaEta,"SignalDeltaPhi");
 }
 
 /*
@@ -555,6 +590,11 @@ void DijetMethods::SetBackgroundDeltaEtaRegion(const double minDeltaEta, const d
     fMinBackgroundDeltaEta = maxDeltaEta;
     fMaxBackgroundDeltaEta = minDeltaEta;
   }
+}
+
+// Setter for signal deltaEta region
+void DijetMethods::SetSignalDeltaEtaRegion(const double maxDeltaEta){
+  fMaxSignalDeltaEta = maxDeltaEta;
 }
 
 // Setter for new bin borders

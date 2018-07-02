@@ -20,6 +20,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fDrawJetTrackDeltaPhi(false),
   fDrawJetTrackDeltaEta(false),
   fDrawJetTrackDeltaEtaDeltaPhi(false),
+  fDrawEventMixingCheck(false),
   fSaveFigures(false),
   fFigureFormat("pdf"),
   fApplyScaling(false),
@@ -29,6 +30,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fRatioZoomMin(0.6),
   fRatioZoomMax(1.4),
   fRatioLabel(""),
+  fEventMixingZoom(false),
   fColorPalette(kRainBow),
   fStyle2D("colz"),
   fStyle3D("surf1"),
@@ -101,6 +103,9 @@ void DijetComparingDrawer::DrawHistograms(){
   
   // Draw the jet shape histograms
   DrawJetShapeHistograms();
+  
+  // Draw the event mixing check
+  DrawEventMixingCheck();
   
 }
 
@@ -327,6 +332,91 @@ void DijetComparingDrawer::DrawTrackHistograms(){
 }
 
 /*
+ * Draw different deltaEta regions in mixed event corrected deltaPhi histograms to the same figure to ensure event mixing gives good background
+ */
+void DijetComparingDrawer::DrawEventMixingCheck(){
+  
+  // Only draw is selected to do so
+  if(!fDrawEventMixingCheck) return;
+  
+  // Legend helper variable
+  TLegend *legend;
+  
+  // Zooming scale
+  double zoomRegion;
+  
+  // Helper variables for centrality naming in figures
+  TString centralityString;
+  TString compactCentralityString;
+  TString trackPtString;
+  TString compactTrackPtString;
+  char namerX[100];
+  
+  // For the event mixing check, there will be one added histogram
+  fnAddedHistograms = 1;
+  
+  // Loop over jet-track correlation categories
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+    
+    // Loop over centrality
+    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+      
+      centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      
+      // Loop over track pT bins
+      for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
+        
+        // Set the correct track pT bins
+        trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString.ReplaceAll(".","v");
+        
+        // Set up the histograms and draw them to the upper pad of a split canvas
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
+        fMainHistogram->Scale(1.0/fBaseHistograms->GetNDijets());       // Normalize with the number of dijets
+        fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
+        if(fEventMixingZoom){
+          zoomRegion = 0.05;
+          if(iTrackPt > 2) zoomRegion = 0.006;
+          fMainHistogram->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
+        }
+
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
+        fComparisonHistogram[0]->Scale(1.0/fBaseHistograms->GetNDijets());  // Normalize with the number of dijets
+        fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
+        if(fEventMixingZoom) fComparisonHistogram[0]->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
+
+        sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
+        DrawToUpperPad(namerX,"#frac{1}{N_{jets}}  #frac{dN}{d#Delta#varphi}");
+        
+        // Setup a legend to the plot
+        legend = new TLegend(0.22,0.71,0.5,0.91);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+        if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
+        legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
+        legend->AddEntry(fMainHistogram,"#||{#Delta#eta} < 1.0","l");
+        legend->AddEntry(fComparisonHistogram[0],"1.5 < #||{#Delta#eta} < 2.5","l");
+        legend->Draw();
+        
+        // Prepare the ratio and draw it to the lower pad
+        fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+        DrawToLowerPad(namerX,"#frac{#||{#Delta#eta} < 1.0}{1.5 < #||{#Delta#eta} < 2.5}");
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sMixedEventCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+        if(fEventMixingZoom) sprintf(namerX,"%sMixedEventCheckZoom",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+        SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+        
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track category loop
+  
+}
+
+/*
  * Drawer for track jet correlation histograms TODO: Implementation
  */
 void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
@@ -491,6 +581,9 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
  */
 void DijetComparingDrawer::DrawJetShapeHistograms(){
   
+  // Only draw the jet shape comparison if chosen to do so
+  if(!fDrawJetShape[DijetHistogramManager::kJetShape]) return;
+  
   // Legend helper variables
   TLegend *legend;
   double legendX1;
@@ -510,6 +603,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   const int nTrackPtBins = fBaseHistograms->GetNTrackPtBins();
   TH1D *comparisonHistograms[nTrackPtBins];
   TH1D *sumHistogram;
+  TH1D *dijetSumHistogram;
   TH1D *helperHistogram;
   
   // Find the histograms to compare with from the comparison file
@@ -534,6 +628,9 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
     comparisonHistograms[iTrackPt]->Scale(1.0/jetShapeIntegral);
   }
+  
+  // Scale the sum histogram
+  sumHistogram->Scale(1.0/jetShapeIntegral);
   
   // For the jet shape, there will be one added histogram
   fnAddedHistograms = 1;
@@ -569,6 +666,13 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
           fMainHistogram->SetBinError(iBin,helperHistogram->GetBinError(iBin));
         }
         
+        // Create a sum histogram for the jet shape from dijet analysis
+        if(iTrackPt == fFirstDrawnTrackPtBin){
+          dijetSumHistogram = (TH1D*) fMainHistogram->Clone(Form("dijetSum%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        } else {
+          dijetSumHistogram->Add(fMainHistogram);
+        }
+        
         DrawToUpperPad(namerX,namerY,fLogJetShape);
         
         // Setup a legend to the plot
@@ -590,6 +694,43 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         SaveFigure(namerX,compactCentralityString,compactTrackPtString);
         
       } // Track pT loop
+      
+      // Draw the histogram for pT summed jet shape
+      
+      // Set the correct track pT bins
+      trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(fFirstDrawnTrackPtBin),fBaseHistograms->GetTrackPtBinBorder(fLastDrawnTrackPtBin+1));
+      compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(fFirstDrawnTrackPtBin),fBaseHistograms->GetTrackPtBinBorder(fLastDrawnTrackPtBin+1));
+      compactTrackPtString.ReplaceAll(".","v");
+      
+      // Setup legend position and axis names
+      legendX1 = 0.48; legendY1 = 0.68; legendX2 = 0.82; legendY2 = 0.93;
+      sprintf(namerX,"#DeltaR");
+      sprintf(namerY,"%s",fBaseHistograms->GetJetShapeAxisName(DijetHistogramManager::kJetShape));
+      
+      // Setup the main histogram and comparison histogram and draw them
+      fMainHistogram = dijetSumHistogram;
+      fComparisonHistogram[0] = sumHistogram;
+      
+      DrawToUpperPad(namerX,namerY,fLogJetShape);
+      
+      // Setup a legend to the plot
+      legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
+      legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
+      legend->AddEntry(fMainHistogram,"Leading jet","l");
+      legend->AddEntry(fComparisonHistogram[0],"Inclusive","l");
+      legend->Draw();
+      
+      // Prepare the ratio and draw it to the lower pad
+      fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("jetShapeRatio%d%d",iJetTrack,iCentrality));
+      fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+      DrawToLowerPad(namerX,fRatioLabel.Data());
+      
+      // Save the figure to a file
+      sprintf(namerX,"%s%sRatio",fBaseHistograms->GetJetTrackHistogramName(iJetTrack),fBaseHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape));
+      SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+      
     } // Centrality loop
   } // Jet-track correlation category loop
   
@@ -885,6 +1026,12 @@ void DijetComparingDrawer::SetDrawBackgroundSubtracted(const bool drawOrNot){
 // Setter for drawing the generated background distributions
 void DijetComparingDrawer::SetDrawBackground(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kBackground] = drawOrNot;
+}
+
+// Setter for drawing the event mixing check
+void DijetComparingDrawer::SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom){
+  fDrawEventMixingCheck = drawOrNot;
+  fEventMixingZoom = zoom;
 }
 
 // Setter for saving the figures to a file

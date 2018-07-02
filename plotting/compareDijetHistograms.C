@@ -24,10 +24,12 @@ void compareDijetHistograms(){
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
-  bool drawTrackSubleadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawTrackSubleadingJetCorrelations = true;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
+  
+  bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations);
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
@@ -35,7 +37,7 @@ void compareDijetHistograms(){
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
+  bool drawJetShape = false;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
@@ -48,6 +50,10 @@ void compareDijetHistograms(){
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
   bool drawBackground = false;
+  
+  // Draw histograms to make a check on the validity of the event mixing method
+  bool drawEventMixingCheck = true;
+  bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = true;
@@ -64,8 +70,8 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.8;
-  double maxZoom = 1.2;
+  double minZoom = 0.4;
+  double maxZoom = 1.6;
   TString ratioLabel = "#frac{Leading jet}{Inclusive}";
   
   // Scaling for histograms
@@ -111,7 +117,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-06-21.root"};
+  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_2018-06-21.root"};
   //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
   //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
@@ -125,6 +131,9 @@ void compareDijetHistograms(){
   //  "data/PbPbMC_RecoReco_noMixing_Skims_2018-06-14.root" "data/PbPbMC_GenGen_noMixing_Skims_2018-06-14.root"
   //  "data/PbPbMC_RecoGen_noMixing_Skims_2018-06-14.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_KurtsSkims_2018-06-18_part1.root"  "data/dijet_ppMC_RecoGen_noMixing_KurtsSkims_2018-06-18_part1.root"
+  //  "data/dijet_pp_highForest_processed_noBinAreaWeight_2018-06-21.root" "dijet_pp_highForest_2018-06-21.root"
+  //  "data/dijet_pp_highForest_processed_2018-06-21.root"
+  //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -171,11 +180,12 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetLoadAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
     histograms[iDataset]->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
     histograms[iDataset]->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
+    histograms[iDataset]->SetLoad2DHistograms(enable2Dhistograms);
     
     // Set the binning information
-    histograms[iDataset]->SetCentralityBins(centralityBinBorders,false);
-    histograms[iDataset]->SetTrackPtBins(trackPtBinBorders,false);
-    histograms[iDataset]->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,false);
+    histograms[iDataset]->SetCentralityBins(centralityBinBorders);
+    histograms[iDataset]->SetTrackPtBins(trackPtBinBorders);
+    histograms[iDataset]->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
     histograms[iDataset]->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
     histograms[iDataset]->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
     
@@ -183,7 +193,9 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetDijetMethods(methods);
     
     // Process and draw the selected histograms
-    histograms[iDataset]->LoadProcessedHistograms();
+    histograms[iDataset]->LoadHistograms();
+    histograms[iDataset]->ProcessHistograms();
+    //histograms[iDataset]->LoadProcessedHistograms();
 
   } // Loop over datasets
 
@@ -200,6 +212,7 @@ void compareDijetHistograms(){
   drawer->SetDrawJetTrackDeltas(drawJetTrackDeltaPhi,drawJetTrackDeltaEta,drawJetTrackDeltaEtaDeltaPhi);
   drawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeCounts);
   drawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);
+  drawer->SetDrawEventMixingCheck(drawEventMixingCheck,eventMixingZoom);
   drawer->SetSaveFigures(saveFigures,figureFormat);
   drawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   drawer->SetDrawingStyles(colorPalette,style2D,style3D);

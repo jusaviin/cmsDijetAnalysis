@@ -8,6 +8,7 @@ McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
 
 # Specify the forest type in the selected data files and choose forest readers based on this
 ForestType 0 # 0 = High Forest, 1 = Skim Forest
+ReadMode 0   # 0 = Regular forest, 1 = PYTHIA8 forest
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
 FilledHistograms 63 # Bit 0 = Event information histograms      (to set: 1)

@@ -114,8 +114,12 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
         
         // Loop over track pT bins
         for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
-          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt] = NULL;         // DeltaPhi between jet and track
-          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt] = NULL; // DeltaEta and deltaPhi between jet and track
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt] = NULL;      // DeltaEta and deltaPhi between jet and track
+          
+          // Loop over deltaEta bins
+          for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
+            fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt][iDeltaEta] = NULL; // DeltaPhi between jet and track
+          }
           
           // Loop over deltaPhi bins
           for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
@@ -227,8 +231,12 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
         
         // Loop over track pT bins
         for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
-          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt] = in.fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt];         // DeltaPhi between jet and track
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt] = in.fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt]; // DeltaEta and deltaPhi between jet and track
+          
+          // Loop over deltaEta bins
+          for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
+            fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt][iDeltaEta] = in.fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iTrackPt][iDeltaEta];         // DeltaPhi between jet and track
+          }
           
           // Loop over deltaPhi bins
           for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
@@ -286,10 +294,10 @@ void DijetHistogramManager::DoMixedEventCorrection(){
 
         // Do the mixed event correction for leading jet-track correlation histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin]);
-        
+
         // Do the mixed event correction for subleading jet-track correlation histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
-        
+
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation category loop
@@ -332,9 +340,18 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
         // Project the deltaPhi and deltaEta histograms from the processed two-dimensional histograms
         for(int iCorrelationType = kCorrected; iCorrelationType < knCorrelationTypes; iCorrelationType++){
           
-          sprintf(histogramName,"%sDeltaPhiProjection",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName());
+          // DeltaPhi histogram over whole eta
+          sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kWholeEta);
           nBins = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetNbinsY();
-          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionX(histogramName,1,nBins)->Clone();  // Exclude underflow and overflow bins by specifying range
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionX(histogramName,1,nBins)->Clone();  // Exclude underflow and overflow bins by specifying range
+          
+          // DeltaPhi histogram over signal eta region
+          sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kSignalEtaRegion);
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kSignalEtaRegion] = (TH1D*)fMethods->ProjectSignalDeltaPhi(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin])->Clone();
+          
+          // DeltaPhi histogram over background eta region
+          sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kBackgroundEtaRegion);
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kBackgroundEtaRegion] = (TH1D*)fMethods->ProjectBackgroundDeltaPhi(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin])->Clone();
           
           for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
             sprintf(histogramName,"%sDeltaEtaProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),iDeltaPhi);
@@ -637,7 +654,7 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
           axisIndices[1] = 4; lowLimits[1] = lowerCentralityBin; highLimits[1] = higherCentralityBin;  // Centrality
           axisIndices[2] = 0; lowLimits[2] = lowerTrackPtBin;    highLimits[2] = higherTrackPtBin;     // Track pT
           
-          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram(fInputFile,fJetTrackHistogramNames[iJetTrack],1,3,axisIndices,lowLimits,highLimits);
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta] = FindHistogram(fInputFile,fJetTrackHistogramNames[iJetTrack],1,3,axisIndices,lowLimits,highLimits);
           if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fJetTrackHistogramNames[iJetTrack],1,2,3,axisIndices,lowLimits,highLimits);
           
           // DeltaPhi binning for deltaEta histogram
@@ -931,8 +948,12 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
           // Jet-track deltaPhi
-          sprintf(histogramNamer,"%sDeltaPhi%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->Write(histogramNamer);
+          for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
+           
+            if(iDeltaEta > kWholeEta && iCorrelationType < kCorrected) continue; // DeltaEta slicing not implemented for same and mixed event
+            sprintf(histogramNamer,"%sDeltaPhi%s%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta],iCentralityBin,iTrackPtBin);
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaEta]->Write(histogramNamer);
+          }
           
           // Jet-track deltaEtaDeltaPhi
           sprintf(histogramNamer,"%sDeltaEtaDeltaPhi%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
@@ -1120,8 +1141,13 @@ void DijetHistogramManager::LoadProcessedHistograms(){
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
           // Jet-track deltaPhi
-          sprintf(histogramNamer,"%s/%sDeltaPhi%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fInputFile->Get(histogramNamer);
+          for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
+            
+            if(iDeltaEta > kWholeEta && iCorrelationType < kCorrected) continue; // DeltaEta slicing not implemented for same and mixed event
+            
+            sprintf(histogramNamer,"%s/%sDeltaPhi%s%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta],iCentralityBin,iTrackPtBin);
+            fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaEta] = (TH1D*) fInputFile->Get(histogramNamer);
+          }
           
           // Jet-track deltaEtaDeltaPhi
           sprintf(histogramNamer,"%s/%sDeltaEtaDeltaPhi%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
@@ -1595,8 +1621,8 @@ TH2D* DijetHistogramManager::GetHistogramTrackEtaPhi(const int iTrackType, const
 // Getters for track-leading jet correlation histograms
 
 // Getter for deltaPhi between jet and track
-TH1D* DijetHistogramManager::GetHistogramJetTrackDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, const int iCentrality, const int iTrackPt) const{
-  return fhJetTrackDeltaPhi[iJetTrackCorrelation][iCorrelationType][iCentrality][iTrackPt];
+TH1D* DijetHistogramManager::GetHistogramJetTrackDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, const int iCentrality, const int iTrackPt, const int iDeltaEta) const{
+  return fhJetTrackDeltaPhi[iJetTrackCorrelation][iCorrelationType][iCentrality][iTrackPt][iDeltaEta];
 }
 
 // Getter for deltaEta between jet and track
@@ -1641,7 +1667,7 @@ TH1D* DijetHistogramManager::GetOneDimensionalHistogram(TString name, int bin1, 
   if(name.EqualTo("trackpt",TString::kIgnoreCase) || name.EqualTo("fhtrackpt",TString::kIgnoreCase)) return GetHistogramTrackPt(bin1,bin2,bin3);
   if(name.EqualTo("trackphi",TString::kIgnoreCase) || name.EqualTo("fhtrackphi",TString::kIgnoreCase)) return GetHistogramTrackPhi(bin1,bin2,bin3,bin4);
   if(name.EqualTo("tracketa",TString::kIgnoreCase) || name.EqualTo("fhtracketa",TString::kIgnoreCase)) return GetHistogramTrackEta(bin1,bin2,bin3,bin4);
-  if(name.EqualTo("jettrackdeltaphi",TString::kIgnoreCase) || name.EqualTo("fhjettrackdeltaphi",TString::kIgnoreCase)) return GetHistogramJetTrackDeltaPhi(bin1,bin2,bin3,bin4);
+  if(name.EqualTo("jettrackdeltaphi",TString::kIgnoreCase) || name.EqualTo("fhjettrackdeltaphi",TString::kIgnoreCase)) return GetHistogramJetTrackDeltaPhi(bin1,bin2,bin3,bin4,bin5);
   if(name.EqualTo("jettrackdeltaeta",TString::kIgnoreCase) || name.EqualTo("fhjettrackdeltaeta",TString::kIgnoreCase)) return GetHistogramJetTrackDeltaEta(bin1,bin2,bin3,bin4,bin5);
   if(name.EqualTo("jetshape",TString::kIgnoreCase) || name.EqualTo("fhjetshape",TString::kIgnoreCase)) return GetHistogramJetShape(bin1,bin2,bin3,bin4);
   return NULL;

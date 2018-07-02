@@ -38,6 +38,9 @@ public:
   // Indices for different deltaPhi bins
   enum enumDeltaPhiBins{kWholePhi, kNearSide, kAwaySide, kBetweenPeaks, knDeltaPhiBins};
   
+  // Indices for different deltaEta bins
+  enum enumDeltaEtaBins{kWholeEta, kSignalEtaRegion, kBackgroundEtaRegion, knDeltaEtaBins};
+  
   // Indices for different jet shape histograms
   enum enumJetShape{kJetShape, kJetShapeBinCount, knJetShapeTypes};
   
@@ -65,6 +68,10 @@ private:
   // Naming for jet shape histograms
   const char* fJetShapeHistogramName[knJetShapeTypes] = {"JetShape","JetShapeCounts"};
   const char* fJetShapeYAxisNames[knJetShapeTypes] = {"#rho(#DeltaR)","counts"};
+  
+  // Naming for deltaEta bins
+  const char* fDeltaEtaString[knDeltaEtaBins] = {"","Signal #Delta#eta","Background #Delta#eta"};
+  const char *fCompactDeltaEtaString[knDeltaEtaBins] = {"","_SignalDeltaEta","_BackgroundDeltaEta"};
   
 public:
   
@@ -174,7 +181,7 @@ public:
   TH2D* GetHistogramTrackEtaPhi(const int iTrackType, const int iCorrelationType, const int iCentrality, const int iTrackPt) const; // 2D eta-phi histogram for track
   
   // Getters for track-leading jet correlation histograms
-  TH1D* GetHistogramJetTrackDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, const int iCentrality, const int iTrackPt) const;                 // DeltaPhi between jet and track
+  TH1D* GetHistogramJetTrackDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, const int iCentrality, const int iTrackPt, const int iDeltaEta) const;  // DeltaPhi between jet and track
   TH1D* GetHistogramJetTrackDeltaEta(const int iJetTrackCorrelation, const int iCorrelationType, const int iCentrality, const int iTrackPt, const int iDeltaPhiRegion) const; // DeltaEta between jet and track
   TH2D* GetHistogramJetTrackDeltaEtaDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, const int iCentrality, const int iTrackPt) const;         // DeltaEta and deltaPhi between jet and track
   
@@ -271,7 +278,7 @@ private:
   TH2D *fhTrackEtaPhi[knTrackCategories][knCorrelationTypes][knCentralityBins][knTrackPtBins+1]; // 2D eta-phi histogram for track
   
   // Histograms for track-leading jet correlations
-  TH1D *fhJetTrackDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][knCentralityBins][knTrackPtBins];                 // DeltaPhi between jet and track
+  TH1D *fhJetTrackDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][knCentralityBins][knTrackPtBins][knDeltaEtaBins]; // DeltaPhi between jet and track
   TH1D *fhJetTrackDeltaEta[knJetTrackCorrelations][knCorrelationTypes][knCentralityBins][knTrackPtBins][knDeltaPhiBins]; // DeltaEta between jet and track
   TH2D *fhJetTrackDeltaEtaDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][knCentralityBins][knTrackPtBins];         // DeltaEta and deltaPhi between jet and track
   

@@ -517,7 +517,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
-            drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt);
+            drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
             drawnHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
             
             // Move legend to different place for leading jet background figures
@@ -542,7 +542,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // In case of background histogram, draw the background overlap to the same figure
             if(iCorrelationType == DijetHistogramManager::kBackground){
-              additionalHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundOverlap,iCentrality,iTrackPt);
+              additionalHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundOverlap,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
+              additionalHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
               additionalHistogram->SetLineColor(kRed);
               additionalHistogram->Draw("same");
             }

@@ -16,14 +16,18 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   // ==================================================================
   
   // Choose to either process or draw the histograms
-  int executionMode = 2; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
   
   // We do not need to set bin indices if we use processed histograms
   bool setIndices = true;
   if(executionMode == 2) setIndices = false;
   
+  // If we write a file, define the output name and write mode
+  const char* outputFileName = "data/dijet_pp_highForest_processed_noBinAreaWeight_2018-06-21.root";
+  const char* fileWriteMode = "UPDATE";
+  
   // Choose which figure sets to draw
-  bool drawEventInformation = false;
+  bool drawEventInformation = true;
   bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
@@ -172,7 +176,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   if(executionMode == 0){
     histograms->LoadHistograms();
     histograms->ProcessHistograms();
-    histograms->Write("data/dijet_pp_highForest_processed_2018-06-21.root","UPDATE");
+    histograms->Write(outputFileName,fileWriteMode);
     return;
   }
   
