@@ -27,7 +27,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   const char* fileWriteMode = "UPDATE";
   
   // Choose which figure sets to draw
-  bool drawEventInformation = true;
+  bool drawEventInformation = false;
   bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
@@ -38,18 +38,18 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
-  bool drawTrackSubleadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawTrackSubleadingJetCorrelations = true;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = true;
-  bool drawJetTrackDeltaEta = true;
-  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
+  bool drawJetShape = false;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
@@ -61,7 +61,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = false;
+  bool drawBackground = true;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = true;

@@ -150,7 +150,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       legend->Draw();
       
       // Draw the ratios to the lower portion of the split canvas
-      DrawToLowerPad(namerX,fRatioLabel.Data());
+      DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
       
       // Save the figure to a file
       sprintf(namerX,"%sPtRatio",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
@@ -171,7 +171,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       legend->Draw();
       
       // Draw the ratios to the lower portion of the split canvas
-      DrawToLowerPad(namerX,fRatioLabel.Data());
+      DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
       
       // Save the figure to a file
       sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -192,7 +192,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       legend->Draw();
 
       // Draw the ratios to the lower portion of the split canvas
-      DrawToLowerPad(namerX,fRatioLabel.Data());
+      DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
       
       // Save the figure to a file
       sprintf(namerX,"%sEtaRatio",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
@@ -249,7 +249,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
         
         // Draw the ratios to the lower portion of the split canvas
         fDrawer->SetGridY(true);
-        DrawToLowerPad(namerX,fRatioLabel.Data());
+        DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
         fDrawer->SetGridY(false);
         
         // Save the figure to a file
@@ -288,7 +288,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           legend->Draw();
 
           // Draw the ratios to the lower portion of the split canvas
-          DrawToLowerPad(namerX,fRatioLabel.Data());
+          DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
           
           // Save the figure to a file
           sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));
@@ -319,7 +319,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           legend->Draw();
 
           // Draw the ratios to the lower portion of the split canvas
-          DrawToLowerPad(namerX,fRatioLabel.Data());
+          DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
           
           // Save the figure to a file
           sprintf(namerX,"%sEtaRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));
@@ -344,13 +344,16 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   
   // Zooming scale
   double zoomRegion;
+  double ratioZoomLow;
+  double ratioZoomHigh;
   
   // Helper variables for centrality naming in figures
   TString centralityString;
   TString compactCentralityString;
   TString trackPtString;
   TString compactTrackPtString;
-  char namerX[100];
+  char namerX[150];
+  char namerY[150];
   
   // For the event mixing check, there will be one added histogram
   fnAddedHistograms = 1;
@@ -373,13 +376,26 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
         compactTrackPtString.ReplaceAll(".","v");
         
+        /////////////////////////////////////////////
+        //   Step one, deltaPhi in deltaEta bins   //
+        /////////////////////////////////////////////
+        
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
         fMainHistogram->Scale(1.0/fBaseHistograms->GetNDijets());       // Normalize with the number of dijets
+
         fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         if(fEventMixingZoom){
           zoomRegion = 0.05;
-          if(iTrackPt > 2) zoomRegion = 0.006;
+          if(iTrackPt > 2){
+            if(iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet){
+              zoomRegion = 0.02;
+            } else if (iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet) {
+              zoomRegion = 0.05;
+            } else {
+              zoomRegion = 0.006;
+            }
+          }
           fMainHistogram->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
         }
 
@@ -390,7 +406,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
 
         sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
         DrawToUpperPad(namerX,"#frac{1}{N_{jets}}  #frac{dN}{d#Delta#varphi}");
-        
+
         // Setup a legend to the plot
         legend = new TLegend(0.22,0.71,0.5,0.91);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
@@ -399,15 +415,73 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         legend->AddEntry(fMainHistogram,"#||{#Delta#eta} < 1.0","l");
         legend->AddEntry(fComparisonHistogram[0],"1.5 < #||{#Delta#eta} < 2.5","l");
         legend->Draw();
-        
+
         // Prepare the ratio and draw it to the lower pad
-        fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaPhiCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
         fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
-        DrawToLowerPad(namerX,"#frac{#||{#Delta#eta} < 1.0}{1.5 < #||{#Delta#eta} < 2.5}");
+        DrawToLowerPad(namerX,"#frac{#||{#Delta#eta} < 1.0}{1.5 < #||{#Delta#eta} < 2.5}",fRatioZoomMin,fRatioZoomMax);
         
         // Save the figure to a file
-        sprintf(namerX,"%sMixedEventCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
-        if(fEventMixingZoom) sprintf(namerX,"%sMixedEventCheckZoom",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+        sprintf(namerX,"%sMixedEventPhiCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+        if(fEventMixingZoom) sprintf(namerX,"%sMixedEventPhiCheckZoom",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+        SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+        
+        /////////////////////////////////////////////
+        //   Step two, deltaEta in deltaPhi bins   //
+        /////////////////////////////////////////////
+        
+        // Set up the histograms and draw them to the upper pad of a split canvas
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
+        fMainHistogram->Scale(1.0/fBaseHistograms->GetNDijets());       // Normalize with the number of dijets
+        fMainHistogram->GetXaxis()->SetRangeUser(-4,4);                 // Zoom the interesting region
+        if(fEventMixingZoom){
+          zoomRegion = 0.05;
+          if(iTrackPt > 2){
+            if (iJetTrack == DijetHistogramManager::kTrackSubleadingJet) {
+              zoomRegion = 0.01;
+            } else if (iJetTrack == DijetHistogramManager::kTrackLeadingJet) {
+              zoomRegion = 0.006;
+            }
+          }
+          fMainHistogram->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
+        }
+        
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
+        fComparisonHistogram[0]->Scale(1.0/fBaseHistograms->GetNDijets());  // Normalize with the number of dijets
+        fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-4,4);            // Zoom the interesting region
+        if(fEventMixingZoom) fComparisonHistogram[0]->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
+        
+        sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
+        DrawToUpperPad(namerX,"#frac{1}{N_{jets}}  #frac{dN}{d#Delta#eta}");
+        
+        // Setup a legend to the plot
+        legend = new TLegend(0.22,0.71,0.5,0.91);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+        if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
+        legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
+        sprintf(namerX,"%.1f < #Delta#varphi < %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide));
+        legend->AddEntry(fMainHistogram,namerX,"l");
+        sprintf(namerX,"%.1f < #Delta#varphi < %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        legend->AddEntry(fComparisonHistogram[0],namerX,"l");
+        legend->Draw();
+        
+        // Prepare the ratio and draw it to the lower pad
+        ratioZoomLow = 0.6;
+        if(iJetTrack == DijetHistogramManager::kTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet) ratioZoomLow = 0.4;
+        ratioZoomHigh = 1.6;
+        if(iJetTrack == DijetHistogramManager::kTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet) ratioZoomHigh = 1.4;
+        if(iTrackPt > 2 && (iJetTrack == DijetHistogramManager::kTrackSubleadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet)) ratioZoomHigh = 2.5;
+        if(iTrackPt > 2 && (iJetTrack == DijetHistogramManager::kTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet)) ratioZoomLow = 0.2;
+        
+        sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
+        sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaEtaCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+        DrawToLowerPad(namerX,namerY,ratioZoomLow,ratioZoomHigh);
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sMixedEventEtaCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+        if(fEventMixingZoom) sprintf(namerX,"%sMixedEventEtaCheckZoom",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
         SaveFigure(namerX,compactCentralityString,compactTrackPtString);
         
       } // Track pT loop
@@ -687,7 +761,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         // Prepare the ratio and draw it to the lower pad
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("jetShapeRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
         fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
-        DrawToLowerPad(namerX,fRatioLabel.Data());
+        DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
         
         // Save the figure to a file
         sprintf(namerX,"%s%sRatio",fBaseHistograms->GetJetTrackHistogramName(iJetTrack),fBaseHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape));
@@ -725,7 +799,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
       // Prepare the ratio and draw it to the lower pad
       fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("jetShapeRatio%d%d",iJetTrack,iCentrality));
       fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
-      DrawToLowerPad(namerX,fRatioLabel.Data());
+      DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
       
       // Save the figure to a file
       sprintf(namerX,"%s%sRatio",fBaseHistograms->GetJetTrackHistogramName(iJetTrack),fBaseHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape));
@@ -800,11 +874,13 @@ void DijetComparingDrawer::DrawToUpperPad(const char* xTitle, const char* yTitle
  *  Arguments:
  *   const char* xTitle = Title given to the x-axis
  *   const char* yTitle = Title given to the y-axis
+ *   const double zoomMin = Minimum value of the y-axis in the ratio plot
+ *   const double zoomMax = Maximum value of the y-axis in the ratio plot
  */
-void DijetComparingDrawer::DrawToLowerPad(const char* xTitle, const char* yTitle){
+void DijetComparingDrawer::DrawToLowerPad(const char* xTitle, const char* yTitle, const double zoomMin, const double zoomMax){
   if(fnAddedHistograms > 0){
     fRatioHistogram[0]->SetLineColor(fColors[0]);
-    fRatioHistogram[0]->GetYaxis()->SetRangeUser(fRatioZoomMin,fRatioZoomMax);
+    fRatioHistogram[0]->GetYaxis()->SetRangeUser(zoomMin,zoomMax);
     fDrawer->DrawHistogramToLowerPad(fRatioHistogram[0],xTitle,yTitle, " ");
   }
   for(int iAdditional = 1; iAdditional < fnAddedHistograms; iAdditional++){

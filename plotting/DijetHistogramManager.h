@@ -134,6 +134,8 @@ public:
   int GetNTrackPtBins() const; // Getter for the number of track pT bins
   double GetCentralityBinBorder(const int iCentrality) const;  // Getter for i:th centrality bin border
   double GetTrackPtBinBorder(const int iTrackPt) const;        // Getter for i:th track pT bin border
+  double GetDeltaPhiBorderLow(const int iDeltaPhi) const;      // Getter for i:th low deltaPhi border
+  double GetDeltaPhiBorderHigh(const int iDeltaPhi) const;     // Getter for i:th high deltaPhi border
   
   // Getter for histogram and axis naming
   TString GetCorrelationTypeString(int iCorrelationType) const;        // Getter for correlation type string
@@ -241,6 +243,8 @@ private:
   double fTrackPtBinBorders[knTrackPtBins+1];        // Track pT bin borders, from which bin indices are obtained
   int fLowDeltaPhiBinIndices[knDeltaPhiBins];        // Indices for low bin borders in deltaPhi binned histograms
   int fHighDeltaPhiBinIndices[knDeltaPhiBins];       // Indices for high bin borders in deltaPhi binned histograms
+  double fLowDeltaPhiBinBorders[knDeltaPhiBins];     // Low bin borders in deltaPhi binned histograms
+  double fHighDeltaPhiBinBorders[knDeltaPhiBins];    // High bin borders in deltaPhi binned histograms
   TString fDeltaPhiString[knDeltaPhiBins];           // Names for different deltaPhi bins
   TString fCompactDeltaPhiString[knDeltaPhiBins];    // Names added to figure names for deltaPhi bins
   

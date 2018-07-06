@@ -18,14 +18,14 @@ void compareDijetHistograms(){
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
-  bool drawTracks = false;
+  bool drawTracks = true;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = true;
+  bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   
@@ -42,7 +42,7 @@ void compareDijetHistograms(){
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
+  bool drawSameEvent = true;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
@@ -53,7 +53,7 @@ void compareDijetHistograms(){
   
   // Draw histograms to make a check on the validity of the event mixing method
   bool drawEventMixingCheck = true;
-  bool eventMixingZoom = false;
+  bool eventMixingZoom = true;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = true;
@@ -70,9 +70,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.4;
-  double maxZoom = 1.6;
-  TString ratioLabel = "#frac{Leading jet}{Inclusive}";
+  double minZoom = 0.6;
+  double maxZoom = 1.4;
+  TString ratioLabel = "Reco/Gen";
   
   // Scaling for histograms
   bool scaleHistograms = false;
@@ -83,8 +83,8 @@ void compareDijetHistograms(){
   const int nTrackPtBins = 6;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
-  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1}; // Low bin borders for deltaPhi
-  double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1}; // High bin borders for deltaPhi
+  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.2}; // Low bin borders for deltaPhi
+  double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1.2}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
@@ -116,8 +116,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_2018-06-21.root"};
+  const int nDatasets = 2;
+  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoReco_noMixing_mergedPythia6Skims_2018-07-06.root","data/dijet_ppMC_RecoGen_noMixing_mergedPythia6Skims_2018-07-06.root"};
   //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
   //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
@@ -131,9 +131,13 @@ void compareDijetHistograms(){
   //  "data/PbPbMC_RecoReco_noMixing_Skims_2018-06-14.root" "data/PbPbMC_GenGen_noMixing_Skims_2018-06-14.root"
   //  "data/PbPbMC_RecoGen_noMixing_Skims_2018-06-14.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_KurtsSkims_2018-06-18_part1.root"  "data/dijet_ppMC_RecoGen_noMixing_KurtsSkims_2018-06-18_part1.root"
-  //  "data/dijet_pp_highForest_processed_noBinAreaWeight_2018-06-21.root" "dijet_pp_highForest_2018-06-21.root"
+  //  "data/dijet_pp_highForest_processed_noBinAreaWeight_2018-06-21.root" "data/dijet_pp_highForest_2018-06-21.root"
   //  "data/dijet_pp_highForest_processed_2018-06-21.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
+  //  "data/dijet_ppMC_GenGen_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_GenReco_noMixing_dhanushPythia8_2018-07-02.root"
+  //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
+  //  "data/dijet_ppMC_RecoReco_noMixing_noWeights_dhanushPythia8_2018-07-03.root" "data/dijet_ppMC_RecoGen_noMixing_noWeights_dhanushPythia8_2018-07-03.root"
+  //  "data/dijet_ppMC_RecoReco_noMixing_mergedPythia6Skims_2018-07-06.root" "data/dijet_ppMC_RecoGen_noMixing_mergedPythia6Skims_2018-07-06.root"
   
   // ==================================================================
   // ===================== Configuration ready ========================

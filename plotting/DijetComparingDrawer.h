@@ -82,7 +82,7 @@ public:
   void SetDrawBackground(const bool drawOrNot);             // Setter for drawing the generated background distributions
   
   // Setter for drawing the event mixing check
-  void SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom);  // Setter for drawing the event mixing check 
+  void SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom);  // Setter for drawing the event mixing check
   
   // Setters for figure saving and logarithmic axes
   void SetSaveFigures(const bool saveOrNot, const char *format);  // Setter for saving the figures to a file
@@ -187,7 +187,7 @@ private:
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
   void PrepareRatio(TString name, int rebin, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0); // Prepare the ratio histograms out of input histograms
   void DrawToUpperPad(const char* xTitle, const char* yTitle, bool logAxis = false); // Draw the histograms to the same figure in the upper pad of JDrawer
-  void DrawToLowerPad(const char* xTitle, const char* yTitle); // Draw the ratios to the lower pad of the JDrawer
+  void DrawToLowerPad(const char* xTitle, const char* yTitle, const double zoomMin, const double zoomMax); // Draw the ratios to the lower pad of the JDrawer
   
   
 };

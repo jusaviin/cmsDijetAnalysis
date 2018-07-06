@@ -63,6 +63,8 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
   for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
     fLowDeltaPhiBinIndices[iDeltaPhi] = iDeltaPhi+1;
     fHighDeltaPhiBinIndices[iDeltaPhi] = iDeltaPhi+2;
+    fLowDeltaPhiBinBorders[iDeltaPhi] = 0;
+    fHighDeltaPhiBinBorders[iDeltaPhi] = 0;
     fDeltaPhiString[iDeltaPhi] = "";
     fCompactDeltaPhiString[iDeltaPhi] = "";
   }
@@ -192,6 +194,8 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
     fLowDeltaPhiBinIndices[iDeltaPhi] = in.fLowDeltaPhiBinIndices[iDeltaPhi];
     fHighDeltaPhiBinIndices[iDeltaPhi] = in.fHighDeltaPhiBinIndices[iDeltaPhi];
+    fLowDeltaPhiBinBorders[iDeltaPhi] = in.fLowDeltaPhiBinBorders[iDeltaPhi];
+    fHighDeltaPhiBinBorders[iDeltaPhi] = in.fHighDeltaPhiBinBorders[iDeltaPhi];
     fDeltaPhiString[iDeltaPhi] = in.fDeltaPhiString[iDeltaPhi];
     fCompactDeltaPhiString[iDeltaPhi] = in.fCompactDeltaPhiString[iDeltaPhi];
   }
@@ -312,6 +316,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
   char histogramName[200];
   int nBins;
   int connectedIndex;
+  int nProjectedBins;
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
@@ -356,6 +361,11 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
             sprintf(histogramName,"%sDeltaEtaProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),iDeltaPhi);
             fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionY(histogramName,fLowDeltaPhiBinIndices[iDeltaPhi],fHighDeltaPhiBinIndices[iDeltaPhi])->Clone();
+            
+            // To retain the normalization, we must scale the histograms with the number of bins projected over
+            nProjectedBins = fHighDeltaPhiBinIndices[iDeltaPhi] - fLowDeltaPhiBinIndices[iDeltaPhi] + 1;
+            fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(1.0/nProjectedBins);
+            
           } // DeltaPhi loop
         } // Correlation type loop
       } // Track pT loop
@@ -1255,6 +1265,8 @@ void DijetHistogramManager::SetDeltaPhiBins(const double *lowBinBorders, const d
   for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
     fDeltaPhiString[iDeltaPhi] = deltaPhiStrings[iDeltaPhi];
     fCompactDeltaPhiString[iDeltaPhi] = compactDeltaPhiStrings[iDeltaPhi];
+    fLowDeltaPhiBinBorders[iDeltaPhi] = lowBinBorders[iDeltaPhi];
+    fHighDeltaPhiBinBorders[iDeltaPhi] = highBinBorders[iDeltaPhi];
   }
 }
 
@@ -1528,6 +1540,16 @@ double DijetHistogramManager::GetCentralityBinBorder(const int iCentrality) cons
 // Getter for i:th track pT bin border
 double DijetHistogramManager::GetTrackPtBinBorder(const int iTrackPt) const{
   return fTrackPtBinBorders[iTrackPt];
+}
+
+// Getter for i:th low deltaPhi border
+double DijetHistogramManager::GetDeltaPhiBorderLow(const int iDeltaPhi) const{
+  return fLowDeltaPhiBinBorders[iDeltaPhi];
+}
+
+// Getter for i:th high deltaPhi border
+double DijetHistogramManager::GetDeltaPhiBorderHigh(const int iDeltaPhi) const{
+  return fHighDeltaPhiBinBorders[iDeltaPhi];
 }
 
 // Getters for event information histograms
