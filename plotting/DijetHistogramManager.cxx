@@ -276,7 +276,7 @@ DijetHistogramManager::~DijetHistogramManager(){
 void DijetHistogramManager::ProcessHistograms(){
   DoMixedEventCorrection();  // Mixed event correction needs to be done first, as we need the corrected histograms for the background subtraction
   SubtractBackgroundAndCalculateJetShape(); // Subtract the background and take projections of processed two-dimensional histograms. After that, calculate jet shape
-  NormalizeJetShape();  // Normalize the jet shape histograms such thaat pT integrated histogram is unity at deltaR < 1
+  //NormalizeJetShape();  // Normalize the jet shape histograms such thaat pT integrated histogram is unity at deltaR < 1
 }
 
 /*
@@ -1178,7 +1178,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     
     // Loop over jet-track correlation categories
     for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
-      if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+      if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only load the selected categories
       
       // Loop over centrality
       for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){

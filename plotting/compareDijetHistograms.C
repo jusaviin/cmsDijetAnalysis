@@ -70,13 +70,12 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.6;
-  double maxZoom = 1.4;
+  double minZoom = 0.85;
+  double maxZoom = 1.15;
   TString ratioLabel = "Reco/Gen";
   
   // Scaling for histograms
-  bool scaleHistograms = false;
-  if(ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase)) scaleHistograms = true;
+  bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
   
   // Bin borders
   const int nCentralityBins = 4;
@@ -117,7 +116,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoReco_noMixing_mergedPythia6Skims_2018-07-06.root","data/dijet_ppMC_RecoGen_noMixing_mergedPythia6Skims_2018-07-06.root"};
+  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoReco_mergedPythia6Skims_processed_2018-07-06.root","data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root"};
   //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
   //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
@@ -138,6 +137,10 @@ void compareDijetHistograms(){
   //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_noWeights_dhanushPythia8_2018-07-03.root" "data/dijet_ppMC_RecoGen_noMixing_noWeights_dhanushPythia8_2018-07-03.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_mergedPythia6Skims_2018-07-06.root" "data/dijet_ppMC_RecoGen_noMixing_mergedPythia6Skims_2018-07-06.root"
+  //  "data/dijet_ppMC_RecoReco_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenGen_mergedPythia6Skims_processed_2018-07-06.root"
+  //  "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenReco_mergedPythia6Skims_processed_2018-07-06.root"
+  
+  bool loadProcessed = inputFileName[0].Contains("processed");
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -187,9 +190,9 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetLoad2DHistograms(enable2Dhistograms);
     
     // Set the binning information
-    histograms[iDataset]->SetCentralityBins(centralityBinBorders);
-    histograms[iDataset]->SetTrackPtBins(trackPtBinBorders);
-    histograms[iDataset]->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString);
+    histograms[iDataset]->SetCentralityBins(centralityBinBorders,!loadProcessed);
+    histograms[iDataset]->SetTrackPtBins(trackPtBinBorders,!loadProcessed);
+    histograms[iDataset]->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,!loadProcessed);
     histograms[iDataset]->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
     histograms[iDataset]->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
     
@@ -197,9 +200,12 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetDijetMethods(methods);
     
     // Process and draw the selected histograms
-    histograms[iDataset]->LoadHistograms();
-    histograms[iDataset]->ProcessHistograms();
-    //histograms[iDataset]->LoadProcessedHistograms();
+    if(loadProcessed){
+      histograms[iDataset]->LoadProcessedHistograms();
+    } else {
+      histograms[iDataset]->LoadHistograms();
+      histograms[iDataset]->ProcessHistograms();
+    }
 
   } // Loop over datasets
 

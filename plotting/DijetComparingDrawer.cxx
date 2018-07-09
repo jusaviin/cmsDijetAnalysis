@@ -203,7 +203,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
 }
 
 /*
- * Draw the track histograms TODO: Implementation
+ * Draw the track histograms
  */
 void DijetComparingDrawer::DrawTrackHistograms(){
   
@@ -288,7 +288,9 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           legend->Draw();
 
           // Draw the ratios to the lower portion of the split canvas
+          fDrawer->SetGridY(true);
           DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
+          fDrawer->SetGridY(false);
           
           // Save the figure to a file
           sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));
@@ -319,7 +321,9 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           legend->Draw();
 
           // Draw the ratios to the lower portion of the split canvas
+          fDrawer->SetGridY(true);
           DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
+          fDrawer->SetGridY(false);
           
           // Save the figure to a file
           sprintf(namerX,"%sEtaRatio",fBaseHistograms->GetTrackHistogramName(iTrackType));

@@ -6,7 +6,7 @@
 /*
  * Macro for configuring the DijetDrawer and defining which histograms are drawn
  */
-void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root"){
+void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_2018-07-06.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -16,14 +16,15 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   // ==================================================================
   
   // Choose to either process or draw the histograms
-  int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  int executionMode = 0; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  if(histogramSelection > 0) executionMode = 0;
   
   // We do not need to set bin indices if we use processed histograms
   bool setIndices = true;
   if(executionMode == 2) setIndices = false;
   
   // If we write a file, define the output name and write mode
-  const char* outputFileName = "data/dijet_pp_highForest_processed_noBinAreaWeight_2018-06-21.root";
+  //const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root";
   const char* fileWriteMode = "UPDATE";
   
   // Choose which figure sets to draw
@@ -36,12 +37,30 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = true;
+  bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
+  
+  if(histogramSelection > 0){
+    drawEventInformation = (histogramSelection == 1);
+    drawDijetHistograms = (histogramSelection == 1);
+    drawLeadingJetHistograms = (histogramSelection == 1);
+    drawSubleadingJetHistograms = (histogramSelection == 1);
+    drawAnyJetHistograms = (histogramSelection == 1);
+    drawTracks = (histogramSelection == 1);
+    drawUncorrectedTracks = (histogramSelection == 1);
+    drawInclusiveTracks = (histogramSelection == 1);
+    drawUncorrectedInclusiveTracks = (histogramSelection == 1);
+    drawTrackLeadingJetCorrelations = (histogramSelection == 2);
+    drawUncorrectedTrackLeadingJetCorrelations = (histogramSelection == 3);
+    drawPtWeightedTrackLeadingJetCorrelations = (histogramSelection == 4);
+    drawTrackSubleadingJetCorrelations = false;
+    drawUncorrectedTrackSubleadingJetCorrelations = false;
+    drawPtWeightedTrackSubleadingJetCorrelations = false;
+  }
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = true;
@@ -82,8 +101,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-06-21.root
   const int nTrackPtBins = 6;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
-  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1}; // Low bin borders for deltaPhi
-  double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1}; // High bin borders for deltaPhi
+  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.2}; // Low bin borders for deltaPhi
+  double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1.2}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
