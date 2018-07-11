@@ -359,6 +359,9 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   char namerX[150];
   char namerY[150];
   
+  // Rebinning
+  int nRebin = 5;
+  
   // For the event mixing check, there will be one added histogram
   fnAddedHistograms = 1;
   
@@ -387,6 +390,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
         fMainHistogram->Scale(1.0/fBaseHistograms->GetNDijets());       // Normalize with the number of dijets
+        //fMainHistogram->Rebin(nRebin);                                  // Possibility to de rebinning
 
         fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         if(fEventMixingZoom){
@@ -405,6 +409,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
 
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
         fComparisonHistogram[0]->Scale(1.0/fBaseHistograms->GetNDijets());  // Normalize with the number of dijets
+        //fComparisonHistogram[0]->Rebin(nRebin);                             // Possibility to de rebinning
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         if(fEventMixingZoom) fComparisonHistogram[0]->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
 
@@ -436,7 +441,9 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
-        fMainHistogram->Scale(1.0/fBaseHistograms->GetNDijets());       // Normalize with the number of dijets
+        fMainHistogram->Scale(1.0/fBaseHistograms->GetNEvents());       // Normalize with the number of dijets
+        fMainHistogram->Rebin(nRebin);                                  // Possibility to de rebinning
+        fMainHistogram->Scale(1.0/nRebin);
         fMainHistogram->GetXaxis()->SetRangeUser(-4,4);                 // Zoom the interesting region
         if(fEventMixingZoom){
           zoomRegion = 0.05;
@@ -451,7 +458,9 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         }
         
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
-        fComparisonHistogram[0]->Scale(1.0/fBaseHistograms->GetNDijets());  // Normalize with the number of dijets
+        fComparisonHistogram[0]->Scale(1.0/fBaseHistograms->GetNEvents());  // Normalize with the number of dijets
+        fComparisonHistogram[0]->Rebin(nRebin);                             // Possibility to de rebinning
+        fComparisonHistogram[0]->Scale(1.0/nRebin);
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-4,4);            // Zoom the interesting region
         if(fEventMixingZoom) fComparisonHistogram[0]->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
         

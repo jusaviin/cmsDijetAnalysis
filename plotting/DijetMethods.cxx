@@ -186,6 +186,9 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   // Initialize also a distribution for background overlap for normalization level check
   sprintf(histogramName,"%sBackgroundOverlap",leadingHistogramWithBackground->GetName());
   fBackgroundOverlap = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
+  
+  // We need the deltaEta bin width for normalization purposes
+  double binWidthDeltaEta = leadingHistogramWithBackground->GetYaxis()->GetBinWidth(1);
 
   // Loop over deltaPhi bins and fill the leading jet-track correlation result in the near side
   // and the subleading set-track correlation result in the away side
@@ -201,10 +204,10 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
       
       // Insert the values to the two-dimensional background histogram
-      fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear);
-      fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear);
-      fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiValueAway);
-      fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiErrorAway);
+      fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
+      fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear/binWidthDeltaEta);
+      fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
+      fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiErrorAway/binWidthDeltaEta);
       
       // Set the contants of the background overlap to zero
       fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,0);
@@ -238,10 +241,10 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     // Repopulate the deltaEta axis
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
       // Set the contants of the background overlap to zero
-      fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear);
-      fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear);
-      fBackgroundOverlap->SetBinContent(iDeltaPhi-3,iDeltaEta,deltaPhiValueAway);
-      fBackgroundOverlap->SetBinError(iDeltaPhi-3,iDeltaEta,deltaPhiErrorAway);
+      fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
+      fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear/binWidthDeltaEta);
+      fBackgroundOverlap->SetBinContent(iDeltaPhi-3,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
+      fBackgroundOverlap->SetBinError(iDeltaPhi-3,iDeltaEta,deltaPhiErrorAway/binWidthDeltaEta);
     } // DeltaEta loop
   } // DeltaPhi loop
   
@@ -301,8 +304,9 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram, const
     projectedDeltaPhi->Add(deltaPhiDeltaEtaHistogram->ProjectionX("dummyName",lowPositiveDeltaEtaBin,highPositiveDeltaEtaBin));
   }
   
-  // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over to retain normalization
+  // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over and deltaEta bin width to retain normalization
   projectedDeltaPhi->Scale(1.0/nBinsBackgroundRegion);
+  projectedDeltaPhi->Scale(deltaPhiDeltaEtaHistogram->GetYaxis()->GetBinWidth(1));
   
   // Return the scaled projection
   return projectedDeltaPhi;
@@ -363,6 +367,11 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
     }
   }
   
+  // To get the yield, bin area normalization must be multiplied out
+  double binWidthDeltaPhi = backgroundSubtractedHistogram->GetXaxis()->GetBinWidth(1);
+  double binWidthDeltaEta = backgroundSubtractedHistogram->GetYaxis()->GetBinWidth(1);
+  double oneBinArea = binWidthDeltaPhi*binWidthDeltaEta;
+  
   // The jet shape is calculated from the region close to near side peak, so we need to find bin indices for that region
   // Apply small offset to avoid problems with bin boundaries
   int minBinPhi = backgroundSubtractedHistogram->GetXaxis()->FindBin((-TMath::Pi()/2.0)+0.0001);
@@ -394,9 +403,9 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
       // Find the correct bin in the jet shape histogram to fill for this R
       Rbin = jetShapeHistogram->FindBin(R);
       
-      // Get the content to be added from the two-dimensional histogram
-      newContent = backgroundSubtractedHistogram->GetBinContent(iPhiBin,iEtaBin);
-      newError = backgroundSubtractedHistogram->GetBinError(iPhiBin,iEtaBin);
+      // Get the content to be added from the two-dimensional histogram, multiplying out the bin area normalization
+      newContent = backgroundSubtractedHistogram->GetBinContent(iPhiBin,iEtaBin)*oneBinArea;
+      newError = backgroundSubtractedHistogram->GetBinError(iPhiBin,iEtaBin)*oneBinArea;
       
       // Get the content already in the jet shape histogram
       oldContent = jetShapeHistogram->GetBinContent(Rbin);
@@ -423,9 +432,6 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
     
     // To correct for the fact the use rectangles to integrate a circular area, we need to weight the bins on how accurately
     // the rectangular area reflects the actual circles.
-    double binWidthDeltaPhi = backgroundSubtractedHistogram->GetXaxis()->GetBinWidth(1);
-    double binWidthDeltaEta = backgroundSubtractedHistogram->GetYaxis()->GetBinWidth(1);
-    double oneBinArea = binWidthDeltaPhi*binWidthDeltaEta;
     double totalBinArea;
     double ringArea;
     

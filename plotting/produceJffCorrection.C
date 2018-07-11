@@ -31,12 +31,14 @@ void produceJffCorrection(){
   
   // Create histogram managers to provide the histograms for the correction
   DijetHistogramManager *recoGenHistograms = new DijetHistogramManager(recoGenFile);
+  recoGenHistograms->SetLoadLeadingJetHistograms(true);  // Leading jet histogrrams needed for normalization of MC
   recoGenHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   recoGenHistograms->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   if(ppData) recoGenHistograms->SetCentralityBinRange(0,0);  // Disable centrality binning for pp data
   recoGenHistograms->LoadProcessedHistograms();
   
   DijetHistogramManager *genGenHistograms = new DijetHistogramManager(genGenFile);
+  genGenHistograms->SetLoadLeadingJetHistograms(true);  // Leading jet histogrrams needed for normalization of MC
   genGenHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   genGenHistograms->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   if(ppData) recoGenHistograms->SetCentralityBinRange(0,0);  // Disable centrality binning for pp data
@@ -67,11 +69,11 @@ void produceJffCorrection(){
         
         // Get the jet shape for RecoGen and normalize it by the number of dijets
         jffCorrection[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
-        jffCorrection[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetNDijets());
+        jffCorrection[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetPtIntegral(iCentrality));
         
         // Get the jet shape for GenGen and normalize it by the number of dijets
         jffHelper[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
-        jffHelper[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/genGenHistograms->GetNDijets());
+        jffHelper[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/genGenHistograms->GetPtIntegral(iCentrality));
         
         // The correction is obtained by subtracting GenGen from RecoGen
         jffCorrection[iJetTrack][iCentrality][iTrackPt]->Add(jffHelper[iJetTrack][iCentrality][iTrackPt],-1);

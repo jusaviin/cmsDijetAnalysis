@@ -730,6 +730,7 @@ void DijetDrawer::DrawJetShapeHistograms(){
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
           drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,iCentrality,iTrackPt);
+          drawnHistogram->Scale(1.0/fHistograms->GetPtIntegral(iCentrality));
           
           // Set the correct track pT bins
           trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));

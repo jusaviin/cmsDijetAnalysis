@@ -349,6 +349,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kWholeEta);
           nBins = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetNbinsY();
           fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionX(histogramName,1,nBins)->Clone();  // Exclude underflow and overflow bins by specifying range
+          fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta]->Scale(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetYaxis()->GetBinWidth(1));  // For correct normalization, need to divide out deltaEta bin width of the two-dimensional histogram
           
           // DeltaPhi histogram over signal eta region
           sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kSignalEtaRegion);
@@ -362,9 +363,10 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
             sprintf(histogramName,"%sDeltaEtaProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),iDeltaPhi);
             fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionY(histogramName,fLowDeltaPhiBinIndices[iDeltaPhi],fHighDeltaPhiBinIndices[iDeltaPhi])->Clone();
             
-            // To retain the normalization, we must scale the histograms with the number of bins projected over
+            // To retain the normalization, we must scale the histograms with the number of bins projected over and by the width of deltaPhi bin
             nProjectedBins = fHighDeltaPhiBinIndices[iDeltaPhi] - fLowDeltaPhiBinIndices[iDeltaPhi] + 1;
-            fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(1.0/nProjectedBins);
+            //fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(1.0/nProjectedBins);
+            fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetXaxis()->GetBinWidth(1));
             
           } // DeltaPhi loop
         } // Correlation type loop
@@ -1737,10 +1739,15 @@ int DijetHistogramManager::GetLastTrackPtBin() const{
 
 // Getter for the number of events passing the cuts
 int DijetHistogramManager::GetNEvents() const{
-  return fhEvents->GetBinContent(DijetHistograms::kVzCut);
+  return fhEvents->GetBinContent(fhEvents->FindBin(DijetHistograms::kVzCut));
 }
 
 // Getter for the number of dijets
 int DijetHistogramManager::GetNDijets() const{
-  return fhEvents->GetBinContent(DijetHistograms::kDijet);
+  return fhEvents->GetBinContent(fhEvents->FindBin(DijetHistograms::kDijet));
+}
+
+// Getter for integral over leading jet pT
+double DijetHistogramManager::GetPtIntegral(int iCentrality) const{
+  return fhJetPt[kLeadingJet][iCentrality]->Integral("width");
 }

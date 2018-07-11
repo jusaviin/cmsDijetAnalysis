@@ -5,6 +5,11 @@
 
 /*
  * Macro for configuring the DijetDrawer and defining which histograms are drawn
+ *
+ *  Arguments:
+ *   TString inputFileName = File from which the histograms are read
+ *   const char* outputFileName = If we are producing output file, name of the output file
+ *   int histogramSelection = If > 0, select a preset group of histograms. Intended to be used for easier production of output files.
  */
 void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_2018-07-06.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0){
 
@@ -16,7 +21,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   // ==================================================================
   
   // Choose to either process or draw the histograms
-  int executionMode = 0; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
   if(histogramSelection > 0) executionMode = 0;
   
   // We do not need to set bin indices if we use processed histograms
@@ -30,16 +35,16 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = false;
+  bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -63,12 +68,12 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
@@ -80,16 +85,16 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
+  bool drawBackground = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
-  bool logJetShape = true;    // Jet shapes
+  bool logJetShape = false;    // Jet shapes
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -206,7 +211,6 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   } else if(executionMode == 2){
     histograms->LoadProcessedHistograms();
   }
-  
   
   //////////////////////////////////
   //          DijetDrawer         //

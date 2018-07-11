@@ -200,8 +200,9 @@ public:
   int GetLastTrackPtBin() const;      // Get the last loaded track pT bin
   
   // Getters for normalization information
-  int GetNEvents() const;  // Getter for the number of events passing the cuts
-  int GetNDijets() const;  // Getter for the number of dijets
+  int GetNEvents() const;                      // Getter for the number of events passing the cuts
+  int GetNDijets() const;                      // Getter for the number of dijets
+  double GetPtIntegral(int iCentrality) const; // Getter for integral over leading jet pT in a given centrality bin
   
 private:
   
