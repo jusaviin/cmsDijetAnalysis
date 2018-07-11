@@ -21,7 +21,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   // ==================================================================
   
   // Choose to either process or draw the histograms
-  int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  int executionMode = 2; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
   if(histogramSelection > 0) executionMode = 0;
   
   // We do not need to set bin indices if we use processed histograms
@@ -29,7 +29,6 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   if(executionMode == 2) setIndices = false;
   
   // If we write a file, define the output name and write mode
-  //const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root";
   const char* fileWriteMode = "UPDATE";
   
   // Choose which figure sets to draw
@@ -94,12 +93,15 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
-  bool logJetShape = false;    // Jet shapes
+  bool logJetShape = true;    // Jet shapes
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
   const char* style2D = "colz";
   const char* style3D = "surf1";
+  
+  // File for JFF correction
+  TString jffCorrectionFileName = "data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
   
   // Bin borders
   const int nCentralityBins = 4;
@@ -145,6 +147,8 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   
   // Open the input file
   TFile *inputFile = TFile::Open(inputFileName);
+  TFile *jffCorrectionFile;
+  if(jffCorrectionFileName != "") jffCorrectionFile = TFile::Open(jffCorrectionFileName);
   
   // Load the card from the file and read the collision system
   DijetCard *card = new DijetCard(inputFile);
@@ -236,6 +240,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
   resultDrawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
+  if(jffCorrectionFileName != "") resultDrawer->LoadJffCorrection(jffCorrectionFile);
   
   // Draw the selected histograms
   resultDrawer->DrawHistograms();

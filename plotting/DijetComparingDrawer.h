@@ -17,6 +17,7 @@
 #include "JDrawer.h"
 #include "DijetMethods.h"
 #include "DijetHistogramManager.h"
+#include "JffCorrector.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -110,12 +111,16 @@ public:
   void SetCentralityBinRange(const int first, const int last); // Setter for drawn centrality bins
   void SetTrackPtBinRange(const int first, const int last);    // Setter for drawn track pT bins
   
+  // Load jff correction from file
+  void LoadJffCorrection(TFile *jffFile); // Load jff correction from file
+  
 private:
   
   // Data members
   JDrawer *fDrawer;                       // JDrawer for drawing the histograms
   DijetHistogramManager *fBaseHistograms; // Histograms with respect to which ratios are takes
   DijetHistogramManager *fAddedHistograms[knMaxRatios];  // Histograms drawn together with the base histogram
+  JffCorrector *fJffCorrectionFinder;     // Class for providing JFF correction for jet shapes
   int fnAddedHistograms;                  // Number of histograms added for drawing
   
   // ==============================================================

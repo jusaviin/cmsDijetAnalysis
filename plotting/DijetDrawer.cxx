@@ -41,6 +41,9 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   // Create a new drawer
   fDrawer = new JDrawer();
   
+  // Create a new JFF corrector
+  fJffCorrectionFinder = new JffCorrector();
+
   // Do not draw anything by default
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     fDrawJetTrackCorrelations[iJetTrack] = false;
@@ -70,6 +73,7 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
  */
 DijetDrawer::~DijetDrawer(){
   delete fDrawer;
+  delete fJffCorrectionFinder;
 }
 
 /*
@@ -696,6 +700,7 @@ void DijetDrawer::DrawJetShapeHistograms(){
   
   // Helper variables for histogram drawing
   TH1D *drawnHistogram;
+  TH1D *correctionHistogram;
   TLegend *legend;
   double legendX1;
   double legendY1;
@@ -730,7 +735,15 @@ void DijetDrawer::DrawJetShapeHistograms(){
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
           drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,iCentrality,iTrackPt);
-          drawnHistogram->Scale(1.0/fHistograms->GetPtIntegral(iCentrality));
+          
+          // Scaling by the number of dijets for the jet shape distribution
+          if(iJetShape == DijetHistogramManager::kJetShape) drawnHistogram->Scale(1.0/fHistograms->GetPtIntegral(iCentrality));
+          
+          // If JFF correction is loaded, apply it. Only for actual jet shape distribution
+          if(fJffCorrectionFinder->CorrectionReady() && iJetShape == DijetHistogramManager::kJetShape){
+            correctionHistogram = fJffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentrality,iTrackPt);
+            drawnHistogram->Add(correctionHistogram,-1);
+          }
           
           // Set the correct track pT bins
           trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
@@ -789,6 +802,10 @@ void DijetDrawer::DrawJetShapeStack(){
   double legendY2;
   TString legendString[fLastDrawnTrackPtBin+1];
   
+  // Helper variables for histograms added to stack
+  TH1D *addedHistogram;
+  TH1D *correctionHistogram;
+  
   // Logarithmic drawing for jet shape histograms
   fDrawer->SetLogY(fLogJetShape);
 
@@ -810,14 +827,22 @@ void DijetDrawer::DrawJetShapeStack(){
         // Set the correct track pT bins for the legend
         legendString[iTrackPt] = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
         
-        jetShapeStack[iJetTrack][iCentrality]->addHist(fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt));
+        addedHistogram = fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
+        
+        // If JFF correction is loaded, apply it. Only for actual jet shape distribution
+        if(fJffCorrectionFinder->CorrectionReady()){
+          correctionHistogram = fJffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentrality,iTrackPt);
+          addedHistogram->Add(correctionHistogram,-1);
+        }
+        
+        jetShapeStack[iJetTrack][iCentrality]->addHist(addedHistogram);
         
       } // track pT bin loop
       
       // Set up the axes and draw the stack
       fDrawer->CreateCanvas();
       jetShapeStack[iJetTrack][iCentrality]->setRange(0, 0.99, "x");
-      jetShapeStack[iJetTrack][iCentrality]->setRange(0.005, 30, "y");
+      jetShapeStack[iJetTrack][iCentrality]->setRange(0.1, 1000, "y");
       jetShapeStack[iJetTrack][iCentrality]->drawStack();
       jetShapeStack[iJetTrack][iCentrality]->hst->GetXaxis()->SetTitle("#DeltaR");
       jetShapeStack[iJetTrack][iCentrality]->hst->GetYaxis()->SetTitle("#rho(#DeltaR)");
@@ -1102,4 +1127,9 @@ void DijetDrawer::SetDrawingStyles(const int color, const char* style2D, const c
   SetColorPalette(color);
   SetDrawingStyle2D(style2D);
   SetDrawingStyle3D(style3D);
+}
+
+// Load jff correction from file
+void DijetDrawer::LoadJffCorrection(TFile *jffFile){
+  fJffCorrectionFinder->ReadInputFile(jffFile);
 }

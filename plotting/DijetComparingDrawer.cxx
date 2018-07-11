@@ -40,8 +40,9 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fLastDrawnTrackPtBin(0)
 {
   
-  // Create a new drawer
+  // Create a new drawer and finder for JFF correction
   fDrawer = new JDrawer();
+  fJffCorrectionFinder = new JffCorrector();
   
   for(int iRatios = 0; iRatios < knMaxRatios; iRatios++){
     fAddedHistograms[iRatios] = NULL;
@@ -73,6 +74,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
  */
 DijetComparingDrawer::~DijetComparingDrawer(){
   delete fDrawer;
+  delete fJffCorrectionFinder;
 }
 
 /*
@@ -664,7 +666,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
 }
 
 /*
- * Drawer for track jet correlation histograms TODO: Implementation
+ * Drawer for track jet correlation histograms
  */
 void DijetComparingDrawer::DrawJetShapeHistograms(){
   
@@ -692,6 +694,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   TH1D *sumHistogram;
   TH1D *dijetSumHistogram;
   TH1D *helperHistogram;
+  TH1D *correctionHistogram;
   
   // Find the histograms to compare with from the comparison file
   comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
@@ -713,11 +716,11 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   // Normalize the jet shape histograms from the comparison file
   double jetShapeIntegral = sumHistogram->Integral(1,sumHistogram->FindBin(0.99),"width");
   for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-    comparisonHistograms[iTrackPt]->Scale(1.0/jetShapeIntegral);
+    //comparisonHistograms[iTrackPt]->Scale(1.0/jetShapeIntegral);
   }
   
   // Scale the sum histogram
-  sumHistogram->Scale(1.0/jetShapeIntegral);
+  //sumHistogram->Scale(1.0/jetShapeIntegral);
   
   // For the jet shape, there will be one added histogram
   fnAddedHistograms = 1;
@@ -748,6 +751,17 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         fComparisonHistogram[0] = comparisonHistograms[iTrackPt];
         fMainHistogram = (TH1D*) fComparisonHistogram[0]->Clone(Form("Klooni%d%d%d",iJetTrack,iCentrality,iTrackPt));
         helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
+        
+        // Normalize the histogram by the number of dijets and apply the JFF correction
+        helperHistogram->Scale(1.0/fBaseHistograms->GetPtIntegral(iCentrality));
+        
+        // If JFF correction is loaded, apply it.
+        if(fJffCorrectionFinder->CorrectionReady()){
+          correctionHistogram = fJffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentrality,iTrackPt);
+          helperHistogram->Add(correctionHistogram,-1);
+        }
+        
+        // A couple of last bins are missing from the comparison histogram, so drop them also from main histogram
         for(int iBin = 1; iBin <= fMainHistogram->GetNbinsX(); iBin++){
           fMainHistogram->SetBinContent(iBin,helperHistogram->GetBinContent(iBin));
           fMainHistogram->SetBinError(iBin,helperHistogram->GetBinError(iBin));
@@ -1223,4 +1237,9 @@ void DijetComparingDrawer::BinSanityCheck(const int nBins, int first, int last){
   if(first < 0) first = 0;
   if(last < first) last = first;
   if(last > nBins-1) last = nBins-1;
+}
+
+// Load jff correction from file
+void DijetComparingDrawer::LoadJffCorrection(TFile *jffFile){
+  fJffCorrectionFinder->ReadInputFile(jffFile);
 }

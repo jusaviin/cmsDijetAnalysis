@@ -10,10 +10,13 @@
 #include "DijetHistogramManager.h"
 
 /*
- * Constructor
+ * Default constructor
  */
-DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
-  fInputFile(inputFile),
+DijetHistogramManager::DijetHistogramManager() :
+  fInputFile(NULL),
+  fCard(NULL),
+  fSystemAndEnergy(""),
+  fCompactSystemAndEnergy(""),
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
   fLoad2DHistograms(false),
@@ -22,15 +25,6 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
   fFirstLoadedTrackPtBin(0),
   fLastLoadedTrackPtBin(knTrackPtBins-1)
 {
-  // Read card from inputfile and collision system from card
-  fCard = new DijetCard(inputFile);
-  TString collisionSystem = fCard->GetDataType();
-  
-  // Make a string for collision system based on information on the card
-  fSystemAndEnergy = Form("%s 5.02 TeV",collisionSystem.Data());
-  fCompactSystemAndEnergy = fSystemAndEnergy;
-  fCompactSystemAndEnergy.ReplaceAll(" ","");
-  fCompactSystemAndEnergy.ReplaceAll(".","v");
   
   // Create a new DijetMethods
   fMethods = new DijetMethods();
@@ -140,6 +134,26 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
       } // Track pT loop
     } // Jet-track correlation type loop
   } // Centrality loop
+}
+
+/*
+ * Constructor
+ */
+DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
+  DijetHistogramManager()
+{
+  fInputFile = inputFile;
+  
+  // Read card from inputfile and collision system from card
+  fCard = new DijetCard(inputFile);
+  TString collisionSystem = fCard->GetDataType();
+  
+  // Make a string for collision system based on information on the card
+  fSystemAndEnergy = Form("%s 5.02 TeV",collisionSystem.Data());
+  fCompactSystemAndEnergy = fSystemAndEnergy;
+  fCompactSystemAndEnergy.ReplaceAll(" ","");
+  fCompactSystemAndEnergy.ReplaceAll(".","v");
+  
 }
 
 /*

@@ -44,10 +44,11 @@ public:
   // Indices for different jet shape histograms
   enum enumJetShape{kJetShape, kJetShapeBinCount, knJetShapeTypes};
   
-private:
   // Dimensions for histogram arrays
   static const int knCentralityBins = 4;   // Number of centrality bins
   static const int knTrackPtBins = 6;      // Number of track pT bins
+  
+private:
   
   // Naming for different correlation types
   TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background","Background overlap","Jet Shape Bin Map"};
@@ -75,6 +76,7 @@ private:
   
 public:
   
+  DijetHistogramManager();                                // Default constructor
   DijetHistogramManager(TFile *inputFile);                // Constructor
   DijetHistogramManager(const DijetHistogramManager& in); // Copy constructor
   ~DijetHistogramManager();                               // Destructor

@@ -15,16 +15,16 @@ void compareDijetHistograms(){
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = false;
+  bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -37,12 +37,12 @@ void compareDijetHistograms(){
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
@@ -52,17 +52,20 @@ void compareDijetHistograms(){
   bool drawBackground = false;
   
   // Draw histograms to make a check on the validity of the event mixing method
-  bool drawEventMixingCheck = true;
-  bool eventMixingZoom = true;
+  bool drawEventMixingCheck = false;
+  bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
   bool logJetShape = true;    // Jet shapes
+  
+  // File for JFF correction
+  TString jffCorrectionFileName = "";//"data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -141,6 +144,9 @@ void compareDijetHistograms(){
   //  "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenReco_mergedPythia6Skims_processed_2018-07-06.root"
   
   bool loadProcessed = inputFileName[0].Contains("processed");
+  
+  TFile *jffCorrectionFile;
+  if(jffCorrectionFileName != "") jffCorrectionFile = TFile::Open(jffCorrectionFileName);
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -229,6 +235,7 @@ void compareDijetHistograms(){
   drawer->SetRatioZoom(minZoom,maxZoom);
   drawer->SetRatioLabel(ratioLabel);
   drawer->SetApplyScaling(scaleHistograms);
+  if(jffCorrectionFileName != "") drawer->LoadJffCorrection(jffCorrectionFile);
   
   // Set the binning information
   drawer->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);

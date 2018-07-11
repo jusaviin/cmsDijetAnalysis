@@ -1,0 +1,89 @@
+/*
+ * Implementation of JffCorrector
+ */
+
+#include "JffCorrector.h"
+
+/*
+ * Default constructor
+ */
+JffCorrector::JffCorrector() :
+  fFileLoaded(false)
+{
+  
+  // JFF correction histograms for jet shape
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+        fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation type loop
+}
+
+/*
+ * Constructor
+ */
+JffCorrector::JffCorrector(TFile *inputFile)
+{
+  ReadInputFile(inputFile);
+}
+
+/*
+ * Copy constructor
+ */
+JffCorrector::JffCorrector(const JffCorrector& in) :
+  fFileLoaded(in.fFileLoaded)
+{
+  // Copy constructor
+  
+  // JFF correction histograms for jet shape
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+        fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt];
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation type loop
+}
+
+/*
+ * Destructor
+ */
+JffCorrector::~JffCorrector(){
+  
+}
+
+// Setter for input file
+void JffCorrector::ReadInputFile(TFile *inputFile){
+  
+  // Create histogram manager to find correct histogram naming in the input file
+  DijetHistogramManager *namerHelper = new DijetHistogramManager();
+  
+  // Load the correction histograms from the file
+  char histogramNamer[150];
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+        sprintf(histogramNamer,"%s_%s/jffCorrection_%s_%s_C%dT%d",namerHelper->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = (TH1D*) inputFile->Get(histogramNamer);
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation type loop
+  
+  // Raise the flag that input file has been loaded
+  fFileLoaded = true;
+  
+  // Delete the helper histogram manager
+  delete namerHelper;
+}
+
+// Getters for JFF correction histograms for jet shape
+TH1D* JffCorrector::GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const{
+  return fhJetShapeCorrection[iJetTrackCorrelation][iCentrality][iTrackPt];
+}
+
+// Return information, if correction is ready to be obtained
+bool JffCorrector::CorrectionReady(){
+  return fFileLoaded;
+}
