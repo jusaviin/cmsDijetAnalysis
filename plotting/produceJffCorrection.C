@@ -3,6 +3,8 @@
 
 /*
  * Macro for configuring the DijetDrawer and defining which histograms are drawn
+ *
+ *  TODO: Implementation, that can be maintained easily. Rebinning for deltaEta and deltaPhi (in histogram manager level)
  */
 void produceJffCorrection(){
   
@@ -49,14 +51,18 @@ void produceJffCorrection(){
   const int nTrackPtBins = recoGenHistograms->GetNTrackPtBins();
   
   // Initialize correction histograms and helper histograms
-  TH1D *jffCorrection[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH1D *jffHelper[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *jffCorrectionJetShape[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *jffHelperJetShape[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *jffCorrectionDeltaEta[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *jffHelperDeltaEta[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *jffCorrectionDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *jffHelperDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-        jffCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
-        jffHelper[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffHelperJetShape[iJetTrack][iCentrality][iTrackPt] = NULL;
       }
     }
   }
@@ -67,16 +73,32 @@ void produceJffCorrection(){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
-        // Get the jet shape for RecoGen and normalize it by the number of dijets
-        jffCorrection[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
-        jffCorrection[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetPtIntegral(iCentrality));
+        // Get the histograms for RecoGen and normalize it by the number of dijets
+        jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
+        jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetPtIntegral(iCentrality));
+        
+        jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kNearSide);
+        jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetPtIntegral(iCentrality));
+        
+        jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
+        jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetPtIntegral(iCentrality));
         
         // Get the jet shape for GenGen and normalize it by the number of dijets
-        jffHelper[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
-        jffHelper[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/genGenHistograms->GetPtIntegral(iCentrality));
+        jffHelperJetShape[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
+        jffHelperJetShape[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/genGenHistograms->GetPtIntegral(iCentrality));
+        
+        jffHelperDeltaEta[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kNearSide);
+        jffHelperDeltaEta[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetPtIntegral(iCentrality));
+        
+        jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
+        jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/recoGenHistograms->GetPtIntegral(iCentrality));
         
         // The correction is obtained by subtracting GenGen from RecoGen
-        jffCorrection[iJetTrack][iCentrality][iTrackPt]->Add(jffHelper[iJetTrack][iCentrality][iTrackPt],-1);
+        jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperJetShape[iJetTrack][iCentrality][iTrackPt],-1);
+        
+        jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperDeltaEta[iJetTrack][iCentrality][iTrackPt],-1);
+        
+        jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt],-1);
       }
     }
   }
@@ -99,7 +121,43 @@ void produceJffCorrection(){
         
         // Create a new name to the histogram and write it into file
         sprintf(histogramNamer,"jffCorrection_%s_%s_C%dT%d",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        jffCorrection[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+      }
+    }
+    
+    // Return back to main directory
+    gDirectory->cd("../");
+    
+    // Create a directory for the histograms if it does not already exist
+    sprintf(histogramNamer,"%sDeltaEta",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        
+        // Create a new name to the histogram and write it into file
+        sprintf(histogramNamer,"jffCorrection_%sDeltaEta_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+      }
+    }
+    
+    // Return back to main directory
+    gDirectory->cd("../");
+    
+    // Create a directory for the histograms if it does not already exist
+    sprintf(histogramNamer,"%sDeltaPhi",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        
+        // Create a new name to the histogram and write it into file
+        sprintf(histogramNamer,"jffCorrection_%sDeltaPhi_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
       }
     }
