@@ -36,7 +36,7 @@ public:
   void DrawHistograms();          // Draw the histograms
   
   // Add histograms to draw together with base histograms
-  void AddHistogramToDraw(DijetHistogramManager *additionalHistogram);
+  void AddHistogramToDraw(DijetHistogramManager *additionalHistogram, bool applyCorrection);
   
   // Setters for single jets
   void SetDrawLeadingJetHistograms(const bool drawOrNot);    // Setter for drawing leading jet histograms
@@ -139,6 +139,13 @@ private:
   bool fDrawJetTrackCorrelations[DijetHistogramManager::knJetTrackCorrelations];  // Draw the jet-track correlation histograms
   
   // ==============================================
+  // ======Flags for applying JFF correction ======
+  // ==============================================
+  
+  bool fApplyJffCorrectionMain;                       // Flag for applying the JFF correction to the main histogram
+  bool fApplyJffCorrectionAdditional[knMaxRatios];    // Flags for applying the JFF correction to additional histograms
+  
+  // ==============================================
   // ============== Drawing settings ==============
   // ==============================================
   
@@ -187,6 +194,7 @@ private:
   void DrawTrackHistograms();     // Draw track histograms
   void DrawJetTrackCorrelationHistograms(); // Draw jet-track correlation histograms
   void DrawJetShapeHistograms();  // Draw jet shape histograms
+  void DrawJetShapeMCComparison();  // Draw jet shape Monte Carlo comparison histograms
   void DrawEventMixingCheck();  // Draw different deltaEta regions in deltaPhi histograms to the same figure to ensure event mixing gives good background
   void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file

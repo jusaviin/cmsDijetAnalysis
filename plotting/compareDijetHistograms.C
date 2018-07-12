@@ -37,8 +37,8 @@ void compareDijetHistograms(){
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
-  bool drawJetShapeCounts = false;
+  bool drawJetShape = false;
+  bool drawJetShapeMCComparison = true;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
@@ -65,7 +65,7 @@ void compareDijetHistograms(){
   bool logJetShape = true;    // Jet shapes
   
   // File for JFF correction
-  TString jffCorrectionFileName = "";//"data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
+  TString jffCorrectionFileName = "data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -73,9 +73,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.85;
-  double maxZoom = 1.15;
-  TString ratioLabel = "Reco/Gen";
+  double minZoom = 0.0;
+  double maxZoom = 2.0;
+  TString ratioLabel = "Data/Pythia6";
   
   // Scaling for histograms
   bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -118,8 +118,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-07-06.root"};
+  const int nDatasets = 3;
+  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-07-06.root","data/dijet_ppMC_RecoReco_mergedPythia6Skims_processed_2018-07-06.root","data/dijet_ppMC_GenGen_mergedPythia6Skims_processed_2018-07-06.root"};
   //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
   //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
@@ -142,6 +142,8 @@ void compareDijetHistograms(){
   //  "data/dijet_ppMC_RecoReco_noMixing_mergedPythia6Skims_2018-07-06.root" "data/dijet_ppMC_RecoGen_noMixing_mergedPythia6Skims_2018-07-06.root"
   //  "data/dijet_ppMC_RecoReco_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenGen_mergedPythia6Skims_processed_2018-07-06.root"
   //  "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenReco_mergedPythia6Skims_processed_2018-07-06.root"
+  
+  bool applyJffCorrection[nDatasets] = {true,true,false};  // Specify to which datasets should the JFF correction be applied
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -217,7 +219,7 @@ void compareDijetHistograms(){
 
   DijetComparingDrawer *drawer = new DijetComparingDrawer(histograms[0]);
   for(int i = 1; i < nDatasets; i++){
-    drawer->AddHistogramToDraw(histograms[i]);
+    drawer->AddHistogramToDraw(histograms[i],applyJffCorrection[i]);
   }
   
   drawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);
@@ -226,7 +228,7 @@ void compareDijetHistograms(){
   drawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   drawer->SetDrawAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
   drawer->SetDrawJetTrackDeltas(drawJetTrackDeltaPhi,drawJetTrackDeltaEta,drawJetTrackDeltaEtaDeltaPhi);
-  drawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeCounts);
+  drawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeMCComparison);
   drawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);
   drawer->SetDrawEventMixingCheck(drawEventMixingCheck,eventMixingZoom);
   drawer->SetSaveFigures(saveFigures,figureFormat);

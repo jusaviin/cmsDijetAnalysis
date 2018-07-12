@@ -17,6 +17,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fBaseHistograms(fBaseHistograms),
   fnAddedHistograms(0),
   fMainHistogram(0),
+  fApplyJffCorrectionMain(true),
   fDrawJetTrackDeltaPhi(false),
   fDrawJetTrackDeltaEta(false),
   fDrawJetTrackDeltaEtaDeltaPhi(false),
@@ -48,6 +49,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
     fAddedHistograms[iRatios] = NULL;
     fComparisonHistogram[iRatios] = NULL;
     fRatioHistogram[iRatios] = NULL;
+    fApplyJffCorrectionAdditional[iRatios] = false;
   }
   
   // Do not draw anything by default
@@ -79,13 +81,18 @@ DijetComparingDrawer::~DijetComparingDrawer(){
 
 /*
  * Add histograms to draw together with base histograms
+ *
+ *  Arguments:
+ *   DijetHistogramManager *additionalHistogram = Histogram manager containing the set of histograms for this dataset
+ *   bool applyCorrection = Flag if JFF correction should be applied to this dataset
  */
-void DijetComparingDrawer::AddHistogramToDraw(DijetHistogramManager *additionalHistogram){
+void DijetComparingDrawer::AddHistogramToDraw(DijetHistogramManager *additionalHistogram, bool applyCorrection){
   if(fnAddedHistograms == knMaxRatios){
     cout << "Already at maximum amount of histograms (" << knMaxRatios << "), cannot add more!" << endl;
     return;
   }
   
+  fApplyJffCorrectionAdditional[fnAddedHistograms] = applyCorrection;
   fAddedHistograms[fnAddedHistograms++] = additionalHistogram;
 }
 
@@ -105,6 +112,7 @@ void DijetComparingDrawer::DrawHistograms(){
   
   // Draw the jet shape histograms
   DrawJetShapeHistograms();
+  DrawJetShapeMCComparison();
   
   // Draw the event mixing check
   DrawEventMixingCheck();
@@ -666,7 +674,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
 }
 
 /*
- * Drawer for track jet correlation histograms
+ * Drawer for jet shape histograms compared to inclusive analysis
  */
 void DijetComparingDrawer::DrawJetShapeHistograms(){
   
@@ -694,7 +702,6 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   TH1D *sumHistogram;
   TH1D *dijetSumHistogram;
   TH1D *helperHistogram;
-  TH1D *correctionHistogram;
   
   // Find the histograms to compare with from the comparison file
   comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
@@ -721,6 +728,9 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   
   // Scale the sum histogram
   //sumHistogram->Scale(1.0/jetShapeIntegral);
+  
+  // Apply the JFF correction to the jet shape histograms if the correction is loaded
+  if(fJffCorrectionFinder->CorrectionReady()) fBaseHistograms->ApplyJffCorrection(fJffCorrectionFinder);
   
   // For the jet shape, there will be one added histogram
   fnAddedHistograms = 1;
@@ -752,14 +762,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         fMainHistogram = (TH1D*) fComparisonHistogram[0]->Clone(Form("Klooni%d%d%d",iJetTrack,iCentrality,iTrackPt));
         helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
         
-        // Normalize the histogram by the number of dijets and apply the JFF correction
-        helperHistogram->Scale(1.0/fBaseHistograms->GetPtIntegral(iCentrality));
-        
-        // If JFF correction is loaded, apply it.
-        if(fJffCorrectionFinder->CorrectionReady()){
-          correctionHistogram = fJffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentrality,iTrackPt);
-          helperHistogram->Add(correctionHistogram,-1);
-        }
+        // JFF correction applies also normalization to the number of dijets, if the correction is not applied, it needs to be done here
+        if(!fJffCorrectionFinder->CorrectionReady()) helperHistogram->Scale(1.0/fBaseHistograms->GetPtIntegral(iCentrality));
         
         // A couple of last bins are missing from the comparison histogram, so drop them also from main histogram
         for(int iBin = 1; iBin <= fMainHistogram->GetNbinsX(); iBin++){
@@ -836,6 +840,154 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   } // Jet-track correlation category loop
   
 }
+
+/*
+ * Drawer for comparison between data and MC from this analysis
+ */
+void DijetComparingDrawer::DrawJetShapeMCComparison(){
+  
+  // Only draw the jet shape comparison if chosen to do so
+  if(!fDrawJetShape[DijetHistogramManager::kJetShapeBinCount]) return;
+  
+  // Legend helper variables
+  TLegend *legend;
+  double legendX1;
+  double legendY1;
+  double legendX2;
+  double legendY2;
+  
+  // Helper variables for centrality naming in figures
+  TString centralityString;
+  TString compactCentralityString;
+  TString trackPtString;
+  TString compactTrackPtString;
+  char namerX[100];
+  
+  // Scaling for histograms
+  double mainHistogramScale = 1;
+  double comparisonScale[knMaxRatios] = {0};
+  for(int i = 0; i < knMaxRatios; i++){
+    comparisonScale[i] = 1;
+  }
+  
+  // Helper histograms for summing over pT
+  TH1D *mainSum;
+  TH1D *comparisonSum[knMaxRatios];
+  TH1D *comparisonSumRatio[knMaxRatios];
+  
+  // Apply the JFF correction to the selected histograms if the correction is ready
+  if(fJffCorrectionFinder->CorrectionReady() && fApplyJffCorrectionMain) fBaseHistograms->ApplyJffCorrection(fJffCorrectionFinder);
+  for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+    if(fJffCorrectionFinder->CorrectionReady() && fApplyJffCorrectionAdditional[iAdditional]) fAddedHistograms[iAdditional]->ApplyJffCorrection(fJffCorrectionFinder);
+  }
+  
+  // Loop over jet-track correlation categories
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+    
+    // Loop over centrality
+    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+      
+      centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      
+      // Loop over track pT bins
+      for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
+        
+        // Set the correct track pT bins
+        trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
+        compactTrackPtString.ReplaceAll(".","v");
+        
+        legendX1 = 0.48; legendY1 = 0.68; legendX2 = 0.82; legendY2 = 0.93;
+        
+        // Prepare the track phi histograms to be drawn
+        PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, iCentrality, iTrackPt);
+        
+        // Normalize histograms to the number of dijets
+        if(!fJffCorrectionFinder->CorrectionReady() || !fApplyJffCorrectionMain){
+          mainHistogramScale = 1.0/fBaseHistograms->GetPtIntegral(iCentrality);
+          fMainHistogram->Scale(mainHistogramScale);
+        }
+        for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+          if(!fJffCorrectionFinder->CorrectionReady() || !fApplyJffCorrectionAdditional[iAdditional]){
+            comparisonScale[iAdditional] = 1.0/fAddedHistograms[iAdditional]->GetPtIntegral(iCentrality);
+            fComparisonHistogram[iAdditional]->Scale(comparisonScale[iAdditional]);
+            fRatioHistogram[iAdditional]->Scale(mainHistogramScale/comparisonScale[iAdditional]);
+          }
+        }
+        
+        // Calculate the pT sum
+        if(iTrackPt == fFirstDrawnTrackPtBin){
+          mainSum = (TH1D*) fMainHistogram->Clone("mainClone");
+          for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+            comparisonSum[iAdditional] = (TH1D*) fComparisonHistogram[iAdditional]->Clone(Form("comparisonClone%d",iAdditional));
+          }
+        } else {
+          mainSum->Add(fMainHistogram);
+          for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+            comparisonSum[iAdditional]->Add(fComparisonHistogram[iAdditional]);
+          }
+        }
+        
+        // Draw the track phi distributions to the upper panel of a split canvas plot
+        sprintf(namerX,"#DeltaR");
+        DrawToUpperPad(namerX, "P(#DeltaR)", fLogJetShape);
+        
+        // Add a legend to the plot
+        legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+        SetupLegend(legend,centralityString,trackPtString);
+        legend->Draw();
+        
+        // Draw the ratios to the lower portion of the split canvas
+        fDrawer->SetGridY(true);
+        DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
+        fDrawer->SetGridY(false);
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sJetShapeComparison",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+        SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+        
+      } // Track pT loop
+      
+      // Set the correct track pT bins
+      trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(fFirstDrawnTrackPtBin),fBaseHistograms->GetTrackPtBinBorder(fLastDrawnTrackPtBin+1));
+      compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(fFirstDrawnTrackPtBin),fBaseHistograms->GetTrackPtBinBorder(fLastDrawnTrackPtBin+1));
+      compactTrackPtString.ReplaceAll(".","v");
+      
+      // Calculate the pT summed ratios and set the pointers to class histograms
+      fMainHistogram = mainSum;
+      for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+        comparisonSumRatio[iAdditional] = (TH1D*) mainSum->Clone(Form("sumClone%d",iAdditional));
+        comparisonSumRatio[iAdditional]->Divide(comparisonSum[iAdditional]);
+        fComparisonHistogram[iAdditional] = comparisonSum[iAdditional];
+        fRatioHistogram[iAdditional] = comparisonSumRatio[iAdditional];
+      }
+      
+      // Draw the track phi distributions to the upper panel of a split canvas plot
+      sprintf(namerX,"#DeltaR");
+      DrawToUpperPad(namerX, "P(#DeltaR)", fLogJetShape);
+      
+      // Add a legend to the plot
+      legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+      SetupLegend(legend,centralityString,trackPtString);
+      legend->Draw();
+      
+      // Draw the ratios to the lower portion of the split canvas
+      fDrawer->SetGridY(true);
+      DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
+      fDrawer->SetGridY(false);
+      
+      // Save the figure to a file
+      sprintf(namerX,"%sJetShapeComparison",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
+      SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+      
+      
+    } // Centrality loop
+  } // Jet-track correlation category loop
+  
+}
+
 
 /*
  * Prepare histograms for ratio plots
