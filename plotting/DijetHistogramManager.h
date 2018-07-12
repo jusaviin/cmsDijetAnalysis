@@ -16,6 +16,8 @@
 #include "DijetMethods.h"
 #include "../src/DijetHistograms.h"
 
+class JffCorrector;  // Need forward declaration of the JffCorrector as this class depends on DijetHistogramManager
+
 /*
  * Class for drawing the histograms produced in the dijet analysis
  */
@@ -85,6 +87,8 @@ public:
   void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape
   void Write(const char* fileName, const char* fileOption);  // Write all the loaded histograms into a file
   void LoadProcessedHistograms(); // Load processed histograms from the inputfile
+  void ApplyJffCorrection(JffCorrector *jffCorrectionFinder);  // Apply the JFF correction to relevant histograms
+  void NormalizeJetShape();       // Normalize the jet shape histograms
   
   // Setters for binning information
   void SetCentralityBins(const double *binBorders, bool setIndices = true); // Set up centrality bin indices according to provided bin borders
@@ -317,7 +321,6 @@ private:
   // Mixed event correction, background subtraction and jet shape calculation
   void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
   void SubtractBackgroundAndCalculateJetShape();  // Subtract the background from the distributions and use these histograms to calculate jet shape
-  void NormalizeJetShape();  // Normalize the jet shape histograms
   
 };
 

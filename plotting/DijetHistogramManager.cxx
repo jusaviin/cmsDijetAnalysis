@@ -8,6 +8,7 @@
 
 // Own includes
 #include "DijetHistogramManager.h"
+#include "JffCorrector.h"
 
 /*
  * Default constructor
@@ -290,7 +291,6 @@ DijetHistogramManager::~DijetHistogramManager(){
 void DijetHistogramManager::ProcessHistograms(){
   DoMixedEventCorrection();  // Mixed event correction needs to be done first, as we need the corrected histograms for the background subtraction
   SubtractBackgroundAndCalculateJetShape(); // Subtract the background and take projections of processed two-dimensional histograms. After that, calculate jet shape
-  //NormalizeJetShape();  // Normalize the jet shape histograms such thaat pT integrated histogram is unity at deltaR < 1
 }
 
 /*
@@ -384,6 +384,30 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
             
           } // DeltaPhi loop
         } // Correlation type loop
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation category loop
+}
+
+/*
+ *  Apply the JFF correction to relevant histograms
+ *
+ *  Arguments:
+ *   JffCorrector *jffCorrectionFinder = Class holding the JFF correction histograms
+ */
+void DijetHistogramManager::ApplyJffCorrection(JffCorrector *jffCorrectionFinder){
+  
+  // Helper histogram for reading the JFF correction
+  TH1D *correctionHistogram;
+  
+  // Loop over all the histogram and apply the JFF correction
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only scale the histograms that are selected for analysis
+    for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+        correctionHistogram = jffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
+        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin]->Scale(1.0/GetPtIntegral(iCentralityBin));  // Need to scale with the number of dijets since the correction is also normalized to the number of dijets
+        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation category loop
