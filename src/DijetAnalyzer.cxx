@@ -469,6 +469,10 @@ void DijetAnalyzer::RunAnalysis(){
     if(mixEvents){
       if(fDataType == ForestReader::kPbPb){
         currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
+      } else if (fDataType == ForestReader::kPbPbMC || (fDataType == ForestReader::kPpMC && fReadMode == 2)) {
+        MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
+        currentMixedEventFile = mixingTable->GetMixingFileName(currentFile);
+        delete mixingTable;
       } else {
         currentMixedEventFile = fFileNames.at(iFile);
       }
@@ -501,8 +505,9 @@ void DijetAnalyzer::RunAnalysis(){
       }
     }
 
-    // Debug message, if wanted
+    // Print the used files
     if(debugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
+    if(debugLevel > 0 && mixEvents) cout << "Mixing file: " << currentMixedEventFile.Data() << endl;
     
     // If file is good, read the forest from the file
     jetReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...

@@ -25,7 +25,7 @@ using namespace std;
 class ForestReader{
   
 protected:
-  static const Int_t fnMaxParticleFlowCandidates = 10000;        // Maximum number of particle flow candidat4es
+  static const Int_t fnMaxParticleFlowCandidates = 10000;        // Maximum number of particle flow candidates
   
 public:
   

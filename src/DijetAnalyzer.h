@@ -21,6 +21,7 @@
 #include "GeneratorLevelSkimForestReader.h"
 #include "TrkCorr.h"
 #include "JffCorrection.h"
+#include "MixedEventLookoutTable.h"
 
 class DijetAnalyzer{
   
