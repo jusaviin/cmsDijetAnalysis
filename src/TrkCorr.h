@@ -8,14 +8,15 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TrkSettings.h"
+#include "TrkCorrInterface.h"
 #include <iostream>
 #include <vector>
 
-class TrkCorr{
+class TrkCorr : public TrkCorrInterface{
   public:
     double getTrkCorr(float pt, float eta, float phi, float hiBin, float rmin=99, float jtpt=0, int correction=0);
     TrkCorr(std::string inputDirectory = "trkCorrections/");
-    ~TrkCorr();    
+    virtual ~TrkCorr();    
 
   private:
     int nFiles;

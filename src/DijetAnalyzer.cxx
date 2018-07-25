@@ -63,6 +63,15 @@ DijetAnalyzer::DijetAnalyzer() :
   fJetReader = NULL;
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
+  
+  // Initialize the mixing pool to -1
+  for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
+    for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
+      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
+        fMixingPool[iVz][iHiBin][iEvent] = -1;
+      }
+    }
+  }
 }
 
 /*
@@ -108,6 +117,15 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
   
+  // Initialize the mixing pool to -1
+  for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
+    for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
+      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
+        fMixingPool[iVz][iHiBin][iEvent] = -1;
+      }
+    }
+  }
+  
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
   bool ppData = true;
@@ -127,7 +145,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
     
     // Track correction
-    fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_Jun7_Iterative_PbPb_etaLT2p4/");
+    fTrackCorrection = new XiaoTrkCorr("trackCorrectionTables/xiaoCorrection/eta_symmetry_cymbalCorr_FineBin.root");
     
     // Flag for PbPb data
     ppData = false;
@@ -203,6 +221,15 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   // Copy constructor
   fTrackReader[DijetHistograms::kSameEvent] = in.fTrackReader[DijetHistograms::kSameEvent];
   fTrackReader[DijetHistograms::kMixedEvent] = in.fTrackReader[DijetHistograms::kMixedEvent];
+  
+  // Copy the mixing pool
+  for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
+    for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
+      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
+        fMixingPool[iVz][iHiBin][iEvent] = in.fMixingPool[iVz][iHiBin][iEvent];
+      }
+    }
+  }
 }
 
 /*
@@ -250,6 +277,15 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fMinimumTrackHits = in.fMinimumTrackHits;
   fSubeventCut = in.fSubeventCut;
   fMcCorrelationType = in.fMcCorrelationType;
+  
+  // Copy the mixing pool
+  for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
+    for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
+      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
+        fMixingPool[iVz][iHiBin][iEvent] = in.fMixingPool[iVz][iHiBin][iEvent];
+      }
+    }
+  }
   
   return *this;
 }
@@ -1212,22 +1248,27 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   Float_t trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);  // Track eta
   Float_t trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);  // Track phi
   
-  // Need distance to nearest jet for the efficiency correction
-  for(Int_t iJet = 0; iJet < fTrackReader[correlationType]->GetNJets(); iJet++){
+  // For heavy ion correction, track RMin is not used
+  if(fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC){
     
-    // Require the same jet quality cuts as when searching for dijets
-    if(TMath::Abs(fTrackReader[correlationType]->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
-    if(fTrackReader[correlationType]->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
-    if(fMinimumMaxTrackPtFraction >= fTrackReader[correlationType]->GetJetMaxTrackPt(iJet)/fTrackReader[correlationType]->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
-    if(fMaximumMaxTrackPtFraction <= fTrackReader[correlationType]->GetJetMaxTrackPt(iJet)/fTrackReader[correlationType]->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
-    // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
+    // Need distance to nearest jet for the efficiency correction
+    for(Int_t iJet = 0; iJet < fTrackReader[correlationType]->GetNJets(); iJet++){
+      
+      // Require the same jet quality cuts as when searching for dijets
+      if(TMath::Abs(fTrackReader[correlationType]->GetJetEta(iJet)) >= fJetSearchEtaCut) continue; // Require jet eta to be in the search range for dijets
+      if(fTrackReader[correlationType]->GetJetPt(iJet) <= fSubleadingJetMinPtCut) continue; // Only consider jets that pass the pT cut for subleading jets
+      if(fMinimumMaxTrackPtFraction >= fTrackReader[correlationType]->GetJetMaxTrackPt(iJet)/fTrackReader[correlationType]->GetJetRawPt(iJet)) continue; // Cut for jets with only very low pT particles
+      if(fMaximumMaxTrackPtFraction <= fTrackReader[correlationType]->GetJetMaxTrackPt(iJet)/fTrackReader[correlationType]->GetJetRawPt(iJet)) continue; // Cut for jets where all the pT is taken by one track
+      // if(TMath::Abs(chargedSum[k]/rawpt[k]) < 0.01) continue; // Jet quality cut from readme file. TODO: Check if should be applied
+      
+      // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
+      trackR = TMath::Power(fTrackReader[correlationType]->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(fTrackReader[correlationType]->GetJetPhi(iJet)-trackPhi)),2);
+      if(trackRMin*trackRMin>trackR) trackRMin=TMath::Sqrt(trackR);
+      
+    } // Loop for calculating Rmin
     
-    // Note: The ACos(Cos(jetPhi-trackPhi)) structure transforms deltaPhi to interval [0,Pi]
-    trackR = TMath::Power(fTrackReader[correlationType]->GetJetEta(iJet)-trackEta,2)+TMath::Power(TMath::ACos(TMath::Cos(fTrackReader[correlationType]->GetJetPhi(iJet)-trackPhi)),2);
-    if(trackRMin*trackRMin>trackR) trackRMin=TMath::Sqrt(trackR);
+  } // If for heavy ions
     
-  } // Loop for calculating Rmin
-  
   // Find and return the track efficiency correction
   return fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, fTrackReader[correlationType]->GetHiBin(), trackRMin);
   

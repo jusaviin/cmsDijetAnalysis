@@ -19,7 +19,9 @@
 #include "SkimForestReader.h"
 #include "GeneratorLevelForestReader.h"
 #include "GeneratorLevelSkimForestReader.h"
+#include "TrkCorrInterface.h"
 #include "TrkCorr.h"
+#include "XiaoTrkCorr.h"
 #include "JffCorrection.h"
 #include "MixedEventLookoutTable.h"
 
@@ -31,6 +33,10 @@ private:
   enum enumSubeventCuts{kSubeventZero,kSubeventNonZero,kSubeventAny,knSubeventCuts}; // Cuts for subevent index
   enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
   enum enumForestType{kHighForest,kSkimForest,knForestTypes}; // What type of forest is used for reader
+  
+  static const Int_t kMaxMixingPoolDepth = 100;  // Maximum depth of the mixing pool in one event category
+  static const Int_t kMaxMixingVzBins = 30;      // Maximum number of vz bins in the mixing pool
+  static const Int_t kMaxMixingHiBins = 200;     // Maximum number of CMS HiBins in the mixing pool
   
 public:
   
@@ -59,15 +65,16 @@ private:
   Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
   
   // Private data members
-  ForestReader *fJetReader;          // Reader for jets in the event
-  ForestReader *fTrackReader[2];     // Readers for tracks in the event. Index 0 = same event. Index 1 = mixed event.
-  std::vector<TString> fFileNames;   // Vector for all the files to loop over
-  ConfigurationCard *fCard;          // Configuration card for the analysis
-  DijetHistograms *fHistograms;      // Filled histograms
-  TrkCorr *fTrackCorrection;         // Track correction class
-  JffCorrection *fJffCorrection;     // Jet fragmentation function correction for jet pT
-  TF1 *fVzWeightFunction;            // Weighting function for vz. Needed for MC.
-  TF1 *fCentralityWeightFunction;    // Weighting function for centrality. Needed for MC.
+  ForestReader *fJetReader;           // Reader for jets in the event
+  ForestReader *fTrackReader[2];      // Readers for tracks in the event. Index 0 = same event. Index 1 = mixed event.
+  std::vector<TString> fFileNames;    // Vector for all the files to loop over
+  ConfigurationCard *fCard;           // Configuration card for the analysis
+  DijetHistograms *fHistograms;       // Filled histograms
+  TrkCorrInterface *fTrackCorrection; // Track correction class
+  JffCorrection *fJffCorrection;      // Jet fragmentation function correction for jet pT
+  TF1 *fVzWeightFunction;             // Weighting function for vz. Needed for MC.
+  TF1 *fCentralityWeightFunction;     // Weighting function for centrality. Needed for MC.
+  Int_t fMixingPool[kMaxMixingVzBins][kMaxMixingHiBins][kMaxMixingPoolDepth];  // Mixing pool. Remembed the event indices of mixed events in different vz and HiBin bins.
   
   // Analyzed data and forest types
   Int_t fDataType;                   // Analyzed data type
