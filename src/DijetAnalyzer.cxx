@@ -527,11 +527,11 @@ void DijetAnalyzer::RunAnalysis(){
     if(mixEvents){
       if(fDataType == ForestReader::kPbPb){
         currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
-      } else if (fDataType == ForestReader::kPbPbMC || (fDataType == ForestReader::kPpMC && fReadMode == 2)) {
+      } /*else if (fDataType == ForestReader::kPbPbMC || (fDataType == ForestReader::kPpMC && fReadMode == 2)) {
         MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
         currentMixedEventFile = mixingTable->GetMixingFileName(currentFile);
         delete mixingTable;
-      } else {
+      }*/ else {
         currentMixedEventFile = fFileNames.at(iFile);
       }
       mixedEventFile = TFile::Open(currentMixedEventFile);
@@ -1249,6 +1249,13 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
  */
 void DijetAnalyzer::CreateMixingPool(){
   
+  // Start by emptying the pool from possible earlier files used
+  for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
+    for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
+      fMixingPool[iVz][iHiBin].clear();
+    }
+  }
+  
   // Initialize the mixed event randomizer
   TRandom3 *mixedEventRandomizer = new TRandom3();  // Randomizer for starting point in the mixed event file
   mixedEventRandomizer->SetSeed(0);
@@ -1264,6 +1271,7 @@ void DijetAnalyzer::CreateMixingPool(){
   Int_t binForVz;          // Bin given to vz
   Int_t binForCentrality;  // Bin given to centrality
   Int_t iCurrentEvent;     // Index of the event
+  
   for(Int_t iMixedEvent = 0; iMixedEvent < nEventsInMixingFile; iMixedEvent++){
     
     // Read the events from file starting from random position
@@ -1282,7 +1290,7 @@ void DijetAnalyzer::CreateMixingPool(){
     
     // If we are under the required mixing pool depth, add the event to pool
     if(fMixingPool[binForVz][binForCentrality].size() < fMixingPoolDepth) fMixingPool[binForVz][binForCentrality].push_back(iCurrentEvent);
-    
+
   }
   
   // Delete the randomizer before returning
@@ -1302,8 +1310,8 @@ Int_t DijetAnalyzer::FindMixingVzBin(const Double_t vz) const{
  *  Find a bin for the input hiBin. There are 200 hiBins
  */
 Int_t DijetAnalyzer::FindMixingHiBin(const Int_t hiBin) const{
-  if(hiBin == 200) return (200/hiBin) - 1; // If we are exactly at the upper limit, put the result to last available bin
-  return 200/hiBin;
+  if(hiBin == 200) return (hiBin/fMixingHiBinWidth) - 1; // If we are exactly at the upper limit, put the result to last available bin
+  return hiBin/fMixingHiBinWidth;
 }
 
 /*
