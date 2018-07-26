@@ -27,6 +27,10 @@ DijetAnalyzer::DijetAnalyzer() :
   fCentralityWeight(1),
   fPtHatWeight(1),
   fTotalEventWeight(1),
+  fMixingPoolDepth(1),
+  fMixingVzBinWidth(1),
+  fMixingHiBinWidth(1),
+  fRunningMixingIndex(0),
   fVzCut(0),
   fMinimumPtHat(0),
   fMaximumPtHat(0),
@@ -64,12 +68,10 @@ DijetAnalyzer::DijetAnalyzer() :
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
   
-  // Initialize the mixing pool to -1
+  // Clear the mixing pool
   for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
     for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
-      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
-        fMixingPool[iVz][iHiBin][iEvent] = -1;
-      }
+      fMixingPool[iVz][iHiBin].clear();
     }
   }
 }
@@ -86,6 +88,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fCentralityWeight(1),
   fPtHatWeight(1),
   fTotalEventWeight(1),
+  fRunningMixingIndex(0),
   fVzCut(0),
   fMinimumPtHat(0),
   fMaximumPtHat(0),
@@ -117,14 +120,16 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
   
-  // Initialize the mixing pool to -1
+  // Initialize the mixing pool
   for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
     for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
-      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
-        fMixingPool[iVz][iHiBin][iEvent] = -1;
-      }
+      fMixingPool[iVz][iHiBin].clear();
     }
   }
+  
+  fMixingPoolDepth = fCard->Get("MixingPoolDepth");
+  fMixingVzBinWidth = fCard->Get("MixingVzBinWidth");
+  fMixingHiBinWidth = fCard->Get("MixingHiBinWidth");
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
@@ -176,6 +181,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFillRegularJetTrackCorrelation = bitChecker.test(kFillRegularJetTrackCorrelation);
   fFillUncorrectedJetTrackCorrelation = bitChecker.test(kFillUncorrectedJetTrackCorrelation);
   fFillPtWeightedJetTrackCorrelation = bitChecker.test(kFillPtWeightedJetTrackCorrelation);
+  
 }
 
 /*
@@ -196,6 +202,10 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fCentralityWeight(in.fCentralityWeight),
   fPtHatWeight(in.fPtHatWeight),
   fTotalEventWeight(in.fTotalEventWeight),
+  fMixingPoolDepth(in.fMixingPoolDepth),
+  fMixingVzBinWidth(in.fMixingVzBinWidth),
+  fMixingHiBinWidth(in.fMixingHiBinWidth),
+  fRunningMixingIndex(in.fRunningMixingIndex),
   fVzCut(in.fVzCut),
   fMinimumPtHat(in.fMinimumPtHat),
   fMaximumPtHat(in.fMaximumPtHat),
@@ -225,9 +235,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   // Copy the mixing pool
   for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
     for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
-      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
-        fMixingPool[iVz][iHiBin][iEvent] = in.fMixingPool[iVz][iHiBin][iEvent];
-      }
+      fMixingPool[iVz][iHiBin] = in.fMixingPool[iVz][iHiBin];
     }
   }
 }
@@ -256,6 +264,10 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fCentralityWeight = in.fCentralityWeight;
   fPtHatWeight = in.fPtHatWeight;
   fTotalEventWeight = in.fTotalEventWeight;
+  fMixingPoolDepth = in.fMixingPoolDepth;
+  fMixingVzBinWidth = in.fMixingVzBinWidth;
+  fMixingHiBinWidth = in.fMixingHiBinWidth;
+  fRunningMixingIndex = in.fRunningMixingIndex;
   fVzCut = in.fVzCut;
   fMinimumPtHat = in.fMinimumPtHat;
   fMaximumPtHat = in.fMaximumPtHat;
@@ -281,9 +293,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   // Copy the mixing pool
   for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
     for(Int_t iHiBin = 0; iHiBin < kMaxMixingHiBins; iHiBin++){
-      for(Int_t iEvent = 0; iEvent < kMaxMixingPoolDepth; iEvent++){
-        fMixingPool[iVz][iHiBin][iEvent] = in.fMixingPool[iVz][iHiBin][iEvent];
-      }
+      fMixingPool[iVz][iHiBin] = in.fMixingPool[iVz][iHiBin];
     }
   }
   
@@ -406,23 +416,13 @@ void DijetAnalyzer::RunAnalysis(){
   // Event mixing information
   Bool_t mixEvents = (fCard->Get("DoEventMixing") == 1);           // Do or do not do event mixing
   Int_t nMixedEventsPerDijet = fCard->Get("NMixedEventsPerDijet"); // Number of events mixed with each dijet event
-  TRandom3 *mixedEventRandomizer = new TRandom3();                 // Randomizer for starting point in the mixed event file
-  Int_t firstMixingEvent;                                          // Event index from which we start the mixing
-  Double_t mixingVzTolerance = fCard->Get("VzTolerance");          // Maximum vz distance between mixed event and dijet event
   Int_t mixedEventIndex;                                           // Index of current event in mixing loop
   Int_t eventsMixed;                                               // Number of events mixed
-  Int_t nEventsInMixingFile;                                       // Number of events in the mixing file
-  Bool_t allEventsWentThrough;                                     // Have we checked all the events in the mixing file
-  Bool_t checkForDuplicates;                                       // Check if we have already mixed with the corresponding event
-  Bool_t skipEvent;                                                // Skip the current mixing event
-  std::vector<Double_t> mixedEventVz;                              // Vector for vz in mixing events
-  std::vector<Int_t> mixedEventHiBin;                              // Vector for hiBin in mixing events
-  std::vector<Int_t> mixedEventIndices;                            // Indices for events that have already been mixed
-  Double_t additionalTolerance;                                    // Increased vz tolerance, if not enough events found from the mixing file
-  Int_t hiBinTolerance;                                            // Define how closely we need to match hiBin for heavy ions
-  
-  // Initialize the mixed event randomizer
-  mixedEventRandomizer->SetSeed(0);
+  Int_t mixingVzBin;                                               // Bin index for the vz bin in mixing pool
+  Int_t mixingHiBin;                                               // Bin index for the centrality bin in the mixing pool
+  Bool_t startOfLoop;                                              // Bool for writing debuggin messages is same event are used many times for mixing
+  Int_t nLoops;                                                    // Counter of how many times same event are used for mixing
+  Int_t firstMixingIndex;                                          // Index for the first event used in event mixing
   
   // Variables for jets
   Double_t dijetAsymmetry = -99;   // Dijet asymmetry
@@ -572,22 +572,10 @@ void DijetAnalyzer::RunAnalysis(){
     if(useDifferentReaderFotJetsAndTracks) fTrackReader[DijetHistograms::kSameEvent]->ReadForestFromFile(copyInputFile); // If we mix reco and gen, the reader for jets and tracks is different
     nEvents = fJetReader->GetNEvents();
     
-    // Read also the forest for event mixing
+    // Read also the forest for event mixing and prepare mixing pool
     if(mixEvents){
-      fTrackReader[DijetHistograms::kMixedEvent]->ReadForestFromFile(mixedEventFile);  // Read the mixed event forest
-      nEventsInMixingFile = fTrackReader[DijetHistograms::kMixedEvent]->GetNEvents(); // Read the number of events in the mixing file
-      firstMixingEvent = nEventsInMixingFile*mixedEventRandomizer->Rndm();  // Start mixing from random spot in file
-      if(firstMixingEvent == nEventsInMixingFile) firstMixingEvent--;  // Move the index to allowed range
-      
-      // Read vz and hiBin from each event in event mixing file to memory.
-      // This way we avoid loading different mixed events in a loop several times
-      mixedEventVz.clear();     // Clear the vectors for any possible
-      mixedEventHiBin.clear();  // contents they might have
-      for(Int_t iMixedEvent = 0; iMixedEvent < nEventsInMixingFile; iMixedEvent++){
-        fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(iMixedEvent);
-        mixedEventVz.push_back(fTrackReader[DijetHistograms::kMixedEvent]->GetVz());
-        mixedEventHiBin.push_back(fTrackReader[DijetHistograms::kMixedEvent]->GetHiBin());
-      }
+      fTrackReader[DijetHistograms::kMixedEvent]->ReadForestFromFile(mixedEventFile);
+      CreateMixingPool();
     }
 
     // Event loop
@@ -631,37 +619,7 @@ void DijetAnalyzer::RunAnalysis(){
       
       //  ===== Apply all the event quality cuts =====
       
-      // Cut for primary vertex. Only applied for data.
-      if(fJetReader->GetPrimaryVertexFilterBit() == 0) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
-      
-      // Cut for HB/HE noise. Only applied for data.
-      if(fJetReader->GetHBHENoiseFilterBit() == 0) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
-      
-      // Cut for collision event selection. Only applied for PbPb data.
-      if(fJetReader->GetCollisionEventSelectionFilterBit() == 0) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
-      
-      // Cut for beam scraping. Only applied for pp data.
-      if(fJetReader->GetBeamScrapingFilterBit() == 0) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
-      
-      // Cut for energy deposition in at least 3 hadronic forward towers. Only applied for PbPb data.
-      if(fJetReader->GetHfCoincidenceFilterBit() == 0) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
-      
-      // Cut for cluster compatibility. Only applied for PbPb data.
-      if(fJetReader->GetClusterCompatibilityFilterBit() == 0) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
-      
-      // Cut for calirimeter jet quality. Only applied for data.
-      if(fJetReader->GetCaloJetFilterBit() == 0) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
-      
-      // Cut for vertex z-position
-      if(TMath::Abs(vz) > fVzCut) continue;
-      if(fFillEventInformation) fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);
+      if(!PassEventCuts(fJetReader,fFillEventInformation)) continue;
       
       // ===== Event quality cuts applied =====
       
@@ -843,73 +801,50 @@ void DijetAnalyzer::RunAnalysis(){
         if(mixEvents){
           
           // Start mixing from the first event index
-          mixedEventIndex = firstMixingEvent;
           eventsMixed = 0;
-          allEventsWentThrough = false;
-          checkForDuplicates = false;   // Start checking for duplicates in the second round over the file
-          skipEvent = false;
-          additionalTolerance = 0;
-          hiBinTolerance = 0;
-          mixedEventIndices.clear();
+          mixingVzBin = FindMixingVzBin(vz);
+          mixingHiBin = FindMixingHiBin(hiBin);
+          startOfLoop = true;
+          nLoops = 0;
+          firstMixingIndex = 0;
           
           // Continue mixing until we have reached required number of evens
           while (eventsMixed < nMixedEventsPerDijet) {
             
-            // By default, do not skip an event
-            skipEvent = false;
+            // If the running index is outside of the vector range, start over
+            if(fRunningMixingIndex >= fMixingPool[mixingVzBin][mixingHiBin].size()) fRunningMixingIndex = 0;
             
-            // If we have checked all the events but not found enough event to mix with, increase vz and hiBin tolerance
-            if(allEventsWentThrough){
-              if(debugLevel > 0){
-                cout << "Could only find " << eventsMixed << " events to mix with event " << iEvent << " in file " << currentFile.Data() << endl;
-                cout << "Increasing vz tolerance by 0.25 and hiBin tolerance by 1" << endl;
-              }
+            // If we are back at the first index, we are going to the next loop over the vector in mixing pool
+            if(fRunningMixingIndex == firstMixingIndex){
+              startOfLoop = true;
+            }
+            
+            // At the start of loop over mixing pool, increment loop counter
+            if(startOfLoop){
+              startOfLoop = false;
+              firstMixingIndex = fRunningMixingIndex;
+              nLoops++;
               
-              hiBinTolerance += 1;
-              additionalTolerance += 0.25;
-              allEventsWentThrough = false;
-              checkForDuplicates = true;
+              // Write a debug message to the console if same events are used for mixing several times
+              if(nLoops > 1 && debugLevel > 0){
+                cout << "Note! In the mixing for event " << iEvent << " same mixing events are used for " << nLoops << " times!" << endl;
+              }
             }
             
-            // Increment the counter for event index to be mixed with the current event
-            mixedEventIndex++;
-            
-            // If we are out of bounds from the event in data file, reset the counter
-            if(mixedEventIndex == nEventsInMixingFile) {
-              mixedEventIndex = -1;
-              continue;
-            }
-            
-            // If we come back to the first event index, we have gone through all the events without finding 20 similar events form the file
-            if(mixedEventIndex == firstMixingEvent) allEventsWentThrough = true;
+            // Get the index for mixing event for the mixed event pool and increment the running counter
+            mixedEventIndex = fMixingPool[mixingVzBin][mixingHiBin].at(fRunningMixingIndex++);
             
             // Do not mix with the same event
             if((mixedEventIndex == iEvent) && (currentFile == currentMixedEventFile)) continue;
             
-            // Do not mix with events used in the previous iteration over the file
-            if(checkForDuplicates){
-              for(Int_t iMixedEvent : mixedEventIndices) {
-                if(iMixedEvent == mixedEventIndex) skipEvent = true;
-              }
-            }
-            if(skipEvent) continue;
-            
-            // Match vz and hiBin between the dijet event and mixed event
-            if(TMath::Abs(mixedEventVz.at(mixedEventIndex) - vz) > (mixingVzTolerance + additionalTolerance)) continue;
-            if(TMath::Abs(mixedEventHiBin.at(mixedEventIndex) - hiBin) > hiBinTolerance + 1e-4) continue;
-            
-            // If match vz and hiBin, then load the event from the mixed event tree and mark that we have mixed this event
+            // Get the event defined by the index in the mixing pool
             fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(mixedEventIndex);
-            mixedEventIndices.push_back(mixedEventIndex);
             
             // Do the correlations with the dijet from current event and track from mixing event
             CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent);
             eventsMixed++;
             
           } // While loop for finding events to mix
-
-          // For the next event, start mixing the events from where we were left with in the previous event
-          firstMixingEvent = mixedEventIndex;
           
         } // Event mixing
       } // Dijet in event
@@ -922,8 +857,6 @@ void DijetAnalyzer::RunAnalysis(){
     
   } // File loop
   
-  // When we are done, delete ForestReaders
-  delete mixedEventRandomizer;
 }
 
 /*
@@ -1160,11 +1093,48 @@ Bool_t DijetAnalyzer::PassSubeventCut(const Int_t subeventIndex) const{
  * Check if the event passes all the track cuts
  *
  *  Arguments:
- *   ForestReader *eventReader
+ *   ForestReader *eventReader = ForestReader containing the event information checked for event cuts
+ *   const Bool_t fillHistograms = Flag for filling the event information histograms
+ *
+ *   return = True if all event cuts are passed, false otherwise
  */
-//Bool_t PassEventCuts(const Bool_t fillHistograms){
-//
-//}
+Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms){
+
+  // Cut for primary vertex. Only applied for data.
+  if(eventReader->GetPrimaryVertexFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
+  
+  // Cut for HB/HE noise. Only applied for data.
+  if(eventReader->GetHBHENoiseFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
+  
+  // Cut for collision event selection. Only applied for PbPb data.
+  if(eventReader->GetCollisionEventSelectionFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
+  
+  // Cut for beam scraping. Only applied for pp data.
+  if(eventReader->GetBeamScrapingFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kBeamScraping);
+  
+  // Cut for energy deposition in at least 3 hadronic forward towers. Only applied for PbPb data.
+  if(eventReader->GetHfCoincidenceFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHfCoincidence);
+  
+  // Cut for cluster compatibility. Only applied for PbPb data.
+  if(eventReader->GetClusterCompatibilityFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
+  
+  // Cut for calirimeter jet quality. Only applied for data.
+  if(eventReader->GetCaloJetFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
+  
+  // Cut for vertex z-position
+  if(TMath::Abs(eventReader->GetVz()) > fVzCut) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kVzCut);
+  
+  return true;
+  
+}
 
 /*
  * Check if a track passes all the track cuts
@@ -1272,6 +1242,68 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   // Find and return the track efficiency correction
   return fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, fTrackReader[correlationType]->GetHiBin(), trackRMin);
   
+}
+
+/*
+ * Create the mixing pool
+ */
+void DijetAnalyzer::CreateMixingPool(){
+  
+  // Initialize the mixed event randomizer
+  TRandom3 *mixedEventRandomizer = new TRandom3();  // Randomizer for starting point in the mixed event file
+  mixedEventRandomizer->SetSeed(0);
+  
+  // Start reading the file from random position
+  Int_t nEventsInMixingFile = fTrackReader[DijetHistograms::kMixedEvent]->GetNEvents(); // Read the number of events in the mixing file
+  Int_t firstMixingEvent = nEventsInMixingFile*mixedEventRandomizer->Rndm();            // Start mixing from random spot in file
+  if(firstMixingEvent == nEventsInMixingFile) firstMixingEvent--;                       // Move the index to allowed range
+  
+  // Loop through the file and and collect the events to mixing table
+  Double_t mixedEventVz;   // vz in the event
+  Int_t mixedEventHiBin;   // Centrality in the event
+  Int_t binForVz;          // Bin given to vz
+  Int_t binForCentrality;  // Bin given to centrality
+  Int_t iCurrentEvent;     // Index of the event
+  for(Int_t iMixedEvent = 0; iMixedEvent < nEventsInMixingFile; iMixedEvent++){
+    
+    // Read the events from file starting from random position
+    iCurrentEvent = iMixedEvent + firstMixingEvent;
+    if(iCurrentEvent >= nEventsInMixingFile) iCurrentEvent -= nEventsInMixingFile;
+    
+    // Read vz and HiBin for the current event
+    fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(iCurrentEvent);
+    if(!PassEventCuts(fTrackReader[DijetHistograms::kMixedEvent],false)) continue;
+    mixedEventVz = fTrackReader[DijetHistograms::kMixedEvent]->GetVz();
+    mixedEventHiBin = fTrackReader[DijetHistograms::kMixedEvent]->GetHiBin();
+    
+    // Determine the bins for vz and centrality
+    binForVz = FindMixingVzBin(mixedEventVz);
+    binForCentrality = FindMixingHiBin(mixedEventHiBin);
+    
+    // If we are under the required mixing pool depth, add the event to pool
+    if(fMixingPool[binForVz][binForCentrality].size() < fMixingPoolDepth) fMixingPool[binForVz][binForCentrality].push_back(iCurrentEvent);
+    
+  }
+  
+  // Delete the randomizer before returning
+  delete mixedEventRandomizer;
+  
+}
+
+/*
+ *  Find a bin for the input vz
+ */
+Int_t DijetAnalyzer::FindMixingVzBin(const Double_t vz) const{
+  if(TMath::Abs(vz-fVzCut) < 1e-3) return ((fVzCut*2)/fMixingVzBinWidth) - 1;  // If we are exactly at the upper limit, put the result to last available bin
+  return (vz + fVzCut)/fMixingVzBinWidth;
+}
+
+/*
+ *  Find a bin for the input hiBin. There are 200 hiBins
+ */
+Int_t DijetAnalyzer::FindMixingHiBin(const Int_t hiBin) const{
+  if(hiBin == 200) return (200/hiBin) - 1; // If we are exactly at the upper limit, put the result to last available bin
+  return 200/hiBin;
 }
 
 /*

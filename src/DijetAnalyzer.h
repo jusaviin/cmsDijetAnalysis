@@ -34,7 +34,6 @@ private:
   enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
   enum enumForestType{kHighForest,kSkimForest,knForestTypes}; // What type of forest is used for reader
   
-  static const Int_t kMaxMixingPoolDepth = 100;  // Maximum depth of the mixing pool in one event category
   static const Int_t kMaxMixingVzBins = 30;      // Maximum number of vz bins in the mixing pool
   static const Int_t kMaxMixingHiBins = 200;     // Maximum number of CMS HiBins in the mixing pool
   
@@ -55,14 +54,17 @@ private:
   
   // Private methods
   void CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType);  // Do jet-track correlations
+  void CreateMixingPool(); // Create a pool of mixed events
   Int_t GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta);
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
-  //Bool_t PassEventCuts(const Bool_t fillHistograms); // Check if the event passes the event cuts
+  Bool_t PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms); // Check if the event passes the event cuts
   Double_t GetTrackEfficiencyCorrection(const Int_t correlationType, const Int_t iTrack); // Get the track efficiency correction for a given track
   Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
   Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
+  Int_t FindMixingVzBin(const Double_t vz) const; // Find a vz bin from mixing table for a given vz value
+  Int_t FindMixingHiBin(const Int_t hiBin) const; // Find a centrality bin from the mixing table for a given hiBin value
   
   // Private data members
   ForestReader *fJetReader;           // Reader for jets in the event
@@ -74,7 +76,7 @@ private:
   JffCorrection *fJffCorrection;      // Jet fragmentation function correction for jet pT
   TF1 *fVzWeightFunction;             // Weighting function for vz. Needed for MC.
   TF1 *fCentralityWeightFunction;     // Weighting function for centrality. Needed for MC.
-  Int_t fMixingPool[kMaxMixingVzBins][kMaxMixingHiBins][kMaxMixingPoolDepth];  // Mixing pool. Remembed the event indices of mixed events in different vz and HiBin bins.
+  std::vector<int> fMixingPool[kMaxMixingVzBins][kMaxMixingHiBins];  // Mixing pool. Remembed the event indices of mixed events in different vz and HiBin bins.
   
   // Analyzed data and forest types
   Int_t fDataType;                   // Analyzed data type
@@ -86,6 +88,12 @@ private:
   Double_t fCentralityWeight;        // Weight for centrality in MC
   Double_t fPtHatWeight;             // Weight for pT hat in MC
   Double_t fTotalEventWeight;        // Combined weight factor for MC
+  
+  // Event mixing
+  Int_t fMixingPoolDepth;            // Maximum depth of the mixing pool
+  Double_t fMixingVzBinWidth;        // Width of the vz bins for event mixing
+  Int_t fMixingHiBinWidth;           // Width of the centrality bins for event mixing
+  Int_t fRunningMixingIndex;         // Running index for the next event to mix with
   
   // Jet and track selection cuts
   Double_t fVzCut;                     // Cut for vertez z-position in an event
