@@ -527,11 +527,11 @@ void DijetAnalyzer::RunAnalysis(){
     if(mixEvents){
       if(fDataType == ForestReader::kPbPb){
         currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
-      } /*else if (fDataType == ForestReader::kPbPbMC || (fDataType == ForestReader::kPpMC && fReadMode == 2)) {
+      } else if (fDataType == ForestReader::kPbPbMC || (fDataType == ForestReader::kPpMC && fReadMode == 2)) {
         MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
         currentMixedEventFile = mixingTable->GetMixingFileName(currentFile);
         delete mixingTable;
-      }*/ else {
+      } else {
         currentMixedEventFile = fFileNames.at(iFile);
       }
       mixedEventFile = TFile::Open(currentMixedEventFile);
