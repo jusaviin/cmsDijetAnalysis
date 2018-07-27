@@ -38,6 +38,8 @@ DijetHistograms::DijetHistograms() :
   fhTrackSubleadingJetUncorrected(0),
   fhTrackLeadingJetPtWeighted(0),
   fhTrackSubleadingJetPtWeighted(0),
+  fhTrackJetInclusive(0),
+  fhTrackJetInclusivePtWeighted(0),
   fCard(0)
 {
   // Default constructor
@@ -71,6 +73,8 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhTrackSubleadingJetUncorrected(0),
   fhTrackLeadingJetPtWeighted(0),
   fhTrackSubleadingJetPtWeighted(0),
+  fhTrackJetInclusive(0),
+  fhTrackJetInclusivePtWeighted(0),
   fCard(newCard)
 {
   // Custom constructor
@@ -104,6 +108,8 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhTrackSubleadingJetUncorrected(in.fhTrackSubleadingJetUncorrected),
   fhTrackLeadingJetPtWeighted(in.fhTrackLeadingJetPtWeighted),
   fhTrackSubleadingJetPtWeighted(in.fhTrackSubleadingJetPtWeighted),
+  fhTrackJetInclusive(in.fhTrackJetInclusive),
+  fhTrackJetInclusivePtWeighted(in.fhTrackJetInclusivePtWeighted),
   fCard(in.fCard)
 {
   // Copy constructor
@@ -141,6 +147,8 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhTrackSubleadingJetUncorrected = in.fhTrackSubleadingJetUncorrected;
   fhTrackLeadingJetPtWeighted = in.fhTrackLeadingJetPtWeighted;
   fhTrackSubleadingJetPtWeighted = in.fhTrackSubleadingJetPtWeighted;
+  fhTrackJetInclusive = in.fhTrackJetInclusive;
+  fhTrackJetInclusivePtWeighted = in.fhTrackJetInclusivePtWeighted;
   fCard = in.fCard;
   
   return *this;
@@ -175,6 +183,8 @@ DijetHistograms::~DijetHistograms(){
   delete fhTrackSubleadingJetUncorrected;
   delete fhTrackLeadingJetPtWeighted;
   delete fhTrackSubleadingJetPtWeighted;
+  delete fhTrackJetInclusive;
+  delete fhTrackJetInclusivePtWeighted;
 }
 
 /*
@@ -485,7 +495,7 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder6D[5] = minCorrelationType;   // low bin border for correlation types
   highBinBorder6D[5] = maxCorrelationType;  // high bin border for correlation types
   
-  // Create histograms for tracks-jet correlations
+  // Create histograms for track-jet correlations
   fhTrackLeadingJet = new THnSparseF("trackLeadingJet","trackLeadingJet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackLeadingJet->Sumw2();
   fhTrackSubleadingJet = new THnSparseF("trackSubleadingJet","trackSubleadingJet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackSubleadingJet->Sumw2();
   
@@ -521,6 +531,43 @@ void DijetHistograms::CreateHistograms(){
   fhTrackLeadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
   fhTrackSubleadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
   
+  // ======== THnSparses for correlation between tracks and inclusive jets ========
+  
+  // Axis 0 for the track-inclusive jet correlation histogram: track pT
+  nBins5D[0] = nWideTrackPtBins;     // nBins for wide track pT bins
+  lowBinBorder5D[0] = minPtTrack;    // low bin border for track pT
+  highBinBorder5D[0] = maxPtTrack;   // high bin border for track pT
+  
+  // Axis 1 for the track-inclusive jet correlation histogram: deltaPhi between track and jet
+  nBins5D[1] = nDeltaPhiBinsJetTrack;       // nBins for deltaPhi between track and jet
+  lowBinBorder5D[1] = minDeltaPhiJetTrack;  // low bin border for deltaPhi between track and jet
+  highBinBorder5D[1] = maxDeltaPhiJetTrack; // high bin border for deltaPhi between track and jet
+  
+  // Axis 2 for the track-inclusive jet correlation histogram: deltaEta between track and jet
+  nBins5D[2] = nDeltaEtaBinsJetTrack;         // nBins for deltaEta between track and jet
+  lowBinBorder5D[2] = minDeltaEtaJetTrack;    // low bin border deltaEta between track and jet
+  highBinBorder5D[2] = maxDeltaEtaJetTrack;   // high bin border deltaEta between track and jet
+  
+  // Axis 3 for the track-inclusive jet correlation histogram: centrality
+  nBins5D[3] = nWideCentralityBins;     // nBins for centrality
+  lowBinBorder5D[3] = minCentrality;    // low bin border for centrality
+  highBinBorder5D[3] = maxCentrality;   // high bin border for centrality
+  
+  // Axis 4 for the track-inclusive jet correlation histogram: correlation type
+  nBins5D[4] = nCorrelationTypeBins;        // nBins for correlation types
+  lowBinBorder5D[4] = minCorrelationType;   // low bin border for correlation types
+  highBinBorder5D[4] = maxCorrelationType;  // high bin border for correlation types
+  
+  // Create histograms for track-inclusive jet correlations
+  fhTrackJetInclusive = new THnSparseF("trackJetInclusive","trackJetInclusive",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrackJetInclusive->Sumw2();
+  fhTrackJetInclusivePtWeighted = new THnSparseF("trackJetInclusivePtWeighted","trackJetInclusivePtWeighted",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrackJetInclusivePtWeighted->Sumw2();
+  
+  // Set custom centrality and track pT bins for histograms
+  fhTrackJetInclusive->SetBinEdges(0,wideTrackPtBins);
+  fhTrackJetInclusivePtWeighted->SetBinEdges(0,wideTrackPtBins);
+  fhTrackJetInclusive->SetBinEdges(3,wideCentralityBins);
+  fhTrackJetInclusivePtWeighted->SetBinEdges(3,wideCentralityBins);
+  
 }
 
 /*
@@ -553,6 +600,8 @@ void DijetHistograms::Write() const{
   fhTrackSubleadingJetUncorrected->Write();
   fhTrackLeadingJetPtWeighted->Write();
   fhTrackSubleadingJetPtWeighted->Write();
+  fhTrackJetInclusive->Write();
+  fhTrackJetInclusivePtWeighted->Write();
   
 }
 

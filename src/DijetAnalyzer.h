@@ -29,7 +29,7 @@ class DijetAnalyzer{
   
 private:
   
-  enum enumFilledHistograms{kFillEventInformation,kFillJets,kFillTracks,kFillRegularJetTrackCorrelation,kFillUncorrectedJetTrackCorrelation,kFillPtWeightedJetTrackCorrelation,knFillTypes}; // Histograms to fill
+  enum enumFilledHistograms{kFillEventInformation,kFillJets,kFillTracks,kFillRegularJetTrackCorrelation,kFillUncorrectedJetTrackCorrelation,kFillPtWeightedJetTrackCorrelation,kFillInclusiveJetTrackCorrelation,knFillTypes}; // Histograms to fill
   enum enumSubeventCuts{kSubeventZero,kSubeventNonZero,kSubeventAny,knSubeventCuts}; // Cuts for subevent index
   enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
   enum enumForestType{kHighForest,kSkimForest,knForestTypes}; // What type of forest is used for reader
@@ -53,9 +53,9 @@ public:
 private:
   
   // Private methods
-  void CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType);  // Do jet-track correlations
-  void MixTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin); // Do jet-track correlations with mixed events
-  void MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin); // Do jet-track correlations with mixed events
+  void CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlations
+  void MixTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
+  void MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
@@ -141,6 +141,7 @@ private:
   Bool_t fFillRegularJetTrackCorrelation;     // Fill regular jet-track correlation histograms
   Bool_t fFillUncorrectedJetTrackCorrelation; // Fill uncorrected jet-track correlation histograms
   Bool_t fFillPtWeightedJetTrackCorrelation;  // Fill pT weighted jet-track correlation histograms
+  Bool_t fFillInclusiveJetTrackCorrelation;   // Fill inclusive jet-track correlation histograms
 
 };
 

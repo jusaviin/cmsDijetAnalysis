@@ -67,7 +67,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fFillTrackHistograms(false),
   fFillRegularJetTrackCorrelation(false),
   fFillUncorrectedJetTrackCorrelation(false),
-  fFillPtWeightedJetTrackCorrelation(false)
+  fFillPtWeightedJetTrackCorrelation(false),
+  fFillInclusiveJetTrackCorrelation(false)
 {
   // Default constructor
   fHistograms = new DijetHistograms();
@@ -209,6 +210,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFillRegularJetTrackCorrelation = bitChecker.test(kFillRegularJetTrackCorrelation);
   fFillUncorrectedJetTrackCorrelation = bitChecker.test(kFillUncorrectedJetTrackCorrelation);
   fFillPtWeightedJetTrackCorrelation = bitChecker.test(kFillPtWeightedJetTrackCorrelation);
+  fFillInclusiveJetTrackCorrelation = bitChecker.test(kFillInclusiveJetTrackCorrelation);
   
   // Do a sanity check for given bin widths for mixing pool
   if(fMaximumMixingHiBin >= kMaxMixingHiBins){
@@ -486,6 +488,7 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t highestIndex = -1;         // Index of the leading jet in the event
   Int_t swapIndex = -1;            // Swapping helper variable
   Double_t jetPt = 0;              // pT of the i:th jet in the event
+  Double_t jetPtCorrected = 0;     // Jet pT corrected with the JFF correction
   Double_t jetPhi = 0;             // phi of the i:th jet in the event
   Double_t jetEta = 0;             // eta of the i:th jet in the event
   Double_t dphi = 0;               // deltaPhi for the considered jets
@@ -691,11 +694,13 @@ void DijetAnalyzer::RunAnalysis(){
         if(fMinimumMaxTrackPtFraction >= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
-        // Only fill the any jet histogram if selected
-        if(fFillJetHistograms){
-          // Fill the histogram for all jets within eta range
-          if(TMath::Abs(jetEta) < fJetEtaCut){
+        
+        // For jets within the specified eta range, collect any jet histograms and inclusive jet-track correlations
+        if(TMath::Abs(jetEta) < fJetEtaCut){
           
+          // Only fill the any jet histogram if selected
+          if(fFillJetHistograms){
+            
             // Fill the axes in correct order
             nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);       // Apply JFF correction for jet pT
             fillerJet[0] = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);  // Axis 0 = any jet pT
@@ -703,9 +708,41 @@ void DijetAnalyzer::RunAnalysis(){
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
             fillerJet[3] = centrality;              // Axis 3 = centrality
             fHistograms->fhAnyJet->Fill(fillerJet,fTotalEventWeight); // Fill the data point to histogram
-        
-          } // Eta cut
-        } // Check if we want to fill any jet histograms
+            
+          } // Check if we want to fill any jet histograms
+          
+          // If we are filling the correlation histograms and jets pass the pT cuts, do inclusive jet-track correlations
+          if(fFillInclusiveJetTrackCorrelation){
+            
+            // Apply the JFF correction for leading and subleading jet pT
+            nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
+            jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
+            
+            // Check that the inclusive jet passes the pT cuts for the jet
+            if((jetPt > fLeadingJetMinPtCut) && (jetPt < fJetMaximumPtCut)){
+              
+              // Fill the array with jet information
+              leadingJetInfo[0] = jetPtCorrected;
+              leadingJetInfo[1] = jetPhi;
+              leadingJetInfo[2] = jetEta;
+              
+              // Correlate inclusive jets with tracks
+              CorrelateTracksAndJets(leadingJetInfo,leadingJetInfo,DijetHistograms::kSameEvent,true);
+              
+              // Do event mixing using the selected mixing method
+              if(mixEvents){
+                if(mixWithPool) {
+                  MixTracksAndJets(leadingJetInfo,leadingJetInfo,iEvent,vz,hiBin,true);
+                } else {
+                  MixTracksAndJetsWithoutPool(leadingJetInfo,leadingJetInfo,iEvent,vz,hiBin,true);
+                }
+              }
+              
+            } // Jet passes the pT cuts
+            
+          } // Check if we fill inclusive jet-track correlation histograms
+          
+        } // Eta cut
         
         if(jetPt > leadingJetPt){
           leadingJetPt = jetPt;
@@ -875,8 +912,9 @@ void DijetAnalyzer::RunAnalysis(){
  *  Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
  *  Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
  *  const Int_t correlationType = DijetHistograms::kSameEvent for same event correlations, DijetHistograms::kMixedEvent for mixed event correlations
+ *  const Bool_t useInclusiveJets = True: Correlation done for inclusive jets. False: Correlation done for leadingand subleading jets
  */
-void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType){
+void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets){
   
   // Define a filler for THnSparses
   Double_t fillerJetTrack[6];
@@ -931,8 +969,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t 
     while(deltaPhiTrackLeadingJet < (-0.5*TMath::Pi())){deltaPhiTrackLeadingJet += 2*TMath::Pi();}
     while(deltaPhiTrackSubleadingJet < (-0.5*TMath::Pi())){deltaPhiTrackSubleadingJet += 2*TMath::Pi();}
     
-    // Fill track histograms if selected to do so
-    if(fFillTrackHistograms){
+    // Fill track histograms if selected to do so. Inclusive tracks are filled in separate place
+    if(fFillTrackHistograms && !useInclusiveJets){
       fillerTrack[0] = trackPt;                    // Axis 0: Track pT
       fillerTrack[1] = trackPhi;                   // Axis 1: Track phi
       fillerTrack[2] = trackEta;                   // Axis 2: Track eta
@@ -942,29 +980,44 @@ void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t 
       fHistograms->fhTrackUncorrected->Fill(fillerTrack,fTotalEventWeight);                 // Fill the uncorrected track histogram
     }
     
-    // Fill all the jet-track correlation histograms if selected
+    // Fill the selected jet-track correlation histograms
     
-    // Fill the track-leading jet correlation histograms
-    fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
-    fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
-    fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
-    fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
-    fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
-    fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-    if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
-    if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
-    if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
-    
-    // Fill the track-subleading jet correlation histograms
-    fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
-    fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
-    fillerJetTrack[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
-    fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
-    fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
-    fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-    if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-subleading jet correlation histogram
-    if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-subleading jet correlation histogram
-    if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-subleading jet correlation histogram
+    if(useInclusiveJets){
+      fillerTrack[0] = trackPt;                    // Axis 0: Track pT
+      fillerTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and inclusive jet
+      fillerTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and inclusive jet
+      fillerTrack[3] = centrality;                 // Axis 4: Centrality
+      fillerTrack[4] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      
+      if(fFillInclusiveJetTrackCorrelation){
+        fHistograms->fhTrackJetInclusive->Fill(fillerTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
+        fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
+      }
+      
+    } else {
+      
+      // Fill the track-leading jet correlation histograms
+      fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
+      fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
+      fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
+      fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+      fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
+      fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
+      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
+      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
+      
+      // Fill the track-subleading jet correlation histograms
+      fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
+      fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
+      fillerJetTrack[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
+      fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+      fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
+      fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-subleading jet correlation histogram
+      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-subleading jet correlation histogram
+      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-subleading jet correlation histogram
+    }
     
   } // Loop over tracks
 }
@@ -977,8 +1030,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t 
  *  const Int_t avoidIndex = Index of the current event. Do not use this index for mixing in order not to mix with the same event
  *  const Double_t vz = Vertex z-position for the main event
  *  const Int_t hiBin = HiBin of the main event
+ *  const Bool_t useInclusiveJets = True: Use inclusive jets for correlations. False: Use leading/subleading jets for correlations
  */
-void DijetAnalyzer::MixTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin){
+void DijetAnalyzer::MixTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex;                        // Index of current event in mixing loop
@@ -1023,7 +1077,7 @@ void DijetAnalyzer::MixTracksAndJets(Double_t leadingJetInfo[3], Double_t sublea
     fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(mixedEventIndex);
     
     // Do the correlations with the dijet from current event and track from mixing event
-    CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent);
+    CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent,useInclusiveJets);
     eventsMixed++;
     
   } // While loop for finding events to mix
@@ -1038,8 +1092,9 @@ void DijetAnalyzer::MixTracksAndJets(Double_t leadingJetInfo[3], Double_t sublea
  *  const Int_t avoidIndex = Index of the current event. Do not use this index for mixing in order not to mix with the same event
  *  const Double_t vz = Vertex z-position for the main event
  *  const Int_t hiBin = HiBin of the main event
+ *  const Bool_t useInclusiveJets = True: Use inclusive jets for correlations. False: Use leading/subleading jets for correlations
  */
-void DijetAnalyzer::MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin){
+void DijetAnalyzer::MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex = fMixingStartIndex; // Index of current event in mixing loop
@@ -1105,7 +1160,7 @@ void DijetAnalyzer::MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Doub
     mixedEventIndices.push_back(mixedEventIndex);
     
     // Do the correlations with the dijet from current event and track from mixing event
-    CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent);
+    CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent,useInclusiveJets);
     eventsMixed++;
     
   } // While loop for finding events to mix
