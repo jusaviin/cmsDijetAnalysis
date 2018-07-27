@@ -54,7 +54,11 @@ private:
   
   // Private methods
   void CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType);  // Do jet-track correlations
+  void MixTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin); // Do jet-track correlations with mixed events
+  void MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin); // Do jet-track correlations with mixed events
+  void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
+  void ValidateMixingPool();  // Check that all vz and centrality bins have entries
   Int_t GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta);
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
@@ -76,12 +80,13 @@ private:
   JffCorrection *fJffCorrection;      // Jet fragmentation function correction for jet pT
   TF1 *fVzWeightFunction;             // Weighting function for vz. Needed for MC.
   TF1 *fCentralityWeightFunction;     // Weighting function for centrality. Needed for MC.
-  std::vector<int> fMixingPool[kMaxMixingVzBins][kMaxMixingHiBins];  // Mixing pool. Remembed the event indices of mixed events in different vz and HiBin bins.
+  
   
   // Analyzed data and forest types
   Int_t fDataType;                   // Analyzed data type
   Int_t fForestType;                 // Analyzed forest type
   Int_t fReadMode;                   // Read mode. 0 = Regular forest, 1 = PYTHIA8 forest
+  Int_t fDebugLevel;                 // Amoun of debug messages printed to console
   
   // Weights for filling the MC histograms
   Double_t fVzWeight;                // Weight for vz in MC
@@ -90,10 +95,19 @@ private:
   Double_t fTotalEventWeight;        // Combined weight factor for MC
   
   // Event mixing
+  Int_t fnEventsInMixingFile;        // Number of event in the mixing file
+  Int_t fnMixedEventsPerDijet;       // Number of events mixed with each dijet
+  Int_t fMixingStartIndex;           // Start mixing from this event index in the method without mixing pool
   Int_t fMixingPoolDepth;            // Maximum depth of the mixing pool
   Double_t fMixingVzBinWidth;        // Width of the vz bins for event mixing
   Int_t fMixingHiBinWidth;           // Width of the centrality bins for event mixing
   Int_t fRunningMixingIndex;         // Running index for the next event to mix with
+  Int_t fMaximumMixingVz;            // Maximum index for vz for the given vz bin width
+  Int_t fMaximumMixingHiBin;         // Maximum index for centrality for the given HiBin
+  Double_t fMixingVzTolerance;       // Allowed gap in vz for an event to be accepted in mixing in poolless method
+  std::vector<Int_t> fMixingPool[kMaxMixingVzBins][kMaxMixingHiBins];  // Mixing pool. Remembed the event indices of mixed events in different vz and HiBin bins.
+  std::vector<Double_t> fMixedEventVz; // Vector for vz:s of events in mixing file. Needed for poolless mixing
+  std::vector<Int_t> fMixedEventHiBin; // Vector for HiBins of events in mixing file. Needed for poolless mixing
   
   // Jet and track selection cuts
   Double_t fVzCut;                     // Cut for vertez z-position in an event
