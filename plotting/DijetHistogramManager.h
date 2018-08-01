@@ -29,7 +29,7 @@ public:
   enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,kBackgroundOverlap,kJetShapeBinMap,knCorrelationTypes};
   
   // Indices for different jet-track correlation categories
-  enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, knJetTrackCorrelations};
+  enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, kTrackInclusiveJet, kPtWeightedTrackInclusiveJet, knJetTrackCorrelations};
   
   // Indices for different track histogram categories
   enum enumTrackHistograms{kTrack, kUncorrectedTrack, kInclusiveTrack, kUncorrectedInclusiveTrack, knTrackCategories};
@@ -57,8 +57,8 @@ private:
   TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_BackgroundSubtracted","_Background","_BackgroundOverlap","_JetShapeBinMap"};
   
   // Naming for jet-track correlation histograms
-  const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted"}; // Names that different histograms have in the input file
-  const char* fJetTrackAxisNames[knJetTrackCorrelations] = {"Track-LJet","UC Track-LJet","p_{T}w Track-LJet","Track-SJet","UC Track-SJet","p_{T}w Track-SJet"}; // Names attached to the figure axes
+  const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted","trackJetInclusive","trackJetInclusivePtWeighted"}; // Names that different histograms have in the input file
+  const char* fJetTrackAxisNames[knJetTrackCorrelations] = {"Track-LJet","UC Track-LJet","p_{T}w Track-LJet","Track-SJet","UC Track-SJet","p_{T}w Track-SJet","Trk-IncJet","p_{T}w Trk-IncJet"}; // Names attached to the figure axes
   
   // Naming for track histograms
   const char* fTrackHistogramNames[knTrackCategories] = {"track","trackUncorrected","trackInclusive","trackInclusiveUncorrected"}; // Names that different track histograms have in the input file
@@ -70,7 +70,7 @@ private:
   
   // Naming for jet shape histograms
   const char* fJetShapeHistogramName[knJetShapeTypes] = {"JetShape","JetShapeCounts"};
-  const char* fJetShapeYAxisNames[knJetShapeTypes] = {"#rho(#DeltaR)","counts"};
+  const char* fJetShapeYAxisNames[knJetShapeTypes] = {"P(#DeltaR)","counts"};
   
   // Naming for deltaEta bins
   const char* fDeltaEtaString[knDeltaEtaBins] = {"","Signal #Delta#eta","Background #Delta#eta"};
@@ -96,41 +96,46 @@ public:
   void SetDeltaPhiBins(const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], bool setIndices = true); //  Set up deltaPhi bin indices according to provided bin borders and bin names
   
   // Setters for event information and dijets
-  void SetLoadEventInformation(const bool loadOrNot); // Setter for drawing event information
-  void SetLoadDijetHistograms(const bool loadOrNot);  // Setter for drawing dijet histograms
+  void SetLoadEventInformation(const bool loadOrNot); // Setter for loading event information
+  void SetLoadDijetHistograms(const bool loadOrNot);  // Setter for loading dijet histograms
   
   // Setters for single jets
-  void SetLoadLeadingJetHistograms(const bool loadOrNot);    // Setter for drawing leading jet histograms
-  void SetLoadSubleadingJetHistograms(const bool loadOrNot); // Setter for drawing subleading jet histograms
-  void SetLoadAnyJetHistograms(const bool loadOrNot);        // Setter for drawing all jet histograms
-  void SetLoadAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny);   // Setter for drawing jet histograms
+  void SetLoadLeadingJetHistograms(const bool loadOrNot);    // Setter for loading leading jet histograms
+  void SetLoadSubleadingJetHistograms(const bool loadOrNot); // Setter for loading subleading jet histograms
+  void SetLoadAnyJetHistograms(const bool loadOrNot);        // Setter for loading all jet histograms
+  void SetLoadAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny);   // Setter for loading jet histograms
   
   // Setters for tracks
-  void SetLoadTracks(const bool loadOrNot);            // Setter for drawing tracks
-  void SetLoadTracksUncorrected(const bool loadOrNot); // Setter for drawing uncorrected tracks
-  void SetLoadAllTracks(const bool drawTracks, const bool drawUncorrected); // Setter for drawing all track histograms
-  void SetLoadInclusiveTracks(const bool loadOrNot);            // Setter for drawing tracks
-  void SetLoadInclusiveTracksUncorrected(const bool loadOrNot); // Setter for drawing uncorrected tracks
-  void SetLoadAllInclusiveTracks(const bool drawTracks, const bool drawUncorrected); // Setter for drawing all track histograms
+  void SetLoadTracks(const bool loadOrNot);            // Setter for loading tracks
+  void SetLoadTracksUncorrected(const bool loadOrNot); // Setter for loading uncorrected tracks
+  void SetLoadAllTracks(const bool drawTracks, const bool drawUncorrected); // Setter for loading all track histograms
+  void SetLoadInclusiveTracks(const bool loadOrNot);            // Setter for loading tracks
+  void SetLoadInclusiveTracksUncorrected(const bool loadOrNot); // Setter for loading uncorrected tracks
+  void SetLoadAllInclusiveTracks(const bool drawTracks, const bool drawUncorrected); // Setter for loading all track histograms
   
-  // Setters for leading jet-track correlations
-  void SetLoadTrackLeadingJetCorrelations(const bool loadOrNot);            // Setter for drawing leading jet-track correlations
-  void SetLoadTrackLeadingJetCorrelationsUncorrected(const bool loadOrNot); // Setter for drawing uncorrected leading jet-track correlations
-  void SetLoadTrackLeadingJetCorrelationsPtWeighted(const bool loadOrNot);  // Setter for drawing pT weighted leading jet-track correlations
-  void SetLoadAllTrackLeadingJetCorrelations(const bool drawLeading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for drawing all correlations related to tracks and leading jets
+  // Setters for loading leading jet-track correlations
+  void SetLoadTrackLeadingJetCorrelations(const bool loadOrNot);            // Setter for loading leading jet-track correlations
+  void SetLoadTrackLeadingJetCorrelationsUncorrected(const bool loadOrNot); // Setter for loading uncorrected leading jet-track correlations
+  void SetLoadTrackLeadingJetCorrelationsPtWeighted(const bool loadOrNot);  // Setter for loading pT weighted leading jet-track correlations
+  void SetLoadAllTrackLeadingJetCorrelations(const bool drawLeading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for loading all correlations related to tracks and leading jets
   
-  // Setters for drawing subleading jet-track correlations
-  void SetLoadTrackSubleadingJetCorrelations(const bool loadOrNot);            // Setter for drawing subleading jet-track correlations
-  void SetLoadTrackSubleadingJetCorrelationsUncorrected(const bool loadOrNot); // Setter for drawing uncorrected subleading jet-track correlations
-  void SetLoadTrackSubleadingJetCorrelationsPtWeighted(const bool loadOrNot);  // Setter for drawing pT weighted subleading jet-track correlations
-  void SetLoadAllTrackSubleadingJetCorrelations(const bool drawSubleading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for drawing all correlations related to tracks and subleading jets
+  // Setters for loading subleading jet-track correlations
+  void SetLoadTrackSubleadingJetCorrelations(const bool loadOrNot);            // Setter for loading subleading jet-track correlations
+  void SetLoadTrackSubleadingJetCorrelationsUncorrected(const bool loadOrNot); // Setter for loading uncorrected subleading jet-track correlations
+  void SetLoadTrackSubleadingJetCorrelationsPtWeighted(const bool loadOrNot);  // Setter for loading pT weighted subleading jet-track correlations
+  void SetLoadAllTrackSubleadingJetCorrelations(const bool drawSubleading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for loading all correlations related to tracks and subleading jets
+  
+  // Setters for loading inclusive jet-track correlations
+  void SetLoadTrackInclusiveJetCorrelations(const bool loadOrNot);           // Setter for loading inclusive jet-track correlations
+  void SetLoadTrackInclusiveJetCorrelationsPtWeighted(const bool loadOrNot); // Setter for leading pT weighted inclusive jet-track correlations
+  void SetLoadAllTrackInclusiveJetCorrelations(const bool loadInclusive, const bool loadPtWeighted);        // Setter for loading all correlations related to tracks and inclusive jets
   
   // Setter for loading two-dimensional histograms
   void SetLoad2DHistograms(const bool loadOrNot); // Setter for loading two-dimensional histograms
   
-  // Setters for drawing ranges for different bins
-  void SetCentralityBinRange(const int first, const int last); // Setter for drawn centrality bins
-  void SetTrackPtBinRange(const int first, const int last);    // Setter for drawn track pT bins
+  // Setters for ranges for different bins
+  void SetCentralityBinRange(const int first, const int last); // Setter for centrality bin range
+  void SetTrackPtBinRange(const int first, const int last);    // Setter for track pT bin range
   
   // Setter for used DijetMethods
   void SetDijetMethods(DijetMethods* newMethods); // Setter for used DijetMethods

@@ -29,7 +29,7 @@ public:
   DijetMethods& operator=(const DijetMethods& in); // Equal sign operator
   
   TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram); // Mixed event correction for a two-dimensional histogram
-  TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground); // Subtract background from a two-dimensional leading histogram
+  TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution

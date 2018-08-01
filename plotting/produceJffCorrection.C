@@ -12,9 +12,9 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root";  // File from which the RecoGen histograms are read for the correction
-  TString genGenFileName = "data/dijet_ppMC_GenGen_mergedPythia6Skims_processed_2018-07-06.root";   // File from which the GenGen histograms are read for the correction
-  TString outputFileName = "data/jffCorrection_ppMC_Pythia6_2018-07-06.root";   // File name for the output file
+  TString recoGenFileName = "data/dijet_ppMC_RecoGen_dhanushPythia8_processed_2018-07-19.root";  // File from which the RecoGen histograms are read for the correction
+  TString genGenFileName = "data/dijet_ppMC_GenGen_dhanushPythia8_processed_2018-07-19.root";   // File from which the GenGen histograms are read for the correction
+  TString outputFileName = "data/jffCorrection_ppMC_dhanushPythia8_2018-07-19.root";   // File name for the output file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = true;  // Produce the correction for uncorrected jet-track correlations

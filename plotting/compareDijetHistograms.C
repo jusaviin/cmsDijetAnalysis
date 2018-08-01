@@ -18,13 +18,13 @@ void compareDijetHistograms(){
   bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
-  bool drawTracks = false;
+  bool drawTracks = true;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -42,7 +42,7 @@ void compareDijetHistograms(){
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
+  bool drawSameEvent = true;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
@@ -56,7 +56,7 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
@@ -65,7 +65,7 @@ void compareDijetHistograms(){
   bool logJetShape = true;    // Jet shapes
   
   // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
+  TString jffCorrectionFileName = "data/jffCorrection_ppMC_Pythia6_2018-07-06.root"; // "data/jffCorrection_ppMC_Pythia6_2018-07-06.root" "data/jffCorrection_ppMC_dhanushPythia8_2018-07-19.root"
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -73,9 +73,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.0;
-  double maxZoom = 2.0;
-  TString ratioLabel = "Data/Pythia6";
+  double minZoom = 0.8;
+  double maxZoom = 1.2;
+  TString ratioLabel = "Reco/Gen";
   
   // Scaling for histograms
   bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -118,8 +118,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 3;
-  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-07-06.root","data/dijet_ppMC_RecoReco_mergedPythia6Skims_processed_2018-07-06.root","data/dijet_ppMC_GenGen_mergedPythia6Skims_processed_2018-07-06.root"};
+  const int nDatasets = 2;
+  TString inputFileName[nDatasets] = {"data/PbPbMC_RecoReco_noMixing_skims_xiaoCorrection_2018-07-25.root","data/PbPbMC_RecoGen_noMixing_skims_xiaoCorrection_2018-07-26.root"};
   //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
   //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
@@ -134,7 +134,7 @@ void compareDijetHistograms(){
   //  "data/PbPbMC_RecoGen_noMixing_Skims_2018-06-14.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_KurtsSkims_2018-06-18_part1.root"  "data/dijet_ppMC_RecoGen_noMixing_KurtsSkims_2018-06-18_part1.root"
   //  "data/dijet_pp_highForest_processed_noBinAreaWeight_2018-06-21.root" "data/dijet_pp_highForest_2018-06-21.root"
-  //  "data/dijet_pp_highForest_processed_2018-06-21.root"
+  //  "data/dijet_pp_highForest_processed_2018-06-21.root" "data/dijet_pp_highForest_processed_2018-07-06.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
   //  "data/dijet_ppMC_GenGen_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_GenReco_noMixing_dhanushPythia8_2018-07-02.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
@@ -142,8 +142,13 @@ void compareDijetHistograms(){
   //  "data/dijet_ppMC_RecoReco_noMixing_mergedPythia6Skims_2018-07-06.root" "data/dijet_ppMC_RecoGen_noMixing_mergedPythia6Skims_2018-07-06.root"
   //  "data/dijet_ppMC_RecoReco_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenGen_mergedPythia6Skims_processed_2018-07-06.root"
   //  "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenReco_mergedPythia6Skims_processed_2018-07-06.root"
+  //  "data/dijet_ppMC_RecoReco_dhanushPythia8_processed_2018-07-19.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
+  //  "data/dijet_ppMC_GenGen_dhanushPythia8_processed_2018-07-19.root"
+  //  "data/PbPbMC_RecoReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_RecoGen_noMixing_skims_processed_2018-07-20.root"
+  //  "data/PbPbMC_GenReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_GenGen_noMixing_skims_processed_2018-07-20.root"
+  //  "data/PbPbMC_RecoReco_noMixing_skims_xiaoCorrection_2018-07-25.root" "data/PbPbMC_RecoGen_noMixing_skims_xiaoCorrection_2018-07-26.root"
   
-  bool applyJffCorrection[nDatasets] = {true,true,false};  // Specify to which datasets should the JFF correction be applied
+  bool applyJffCorrection[nDatasets] = {false,false};  // Specify to which datasets should the JFF correction be applied
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   

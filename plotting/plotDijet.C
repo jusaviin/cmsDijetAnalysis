@@ -11,7 +11,7 @@
  *   const char* outputFileName = If we are producing output file, name of the output file
  *   int histogramSelection = If > 0, select a preset group of histograms. Intended to be used for easier production of output files.
  */
-void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_2018-07-06.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -21,7 +21,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   // ==================================================================
   
   // Choose to either process or draw the histograms
-  int executionMode = 2; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
   if(histogramSelection > 0) executionMode = 0;
   
   // We do not need to set bin indices if we use processed histograms
@@ -41,12 +41,14 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
+  bool drawTrackInclusiveJetCorrelations = true;
+  bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
   if(histogramSelection > 0){
     drawEventInformation = (histogramSelection == 1);
@@ -64,10 +66,12 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
     drawTrackSubleadingJetCorrelations = false;
     drawUncorrectedTrackSubleadingJetCorrelations = false;
     drawPtWeightedTrackSubleadingJetCorrelations = false;
+    drawTrackInclusiveJetCorrelations = (histogramSelection == 5);
+    drawPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 5);
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaPhi = true;
   bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
@@ -79,12 +83,12 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = false;
+  bool drawBackground = true;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -101,7 +105,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   const char* style3D = "surf1";
   
   // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
+  TString jffCorrectionFileName = "";//data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
   
   // Bin borders
   const int nCentralityBins = 4;
@@ -188,6 +192,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   histograms->SetLoadAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
   histograms->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   histograms->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
+  histograms->SetLoadAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations,drawPtWeightedTrackInclusiveJetCorrelations);
   histograms->SetLoad2DHistograms(true);
 
   // Set the binning information
@@ -222,7 +227,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   
   // Create a new DijetDrawer
   DijetDrawer *resultDrawer = new DijetDrawer(histograms);
-  
+
   // Set which histograms to draw and the drawing style to use
   resultDrawer->SetDrawEventInformation(drawEventInformation);
   resultDrawer->SetDrawDijetHistograms(drawDijetHistograms);
@@ -230,6 +235,7 @@ void plotDijet(TString inputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Ski
   resultDrawer->SetDrawAllTracks(drawTracks,drawUncorrectedTracks);
   resultDrawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   resultDrawer->SetDrawAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
+  resultDrawer->SetDrawAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations,drawPtWeightedTrackInclusiveJetCorrelations);
   resultDrawer->SetDrawJetTrackDeltas(drawJetTrackDeltaPhi,drawJetTrackDeltaEta,drawJetTrackDeltaEtaDeltaPhi);
   resultDrawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeCounts);
   resultDrawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);

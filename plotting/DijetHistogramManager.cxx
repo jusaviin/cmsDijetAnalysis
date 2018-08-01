@@ -298,23 +298,19 @@ void DijetHistogramManager::ProcessHistograms(){
  */
 void DijetHistogramManager::DoMixedEventCorrection(){
   
-  /*
-   * Because background subtraction always needs information about leading and subleading jets, only loop over half the array
-   * and do mixed event correction and at the same time for corresponding leading and subleading jet track correlation histograms.
-   * Note that the array checks whether the correlation histogram is loaded instead of drawn, because the loop is only over
-   * the leading jet indices and these are loaded but not drawn in case only subleading jet track correlation histograms are
-   * selected to be drawn.
-   */
-  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations/2; iJetTrack++){
+  // Helper variable
+  int connectedIndex;
+  
+  // Loop over all jet-track correlation types and apply the mixed event correction
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
 
-        // Do the mixed event correction for leading jet-track correlation histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin]);
-
-        // Do the mixed event correction for subleading jet-track correlation histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack+knJetTrackCorrelations/2][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin]);
+        connectedIndex = GetConnectedIndex(iJetTrack);
+        
+        // Do the mixed event correction for the current jet-track correlation histogram
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iCentralityBin][iTrackPtBin]);
 
       } // Track pT loop
     } // Centrality loop
@@ -331,9 +327,11 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
   int nBins;
   int connectedIndex;
   int nProjectedBins;
+  bool isInclusive;
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
+    isInclusive = (iJetTrack >= kTrackInclusiveJet); // Set the flag for inclusive jet-track correlations
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
 
@@ -341,7 +339,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
         connectedIndex = GetConnectedIndex(iJetTrack);
         
         // Subtract the background from the mixed event corrected histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iCentralityBin][iTrackPtBin]);
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iCentralityBin][iTrackPtBin],isInclusive);
         
         // Get also the background and background overlap region for QA purposes
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
@@ -450,9 +448,9 @@ void DijetHistogramManager::NormalizeJetShape(){
  * given subleading/leading jet-track correlation index.
  */
 int DijetHistogramManager::GetConnectedIndex(const int jetTrackIndex) const{
-  int connectedIndex = jetTrackIndex + knJetTrackCorrelations/2;
-  if(connectedIndex >= knJetTrackCorrelations) connectedIndex -= knJetTrackCorrelations;
-  return connectedIndex;
+  if(jetTrackIndex < kTrackSubleadingJet) return jetTrackIndex + 3;  // Three leading jet histograms are listed before subleading jet histograms
+  if(jetTrackIndex < kTrackInclusiveJet) return jetTrackIndex - 3;   // Three subleading jet histograms are listed after leading jet histograms
+  return jetTrackIndex;  // There is no connected index for inclusive jet, so return the index itself
 }
 
 /*
@@ -703,6 +701,12 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
           axisIndices[0] = 5; lowLimits[0] = iCorrelationType+1; highLimits[0] = iCorrelationType+1;   // Same/mixed event
           axisIndices[1] = 4; lowLimits[1] = lowerCentralityBin; highLimits[1] = higherCentralityBin;  // Centrality
           axisIndices[2] = 0; lowLimits[2] = lowerTrackPtBin;    highLimits[2] = higherTrackPtBin;     // Track pT
+          
+          // Indexing is different for inclusive jet-track correlation, as they do not have dijet asymmetry
+          if(iJetTrack >= kTrackInclusiveJet){
+            axisIndices[0] = 4;
+            axisIndices[1] = 3;
+          }
           
           fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta] = FindHistogram(fInputFile,fJetTrackHistogramNames[iJetTrack],1,3,axisIndices,lowLimits,highLimits);
           if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin] = FindHistogram2D(fInputFile,fJetTrackHistogramNames[iJetTrack],1,2,3,axisIndices,lowLimits,highLimits);
@@ -1441,6 +1445,22 @@ void DijetHistogramManager::SetLoadAllTrackSubleadingJetCorrelations(const bool 
   SetLoadTrackSubleadingJetCorrelations(drawSubleading);
   SetLoadTrackSubleadingJetCorrelationsUncorrected(drawUncorrected);
   SetLoadTrackSubleadingJetCorrelationsPtWeighted(drawPtWeighted);
+}
+
+// Setter for loading inclusive jet-track correlations
+void DijetHistogramManager::SetLoadTrackInclusiveJetCorrelations(const bool loadOrNot){
+  fLoadJetTrackCorrelations[kTrackInclusiveJet] = loadOrNot;
+}
+
+// Setter for leading pT weighted inclusive jet-track correlations
+void DijetHistogramManager::SetLoadTrackInclusiveJetCorrelationsPtWeighted(const bool loadOrNot){
+  fLoadJetTrackCorrelations[kPtWeightedTrackInclusiveJet] = loadOrNot;
+}
+
+// Setter for loading all correlations related to tracks and inclusive jets
+void DijetHistogramManager::SetLoadAllTrackInclusiveJetCorrelations(const bool loadInclusive, const bool loadPtWeighted){
+  SetLoadTrackInclusiveJetCorrelations(loadInclusive);
+  SetLoadTrackInclusiveJetCorrelationsPtWeighted(loadPtWeighted);
 }
 
  // Setter for loading two-dimensional histograms

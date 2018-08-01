@@ -112,7 +112,8 @@ TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMix
   
   // Calculate the average scale from leading and subleading event scales
   double leadingScale = GetMixedEventScale(leadingMixedEventHistogram);
-  double subleadingScale = GetMixedEventScale(subleadingMixedEventHistogram);
+  double subleadingScale = 0;
+  if(fMixedEventNormalizationMethod == kAverage) subleadingScale = GetMixedEventScale(subleadingMixedEventHistogram);
   double averageScale = (leadingScale+subleadingScale)/2.0;
   double normalizationScale = leadingScale;
   if(fMixedEventNormalizationMethod == kAverage) normalizationScale = averageScale;
@@ -163,12 +164,14 @@ double DijetMethods::GetMixedEventScale(TH2D* mixedEventHistogram){
  * Arguments:
  *  TH2D *leadingHistogramWithBackground = Leading-jet track correlation histogram with deltaPhi as x-axis and deltaEta as y-axis
  *  TH2D *subleadingHistogramWithBackground = Subleading-jet track correlation histogram with deltaPhi as x-axis and deltaEta as y-axis
+ *  bool isInclusive = Flag for inclusive correlations. True = inclusive. False = dijet.
  *
  *  return: Background subtracted leading jet-track correlation histogram
  */
-TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground){
+TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, bool isInclusive){
   
   // Start by projecting the deltaPhi distribution from the leading and subleading histograms in the background region
+  // For inclusive distribution, same inclusive distribution should be given as both input histograms
   TH1D *backgroundDeltaPhiLeading = ProjectBackgroundDeltaPhi(leadingHistogramWithBackground);
   TH1D *backgroundDeltaPhiSubleading = ProjectBackgroundDeltaPhi(subleadingHistogramWithBackground);
   
@@ -189,6 +192,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   
   // We need the deltaEta bin width for normalization purposes
   double binWidthDeltaEta = leadingHistogramWithBackground->GetYaxis()->GetBinWidth(1);
+  int offset = isInclusive ? nDeltaPhiBins/2 : 0;  // Apply offset for inclusive histograms to scan over whole deltaPhi space
 
   // Loop over deltaPhi bins and fill the leading jet-track correlation result in the near side
   // and the subleading set-track correlation result in the away side
@@ -197,8 +201,8 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     // Read the values from the deltaPhi background histogram
     deltaPhiValueNear = backgroundDeltaPhiLeading->GetBinContent(iDeltaPhi);
     deltaPhiErrorNear = backgroundDeltaPhiLeading->GetBinError(iDeltaPhi);
-    deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi);
-    deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi);
+    deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi+offset);
+    deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi+offset);
     
     // Repopulate the deltaEta axis
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){

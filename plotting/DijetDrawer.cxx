@@ -83,7 +83,7 @@ void DijetDrawer::DrawHistograms(){
   
   // Draw the event information histograms
   DrawEventInformation();
-  
+
   // Draw the single jet histograms
   DrawSingleJetHistograms();
   
@@ -526,7 +526,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // Move legend to different place for leading jet background figures
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
-            if(iJetTrack < DijetHistogramManager::knJetTrackCorrelations/2){
+            if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
               if(iCorrelationType == DijetHistogramManager::kBackground) { // Move legend to top left corner for leading jet-track background figures
                 legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
               } else if (iCorrelationType == DijetHistogramManager::kCorrected || iCorrelationType == DijetHistogramManager::kBackgroundSubtracted){ // Move legend away from peaks
@@ -995,6 +995,22 @@ void DijetDrawer::SetDrawAllTrackSubleadingJetCorrelations(const bool drawSublea
   SetDrawTrackSubleadingJetCorrelations(drawSubleading);
   SetDrawTrackSubleadingJetCorrelationsUncorrected(drawUncorrected);
   SetDrawTrackSubleadingJetCorrelationsPtWeighted(drawPtWeighted);
+}
+
+// Setter for drawing inclusive jet-track correlations
+void DijetDrawer::SetDrawTrackInclusiveJetCorrelations(const bool drawOrNot){
+  fDrawJetTrackCorrelations[DijetHistogramManager::kTrackInclusiveJet] = drawOrNot;
+}
+
+// Setter for drawing pT weighted inclusive jet-track correlations
+void DijetDrawer::SetDrawTrackInclusiveJetCorrelationsPtWeighted(const bool drawOrNot){
+  fDrawJetTrackCorrelations[DijetHistogramManager::kPtWeightedTrackInclusiveJet] = drawOrNot;
+}
+
+// Setter for drawing all inclusive jet-track correlations
+void DijetDrawer::SetDrawAllTrackInclusiveJetCorrelations(const bool drawInclusive, const bool drawPtWeighted){
+  SetDrawTrackInclusiveJetCorrelations(drawInclusive);
+  SetDrawTrackInclusiveJetCorrelationsPtWeighted(drawPtWeighted);
 }
 
 // Setter for drawing jet-track deltaPhi correlations

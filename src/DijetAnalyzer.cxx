@@ -413,7 +413,7 @@ void DijetAnalyzer::RunAnalysis(){
   //****************************************
   
   fMinimumPtHat = fCard->Get("LowPtHatCut");  // Minimum accepted pT hat value
-  fMaximumPtHat = fCard->Get("HighPtHatCut"); // MAximum accepted pT hat value
+  fMaximumPtHat = fCard->Get("HighPtHatCut"); // Maximum accepted pT hat value
   
   //****************************************
   //        Dijet selection cuts
