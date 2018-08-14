@@ -64,6 +64,11 @@ public:
   void SetDrawTrackSubleadingJetCorrelationsPtWeighted(const bool drawOrNot);  // Setter for drawing pT weighted subleading jet-track correlations
   void SetDrawAllTrackSubleadingJetCorrelations(const bool drawSubleading, const bool drawUncorrected, const bool drawPtWeighted); // Setter for drawing all correlations related to tracks and subleading jets
   
+  // Setters for drawing inclusive jet-track correlations
+  void SetDrawTrackInclusiveJetCorrelations(const bool drawOrNot);            // Setter for drawing inclusive jet-track correlations
+  void SetDrawTrackInclusiveJetCorrelationsPtWeighted(const bool drawOrNot);  // Setter for drawing pT weighted inclusive jet-track correlations
+  void SetDrawAllTrackInclusiveJetCorrelations(const bool drawInclusive, const bool drawPtWeighted); // Setter for drawing all correlations related to tracks and inclusive jets
+  
   // Setters for drawing different histograms derived from jet-track correlations
   void SetDrawJetTrackDeltaPhi(const bool drawOrNot);                 // Setter for drawing jet-track deltaPhi correlations
   void SetDrawJetTrackDeltaEta(const bool drawOrNot);                 // Setter for drawing jet-track deltaEta correlations
@@ -113,6 +118,9 @@ public:
   
   // Load jff correction from file
   void LoadJffCorrection(TFile *jffFile); // Load jff correction from file
+  
+  // Set if JFF correction should be applied for the main histogram
+  void SetJffCorrectionMain(const bool applyCorrection);  // Setter for JFF correction for the main histogram
   
 private:
   

@@ -17,8 +17,8 @@ void compareDijetHistograms(){
   bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = false;
-  bool drawTracks = true;
+  bool drawAnyJetHistograms = true;
+  bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
@@ -28,8 +28,10 @@ void compareDijetHistograms(){
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
+  bool drawTrackInclusiveJetCorrelations = false;
+  bool drawPtWeightedTrackInclusiveJetCorrelations = true;
   
-  bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations);
+  bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations || drawTrackInclusiveJetCorrelations || drawPtWeightedTrackInclusiveJetCorrelations);
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
@@ -37,12 +39,12 @@ void compareDijetHistograms(){
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
-  bool drawJetShapeMCComparison = true;
+  bool drawJetShape = true;
+  bool drawJetShapeMCComparison = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
@@ -65,7 +67,7 @@ void compareDijetHistograms(){
   bool logJetShape = true;    // Jet shapes
   
   // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_ppMC_Pythia6_2018-07-06.root"; // "data/jffCorrection_ppMC_Pythia6_2018-07-06.root" "data/jffCorrection_ppMC_dhanushPythia8_2018-07-19.root"
+  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-07-27.root"; // "data/jffCorrection_ppMC_Pythia6_2018-07-06.root" "data/jffCorrection_ppMC_dhanushPythia8_2018-07-19.root" "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-07-27.root"
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -75,7 +77,7 @@ void compareDijetHistograms(){
   // Settings for ratios
   double minZoom = 0.8;
   double maxZoom = 1.2;
-  TString ratioLabel = "Reco/Gen";
+  TString ratioLabel = "This/Xiao";
   
   // Scaling for histograms
   bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -118,23 +120,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/PbPbMC_RecoReco_noMixing_skims_xiaoCorrection_2018-07-25.root","data/PbPbMC_RecoGen_noMixing_skims_xiaoCorrection_2018-07-26.root"};
-  //  "data/dijetSpectraTestPp_noMixing_2018-06-13.root"  "data/dijet_ppMC_RecoReco_2018-06-01_1-16.root"
-  //  "data/dijet_ppMC_GenReco_2018-06-04.root" "data/dijet_ppMC_GenGen_2018-06-04_1-16.root" "data/dijet_ppMC_RecoGen_2018-06-04.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_2018-06-08.root" "data/dijet_ppMC_GenReco_noMixing_2018-06-08.root"
-  //  "data/dijet_ppMC_RecoGen_noMixing_2018-06-08.root" "data/dijet_ppMC_GenGen_noMixing_2018-06-08.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_mergedSkims_2018-06-11.root" "data/dijet_ppMC_RecoGen_noMixing_mergedSkims_2018-06-11.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_highForest_2018-06-12.root" "data/dijet_ppMC_RecoGen_noMixing_highForest_2018-06-12.root"
-  //  "data/dijet_ppMC_GenGen_noMixing_highForest_2018-06-12.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_Skims_2018-06-13.root" "data/dijet_ppMC_GenGen_noMixing_Skims_2018-06-13.root"
-  //  "data/dijet_ppMC_RecoGen_noMixing_Skims_2018-06-13.root"  "data/dijet_ppMC_GenReco_noMixing_Skims_2018-06-13.root"
-  //  "data/dijetTestPbPb_noMixing_2018-06-13.root"
-  //  "data/PbPbMC_RecoReco_noMixing_Skims_2018-06-14.root" "data/PbPbMC_GenGen_noMixing_Skims_2018-06-14.root"
-  //  "data/PbPbMC_RecoGen_noMixing_Skims_2018-06-14.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_KurtsSkims_2018-06-18_part1.root"  "data/dijet_ppMC_RecoGen_noMixing_KurtsSkims_2018-06-18_part1.root"
-  //  "data/dijet_pp_highForest_processed_noBinAreaWeight_2018-06-21.root" "data/dijet_pp_highForest_2018-06-21.root"
-  //  "data/dijet_pp_highForest_processed_2018-06-21.root" "data/dijet_pp_highForest_processed_2018-07-06.root"
+  const int nDatasets = 1;
+  TString inputFileName[nDatasets] = {"data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-13.root"};
   //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
   //  "data/dijet_ppMC_GenGen_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_GenReco_noMixing_dhanushPythia8_2018-07-02.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
@@ -147,8 +134,10 @@ void compareDijetHistograms(){
   //  "data/PbPbMC_RecoReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_RecoGen_noMixing_skims_processed_2018-07-20.root"
   //  "data/PbPbMC_GenReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_GenGen_noMixing_skims_processed_2018-07-20.root"
   //  "data/PbPbMC_RecoReco_noMixing_skims_xiaoCorrection_2018-07-25.root" "data/PbPbMC_RecoGen_noMixing_skims_xiaoCorrection_2018-07-26.root"
+  //  "data/dijet_pp_highForest_processed_2018-07-27.root"
+  //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-13.root" "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-07-27.root"
   
-  bool applyJffCorrection[nDatasets] = {false,false};  // Specify to which datasets should the JFF correction be applied
+  bool applyJffCorrection[nDatasets] = {false};  // Specify to which datasets should the JFF correction be applied
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -200,6 +189,7 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetLoadAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
     histograms[iDataset]->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
     histograms[iDataset]->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
+    histograms[iDataset]->SetLoadAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations,drawPtWeightedTrackInclusiveJetCorrelations);
     histograms[iDataset]->SetLoad2DHistograms(enable2Dhistograms);
     
     // Set the binning information
@@ -223,6 +213,7 @@ void compareDijetHistograms(){
   } // Loop over datasets
 
   DijetComparingDrawer *drawer = new DijetComparingDrawer(histograms[0]);
+  drawer->SetJffCorrectionMain(applyJffCorrection[0]);
   for(int i = 1; i < nDatasets; i++){
     drawer->AddHistogramToDraw(histograms[i],applyJffCorrection[i]);
   }
@@ -232,6 +223,7 @@ void compareDijetHistograms(){
   drawer->SetDrawAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
   drawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   drawer->SetDrawAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
+  drawer->SetDrawAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations,drawPtWeightedTrackInclusiveJetCorrelations);
   drawer->SetDrawJetTrackDeltas(drawJetTrackDeltaPhi,drawJetTrackDeltaEta,drawJetTrackDeltaEtaDeltaPhi);
   drawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeMCComparison);
   drawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);

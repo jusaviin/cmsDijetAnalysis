@@ -696,7 +696,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   char namerX[100];
   char namerY[100];
   
-  TFile *comparisonFile = TFile::Open("data/JS5TeV_HIN_16_020.root");
+  //TFile *comparisonFile = TFile::Open("data/JS5TeV_HIN_16_020.root");
+  TFile *comparisonFile = TFile::Open("data/inclJetShapes_GenGen_PYTHIA6.root");
   const int nTrackPtBins = fBaseHistograms->GetNTrackPtBins();
   TH1D *comparisonHistograms[nTrackPtBins];
   TH1D *sumHistogram;
@@ -704,17 +705,20 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   TH1D *helperHistogram;
   
   // Find the histograms to compare with from the comparison file
-  comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
+  //comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
+  comparisonHistograms[0] = (TH1D*) comparisonFile->Get("dr_pTweighted_0_0");
   sumHistogram = (TH1D*) comparisonHistograms[0]->Clone("normalizationSum");
   for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
-    sprintf(namerX,"JS_pp_%d",iTrackPt);
+    //sprintf(namerX,"JS_pp_%d",iTrackPt);
+    sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
     comparisonHistograms[iTrackPt] = (TH1D*) comparisonFile->Get(namerX);
     sumHistogram->Add(comparisonHistograms[iTrackPt]);
   }
   
   // There are more pT bins in the comparison file, so sum them up to match the pT bins in this analysis
   for(int iTrackPt = nTrackPtBins; iTrackPt < 9; iTrackPt++){
-    sprintf(namerX,"JS_pp_%d",iTrackPt);
+    //sprintf(namerX,"JS_pp_%d",iTrackPt);
+    sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
     helperHistogram = (TH1D*) comparisonFile->Get(namerX);
     comparisonHistograms[nTrackPtBins-1]->Add(helperHistogram);
     sumHistogram->Add(helperHistogram);
@@ -730,7 +734,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   //sumHistogram->Scale(1.0/jetShapeIntegral);
   
   // Apply the JFF correction to the jet shape histograms if the correction is loaded
-  if(fJffCorrectionFinder->CorrectionReady()) fBaseHistograms->ApplyJffCorrection(fJffCorrectionFinder);
+  if(fJffCorrectionFinder->CorrectionReady() && fApplyJffCorrectionMain) fBaseHistograms->ApplyJffCorrection(fJffCorrectionFinder);
   
   // For the jet shape, there will be one added histogram
   fnAddedHistograms = 1;
@@ -763,7 +767,13 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
         
         // JFF correction applies also normalization to the number of dijets, if the correction is not applied, it needs to be done here
-        if(!fJffCorrectionFinder->CorrectionReady()) helperHistogram->Scale(1.0/fBaseHistograms->GetPtIntegral(iCentrality));
+        if(!fJffCorrectionFinder->CorrectionReady() || !fApplyJffCorrectionMain) {
+          if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){
+            helperHistogram->Scale(1.0/fBaseHistograms->GetPtIntegral(iCentrality));
+          } else {
+            helperHistogram->Scale(1.0/fBaseHistograms->GetInclusiveJetPtIntegral(iCentrality));
+          }
+        }
         
         // A couple of last bins are missing from the comparison histogram, so drop them also from main histogram
         for(int iBin = 1; iBin <= fMainHistogram->GetNbinsX(); iBin++){
@@ -785,8 +795,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
         legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
-        legend->AddEntry(fMainHistogram,"Leading jet","l");
-        legend->AddEntry(fComparisonHistogram[0],"Inclusive","l");
+        legend->AddEntry(fMainHistogram,"This analysis GenGen","l");
+        legend->AddEntry(fComparisonHistogram[0],"Xiao analysis GenGen  ","l");
         legend->Draw();
         
         // Prepare the ratio and draw it to the lower pad
@@ -823,8 +833,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
       legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
-      legend->AddEntry(fMainHistogram,"Leading jet","l");
-      legend->AddEntry(fComparisonHistogram[0],"Inclusive","l");
+      legend->AddEntry(fMainHistogram,"This analysis GenGen","l");
+      legend->AddEntry(fComparisonHistogram[0],"Xiao analysis GenGen","l");
       legend->Draw();
       
       // Prepare the ratio and draw it to the lower pad
@@ -1207,6 +1217,22 @@ void DijetComparingDrawer::SetDrawAllTrackSubleadingJetCorrelations(const bool d
   SetDrawTrackSubleadingJetCorrelationsPtWeighted(drawPtWeighted);
 }
 
+// Setter for drawing inclusive jet-track correlations
+void DijetComparingDrawer::SetDrawTrackInclusiveJetCorrelations(const bool drawOrNot){
+  fDrawJetTrackCorrelations[DijetHistogramManager::kTrackInclusiveJet] = drawOrNot;
+}
+
+// Setter for drawing pT weighted inclusive jet-track correlations
+void DijetComparingDrawer::SetDrawTrackInclusiveJetCorrelationsPtWeighted(const bool drawOrNot){
+  fDrawJetTrackCorrelations[DijetHistogramManager::kPtWeightedTrackInclusiveJet] = drawOrNot;
+}
+
+// Setter for drawing all correlations related to tracks and inclusive jets
+void DijetComparingDrawer::SetDrawAllTrackInclusiveJetCorrelations(const bool drawInclusive, const bool drawPtWeighted){
+  SetDrawTrackInclusiveJetCorrelations(drawInclusive);
+  SetDrawTrackInclusiveJetCorrelationsPtWeighted(drawPtWeighted);
+}
+
 // Setter for drawing jet-track deltaPhi correlations
 void DijetComparingDrawer::SetDrawJetTrackDeltaPhi(const bool drawOrNot){
   fDrawJetTrackDeltaPhi = drawOrNot;
@@ -1394,4 +1420,9 @@ void DijetComparingDrawer::BinSanityCheck(const int nBins, int first, int last){
 // Load jff correction from file
 void DijetComparingDrawer::LoadJffCorrection(TFile *jffFile){
   fJffCorrectionFinder->ReadInputFile(jffFile);
+}
+
+// Load jff correction from file
+void DijetComparingDrawer::SetJffCorrectionMain(const bool applyCorrection){
+  fApplyJffCorrectionMain = applyCorrection;
 }

@@ -15,7 +15,6 @@ DijetMethods::DijetMethods() :
   fMaxBackgroundDeltaEta(2.5),
   fMaxSignalDeltaEta(1.0),
   fJetShapeNormalizationMethod(kBinWidth),
-  fnRBins(0),
   fnRebinDeltaEta(0),
   fnRebinDeltaPhi(0)
 {
@@ -24,9 +23,14 @@ DijetMethods::DijetMethods() :
   fBackgroundOverlap = NULL;
   fhJetShapeCounts = NULL;
   fhJetShapeBinMap = NULL;
-  fRBins = nullptr;
   fRebinDeltaEta = nullptr;
+  fRBins = nullptr;
   fRebinDeltaPhi = nullptr;
+  
+  // Set default RBins for jet shape
+  const int nRBins = 16;  // Number of R-bins for jet shape histograms
+  double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
+  SetJetShapeBinEdges(nRBins,rBins);
 }
 
 /*
@@ -258,13 +262,13 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   backgroundSubtractedHistogram->Add(fBackgroundDistribution,-1);
   
   // Set all the negative bins to zero
-  for(int iDeltaPhi = 1; iDeltaPhi <= backgroundSubtractedHistogram->GetNbinsX(); iDeltaPhi++){
+  /*for(int iDeltaPhi = 1; iDeltaPhi <= backgroundSubtractedHistogram->GetNbinsX(); iDeltaPhi++){
     for(int iDeltaEta = 1; iDeltaEta <= backgroundSubtractedHistogram->GetNbinsY(); iDeltaEta++){
       if(backgroundSubtractedHistogram->GetBinContent(iDeltaPhi,iDeltaEta) < 0){
         backgroundSubtractedHistogram->SetBinContent(iDeltaPhi,iDeltaEta,0);
       }
     } // DeltaEta loop
-  } // DeltaPhi loop
+  } // DeltaPhi loop*/
   
   // Return the background subtracted histogram with negative values removed
   return backgroundSubtractedHistogram;
@@ -433,7 +437,7 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
   // Normalize each bin in the jet shape histogram by the number of bins in two-dimensional histogram corresponding to that bin
   if(fJetShapeNormalizationMethod == kBinWidth){
     jetShapeHistogram->Scale(1.0,"width");
-    
+
     // To correct for the fact the use rectangles to integrate a circular area, we need to weight the bins on how accurately
     // the rectangular area reflects the actual circles.
     double totalBinArea;

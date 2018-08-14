@@ -214,6 +214,7 @@ public:
   int GetNEvents() const;                      // Getter for the number of events passing the cuts
   int GetNDijets() const;                      // Getter for the number of dijets
   double GetPtIntegral(int iCentrality) const; // Getter for integral over leading jet pT in a given centrality bin
+  double GetInclusiveJetPtIntegral(int iCentrality) const; // Getter for integral over inclusive jet pT above 120 GeV in a given centrality bin
   
 private:
   

@@ -21,7 +21,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // ==================================================================
   
   // Choose to either process or draw the histograms
-  int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  int executionMode = 2; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
   if(histogramSelection > 0) executionMode = 0;
   
   // We do not need to set bin indices if we use processed histograms
@@ -36,18 +36,18 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = false;
+  bool drawAnyJetHistograms = true;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
-  bool drawTrackInclusiveJetCorrelations = true;
+  bool drawTrackInclusiveJetCorrelations = false;
   bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
   if(histogramSelection > 0){
@@ -71,7 +71,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
@@ -91,7 +91,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawBackground = true;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures

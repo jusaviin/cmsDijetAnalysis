@@ -399,12 +399,21 @@ void DijetHistogramManager::ApplyJffCorrection(JffCorrector *jffCorrectionFinder
   TH1D *correctionHistogram;
   
   // Loop over all the histogram and apply the JFF correction
+  double scalingFactor;
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only scale the histograms that are selected for analysis
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      
+      // Scaling factor is number of dijets for leading and subleading and number of jets for inclusive correlations
+      if(iJetTrack < kTrackInclusiveJet){
+        scalingFactor = 1.0/GetPtIntegral(iCentralityBin);
+      } else {
+        scalingFactor = 1.0/GetInclusiveJetPtIntegral(iCentralityBin);
+      }
+      
       for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
         correctionHistogram = jffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
-        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin]->Scale(1.0/GetPtIntegral(iCentralityBin));  // Need to scale with the number of dijets since the correction is also normalized to the number of dijets
+        fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin]->Scale(scalingFactor);  // Need to scale with the number of dijets/all jets since the correction is also normalized to the number of dijets/all jets
         fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
       } // Track pT loop
     } // Centrality loop
@@ -1808,4 +1817,9 @@ int DijetHistogramManager::GetNDijets() const{
 // Getter for integral over leading jet pT
 double DijetHistogramManager::GetPtIntegral(int iCentrality) const{
   return fhJetPt[kLeadingJet][iCentrality]->Integral("width");
+}
+
+// Getter for integral over inclusive jet pT over 120 GeV
+double DijetHistogramManager::GetInclusiveJetPtIntegral(int iCentrality) const{
+  return fhJetPt[kAnyJet][iCentrality]->Integral(fhJetPt[kAnyJet][iCentrality]->FindBin(120),fhJetPt[kAnyJet][iCentrality]->GetNbinsX(),"width");
 }
