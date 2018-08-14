@@ -176,5 +176,5 @@ TString MixedEventLookoutTable::GetMixingFileName(TString dataFileName){
       return fMixedEventFileArray[iFile];
     }
   }
-  return "";
+  return fMixedEventFileArray[0];
 }

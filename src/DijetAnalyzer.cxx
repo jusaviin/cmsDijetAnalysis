@@ -574,7 +574,9 @@ void DijetAnalyzer::RunAnalysis(){
     if(mixEvents){
       if(fDataType == ForestReader::kPbPb){
         currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
-      } else if (fDataType == ForestReader::kPbPbMC || (fDataType == ForestReader::kPpMC && fReadMode == 2)) {
+      } else if(fDataType == ForestReader::kPbPbMC){
+        currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root";
+      } else if(fDataType == ForestReader::kPpMC && fReadMode == 2){
         MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
         currentMixedEventFile = mixingTable->GetMixingFileName(currentFile);
         delete mixingTable;
