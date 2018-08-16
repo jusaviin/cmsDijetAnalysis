@@ -696,8 +696,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   char namerX[100];
   char namerY[100];
   
-  //TFile *comparisonFile = TFile::Open("data/JS5TeV_HIN_16_020.root");
-  TFile *comparisonFile = TFile::Open("data/inclJetShapes_GenGen_PYTHIA6.root");
+  TFile *comparisonFile = TFile::Open("data/JS5TeV_HIN_16_020.root");
+  //TFile *comparisonFile = TFile::Open("data/inclJetShapes_GenGen_PYTHIA6.root");
   const int nTrackPtBins = fBaseHistograms->GetNTrackPtBins();
   TH1D *comparisonHistograms[nTrackPtBins];
   TH1D *sumHistogram;
@@ -705,20 +705,20 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   TH1D *helperHistogram;
   
   // Find the histograms to compare with from the comparison file
-  //comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
-  comparisonHistograms[0] = (TH1D*) comparisonFile->Get("dr_pTweighted_0_0");
+  comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
+  //comparisonHistograms[0] = (TH1D*) comparisonFile->Get("dr_pTweighted_0_0");
   sumHistogram = (TH1D*) comparisonHistograms[0]->Clone("normalizationSum");
   for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
-    //sprintf(namerX,"JS_pp_%d",iTrackPt);
-    sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
+    sprintf(namerX,"JS_pp_%d",iTrackPt);
+    //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
     comparisonHistograms[iTrackPt] = (TH1D*) comparisonFile->Get(namerX);
     sumHistogram->Add(comparisonHistograms[iTrackPt]);
   }
   
   // There are more pT bins in the comparison file, so sum them up to match the pT bins in this analysis
   for(int iTrackPt = nTrackPtBins; iTrackPt < 9; iTrackPt++){
-    //sprintf(namerX,"JS_pp_%d",iTrackPt);
-    sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
+    sprintf(namerX,"JS_pp_%d",iTrackPt);
+    //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
     helperHistogram = (TH1D*) comparisonFile->Get(namerX);
     comparisonHistograms[nTrackPtBins-1]->Add(helperHistogram);
     sumHistogram->Add(helperHistogram);
@@ -795,8 +795,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
         legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
-        legend->AddEntry(fMainHistogram,"This analysis GenGen","l");
-        legend->AddEntry(fComparisonHistogram[0],"Xiao analysis GenGen  ","l");
+        legend->AddEntry(fMainHistogram,"This analysis pp","l");
+        legend->AddEntry(fComparisonHistogram[0],"Inclusive pp","l");
         legend->Draw();
         
         // Prepare the ratio and draw it to the lower pad
@@ -833,8 +833,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
       legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
-      legend->AddEntry(fMainHistogram,"This analysis GenGen","l");
-      legend->AddEntry(fComparisonHistogram[0],"Xiao analysis GenGen","l");
+      legend->AddEntry(fMainHistogram,"This analysis pp","l");
+      legend->AddEntry(fComparisonHistogram[0],"Inclusive pp","l");
       legend->Draw();
       
       // Prepare the ratio and draw it to the lower pad

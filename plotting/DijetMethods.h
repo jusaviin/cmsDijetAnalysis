@@ -29,17 +29,20 @@ public:
   DijetMethods& operator=(const DijetMethods& in); // Equal sign operator
   
   TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram); // Mixed event correction for a two-dimensional histogram
+  TH2D* DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram);  // Apply a seagull correction to the histogram
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   
-  // Getters for produces distributions
+  // Getters for produced distributions
   TH2D* GetBackground() const;        // Getter for the most recent background distribution used to subtract the background
   TH2D* GetBackgroundOverlap() const; // Getter for the most recent background overlap distribution for normalization check
   TH1D* GetJetShapeCounts() const;    // Getter for the jet shape count distribution
   TH2D* GetJetShapeBinMap() const;    // Getter for the map between R bins and deltaEta-deltaPhi bins
+  TH1D* GetBackgroundEta() const;     // Getter for deltaEta distribution on background deltaPhi region used for seagull fit
+  TF1* GetSeagullFit() const;         // Getter for the most recent seagull fit
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
@@ -55,6 +58,10 @@ public:
   
   // Setter for two-dimensional histogram rebinning information
   void SetRebinBoundaries(const int nRebinDeltaEta, double *deltaEtaBorders, const int nRebinDeltaPhi, double *deltaPhiBorders); // Setter for deltaEta and deltaPhi rebin borders
+  
+  // Setter for parameters for seagull correction
+  void SetBackgroundDeltaPhiRegionSeagull(const double minDeltaPhi, const double maxDeltaPhi);  // Setter for deltaPhi region considered as background in seagull correction
+  void SetSeagullRebin(const int nRebin);  // Setter for the amount of rebin applied to deltaEta histogram before fit in seagull correction
   
 private:
   
@@ -73,6 +80,16 @@ private:
   TH2D *fBackgroundOverlap;       // Fill a few points over the gluing point to see how well the gluing works
   double fMinBackgroundDeltaEta;  // Minimum deltaEta for background subtraction region
   double fMaxBackgroundDeltaEta;  // Maximum deltaEta for background subtraction region
+  
+  // =============================================
+  // ============ Seagull correction =============
+  // =============================================
+  
+  TH1D *fBackgroundEtaProjection;  // Projected deltaEta in the background region of deltaPhi
+  TF1 *fSeagullFit;                // Function used to do the seagull fit
+  double fMinBackgroundDeltaPhi;   // Minimum deltaPhi for seagull fit region
+  double fMaxBackgroundDeltaPhi;   // Maximum deltaPhi for seagull fit region
+  int fSeagullRebin;               // Rebin applied to deltaEta histogram before fitting
   
   // =============================================
   // ============ DeltaPhi projections ===========

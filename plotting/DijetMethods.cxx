@@ -6,6 +6,15 @@
 #include "DijetMethods.h"
 
 /*
+ * Combination of zeroth and first order polynomial for seagull correction
+ * Functional form: f(x) = c, if |x| < 0.5  <=> f(x) = a*x^2+b*x+c if |x| > 0.5
+ */
+double seagullPoly2(double *x, double *par){
+  if(x[0] < 0.5 && x[0] > -0.5) return par[0];
+  return par[0]+par[1]*x[0]*x[0]+par[2]*x[0];
+}
+
+/*
  *  Constructor
  */
 DijetMethods::DijetMethods() :
@@ -13,6 +22,9 @@ DijetMethods::DijetMethods() :
   fMixedEventNormalizationMethod(kSingle),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
+  fMinBackgroundDeltaPhi(1.4),
+  fMaxBackgroundDeltaPhi(1.7),
+  fSeagullRebin(4),
   fMaxSignalDeltaEta(1.0),
   fJetShapeNormalizationMethod(kBinWidth),
   fnRebinDeltaEta(0),
@@ -23,6 +35,8 @@ DijetMethods::DijetMethods() :
   fBackgroundOverlap = NULL;
   fhJetShapeCounts = NULL;
   fhJetShapeBinMap = NULL;
+  fBackgroundEtaProjection = NULL;
+  fSeagullFit = NULL;
   fRebinDeltaEta = nullptr;
   fRBins = nullptr;
   fRebinDeltaPhi = nullptr;
@@ -43,6 +57,11 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fBackgroundOverlap(in.fBackgroundOverlap),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
   fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta),
+  fBackgroundEtaProjection(in.fBackgroundEtaProjection),
+  fSeagullFit(in.fSeagullFit),
+  fMinBackgroundDeltaPhi(in.fMinBackgroundDeltaPhi),
+  fMaxBackgroundDeltaPhi(in.fMaxBackgroundDeltaPhi),
+  fSeagullRebin(in.fSeagullRebin),
   fMaxSignalDeltaEta(in.fMaxSignalDeltaEta),
   fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
   fhJetShapeCounts(in.fhJetShapeCounts),
@@ -68,6 +87,11 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fBackgroundOverlap = in.fBackgroundOverlap;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
   fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
+  fBackgroundEtaProjection = in.fBackgroundEtaProjection;
+  fSeagullFit = in.fSeagullFit;
+  fMinBackgroundDeltaPhi = in.fMinBackgroundDeltaPhi;
+  fMaxBackgroundDeltaPhi = in.fMaxBackgroundDeltaPhi;
+  fSeagullRebin = in.fSeagullRebin;
   fMaxSignalDeltaEta = in.fMaxSignalDeltaEta;
   fJetShapeNormalizationMethod = in.fJetShapeNormalizationMethod;
   fhJetShapeCounts = in.fhJetShapeCounts;
@@ -151,6 +175,71 @@ double DijetMethods::GetMixedEventScale(TH2D* mixedEventHistogram){
   
   // The normalization scale is the fit result divided by the number of deltaPhi bins integrated for one deltaEta bin
   return (hDeltaEtaMixed->GetFunction("pol0")->GetParameter(0) / mixedEventHistogram->GetNbinsX());
+}
+
+/*
+ * Apply a seagull correction to the histogram
+ *
+ * After an ideal mixed event correction, the corrected histogram will have a flat deltaEta distribution at large deltaPhi.
+ * This is not the case in real life, but the so called eta wings emerge, meaning that there is more yield at large deltaEta.
+ * The purpose of the seagull correction is to correct for this fact and make the background eta distribution flat.
+ * The correction assumes that the deltaEta shape does not depend on deltaPhi.
+ *
+ * Algorithm used to make the correction:
+ *  1) Project out the deltaEta distribution at background deltaPhi region
+ *  2) Fit a combination of a zeroth and second order polynomial to the distribution
+ *      -> f(x) = c, if |x| < 0.5  <=> f(x) = a*x^2+b*x+c if |x| > 0.5
+ *  3) Interpret c in f(x) as the true level of deltaEta (the level at zero)
+ *  4) Use the ratio c/f(deltaEta) as a correction factor for each point in the histogram
+ *
+ * Arguments:
+ *  TH2D *mixedEventCorrectedHistogram = Two-dimensional deltaEta-deltaPhi distribution, that is corrected by the mixed event
+ *
+ *  return: The two dimensional distribution corrected for the seagull effect
+ */
+TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
+  
+  // Project out the deltaEta distribution at background deltaPhi region
+  int minDeltaPhiBin = mixedEventCorrectedHistogram->GetXaxis()->FindBin(fMinBackgroundDeltaPhi+0.0001);
+  int maxDeltaPhiBin = mixedEventCorrectedHistogram->GetXaxis()->FindBin(fMaxBackgroundDeltaPhi+0.0001);
+  fBackgroundEtaProjection = mixedEventCorrectedHistogram->ProjectionY("SeagullEtaProjection",minDeltaPhiBin,maxDeltaPhiBin);
+  
+  // Scale the projected deltaEta distribution with the number of deltaPhi bins projected over and deltaPhi bin width to retain normalization
+  fBackgroundEtaProjection->Scale(1.0/(maxDeltaPhiBin-minDeltaPhiBin+1));
+  fBackgroundEtaProjection->Scale(mixedEventCorrectedHistogram->GetXaxis()->GetBinWidth(1));
+  fBackgroundEtaProjection->Rebin(fSeagullRebin);
+  fBackgroundEtaProjection->Scale(1.0/fSeagullRebin);
+  
+  // Prepare the fit function
+  fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,3);
+  double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
+  fSeagullFit->SetParameters(initialLevel,0,0);
+  
+  // Fit the projected distribution
+  fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
+  double backgroundLevel = fSeagullFit->GetParameter(0);
+  
+  // Apply the correction to the input 2D histogram
+  TH2D *seagullCorrectedHistogram = (TH2D*) mixedEventCorrectedHistogram->Clone();
+  double binEta;
+  double seagullCorrection;
+  double binContent;
+  
+  for(int iEta = 1; iEta <= seagullCorrectedHistogram->GetNbinsY(); iEta++){
+    
+    // Calculate the correction for this deltaEta bin
+    binEta = seagullCorrectedHistogram->GetYaxis()->GetBinCenter(iEta);
+    seagullCorrection = backgroundLevel/fSeagullFit->Eval(binEta);
+    
+    // Apply the correction for all deltaPhi bins in the deltaEta strip
+    for(int iPhi = 1; iPhi <= seagullCorrectedHistogram->GetNbinsX(); iPhi++){
+      binContent = seagullCorrectedHistogram->GetBinContent(iPhi,iEta);
+      seagullCorrectedHistogram->SetBinContent(iPhi,iEta,binContent*seagullCorrection);
+    }
+  }
+  
+  // Return the corrected histogram
+  return seagullCorrectedHistogram;
 }
 
 /*
@@ -261,7 +350,8 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   TH2D *backgroundSubtractedHistogram = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
   backgroundSubtractedHistogram->Add(fBackgroundDistribution,-1);
   
-  // Set all the negative bins to zero
+  // Set all the negative bins to zero.
+  // Note: This seems to be cause bias due to fluctuations arising from small bin size. Thus the part is commented out.
   /*for(int iDeltaPhi = 1; iDeltaPhi <= backgroundSubtractedHistogram->GetNbinsX(); iDeltaPhi++){
     for(int iDeltaEta = 1; iDeltaEta <= backgroundSubtractedHistogram->GetNbinsY(); iDeltaEta++){
       if(backgroundSubtractedHistogram->GetBinContent(iDeltaPhi,iDeltaEta) < 0){
@@ -589,6 +679,16 @@ TH2D* DijetMethods::GetBackgroundOverlap() const{
   return fBackgroundOverlap;
 }
 
+// Getter for deltaEta distribution on background deltaPhi region used for seagull fit
+TH1D* DijetMethods::GetBackgroundEta() const{
+  return fBackgroundEtaProjection;
+}
+
+// Getter for the most recent seagull fit
+TF1* DijetMethods::GetSeagullFit() const{
+  return fSeagullFit;
+}
+
 // Setter for deltaEta range used for normalizing the mixed event
 void DijetMethods::SetMixedEventFitRegion(const double etaRange){
   fMixedEventFitRegion = etaRange;
@@ -659,4 +759,15 @@ void DijetMethods::SetJetShapeNormalization(const int normalizationType){
 // Setter for mixed event normalization method
 void DijetMethods::SetMixedEventNormalization(const int normalizationType){
   fMixedEventNormalizationMethod = CheckNormalizationSanity(normalizationType,knMixedEventNormalizations);
+}
+
+// Setter for deltaPhi region considered as background in seagull correction
+void DijetMethods::SetBackgroundDeltaPhiRegionSeagull(const double minDeltaPhi, const double maxDeltaPhi){
+  fMinBackgroundDeltaPhi = minDeltaPhi;
+  fMaxBackgroundDeltaPhi = maxDeltaPhi;
+}
+
+// Setter for the amount of rebin applied to deltaEta histogram before fit in seagull correction
+void DijetMethods::SetSeagullRebin(const int nRebin){
+  fSeagullRebin = nRebin;
 }

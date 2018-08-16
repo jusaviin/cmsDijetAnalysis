@@ -58,7 +58,7 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
@@ -67,7 +67,7 @@ void compareDijetHistograms(){
   bool logJetShape = true;    // Jet shapes
   
   // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-07-27.root"; // "data/jffCorrection_ppMC_Pythia6_2018-07-06.root" "data/jffCorrection_ppMC_dhanushPythia8_2018-07-19.root" "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-07-27.root"
+  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-08-15.root"; // "data/jffCorrection_ppMC_Pythia6_2018-07-06.root" "data/jffCorrection_ppMC_dhanushPythia8_2018-07-19.root" "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-07-27.root"
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -75,9 +75,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.8;
-  double maxZoom = 1.2;
-  TString ratioLabel = "This/Xiao";
+  double minZoom = 0.6;
+  double maxZoom = 1.4;
+  TString ratioLabel = "This/Inclusive";
   
   // Scaling for histograms
   bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -121,7 +121,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-13.root"};
+  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-08-15.root"};
   //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
   //  "data/dijet_ppMC_GenGen_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_GenReco_noMixing_dhanushPythia8_2018-07-02.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
@@ -134,10 +134,10 @@ void compareDijetHistograms(){
   //  "data/PbPbMC_RecoReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_RecoGen_noMixing_skims_processed_2018-07-20.root"
   //  "data/PbPbMC_GenReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_GenGen_noMixing_skims_processed_2018-07-20.root"
   //  "data/PbPbMC_RecoReco_noMixing_skims_xiaoCorrection_2018-07-25.root" "data/PbPbMC_RecoGen_noMixing_skims_xiaoCorrection_2018-07-26.root"
-  //  "data/dijet_pp_highForest_processed_2018-07-27.root"
+  //  "data/dijet_pp_highForest_processed_2018-07-27.root" "data/dijet_pp_highForest_processed_2018-08-15.root"
   //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-13.root" "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-07-27.root"
   
-  bool applyJffCorrection[nDatasets] = {false};  // Specify to which datasets should the JFF correction be applied
+  bool applyJffCorrection[nDatasets] = {true};  // Specify to which datasets should the JFF correction be applied
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
