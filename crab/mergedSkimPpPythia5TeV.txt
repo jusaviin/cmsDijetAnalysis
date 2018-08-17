@@ -1,0 +1,16 @@
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge1.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge2.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge3.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge4.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge5.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge6.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge7.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge8.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge9.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge10.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge11.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge12.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge13.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge14.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge15.root
+/store/user/jviinika/ppMC_mergedSkims_Pythia5TeV/Pythia15_merge16.root
