@@ -140,6 +140,10 @@ public:
   // Setter for used DijetMethods
   void SetDijetMethods(DijetMethods* newMethods); // Setter for used DijetMethods
   
+  // Setters for corrections
+  void SetJffCorrection(TFile *jffFile, const bool applyCorrection); // Setter for JFF corrector and flag
+  void SetSeagullCorrection(const bool applyCorrection);                             // Setter for seagull correction flag
+  
   // Getters for number of bins in histograms
   int GetNCentralityBins() const; // Getter for the number of centrality bins
   int GetNTrackPtBins() const; // Getter for the number of track pT bins
@@ -219,11 +223,18 @@ public:
 private:
   
   // Data members
-  TFile *fInputFile;               // File from which the histograms are read
-  DijetCard *fCard;                // Card inside the data file for binning, cut collision system etc. information
-  TString fSystemAndEnergy;        // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
-  TString fCompactSystemAndEnergy; // Same a before but without white spaces and dots
-  DijetMethods *fMethods;          // DijetMethods for processing the loaded histograms
+  TFile *fInputFile;                  // File from which the histograms are read
+  DijetCard *fCard;                   // Card inside the data file for binning, cut collision system etc. information
+  TString fSystemAndEnergy;           // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
+  TString fCompactSystemAndEnergy;    // Same a before but without white spaces and dots
+  DijetMethods *fMethods;             // DijetMethods for processing the loaded histograms
+  JffCorrector *fJffCorrectionFinder; // Class for providing JFF correction for final deltaEta-deltaPhi distributions
+  
+  // ==============================================
+  // =========== Flags for corrections ============
+  // ==============================================
+  bool fApplyJffCorrection;       // Flag for applying the JFF correction
+  bool fApplySeagullCorrection;   // Flag for applying the seagull correction
   
   // ==============================================
   // ======== Flags for histograms to load ========

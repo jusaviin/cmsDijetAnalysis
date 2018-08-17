@@ -40,9 +40,6 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   
   // Create a new drawer
   fDrawer = new JDrawer();
-  
-  // Create a new JFF corrector
-  fJffCorrectionFinder = new JffCorrector();
 
   // Do not draw anything by default
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -73,7 +70,6 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
  */
 DijetDrawer::~DijetDrawer(){
   delete fDrawer;
-  delete fJffCorrectionFinder;
 }
 
 /*
@@ -522,7 +518,6 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
             drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
-            drawnHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
             
             // Move legend to different place for leading jet background figures
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
@@ -547,7 +542,6 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             // In case of background histogram, draw the background overlap to the same figure
             if(iCorrelationType == DijetHistogramManager::kBackground){
               additionalHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundOverlap,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
-              additionalHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
               additionalHistogram->SetLineColor(kRed);
               additionalHistogram->Draw("same");
             }
@@ -560,7 +554,6 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi-deltaEta =====
           if(fDrawJetTrackDeltaEtaDeltaPhi){
             drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt);
-            drawnHistogram2D->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
             
             // Change the right margin better suited for 2D-drawing
             fDrawer->SetRightMargin(0.1);
@@ -606,7 +599,6 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           if(fDrawJetTrackDeltaEta){
             for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
               drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,iCorrelationType,iCentrality,iTrackPt,iDeltaPhi);
-              drawnHistogram->Scale(1.0/fHistograms->GetNDijets());  // Normalize with the number of dijets
               
               // Do not draw the deltaEta histograms for background because they are flat by construction
               if(iCorrelationType == DijetHistogramManager::kBackground) continue;
@@ -700,7 +692,6 @@ void DijetDrawer::DrawJetShapeHistograms(){
   
   // Helper variables for histogram drawing
   TH1D *drawnHistogram;
-  TH1D *correctionHistogram;
   TLegend *legend;
   double legendX1;
   double legendY1;
@@ -735,15 +726,6 @@ void DijetDrawer::DrawJetShapeHistograms(){
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
           drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,iCentrality,iTrackPt);
-          
-          // Scaling by the number of dijets for the jet shape distribution
-          if(iJetShape == DijetHistogramManager::kJetShape) drawnHistogram->Scale(1.0/fHistograms->GetPtIntegral(iCentrality));
-          
-          // If JFF correction is loaded, apply it. Only for actual jet shape distribution
-          if(fJffCorrectionFinder->CorrectionReady() && iJetShape == DijetHistogramManager::kJetShape){
-            correctionHistogram = fJffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentrality,iTrackPt);
-            drawnHistogram->Add(correctionHistogram,-1);
-          }
           
           // Set the correct track pT bins
           trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
@@ -804,7 +786,6 @@ void DijetDrawer::DrawJetShapeStack(){
   
   // Helper variables for histograms added to stack
   TH1D *addedHistogram;
-  TH1D *correctionHistogram;
   
   // Logarithmic drawing for jet shape histograms
   fDrawer->SetLogY(fLogJetShape);
@@ -828,12 +809,6 @@ void DijetDrawer::DrawJetShapeStack(){
         legendString[iTrackPt] = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
         
         addedHistogram = fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
-        
-        // If JFF correction is loaded, apply it. Only for actual jet shape distribution
-        if(fJffCorrectionFinder->CorrectionReady()){
-          correctionHistogram = fJffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentrality,iTrackPt);
-          addedHistogram->Add(correctionHistogram,-1);
-        }
         
         jetShapeStack[iJetTrack][iCentrality]->addHist(addedHistogram);
         
@@ -1143,9 +1118,4 @@ void DijetDrawer::SetDrawingStyles(const int color, const char* style2D, const c
   SetColorPalette(color);
   SetDrawingStyle2D(style2D);
   SetDrawingStyle3D(style3D);
-}
-
-// Load jff correction from file
-void DijetDrawer::LoadJffCorrection(TFile *jffFile){
-  fJffCorrectionFinder->ReadInputFile(jffFile);
 }

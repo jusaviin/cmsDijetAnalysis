@@ -18,6 +18,8 @@ DijetHistogramManager::DijetHistogramManager() :
   fCard(NULL),
   fSystemAndEnergy(""),
   fCompactSystemAndEnergy(""),
+  fApplyJffCorrection(false),
+  fApplySeagullCorrection(false),
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
   fLoad2DHistograms(false),
@@ -27,8 +29,9 @@ DijetHistogramManager::DijetHistogramManager() :
   fLastLoadedTrackPtBin(knTrackPtBins-1)
 {
   
-  // Create a new DijetMethods
+  // Create a new DijetMethods and JffCorrector
   fMethods = new DijetMethods();
+  fJffCorrectionFinder = new JffCorrector();
   
   // Do not draw anything by default
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -166,6 +169,9 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fSystemAndEnergy(in.fSystemAndEnergy),
   fCompactSystemAndEnergy(in.fCompactSystemAndEnergy),
   fMethods(in.fMethods),
+  fJffCorrectionFinder(in.fJffCorrectionFinder),
+  fApplyJffCorrection(in.fApplyJffCorrection),
+  fApplySeagullCorrection(in.fApplySeagullCorrection),
   fLoadEventInformation(in.fLoadEventInformation),
   fLoadDijetHistograms(in.fLoadDijetHistograms),
   fLoad2DHistograms(in.fLoad2DHistograms),
@@ -282,6 +288,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
 DijetHistogramManager::~DijetHistogramManager(){
   delete fCard;
   delete fMethods;
+  delete fJffCorrectionFinder;
 }
 
 /*
@@ -298,13 +305,22 @@ void DijetHistogramManager::ProcessHistograms(){
  */
 void DijetHistogramManager::DoMixedEventCorrection(){
   
-  // Helper variable
+  // Helper variables
   int connectedIndex;
+  double scalingFactor;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      
+      // Scaling factor is number of dijets for leading and subleading and number of jets for inclusive correlations
+      if(iJetTrack < kTrackInclusiveJet){
+        scalingFactor = 1.0/GetPtIntegral(iCentralityBin);
+      } else {
+        scalingFactor = 1.0/GetInclusiveJetPtIntegral(iCentralityBin);
+      }
+      
       for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
 
         connectedIndex = GetConnectedIndex(iJetTrack);
@@ -312,8 +328,13 @@ void DijetHistogramManager::DoMixedEventCorrection(){
         // Do the mixed event correction for the current jet-track correlation histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iCentralityBin][iTrackPtBin]);
         
+        // Scale the histograms with the number of jets/dijets
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->Scale(scalingFactor);
+        
         // Apply the seagull correction after the mixed event correction
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]);
+        if(fApplySeagullCorrection){
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]);
+        }
 
       } // Track pT loop
     } // Centrality loop
@@ -331,6 +352,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
   int connectedIndex;
   int nProjectedBins;
   bool isInclusive;
+  TH2D *jffCorrection;
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
@@ -347,6 +369,12 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
         // Get also the background and background overlap region for QA purposes
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundOverlap][iCentralityBin][iTrackPtBin] = fMethods->GetBackgroundOverlap();
+        
+        // Apply the JFF correction to the background subtracted deltaEta-deltaPhi distribution
+        if(fApplyJffCorrection && fJffCorrectionFinder->CorrectionReady()){
+          jffCorrection = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]->Add(jffCorrection,-1);
+        }
         
         // Calculate the jet shape from the background subtracted histogram
         fhJetShape[kJetShape][iJetTrack][iCentralityBin][iTrackPtBin] = fMethods->GetJetShape(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]);
@@ -525,7 +553,7 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
   int centralityIndex[] = {4,4,3}; // TODO: Change the main analysis file such that anyJet has dummy axis for asymmetry to simplify loading here
   
   for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
-    if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the selected histograms
+    
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
       // Select the bin indices
@@ -533,7 +561,11 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
       lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
       higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
       
+      // Always load single jet pT histograms
       fhJetPt[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],0,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
+      
+      if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the remaining single jet histograms is selected
+      
       fhJetPhi[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],1,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
       fhJetEta[iJetCategory][iCentralityBin] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],2,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
       if(fLoad2DHistograms) fhJetEtaPhi[iJetCategory][iCentralityBin] = FindHistogram2D(fInputFile,fSingleJetHistogramName[iJetCategory],1,2,centralityIndex[iJetCategory],lowerCentralityBin,higherCentralityBin);
@@ -1106,13 +1138,14 @@ void DijetHistogramManager::LoadProcessedHistograms(){
   
   // Load the single jet histograms from the input file
   for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
-    if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the loaded the selected histograms
     
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
-      // Single jet pT
+      // Always load single jet pT histograms
       sprintf(histogramNamer,"%s/%sPt_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
       fhJetPt[iJetCategory][iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the loaded the selected histograms
       
       // Single jet phi
       sprintf(histogramNamer,"%s/%sPhi_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
@@ -1515,6 +1548,19 @@ int DijetHistogramManager::BinIndexCheck(const int nBins, const int binIndex) co
 // Setter for used DijetMethods
 void DijetHistogramManager::SetDijetMethods(DijetMethods* newMethods){
   fMethods = newMethods;
+}
+
+// Setter for JFF correction
+void DijetHistogramManager::SetJffCorrection(TFile *jffFile, const bool applyCorrection){
+  fApplyJffCorrection = applyCorrection;
+  if(fApplyJffCorrection){
+    fJffCorrectionFinder->ReadInputFile(jffFile);
+  }
+}
+
+// Setter for seagull correction flag
+void DijetHistogramManager::SetSeagullCorrection(const bool applyCorrection){
+  fApplySeagullCorrection = applyCorrection;
 }
 
 // Getter for the number of centrality bins

@@ -12,7 +12,6 @@
 #include "JDrawer.h"
 #include "DijetHistogramManager.h"
 #include "stackHist.h"   // Xiao's histogram stacking class
-#include "JffCorrector.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -91,8 +90,6 @@ public:
   void SetDrawingStyle3D(const char* style); // Setter for 3D drawing style
   void SetDrawingStyles(const int color, const char* style2D, const char* style3D); // Setter for drawing styles
   
-  // Load jff correction from file
-  void LoadJffCorrection(TFile *jffFile); // Load jff correction from file
   
 private:
   
@@ -101,7 +98,6 @@ private:
   TString fSystemAndEnergy;           // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
   TString fCompactSystemAndEnergy;    // Same a before but without white spaces and dots
   JDrawer *fDrawer;                   // JDrawer for drawing the histograms
-  JffCorrector *fJffCorrectionFinder; // Class for providing JFF correction for jet shapes
   
   // ==============================================
   // ======== Flags for histograms to draw ========

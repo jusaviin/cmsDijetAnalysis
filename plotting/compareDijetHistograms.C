@@ -15,9 +15,9 @@ void compareDijetHistograms(){
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = true;
+  bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
@@ -65,9 +65,6 @@ void compareDijetHistograms(){
   bool logPt = true;          // pT distributions
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
   bool logJetShape = true;    // Jet shapes
-  
-  // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-08-15.root"; // "data/jffCorrection_ppMC_Pythia6_2018-07-06.root" "data/jffCorrection_ppMC_dhanushPythia8_2018-07-19.root" "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-07-27.root"
   
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
@@ -121,7 +118,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-08-15.root"};
+  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-08-16.root"};
   //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
   //  "data/dijet_ppMC_GenGen_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_GenReco_noMixing_dhanushPythia8_2018-07-02.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
@@ -137,12 +134,7 @@ void compareDijetHistograms(){
   //  "data/dijet_pp_highForest_processed_2018-07-27.root" "data/dijet_pp_highForest_processed_2018-08-15.root"
   //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-13.root" "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-07-27.root"
   
-  bool applyJffCorrection[nDatasets] = {true};  // Specify to which datasets should the JFF correction be applied
-  
   bool loadProcessed = inputFileName[0].Contains("processed");
-  
-  TFile *jffCorrectionFile;
-  if(jffCorrectionFileName != "") jffCorrectionFile = TFile::Open(jffCorrectionFileName);
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -213,9 +205,8 @@ void compareDijetHistograms(){
   } // Loop over datasets
 
   DijetComparingDrawer *drawer = new DijetComparingDrawer(histograms[0]);
-  drawer->SetJffCorrectionMain(applyJffCorrection[0]);
   for(int i = 1; i < nDatasets; i++){
-    drawer->AddHistogramToDraw(histograms[i],applyJffCorrection[i]);
+    drawer->AddHistogramToDraw(histograms[i]);
   }
   
   drawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);
@@ -234,7 +225,6 @@ void compareDijetHistograms(){
   drawer->SetRatioZoom(minZoom,maxZoom);
   drawer->SetRatioLabel(ratioLabel);
   drawer->SetApplyScaling(scaleHistograms);
-  if(jffCorrectionFileName != "") drawer->LoadJffCorrection(jffCorrectionFile);
   
   // Set the binning information
   drawer->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);

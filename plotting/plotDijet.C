@@ -11,7 +11,7 @@
  *   const char* outputFileName = If we are producing output file, name of the output file
  *   int histogramSelection = If > 0, select a preset group of histograms. Intended to be used for easier production of output files.
  */
-void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -34,7 +34,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = true;
   bool drawTracks = false;
@@ -105,7 +105,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style3D = "surf1";
   
   // File for JFF correction
-  TString jffCorrectionFileName = "";//data/jffCorrection_ppMC_Pythia6_2018-07-06.root";
+  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-08-16.root";
+  
+  // Define if you want to use seagull correction
+  bool applySeagullCorrection;
   
   // Bin borders
   const int nCentralityBins = 4;
@@ -202,8 +205,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
 
-  // Set the used dijet methods
+  // Set the used dijet methods and corrections
   histograms->SetDijetMethods(methods);
+  histograms->SetJffCorrection(jffCorrectionFile,applyJffCorrection);
+  histograms->SetSeagullCorrection(applySeagullCorrection);
   
   // With execution mode 0, only process the histograms and write them to file
   if(executionMode == 0){
@@ -246,7 +251,6 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
   resultDrawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
-  if(jffCorrectionFileName != "") resultDrawer->LoadJffCorrection(jffCorrectionFile);
   
   // Draw the selected histograms
   resultDrawer->DrawHistograms();

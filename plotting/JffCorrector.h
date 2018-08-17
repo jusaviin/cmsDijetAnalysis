@@ -26,6 +26,7 @@ public:
   
   // Getters JFF correction histograms
   TH1D* GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const;  // Jet shape JFF correction histograms
+  TH2D* GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const;  // DeltaEta-DeltaPhi JFF correction histograms
   
   // Return information, if correction is ready to be obtained
   bool CorrectionReady();  // True if histograms loaded from file, otherwise false
@@ -37,6 +38,7 @@ private:
 
   // JFF correction histograms for jet shape
   TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::knCentralityBins][DijetHistogramManager::knTrackPtBins];  // JFF correction histograms for jet shape
+  TH2D *fhDeltaEtaDeltaPhiCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::knCentralityBins][DijetHistogramManager::knTrackPtBins];  // JFF correction histograms for deltaEta-deltaPhi histograms
   
 };
 

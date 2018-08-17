@@ -17,7 +17,6 @@
 #include "JDrawer.h"
 #include "DijetMethods.h"
 #include "DijetHistogramManager.h"
-#include "JffCorrector.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -36,7 +35,7 @@ public:
   void DrawHistograms();          // Draw the histograms
   
   // Add histograms to draw together with base histograms
-  void AddHistogramToDraw(DijetHistogramManager *additionalHistogram, bool applyCorrection);
+  void AddHistogramToDraw(DijetHistogramManager *additionalHistogram);
   
   // Setters for single jets
   void SetDrawLeadingJetHistograms(const bool drawOrNot);    // Setter for drawing leading jet histograms
@@ -116,19 +115,12 @@ public:
   void SetCentralityBinRange(const int first, const int last); // Setter for drawn centrality bins
   void SetTrackPtBinRange(const int first, const int last);    // Setter for drawn track pT bins
   
-  // Load jff correction from file
-  void LoadJffCorrection(TFile *jffFile); // Load jff correction from file
-  
-  // Set if JFF correction should be applied for the main histogram
-  void SetJffCorrectionMain(const bool applyCorrection);  // Setter for JFF correction for the main histogram
-  
 private:
   
   // Data members
   JDrawer *fDrawer;                       // JDrawer for drawing the histograms
   DijetHistogramManager *fBaseHistograms; // Histograms with respect to which ratios are takes
   DijetHistogramManager *fAddedHistograms[knMaxRatios];  // Histograms drawn together with the base histogram
-  JffCorrector *fJffCorrectionFinder;     // Class for providing JFF correction for jet shapes
   int fnAddedHistograms;                  // Number of histograms added for drawing
   
   // ==============================================================
@@ -145,13 +137,6 @@ private:
   bool fDrawSingleJets[DijetHistogramManager::knSingleJetCategories];             // Draw the single jet histograms
   bool fDrawTracks[DijetHistogramManager::knTrackCategories];                     // Draw the track histograms
   bool fDrawJetTrackCorrelations[DijetHistogramManager::knJetTrackCorrelations];  // Draw the jet-track correlation histograms
-  
-  // ==============================================
-  // ======Flags for applying JFF correction ======
-  // ==============================================
-  
-  bool fApplyJffCorrectionMain;                       // Flag for applying the JFF correction to the main histogram
-  bool fApplyJffCorrectionAdditional[knMaxRatios];    // Flags for applying the JFF correction to additional histograms
   
   // ==============================================
   // ============== Drawing settings ==============

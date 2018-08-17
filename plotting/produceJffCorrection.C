@@ -12,9 +12,9 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_processed_2018-08-15.root";  // File from which the RecoGen histograms are read for the correction
-  TString genGenFileName = "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-15.root";   // File from which the GenGen histograms are read for the correction
-  TString outputFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-08-15.root";   // File name for the output file
+  TString recoGenFileName = "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_processed_2018-08-16.root";  // File from which the RecoGen histograms are read for the correction
+  TString genGenFileName = "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-16.root";   // File from which the GenGen histograms are read for the correction
+  TString outputFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-08-16.root";   // File name for the output file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = true;  // Produce the correction for uncorrected jet-track correlations
@@ -34,20 +34,18 @@ void produceJffCorrection(){
   
   // Create histogram managers to provide the histograms for the correction
   DijetHistogramManager *recoGenHistograms = new DijetHistogramManager(recoGenFile);
-  recoGenHistograms->SetLoadLeadingJetHistograms(true);  // Leading jet histograms needed for normalization of leading and subleading jet-track correlations
-  recoGenHistograms->SetLoadAnyJetHistograms(true);      // Any jet histograms needed for normalization of inclusive jet-track correlations
   recoGenHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   recoGenHistograms->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   recoGenHistograms->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
+  recoGenHistograms->SetLoad2DHistograms(true);              // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
   if(ppData) recoGenHistograms->SetCentralityBinRange(0,0);  // Disable centrality binning for pp data
   recoGenHistograms->LoadProcessedHistograms();
   
   DijetHistogramManager *genGenHistograms = new DijetHistogramManager(genGenFile);
-  genGenHistograms->SetLoadLeadingJetHistograms(true);  // Leading jet histograms needed for normalization of leading and subleading jet-track correlations
-  genGenHistograms->SetLoadAnyJetHistograms(true);      // Any jet histograms needed for normalization of inclusive jet-track correlations
   genGenHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   genGenHistograms->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
   genGenHistograms->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
+  genGenHistograms->SetLoad2DHistograms(true);               // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
   if(ppData) recoGenHistograms->SetCentralityBinRange(0,0);  // Disable centrality binning for pp data
   genGenHistograms->LoadProcessedHistograms();
   
@@ -62,53 +60,47 @@ void produceJffCorrection(){
   TH1D *jffHelperDeltaEta[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *jffCorrectionDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *jffHelperDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH2D *jffCorrectionDeltaEtaDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH2D *jffHelperDeltaEtaDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt] = NULL;
         jffHelperJetShape[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffHelperDeltaEta[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
+        jffHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
       }
     }
   }
   
   // Calculate the correction
-  double scalingFactorRecoGen;
-  double scalingFactorGenGen;
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      
-      // The scaling factor depends on the centrality bin and if we are normalizing by dijets or all jets
-      if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){  // Normalize by dijets
-        scalingFactorRecoGen = 1.0/recoGenHistograms->GetPtIntegral(iCentrality);
-        scalingFactorGenGen = 1.0/genGenHistograms->GetPtIntegral(iCentrality);
-      } else { // Normalize by all jets
-        scalingFactorRecoGen = 1.0/recoGenHistograms->GetInclusiveJetPtIntegral(iCentrality);
-        scalingFactorGenGen = 1.0/genGenHistograms->GetInclusiveJetPtIntegral(iCentrality);
-      }
-      
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
         // Get the histograms for RecoGen and normalize it by the number of dijets
         jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
-        jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt]->Scale(scalingFactorRecoGen);
         
         jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kNearSide);
-        jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt]->Scale(scalingFactorRecoGen);
         
         jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
-        jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Scale(scalingFactorRecoGen);
+        
+        jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
         
         // Get the jet shape for GenGen and normalize it by the number of dijets
         jffHelperJetShape[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
-        jffHelperJetShape[iJetTrack][iCentrality][iTrackPt]->Scale(scalingFactorGenGen);
         
         jffHelperDeltaEta[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kNearSide);
-        jffHelperDeltaEta[iJetTrack][iCentrality][iTrackPt]->Scale(scalingFactorGenGen);
         
         jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
-        jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Scale(scalingFactorGenGen);
+        
+        jffHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
         
         // The correction is obtained by subtracting GenGen from RecoGen
         jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperJetShape[iJetTrack][iCentrality][iTrackPt],-1);
@@ -116,6 +108,8 @@ void produceJffCorrection(){
         jffCorrectionDeltaEta[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperDeltaEta[iJetTrack][iCentrality][iTrackPt],-1);
         
         jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt],-1);
+        
+        jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt],-1);
       }
     }
   }
@@ -175,6 +169,24 @@ void produceJffCorrection(){
         // Create a new name to the histogram and write it into file
         sprintf(histogramNamer,"jffCorrection_%sDeltaPhi_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+      }
+    }
+    
+    // Return back to main directory
+    gDirectory->cd("../");
+    
+    // Create a directory for the histograms if it does not already exist
+    sprintf(histogramNamer,"%sDeltaEtaDeltaPhi",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        
+        // Create a new name to the histogram and write it into file
+        sprintf(histogramNamer,"jffCorrection_%sDeltaEtaDeltaPhi_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
       }
     }
