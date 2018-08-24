@@ -365,6 +365,115 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
 }
 
 /*
+ * Get the spillover correction from only HYDJET histogram
+ *
+ * In heavy ion collisions fluctuations of the background can sometimes be erronously recinstructed as jets.
+ * To suppress these contributions, a spillover correction is applied. This effect is estimated by reconstructing
+ * jets from only the soft background generetad by the HYDJET. To suppress fluctuations in HYDJET, the deltaEta
+ * and deltaPhi projections are fitted with Gaussian functions and a two dimensional Gaussian function is
+ * constructed from these. Then this two dimensional function is transformed into a histogram which can be
+ * subtracted from the actual distribution to correct for the spillover effect.
+ *
+ * Arguments:
+ *  TH2D *onlyHydjetHistogram = Two-dimensional deltaEta-deltaPhi histogram from soft HYDJET event
+ *
+ *  return: Two-dimensional histogram with the estimation of the spillover effect
+ */
+TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
+  
+  // Define the range over which the spillover correction is calculated
+  double spilloverEtaRange = 1.5;
+  double spilloverPhiRange = 1.5;
+  
+  // First get the projections for the deltaEta and deltaPhi distributions
+  TH1D *deltaEtaProjection = ProjectRegionDeltaEta(onlyHydjetHistogram,-spilloverPhiRange,spilloverPhiRange,"spillover");
+  TH1D *deltaPhiProjection = ProjectRegionDeltaPhi(onlyHydjetHistogram,0,spilloverEtaRange,"spillover");
+  
+  // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
+  TF1 *gaussForEta = FitGauss(deltaEtaProjection,spilloverEtaRange);
+  TF1 *gaussForPhi = FitGauss(deltaPhiProjection,spilloverPhiRange);
+  
+  // Combine the one-dimensional fits to a two-dimensional Gaussian distribution
+  TF2 *gauss2D = new TF2("gauss2D", "[0]/(2*TMath::Pi()*[1]*[2])*TMath::Exp(-0.5*TMath::Power(x/[1],2))*TMath::Exp(-0.5*TMath::Power(y/[2],2))",-TMath::Pi()/2,3*TMath::Pi()/2,-5,5);
+  gauss2D->SetParameter(0,gaussForEta->GetParameter(0));
+  gauss2D->SetParameter(1,gaussForPhi->GetParameter(1));
+  gauss2D->SetParameter(2,gaussForEta->GetParameter(1));
+  
+  // Create a new two-dimensional histogram from the two-dimensional Gaussian function
+  char histogramName[150];
+  sprintf(histogramName,"%sSpillover",onlyHydjetHistogram->GetName());
+  TH2D *spilloverCorrection = (TH2D*) onlyHydjetHistogram->Clone(histogramName);
+  spilloverCorrection->Eval(gauss2D);
+  
+  // Return the spillover correction
+  return spilloverCorrection;
+}
+
+/*
+ * Fit a Gaussian function to a histogram and return the fit function
+ *
+ * Arguments:
+ *  TH1D *fittedHistogram = Histogram to be fitted with the Gaussian
+ *  double fitRange = Range for the fit
+ *
+ *  return: Gaussian function fitted to the histogram
+ */
+TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange){
+  
+  // Create a Gaussian function for the fit
+  TF1 *gaussFit = new TF1("gaussFit","[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))",-fitRange,fitRange);
+  
+  // Calculate the integral of the fitted histogram over the fit range
+  double fitYield = fittedHistogram->Integral(fittedHistogram->FindBin(-fitRange+0.001),fittedHistogram->FindBin(fitRange-0.001),"width");
+  
+  // Fix the yield of the Gaussian function to the integral and give some rought estimate for the width
+  gaussFit->FixParameter(0,fitYield);
+  gaussFit->SetParameter(1,0.3);
+  
+  // Fit the histogram over the defined range
+  fittedHistogram->Fit("gaussFit","","",-fitRange,fitRange);
+  
+  // Return the fit function
+  return gaussFit;
+  
+}
+
+/*
+ * Project the deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+ *
+ *  Arguments:
+ *   TH2D* deltaPhiDeltaEtaHistogram = two-dimensional deltaPhi-deltaEta distribution
+ *   const double minDeltaEta = Minimum deltaEta value for the projected region
+ *   const double maxDeltaEta = Maximum deltaEta value for the projected region
+ *   const char* newName = Name that is added to the projected histogram
+ *
+ *   return: DeltaPhi distribution projected from the input deltaEta region
+ */
+TH1D* DijetMethods::ProjectRegionDeltaEta(TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName){
+  
+  // Start by finding the bin indices for the defined deltaEta region
+  // Apply a little offset for the defined eta region borders to avoid bin border effects
+  int lowDeltaPhiBin  = deltaPhiDeltaEtaHistogram->GetXaxis()->FindBin(minDeltaPhi+0.0001);
+  int highDeltaPhiBin = deltaPhiDeltaEtaHistogram->GetXaxis()->FindBin(maxDeltaPhi-0.0001);
+  
+  // Calculate the number of deltaPhi bins in the projected region
+  int nBinsProjectedRegion = highDeltaPhiBin-lowDeltaPhiBin+1;
+  
+  // Project out the deltaPhi distribution in the background
+  char histogramName[200];
+  sprintf(histogramName,"%s%s",deltaPhiDeltaEtaHistogram->GetName(),newName);
+  TH1D *projectedDeltaEta;
+  projectedDeltaEta = deltaPhiDeltaEtaHistogram->ProjectionY(histogramName,lowDeltaPhiBin,highDeltaPhiBin);
+  
+  // Scale the projected deltaEta distribution with the number of deltaPhi bins projected over and deltaPhi bin width to retain normalization
+  projectedDeltaEta->Scale(1.0/nBinsProjectedRegion);
+  projectedDeltaEta->Scale(deltaPhiDeltaEtaHistogram->GetXaxis()->GetBinWidth(1));
+  
+  // Return the scaled projection
+  return projectedDeltaEta;
+}
+
+/*
  * Project the deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
  *
  *  Arguments:
@@ -387,11 +496,11 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram, const
   int lowPositiveDeltaEtaBin  = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(minDeltaEta+0.0001);
   int highPositiveDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(maxDeltaEta-0.0001);
   
-  // Calculate the number of deltaEta bins in the background region
-  int nBinsBackgroundRegion = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
-  if(oneRegion) nBinsBackgroundRegion = nBinsBackgroundRegion-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
+  // Calculate the number of deltaEta bins in the projected region
+  int nBinsProjectedRegion = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
+  if(oneRegion) nBinsProjectedRegion = nBinsProjectedRegion-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
   
-  // Project out the deltaPhi distribution in the background
+  // Project out the deltaPhi distribution in the defined region
   char histogramName[200];
   sprintf(histogramName,"%s%s",deltaPhiDeltaEtaHistogram->GetName(),newName);
   TH1D *projectedDeltaPhi;
@@ -403,7 +512,7 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram, const
   }
   
   // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over and deltaEta bin width to retain normalization
-  projectedDeltaPhi->Scale(1.0/nBinsBackgroundRegion);
+  projectedDeltaPhi->Scale(1.0/nBinsProjectedRegion);
   projectedDeltaPhi->Scale(deltaPhiDeltaEtaHistogram->GetYaxis()->GetBinWidth(1));
   
   // Return the scaled projection

@@ -13,6 +13,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>
+#include <TF2.h>
 #include <TMath.h>
 #include <TAxis.h>
 
@@ -31,6 +32,7 @@ public:
   TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram); // Mixed event correction for a two-dimensional histogram
   TH2D* DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram);  // Apply a seagull correction to the histogram
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
+  TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram);  // Get the spillover correction from only hydjet histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
@@ -116,7 +118,9 @@ private:
   
   // Private methods
   double GetMixedEventScale(TH2D* mixedEventHistogram); // Find the normalization scale for the mixed event histogram
+  TF1* FitGauss(TH1D* fittedHistogram, double fitRange);  // Fit a Gaussian function to a histogram and return the fit function
   TH1D* ProjectRegionDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+  TH1D* ProjectRegionDeltaEta(TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution
   void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
   bool CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis); // Checker that new bin boundaries correspond to old ones
   int CheckNormalizationSanity(const int normalizationType, const int maxIndex); // Sanity check for input normalizations
