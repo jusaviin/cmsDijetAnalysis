@@ -127,51 +127,74 @@ void GeneratorLevelForestReader::Initialize(){
   const char *branchName[2] = {"none","none"};
   
   // Connect the branches of the heavy ion tree
+  fHeavyIonTree->SetBranchStatus("*",0);
   fHeavyIonTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
+  fHeavyIonTree->SetBranchStatus("vz",1);
   fHeavyIonTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
+  fHeavyIonTree->SetBranchStatus("hiBin",1);
   fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
+  fHeavyIonTree->SetBranchStatus("pthat",1);
   
   // Connect the branches to the jet tree
+  fJetTree->SetBranchStatus("*",0);
   fJetTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
+  fJetTree->SetBranchStatus("genpt",1);
   fJetTree->SetBranchAddress("genphi",&fJetPhiArray,&fJetPhiBranch);
+  fJetTree->SetBranchStatus("genphi",1);
   fJetTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
+  fJetTree->SetBranchStatus("geneta",1);
   fJetTree->SetBranchAddress("ngen",&fnJets,&fJetRawPtBranch); // Reuse a branch from ForestReader that is not otherwise needed here
+  fJetTree->SetBranchStatus("ngen",1);
   
   // Connect the branches to the HLT tree
+  fHltTree->SetBranchStatus("*",0);
   if(fDataType == kPp){ // pp data
     branchName[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
     branchName[1] = "HLT_AK4PFJet80_Eta5p1_v1";
     fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    fHltTree->SetBranchStatus(branchName[fJetType],1);
   } else if (fDataType == kPpMC){
     branchName[0] = "HLT_AK4CaloJet80_Eta5p1ForPPRef_v1";
     branchName[1] = "HLT_AK4PFJet80_Eta5p1ForPPRef_v1";
     if(fReadMode == 0 || fReadMode == 2){
       fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
+      fHltTree->SetBranchStatus(branchName[fJetType],1);
     } else {
       fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
     }
   } else if (fDataType == kPbPb){ // PbPb
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
   } else if (fDataType == kPbPbMC){
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1);
   } else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }
   
   // Connect the branches to the skim tree (different for pp and PbPb Monte Carlo)
+  fSkimTree->SetBranchStatus("*",0);
   if(fDataType == kPpMC){ // pp MC
     fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
+    fSkimTree->SetBranchStatus("pPAprimaryVertexFilter",1);
     fSkimTree->SetBranchAddress("pBeamScrapingFilter",&fBeamScrapingFilterBit,&fBeamScrapingBranch);
+    fSkimTree->SetBranchStatus("pBeamScrapingFilter",1);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
     fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
   } else if (fDataType == kPbPbMC){ // PbPb MC
     fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
+    fSkimTree->SetBranchStatus("pprimaryVertexFilter",1);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
     fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
+    fSkimTree->SetBranchStatus("pcollisionEventSelection",1);
     fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
+    fSkimTree->SetBranchStatus("phfCoincFilter3",1);
     fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
+    fSkimTree->SetBranchStatus("pclusterCompatibilityFilter",1);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
   } else { // Local test
     fPrimaryVertexFilterBit = 1;
@@ -183,12 +206,21 @@ void GeneratorLevelForestReader::Initialize(){
   }
   
   // Connect the branches to the track tree
+  fTrackTree->SetBranchStatus("*",0);
   fTrackTree->SetBranchAddress("pt",&fTrackPtArray,&fTrackPtBranch);
+  fTrackTree->SetBranchStatus("pt",1);
   fTrackTree->SetBranchAddress("phi",&fTrackPhiArray,&fTrackPhiBranch);
+  fTrackTree->SetBranchStatus("phi",1);
   fTrackTree->SetBranchAddress("eta",&fTrackEtaArray,&fTrackEtaBranch);
+  fTrackTree->SetBranchStatus("eta",1);
   fTrackTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch);  // Reuse a branch from ForestReader that is not otherwise needed here
+  fTrackTree->SetBranchStatus("chg",1);
   fTrackTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch);  // Reuse a branch from ForestReader that is not otherwise needed here
-  if(fDataType != kLocalTest && fReadMode == 0) fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test or PYTHIA8 forest
+  fTrackTree->SetBranchStatus("sube",1);
+  if(fDataType != kLocalTest && fReadMode == 0) {
+    fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test or PYTHIA8 forest
+    fTrackTree->SetBranchStatus("sta",1);
+  }
 
 }
 
