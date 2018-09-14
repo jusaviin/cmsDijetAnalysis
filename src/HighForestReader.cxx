@@ -188,31 +188,31 @@ void HighForestReader::Initialize(){
   
   // Connect the branches of the heavy ion tree
   fHeavyIonTree->SetBranchStatus("*",0);
-  fHeavyIonTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   fHeavyIonTree->SetBranchStatus("vz",1);
-  fHeavyIonTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
+  fHeavyIonTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   fHeavyIonTree->SetBranchStatus("hiBin",1);
+  fHeavyIonTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
   if(fDataType == kPpMC || fDataType == kPbPbMC || fDataType == kLocalTest){
-    fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
     fHeavyIonTree->SetBranchStatus("pthat",1);
+    fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   } else {
     fPtHat = 0; // We do not have pT hat information for real data
   }
   
   // Connect the branches to the jet tree
   fJetTree->SetBranchStatus("*",0);
-  fJetTree->SetBranchAddress("jtpt",&fJetPtArray,&fJetPtBranch);
   fJetTree->SetBranchStatus("jtpt",1);
-  fJetTree->SetBranchAddress("jtphi",&fJetPhiArray,&fJetPhiBranch);
+  fJetTree->SetBranchAddress("jtpt",&fJetPtArray,&fJetPtBranch);
   fJetTree->SetBranchStatus("jtphi",1);
-  fJetTree->SetBranchAddress("jteta",&fJetEtaArray,&fJetEtaBranch);
+  fJetTree->SetBranchAddress("jtphi",&fJetPhiArray,&fJetPhiBranch);
   fJetTree->SetBranchStatus("jteta",1);
-  fJetTree->SetBranchAddress("nref",&fnJets,&fnJetsBranch);
+  fJetTree->SetBranchAddress("jteta",&fJetEtaArray,&fJetEtaBranch);
   fJetTree->SetBranchStatus("nref",1);
-  fJetTree->SetBranchAddress("rawpt",&fJetRawPtArray,&fJetRawPtBranch);
+  fJetTree->SetBranchAddress("nref",&fnJets,&fnJetsBranch);
   fJetTree->SetBranchStatus("rawpt",1);
-  fJetTree->SetBranchAddress("trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
+  fJetTree->SetBranchAddress("rawpt",&fJetRawPtArray,&fJetRawPtBranch);
   fJetTree->SetBranchStatus("trackMax",1);
+  fJetTree->SetBranchAddress("trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
   // Event selection summary
   //
@@ -230,23 +230,23 @@ void HighForestReader::Initialize(){
   if(fDataType == kPp){ // pp data
     branchName[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
     branchName[1] = "HLT_AK4PFJet80_Eta5p1_v1";
-    fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
     fHltTree->SetBranchStatus(branchName[fJetType],1);
+    fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
     branchName[0] = "HLT_AK4CaloJet80_Eta5p1ForPPRef_v1";
     branchName[1] = "HLT_AK4PFJet80_Eta5p1ForPPRef_v1";
     if(fReadMode == 0 || fReadMode == 2){
-      fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
       fHltTree->SetBranchStatus(branchName[fJetType],1);
+      fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
     } else {
       fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
     }
   } else if (fDataType == kPbPb){ // PbPb
-    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
     fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
+    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPbMC){
-    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
     fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1);
+    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }
@@ -254,26 +254,26 @@ void HighForestReader::Initialize(){
   // Connect the branches to the skim tree (different for pp and PbPb data and Monte Carlo)
   fSkimTree->SetBranchStatus("*",0);
   if(fDataType == kPp || fDataType == kPpMC){ // pp data or MC
-    fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("pPAprimaryVertexFilter",1);
-    fSkimTree->SetBranchAddress("pBeamScrapingFilter",&fBeamScrapingFilterBit,&fBeamScrapingBranch);
+    fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("pBeamScrapingFilter",1);
-    fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fSkimTree->SetBranchAddress("pBeamScrapingFilter",&fBeamScrapingFilterBit,&fBeamScrapingBranch);
     fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
+    fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
-    fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("pprimaryVertexFilter",1);
-    fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
-    fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
+    fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fSkimTree->SetBranchStatus("pcollisionEventSelection",1);
-    fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
+    fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
     fSkimTree->SetBranchStatus("phfCoincFilter3",1);
-    fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
+    fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
     fSkimTree->SetBranchStatus("pclusterCompatibilityFilter",1);
+    fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
   } else { // Local test
     fPrimaryVertexFilterBit = 1;
@@ -286,61 +286,61 @@ void HighForestReader::Initialize(){
   
   // Connect the branches to the track tree
   fTrackTree->SetBranchStatus("*",0);
-  fTrackTree->SetBranchAddress("trkPt",&fTrackPtArray,&fTrackPtBranch);
   fTrackTree->SetBranchStatus("trkPt",1);
-  fTrackTree->SetBranchAddress("trkPtError",&fTrackPtErrorArray,&fTrackPtErrorBranch);
+  fTrackTree->SetBranchAddress("trkPt",&fTrackPtArray,&fTrackPtBranch);
   fTrackTree->SetBranchStatus("trkPtError",1);
-  fTrackTree->SetBranchAddress("trkPhi",&fTrackPhiArray,&fTrackPhiBranch);
+  fTrackTree->SetBranchAddress("trkPtError",&fTrackPtErrorArray,&fTrackPtErrorBranch);
   fTrackTree->SetBranchStatus("trkPhi",1);
-  fTrackTree->SetBranchAddress("trkEta",&fTrackEtaArray,&fTrackEtaBranch);
+  fTrackTree->SetBranchAddress("trkPhi",&fTrackPhiArray,&fTrackPhiBranch);
   fTrackTree->SetBranchStatus("trkEta",1);
-  fTrackTree->SetBranchAddress("nTrk",&fnTracks,&fnTracksBranch);
+  fTrackTree->SetBranchAddress("trkEta",&fTrackEtaArray,&fTrackEtaBranch);
   fTrackTree->SetBranchStatus("nTrk",1);
-  fTrackTree->SetBranchAddress("highPurity",&fHighPurityTrackArray,&fHighPurityTrackBranch);
+  fTrackTree->SetBranchAddress("nTrk",&fnTracks,&fnTracksBranch);
   fTrackTree->SetBranchStatus("highPurity",1);
-  fTrackTree->SetBranchAddress("trkDz1",&fTrackVertexDistanceZArray,&fTrackVertexDistanceZBranch);
+  fTrackTree->SetBranchAddress("highPurity",&fHighPurityTrackArray,&fHighPurityTrackBranch);
   fTrackTree->SetBranchStatus("trkDz1",1);
-  fTrackTree->SetBranchAddress("trkDzError1",&fTrackVertexDistanceZErrorArray,&fTrackVertexDistanceZErrorBranch);
+  fTrackTree->SetBranchAddress("trkDz1",&fTrackVertexDistanceZArray,&fTrackVertexDistanceZBranch);
   fTrackTree->SetBranchStatus("trkDzError1",1);
-  fTrackTree->SetBranchAddress("trkDxy1",&fTrackVertexDistanceXYArray,&fTrackVertexDistanceXYBranch);
+  fTrackTree->SetBranchAddress("trkDzError1",&fTrackVertexDistanceZErrorArray,&fTrackVertexDistanceZErrorBranch);
   fTrackTree->SetBranchStatus("trkDxy1",1);
-  fTrackTree->SetBranchAddress("trkDxyError1",&fTrackVertexDistanceXYErrorArray,&fTrackVertexDistanceXYErrorBranch);
+  fTrackTree->SetBranchAddress("trkDxy1",&fTrackVertexDistanceXYArray,&fTrackVertexDistanceXYBranch);
   fTrackTree->SetBranchStatus("trkDxyError1",1);
-  fTrackTree->SetBranchAddress("trkChi2",&fTrackChi2Array,&fTrackChi2Branch);
+  fTrackTree->SetBranchAddress("trkDxyError1",&fTrackVertexDistanceXYErrorArray,&fTrackVertexDistanceXYErrorBranch);
   fTrackTree->SetBranchStatus("trkChi2",1);
-  fTrackTree->SetBranchAddress("trkNdof",&fnTrackDegreesOfFreedomArray,&fnTrackDegreesOfFreedomBranch);
+  fTrackTree->SetBranchAddress("trkChi2",&fTrackChi2Array,&fTrackChi2Branch);
   fTrackTree->SetBranchStatus("trkNdof",1);
-  fTrackTree->SetBranchAddress("trkNlayer",&fnHitsTrackerLayerArray,&fnHitsTrackerLayerBranch);
+  fTrackTree->SetBranchAddress("trkNdof",&fnTrackDegreesOfFreedomArray,&fnTrackDegreesOfFreedomBranch);
   fTrackTree->SetBranchStatus("trkNlayer",1);
-  fTrackTree->SetBranchAddress("trkNHit",&fnHitsTrackArray,&fnHitsTrackBranch);
+  fTrackTree->SetBranchAddress("trkNlayer",&fnHitsTrackerLayerArray,&fnHitsTrackerLayerBranch);
   fTrackTree->SetBranchStatus("trkNHit",1);
-  fTrackTree->SetBranchAddress("pfEcal",&fTrackEnergyEcalArray,&fTrackEnergyEcalBranch);
+  fTrackTree->SetBranchAddress("trkNHit",&fnHitsTrackArray,&fnHitsTrackBranch);
   fTrackTree->SetBranchStatus("pfEcal",1);
-  fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
+  fTrackTree->SetBranchAddress("pfEcal",&fTrackEnergyEcalArray,&fTrackEnergyEcalBranch);
   fTrackTree->SetBranchStatus("pfHcal",1);
+  fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
   
   // Connect the branches to the particle flow candidate tree
   fParticleFlowCandidateTree->SetBranchStatus("*",0);
   if(fReadMode == 0 || fReadMode == 2){ // Regular forests have vectors for particle flow candidate tree
+    fParticleFlowCandidateTree->SetBranchStatus("pfId",1);
     fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdVector,&fParticleFlowCandidateIdBranch);
-    fParticleFlowCandidateTree->SetBranchStatus("pfId",1);
+    fParticleFlowCandidateTree->SetBranchStatus("pfPt",1);
     fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtVector,&fParticleFlowCandidatePtBranch);
-    fParticleFlowCandidateTree->SetBranchStatus("pfPt",1);
+    fParticleFlowCandidateTree->SetBranchStatus("pfPhi",1);
     fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiVector,&fParticleFlowCandidatePhiBranch);
-    fParticleFlowCandidateTree->SetBranchStatus("pfPhi",1);
+    fParticleFlowCandidateTree->SetBranchStatus("pfEta",1);
     fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaVector,&fParticleFlowCandidateEtaBranch);
-    fParticleFlowCandidateTree->SetBranchStatus("pfEta",1);
   } else { // PYTHIA8 forest has arrays instead of vectors for particle flow candidate tree
-    fParticleFlowCandidateTree->SetBranchAddress("nPFpart",&fnParticleFlowCandidates,&nfParticleFlowCandidateBranch);
     fParticleFlowCandidateTree->SetBranchStatus("nPFpart",1);
-    fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdArray,&fParticleFlowCandidateIdBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("nPFpart",&fnParticleFlowCandidates,&nfParticleFlowCandidateBranch);
     fParticleFlowCandidateTree->SetBranchStatus("pfId",1);
-    fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtArray,&fParticleFlowCandidatePtBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfId",&fParticleFlowCandidateIdArray,&fParticleFlowCandidateIdBranch);
     fParticleFlowCandidateTree->SetBranchStatus("pfPt",1);
-    fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiArray,&fParticleFlowCandidatePhiBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfPt",&fParticleFlowCandidatePtArray,&fParticleFlowCandidatePtBranch);
     fParticleFlowCandidateTree->SetBranchStatus("pfPhi",1);
-    fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaArray,&fParticleFlowCandidateEtaBranch);
+    fParticleFlowCandidateTree->SetBranchAddress("pfPhi",&fParticleFlowCandidatePhiArray,&fParticleFlowCandidatePhiBranch);
     fParticleFlowCandidateTree->SetBranchStatus("pfEta",1);
+    fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaArray,&fParticleFlowCandidateEtaBranch);
   }
   
 }

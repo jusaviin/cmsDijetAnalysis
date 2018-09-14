@@ -75,51 +75,51 @@ void GeneratorLevelSkimForestReader::Initialize(){
   fEventTree->SetBranchStatus("*",0);
   
   // Connect the branches related to event information
-  fEventTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   fEventTree->SetBranchStatus("vz",1);
+  fEventTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   if(fDataType == kPpMC){
     fHiBin = -1;  // The skims for pp do not have hiBin
   } else {
-    fEventTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
     fEventTree->SetBranchStatus("hiBin",1);
+    fEventTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
   }
-  fEventTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   fEventTree->SetBranchStatus("pthat",1);
+  fEventTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   
   // Connect the branches to jet properties
-  fEventTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
   fEventTree->SetBranchStatus("genpt",1);
-  fEventTree->SetBranchAddress("genphi",&fJetPhiArray,&fJetPhiBranch);
+  fEventTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
   fEventTree->SetBranchStatus("genphi",1);
-  fEventTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
+  fEventTree->SetBranchAddress("genphi",&fJetPhiArray,&fJetPhiBranch);
   fEventTree->SetBranchStatus("geneta",1);
+  fEventTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
   
   // Connect the branches to the HLT tree
   fCaloJetFilterBit = 1;  // No calorimeter filter bit is present in the skims
   
   // Connect the branches containing event selection filter bits
   if (fDataType == kPpMC){
-    fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Dhanush's skim
     fEventTree->SetBranchStatus("pprimaryVertexFilter",1);
-    //fEventTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Kurt's skim
+    fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Dhanush's skim
     //fEventTree->SetBranchStatus("pPAprimaryVertexFilter",1);
+    //fEventTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Kurt's skim
     fBeamScrapingFilterBit = 1; // No beam scraping filter for MC
-    fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fEventTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
+    fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fCollisionEventSelectionFilterBit = 1;  // No collision event selection filter for pp MC
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp MC
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp MC
   } else if (fDataType == kPbPbMC){ // PbPb data or MC
-    fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fEventTree->SetBranchStatus("pprimaryVertexFilter",1);
-    fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fEventTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
-    fEventTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
+    fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     fEventTree->SetBranchStatus("pcollisionEventSelection",1);
-    fEventTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
+    fEventTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
     fEventTree->SetBranchStatus("phfCoincFilter3",1);
-    fEventTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
+    fEventTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
     fEventTree->SetBranchStatus("pclusterCompatibilityFilter",1);
+    fEventTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
   } else { // Local test
     fPrimaryVertexFilterBit = 1;
@@ -131,16 +131,16 @@ void GeneratorLevelSkimForestReader::Initialize(){
   }
   
   // Connect the branches related to tracks
-  fEventTree->SetBranchAddress("pt",&fTrackPtArray,&fTrackPtBranch);
   fEventTree->SetBranchStatus("pt",1);
-  fEventTree->SetBranchAddress("phi",&fTrackPhiArray,&fTrackPhiBranch);
+  fEventTree->SetBranchAddress("pt",&fTrackPtArray,&fTrackPtBranch);
   fEventTree->SetBranchStatus("phi",1);
-  fEventTree->SetBranchAddress("eta",&fTrackEtaArray,&fTrackEtaBranch);
+  fEventTree->SetBranchAddress("phi",&fTrackPhiArray,&fTrackPhiBranch);
   fEventTree->SetBranchStatus("eta",1);
-  fEventTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch); // Reuse a branch from ForestReader that is not otherwise needed here
+  fEventTree->SetBranchAddress("eta",&fTrackEtaArray,&fTrackEtaBranch);
   fEventTree->SetBranchStatus("chg",1);
-  fEventTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch); // Reuse a branch from ForestReader that is not otherwise needed here
+  fEventTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   fEventTree->SetBranchStatus("sube",1);
+  fEventTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch); // Reuse a branch from ForestReader that is not otherwise needed here
   
 }
 
