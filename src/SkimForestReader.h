@@ -19,11 +19,11 @@ class SkimForestReader : public ForestReader{
 public:
   
   // Constructors and destructors
-  SkimForestReader();                                       // Default constructor
-  SkimForestReader(Int_t dataType, Int_t readMode);         // Custom constructor
-  SkimForestReader(const SkimForestReader& in);             // Copy constructor
-  virtual ~SkimForestReader();                              // Destructor
-  SkimForestReader& operator=(const SkimForestReader& obj); // Equal sign operator
+  SkimForestReader();                                              // Default constructor
+  SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType); // Custom constructor
+  SkimForestReader(const SkimForestReader& in);                    // Copy constructor
+  virtual ~SkimForestReader();                                     // Destructor
+  SkimForestReader& operator=(const SkimForestReader& obj);        // Equal sign operator
   
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file

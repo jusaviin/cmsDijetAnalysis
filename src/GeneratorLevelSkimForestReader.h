@@ -19,10 +19,10 @@ class GeneratorLevelSkimForestReader : public SkimForestReader{
 public:
   
   // Constructors and destructors
-  GeneratorLevelSkimForestReader();                                   // Default constructor
-  GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode);     // Custom constructor
+  GeneratorLevelSkimForestReader();                                                     // Default constructor
+  GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType);        // Custom constructor
   GeneratorLevelSkimForestReader(const GeneratorLevelSkimForestReader& in);             // Copy constructor
-  virtual ~GeneratorLevelSkimForestReader();                          // Destructor
+  virtual ~GeneratorLevelSkimForestReader();                                            // Destructor
   GeneratorLevelSkimForestReader& operator=(const GeneratorLevelSkimForestReader& obj); // Equal sign operator
   
   // Getters for leaves in jet tree

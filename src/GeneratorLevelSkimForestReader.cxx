@@ -20,9 +20,10 @@ GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader() :
  *  Arguments:
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
+ *   Int_t jetType: 0 = Calo jets, 1 = PF jets
  */
-GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode) :
-  SkimForestReader(dataType,readMode),
+GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
+  SkimForestReader(dataType,readMode,jetType),
   fTrackChargeArray(0),
   fTrackSubeventArray(0)
 {

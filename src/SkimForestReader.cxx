@@ -39,9 +39,10 @@ SkimForestReader::SkimForestReader() :
  *  Arguments:
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
+ *   Int_t jetType: 0 = Calo jets, 1 = PF jets
  */
-SkimForestReader::SkimForestReader(Int_t dataType, Int_t readMode) :
-  ForestReader(dataType,readMode),
+SkimForestReader::SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
+  ForestReader(dataType,readMode,jetType),
   fEventTree(0),
   fJetPtArray(0),
   fJetPhiArray(0),
@@ -161,11 +162,18 @@ void SkimForestReader::Initialize(){
   }
   
   // Connect the branches to jet properties
-  fEventTree->SetBranchAddress("calo_jtpt",&fJetPtArray,&fJetPtBranch);
-  fEventTree->SetBranchAddress("calo_jtphi",&fJetPhiArray,&fJetPhiBranch);
-  fEventTree->SetBranchAddress("calo_jteta",&fJetEtaArray,&fJetEtaBranch);
-  fEventTree->SetBranchAddress("calo_rawpt",&fJetRawPtArray,&fJetRawPtBranch);
-  fEventTree->SetBranchAddress("calo_trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
+  const char * jetType[2] = {"calo","pf"};
+  char branchName[20];
+  sprintf(branchName,"%s_jtpt",jetType[fJetType]);
+  fEventTree->SetBranchAddress(branchName,&fJetPtArray,&fJetPtBranch);
+  sprintf(branchName,"%s_jtphi",jetType[fJetType]);
+  fEventTree->SetBranchAddress(branchName,&fJetPhiArray,&fJetPhiBranch);
+  sprintf(branchName,"%s_jteta",jetType[fJetType]);
+  fEventTree->SetBranchAddress(branchName,&fJetEtaArray,&fJetEtaBranch);
+  sprintf(branchName,"%s_rawpt",jetType[fJetType]);
+  fEventTree->SetBranchAddress(branchName,&fJetRawPtArray,&fJetRawPtBranch);
+  sprintf(branchName,"%s_trackMax",jetType[fJetType]);
+  fEventTree->SetBranchAddress(branchName,&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
   // Connect the branches to the HLT tree
   if(fDataType == kPp){ // pp data

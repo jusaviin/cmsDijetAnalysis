@@ -33,11 +33,11 @@ public:
   enum enumDataTypes{kPp, kPbPb, kPpMC, kPbPbMC, kLocalTest, knDataTypes};
   
   // Constructors and destructors
-  ForestReader();                                   // Default constructor
-  ForestReader(Int_t dataType, Int_t readMode);     // Custom constructor
-  ForestReader(const ForestReader& in);             // Copy constructor
-  virtual ~ForestReader();                          // Destructor
-  ForestReader& operator=(const ForestReader& obj); // Equal sign operator
+  ForestReader();                                              // Default constructor
+  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType); // Custom constructor
+  ForestReader(const ForestReader& in);                        // Copy constructor
+  virtual ~ForestReader();                                     // Destructor
+  ForestReader& operator=(const ForestReader& obj);            // Equal sign operator
   
   // Methods
   virtual void GetEvent(Int_t nEvent) = 0;                 // Get the nth event in tree
@@ -108,6 +108,7 @@ protected:
   
   Int_t fDataType;  // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
   Int_t fReadMode;  // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
+  Int_t fJetType;   // Choose the type of jets usedfor analysis. 0 = Calo jets, 1 = PF jets/
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;            // Branch for vertex z-position

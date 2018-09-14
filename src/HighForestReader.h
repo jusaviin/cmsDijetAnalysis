@@ -23,11 +23,11 @@ private:
 public:
   
   // Constructors and destructors
-  HighForestReader();                                       // Default constructor
-  HighForestReader(Int_t dataType, Int_t readMode);         // Custom constructor
-  HighForestReader(const HighForestReader& in);             // Copy constructor
-  virtual ~HighForestReader();                              // Destructor
-  HighForestReader& operator=(const HighForestReader& obj); // Equal sign operator
+  HighForestReader();                                              // Default constructor
+  HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType); // Custom constructor
+  HighForestReader(const HighForestReader& in);                    // Copy constructor
+  virtual ~HighForestReader();                                     // Destructor
+  HighForestReader& operator=(const HighForestReader& obj);        // Equal sign operator
   
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file

@@ -46,9 +46,10 @@ HighForestReader::HighForestReader() :
  *  Arguments:
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
+ *   Int_t jetType: 0 = Calo jets, 1 = PF jets
  */
-HighForestReader::HighForestReader(Int_t dataType, Int_t readMode) :
-  ForestReader(dataType,readMode),
+HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
+  ForestReader(dataType,readMode,jetType),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -182,6 +183,9 @@ HighForestReader::~HighForestReader(){
  */
 void HighForestReader::Initialize(){
   
+  // Helper variable for choosing correct branches
+  const char *branchName[2] = {"none","none"};
+  
   // Connect the branches of the heavy ion tree
   fHeavyIonTree->SetBranchAddress("vz",&fVertexZ,&fHiVzBranch);
   fHeavyIonTree->SetBranchAddress("hiBin",&fHiBin,&fHiBinBranch);
@@ -212,10 +216,14 @@ void HighForestReader::Initialize(){
   
   // Connect the branches to the HLT tree
   if(fDataType == kPp){ // pp data
-    fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    branchName[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
+    branchName[1] = "HLT_AK4PFJet80_Eta5p1_v1";
+    fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
+    branchName[0] = "HLT_AK4CaloJet80_Eta5p1ForPPRef_v1";
+    branchName[1] = "HLT_AK4PFJet80_Eta5p1ForPPRef_v1";
     if(fReadMode == 0 || fReadMode == 2){
-      fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1ForPPRef_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
+      fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
     } else {
       fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
     }
@@ -290,6 +298,9 @@ void HighForestReader::Initialize(){
  */
 void HighForestReader::ReadForestFromFile(TFile *inputFile){
   
+  // Helper variable for finding the correct tree
+  const char *treeName[2] = {"none","none"};
+  
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
   fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree");
@@ -297,12 +308,16 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
   
   // The jet tree has different name in different datasets
   if(fDataType == kPp || fDataType == kPpMC){
-    fJetTree = (TTree*)inputFile->Get("ak4CaloJetAnalyzer/t");
+    treeName[0] = "ak4CaloJetAnalyzer/t"; // Tree for calo jets
+    treeName[1] = "ak4PFJetAnalyzer/t";   // Tree for PF jets
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
-    fJetTree = (TTree*)inputFile->Get("akPu4CaloJetAnalyzer/t");
+    treeName[0] = "akPu4CaloJetAnalyzer/t";  // Tree for calo jets
+    treeName[1] = "akPu4PFJetAnalyzer/t";    // Tree for PF jets
   } else if (fDataType == kLocalTest){
-    fJetTree = (TTree*)inputFile->Get("ak4PFJetAnalyzer/t");
+    treeName[0] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
+    treeName[1] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
   }
+  fJetTree = (TTree*)inputFile->Get(treeName[fJetType]);
   
   // The track tree and the particle flow candidate tree have different names for differant datasets
   if(fDataType == kPp || fDataType == kPpMC || fDataType == kLocalTest){
