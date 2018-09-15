@@ -318,6 +318,9 @@ void DijetHistograms::CreateHistograms(){
     fhEvents->GetXaxis()->SetBinLabel(i+1,kEventTypeStrings[i]);
   }
   
+  // If we are using PF jets, change the axis label for that
+  if(fCard->Get("JetType") == 1) fhEvents->GetXaxis()->SetBinLabel(kCaloJet+1,"PFJet");
+  
   // For the track cut histogram, label each bin corresponding to a track cut
   for(Int_t i = 0; i < knTrackCuts; i++){
     fhTrackCuts->GetXaxis()->SetBinLabel(i+1,kTrackCutStrings[i]);
