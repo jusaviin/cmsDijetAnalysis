@@ -269,7 +269,7 @@ void SkimForestReader::Initialize(){
   fEventTree->SetBranchAddress("trkNHit",&fnHitsTrackArray,&fnHitsTrackBranch);
   fEventTree->SetBranchStatus("pfEcal",1);
   fEventTree->SetBranchAddress("pfEcal",&fTrackEnergyEcalArray,&fTrackEnergyEcalBranch);
-  fEventTree->SetBranchStatus("phHcal",1);
+  fEventTree->SetBranchStatus("pfHcal",1);
   fEventTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
   
   // Connect branches related to particle flow candidates
