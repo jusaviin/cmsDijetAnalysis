@@ -451,6 +451,7 @@ void DijetAnalyzer::RunAnalysis(){
   //    Correlation type for Monte Carlo
   //****************************************
   fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
+  Int_t mixingFileIndex = fCard->Get("MixingFileIndex");        // Select the used mixing file for PbPb MC
 
   //****************************************
   //            All cuts set!
@@ -580,7 +581,8 @@ void DijetAnalyzer::RunAnalysis(){
       if(fDataType == ForestReader::kPbPb){
         currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
       } else if(fDataType == ForestReader::kPbPbMC){
-        currentMixedEventFile = "root://cmsxrootd.fnal.gov///store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root";
+        const char* pbpbMCMixingFileNames[] = {"root://cmsxrootd.fnal.gov///store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy1.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy2.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy3.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy4.root"};
+        currentMixedEventFile = pbpbMCMixingFileNames[mixingFileIndex];
       } else if(fDataType == ForestReader::kPpMC && fReadMode == 2){
         MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
         currentMixedEventFile = mixingTable->GetMixingFileName(currentFile);
@@ -1283,7 +1285,17 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   }
   
   // Number of events for different pT hat bins in the forest file list PbPbMC_5TeVPythia6+Hydjet_forests.txt
+  //  pT hat =             15 30 50 80     120     170     220     280    370    460
   Int_t PbPbMcEvents[nBins] = {0,0,0,2571563,2850815,2680567,2891375,781744,129417};
+  
+  // Also for PbPb, there is a small change for event numbers in skimmed files. These numbers are for PbPbMC_Pythia6HydjetCymbal_list.txt
+  if(fForestType == kSkimForest){
+    //  pT hat =            15 30 50 80    120     170     220     280    370    460
+    Int_t skimEvents[nBins] = {0,0,0,2564435,2846560,2671428,2882855,779493,128987};
+    for(Int_t i = 0; i < nBins; i++){
+      PbPbMcEvents[i] = skimEvents[i];
+    }
+  }
   
   // Return the weight for PbPb
   if(PbPbMcEvents[currentBin] == 0) { // This should never happen
