@@ -554,9 +554,13 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi-deltaEta =====
           if(fDrawJetTrackDeltaEtaDeltaPhi){
             drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt);
+            drawnHistogram2D->Rebin2D(5,5);
+            drawnHistogram2D->Scale(1.0/(5.0*5.0));
+            drawnHistogram2D->GetYaxis()->SetRangeUser(-4,4);
+            drawnHistogram2D->SetZTitle("#frac{1}{N_{jets}} #frac{d^{2}N}{d#Delta#varphi d#Delta#eta}");
             
-            // Change the right margin better suited for 2D-drawing
-            fDrawer->SetRightMargin(0.1);
+            // Change the left margin better suited for 2D-drawing
+            fDrawer->SetLeftMargin(0.18);
             
             // Draw the z-axis in logarithmic scale
             fDrawer->SetLogZ(fLogCorrelation);
@@ -588,7 +592,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             SaveFigure(namerX,compactCentralityString,compactTrackPtString,fHistograms->GetCompactCorrelationTypeString(iCorrelationType));
             
             // Change right margin back to 1D-drawing
-            fDrawer->SetRightMargin(0.06);
+            fDrawer->SetLeftMargin(0.15);
             
             // Change back to linear scale for z-axis
             fDrawer->SetLogZ(false);
@@ -726,6 +730,7 @@ void DijetDrawer::DrawJetShapeHistograms(){
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
           drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,iCentrality,iTrackPt);
+          drawnHistogram->GetXaxis()->SetRangeUser(0,1);
           
           // Set the correct track pT bins
           trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
@@ -778,17 +783,20 @@ void DijetDrawer::DrawJetShapeStack(){
   
   // Helper variables for legend
   TLegend *legend;
+  TLegend *systemLegend;
   double legendX1;
   double legendY1;
   double legendX2;
   double legendY2;
   TString legendString[fLastDrawnTrackPtBin+1];
+  TString systemLegendString;
   
   // Helper variables for histograms added to stack
   TH1D *addedHistogram;
   
   // Logarithmic drawing for jet shape histograms
   fDrawer->SetLogY(fLogJetShape);
+  fDrawer->SetRelativeCanvasSize(1,1);
 
   // Loop over jet-track correlation categories
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -817,19 +825,25 @@ void DijetDrawer::DrawJetShapeStack(){
       // Set up the axes and draw the stack
       fDrawer->CreateCanvas();
       jetShapeStack[iJetTrack][iCentrality]->setRange(0, 0.99, "x");
-      jetShapeStack[iJetTrack][iCentrality]->setRange(0.1, 1000, "y");
+      jetShapeStack[iJetTrack][iCentrality]->setRange(0.7, 1000, "y");
       jetShapeStack[iJetTrack][iCentrality]->drawStack();
       jetShapeStack[iJetTrack][iCentrality]->hst->GetXaxis()->SetTitle("#DeltaR");
-      jetShapeStack[iJetTrack][iCentrality]->hst->GetYaxis()->SetTitle("#rho(#DeltaR)");
+      jetShapeStack[iJetTrack][iCentrality]->hst->GetYaxis()->SetTitle("P(#DeltaR)");
       jetShapeStack[iJetTrack][iCentrality]->hst->Draw();
       
       // Get legend from the stack and draw also that
-      legendX1 = 0.5; legendX2 = 0.9; legendY1 = 0.5; legendY2 = 0.9;
+      legendX1 = 0.45; legendX2 = 0.9; legendY1 = 0.55; legendY2 = 0.95;
       if(iJetTrack > DijetHistogramManager::kPtWeightedTrackLeadingJet){
         legendY1 = 0.55; legendY2 = 0.95;  // Move the legend up for subleading jet shape
       }
       legend = jetShapeStack[iJetTrack][iCentrality]->makeLegend(legendString,legendX1,legendY1,legendX2,legendY2,false,fLastDrawnTrackPtBin+1);
       legend->Draw();
+      
+      systemLegend = new TLegend(0.1,0.95,0.6,0.99);
+      systemLegend->SetFillStyle(0);systemLegend->SetBorderSize(0);systemLegend->SetTextSize(0.05);systemLegend->SetTextFont(62);
+      systemLegendString = fSystemAndEnergy + " " + centralityString;
+      systemLegend->AddEntry((TObject*) 0, systemLegendString.Data(), "");
+      systemLegend->Draw();
       
       // Save the figure to a file
       sprintf(namerX,"%sJetShape",fHistograms->GetJetTrackHistogramName(iJetTrack));

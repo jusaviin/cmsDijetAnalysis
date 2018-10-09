@@ -27,9 +27,9 @@ void compareDijetHistograms(){
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
-  bool drawPtWeightedTrackSubleadingJetCorrelations = false;
+  bool drawPtWeightedTrackSubleadingJetCorrelations = true;
   bool drawTrackInclusiveJetCorrelations = false;
-  bool drawPtWeightedTrackInclusiveJetCorrelations = true;
+  bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
   bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations || drawTrackInclusiveJetCorrelations || drawPtWeightedTrackInclusiveJetCorrelations);
   
@@ -39,8 +39,8 @@ void compareDijetHistograms(){
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
-  bool drawJetShapeMCComparison = false;
+  bool drawJetShape = false;
+  bool drawJetShapeMCComparison = true;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
@@ -58,7 +58,7 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
@@ -73,8 +73,8 @@ void compareDijetHistograms(){
   
   // Settings for ratios
   double minZoom = 0.6;
-  double maxZoom = 1.4;
-  TString ratioLabel = "This/Inclusive";
+  double maxZoom = 5;
+  TString ratioLabel = "PbPb / pp";
   
   // Scaling for histograms
   bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -90,7 +90,7 @@ void compareDijetHistograms(){
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -117,8 +117,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_processed_2018-08-16.root"};
+  const int nDatasets = 2;
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_3eventsMixed_combine0-12_processed_2018-10-02.root","data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"};
   //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
   //  "data/dijet_ppMC_GenGen_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_GenReco_noMixing_dhanushPythia8_2018-07-02.root"
   //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
@@ -133,6 +133,10 @@ void compareDijetHistograms(){
   //  "data/PbPbMC_RecoReco_noMixing_skims_xiaoCorrection_2018-07-25.root" "data/PbPbMC_RecoGen_noMixing_skims_xiaoCorrection_2018-07-26.root"
   //  "data/dijet_pp_highForest_processed_2018-07-27.root" "data/dijet_pp_highForest_processed_2018-08-15.root"
   //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-13.root" "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-07-27.root"
+  //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
+  //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
+  //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
+  //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   

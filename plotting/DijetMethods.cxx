@@ -403,7 +403,15 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
   char histogramName[150];
   sprintf(histogramName,"%sSpillover",onlyHydjetHistogram->GetName());
   TH2D *spilloverCorrection = (TH2D*) onlyHydjetHistogram->Clone(histogramName);
-  spilloverCorrection->Eval(gauss2D);
+  
+  // Set all the bins to zero before filling the histogram with function contents
+  for(int iPhiBin = 0; iPhiBin < spilloverCorrection->GetNbinsX(); iPhiBin++){
+    for(int iEtaBin = 0; iEtaBin < spilloverCorrection->GetNbinsY(); iEtaBin++){
+      spilloverCorrection->SetBinContent(iPhiBin,iEtaBin,0);
+      spilloverCorrection->SetBinError(iPhiBin,iEtaBin,0);
+    }
+  }
+  spilloverCorrection->Eval(gauss2D,"A");
   
   // Return the spillover correction
   return spilloverCorrection;

@@ -884,7 +884,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
         compactTrackPtString.ReplaceAll(".","v");
         
-        legendX1 = 0.48; legendY1 = 0.68; legendX2 = 0.82; legendY2 = 0.93;
+        legendX1 = 0.45; legendY1 = 0.58; legendX2 = 0.77; legendY2 = 0.83;
         
         // Prepare the track phi histograms to be drawn
         PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, iCentrality, iTrackPt);
@@ -928,6 +928,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
       compactTrackPtString.ReplaceAll(".","v");
       
       // Calculate the pT summed ratios and set the pointers to class histograms
+      mainSum->GetXaxis()->SetRangeUser(0,1);
       fMainHistogram = mainSum;
       for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
         comparisonSumRatio[iAdditional] = (TH1D*) mainSum->Clone(Form("sumClone%d",iAdditional));
@@ -1051,9 +1052,9 @@ void DijetComparingDrawer::SetupLegend(TLegend *legend, TString centralityString
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
-  legend->AddEntry(fMainHistogram,fBaseHistograms->GetSystem(),"l");
+  legend->AddEntry(fMainHistogram,fBaseHistograms->GetSystem() + " subleading","l");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    legend->AddEntry(fComparisonHistogram[iAdditional],fAddedHistograms[iAdditional]->GetSystem(),"l");
+    legend->AddEntry(fComparisonHistogram[iAdditional],fAddedHistograms[iAdditional]->GetSystem() + " subleading","l");
   }
 }
 

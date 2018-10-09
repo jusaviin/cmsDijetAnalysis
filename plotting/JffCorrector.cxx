@@ -8,7 +8,8 @@
  * Default constructor
  */
 JffCorrector::JffCorrector() :
-  fFileLoaded(false)
+  fFileLoaded(false),
+  fSpilloverLoaded(false)
 {
   
   // JFF correction histograms for jet shape
@@ -17,6 +18,7 @@ JffCorrector::JffCorrector() :
       for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
         fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
         fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
+        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation type loop
@@ -31,10 +33,20 @@ JffCorrector::JffCorrector(TFile *inputFile)
 }
 
 /*
+ * Constructor
+ */
+JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile)
+{
+  ReadInputFile(inputFile);
+  ReadSpilloverFile(spilloverFile);
+}
+
+/*
  * Copy constructor
  */
 JffCorrector::JffCorrector(const JffCorrector& in) :
-  fFileLoaded(in.fFileLoaded)
+  fFileLoaded(in.fFileLoaded),
+  fSpilloverLoaded(in.fSpilloverLoaded)
 {
   // Copy constructor
   
@@ -44,6 +56,7 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
       for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
         fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt];
         fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt];
+        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt];
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation type loop
@@ -83,6 +96,31 @@ void JffCorrector::ReadInputFile(TFile *inputFile){
   delete namerHelper;
 }
 
+// Setter for spillover file
+void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
+  
+  // Create histogram manager to find correct histogram naming in the input file
+  DijetHistogramManager *namerHelper = new DijetHistogramManager();
+  
+  // Load the correction histograms from the file
+  char histogramNamer[200];
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+        
+        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d",namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation type loop
+  
+  // Raise the flag that input file has been loaded
+  fSpilloverLoaded = true;
+  
+  // Delete the helper histogram manager
+  delete namerHelper;
+}
+
 // Getter for JFF correction histograms for jet shape
 TH1D* JffCorrector::GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const{
   return fhJetShapeCorrection[iJetTrackCorrelation][iCentrality][iTrackPt];
@@ -93,7 +131,17 @@ TH2D* JffCorrector::GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelat
   return fhDeltaEtaDeltaPhiCorrection[iJetTrackCorrelation][iCentrality][iTrackPt];
 }
 
+// Getter for deltaEta-deltaPhi spillover correction histograms
+TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const{
+  return fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrackCorrelation][iCentrality][iTrackPt];
+}
+
 // Return information, if correction is ready to be obtained
 bool JffCorrector::CorrectionReady(){
   return fFileLoaded;
+}
+
+// Return information, if correction is ready to be obtained
+bool JffCorrector::SpilloverReady(){
+  return fSpilloverLoaded;
 }

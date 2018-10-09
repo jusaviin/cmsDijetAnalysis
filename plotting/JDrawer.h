@@ -38,12 +38,16 @@ private:
   // Appearance settings for histogram
   double fTitleOffsetX;   // Offset of the x-axis title
   double fTitleOffsetY;   // Offset of the y-axis title
+  double fTitleOffsetZ;   // Offset of the z-axis title
   double fTitleSizeX;     // Size of the x-axis title
   double fTitleSizeY;     // Size of the y-axis title
+  double fTitleSizeZ;     // Size of the z-axis title
   double fLabelOffsetX;   // Offset of the x-axis label
   double fLabelOffsetY;   // Offset of the y-axis label
+  double fLabelOffsetZ;   // Offset of the z-axis label
   double fLabelSizeX;     // Size of the x-axis label
   double fLabelSizeY;     // Size of the y-axis label
+  double fLabelSizeZ;     // Size of the z-axis label
   double fDivisionsX;     // The number of divisions in x-axis
   double fDivisionsY;     // The number of divisions in y-axis
   int fFont;              // Font index for titles and labels
@@ -89,18 +93,23 @@ private:
     
     hid->GetXaxis()->CenterTitle(1);    // Axis titles are centered
     hid->GetYaxis()->CenterTitle(1);    // Axis titles are centered
+    hid->GetZaxis()->CenterTitle(1);    // Axis titles are centered
     
     hid->GetXaxis()->SetTitleOffset(fTitleOffsetX); // Give a small offset to the title so that it does overlap with axis
     hid->GetYaxis()->SetTitleOffset(fTitleOffsetY); // Give a small offset to the title so that it does overlap with axis
+    hid->GetZaxis()->SetTitleOffset(fTitleOffsetZ); // Give a small offset to the title so that it does overlap with axis
     
-    hid->GetXaxis()->SetTitleSize(fTitleSizeX); // Define the sixe of the title
-    hid->GetYaxis()->SetTitleSize(fTitleSizeY); // Define the sixe of the title
+    hid->GetXaxis()->SetTitleSize(fTitleSizeX); // Define the size of the title
+    hid->GetYaxis()->SetTitleSize(fTitleSizeY); // Define the size of the title
+    hid->GetZaxis()->SetTitleSize(fTitleSizeZ); // Define the size of the title
     
     hid->GetXaxis()->SetLabelOffset(fLabelOffsetX); // Give a small offset to the label so that it does overlap with axis
     hid->GetYaxis()->SetLabelOffset(fLabelOffsetY); // Give a small offset to the label so that it does overlap with axis
+    hid->GetZaxis()->SetLabelOffset(fLabelOffsetZ); // Give a small offset to the label so that it does overlap with axis
     
     hid->GetXaxis()->SetLabelSize(fLabelSizeX); // Define the sixe of the label
     hid->GetYaxis()->SetLabelSize(fLabelSizeY); // Define the sixe of the label
+    hid->GetZaxis()->SetLabelSize(fLabelSizeZ); // Define the sixe of the label
     
     hid->GetXaxis()->SetNdivisions(fDivisionsX); // Set the number of division markers
     hid->GetYaxis()->SetNdivisions(fDivisionsY); // Set the number of division markers
@@ -110,8 +119,10 @@ private:
     
     hid->GetXaxis()->SetLabelFont(fFont); // Set the label font
     hid->GetYaxis()->SetLabelFont(fFont); // Set the label font
+    hid->GetZaxis()->SetLabelFont(fFont); // Set the label font
     hid->GetXaxis()->SetTitleFont(fFont); // Set the title font
     hid->GetYaxis()->SetTitleFont(fFont); // Set the title font
+    hid->GetZaxis()->SetTitleFont(fFont); // Set the title font
   }
   
   /*
@@ -322,12 +333,16 @@ public:
     // Set default values for histogram appearance settings
     fTitleOffsetX = 1.1;    // Offset of the x-axis title
     fTitleOffsetY = 1.1;    // Offset of the y-axis title
+    fTitleOffsetZ = 1.3;    // Pffset of the z-axis title
     fTitleSizeX = 0.06;     // Size of the x-axis title
     fTitleSizeY = 0.06;     // Size of the y-axis title
+    fTitleSizeZ = 0.06;     // Size of the z-axis title
     fLabelOffsetX = 0.01;   // Offset of the x-axis label
     fLabelOffsetY = 0.001;  // Offset of the y-axis label
+    fLabelOffsetZ = 0.001;  // Offset of the z-axis label
     fLabelSizeX = 0.05;     // Size of the x-axis label
     fLabelSizeY = 0.05;     // Size of the y-axis label
+    fLabelSizeZ = 0.05;     // Size of the z-axis label
     fDivisionsX = 505;      // The number of divisions in x-axis
     fDivisionsY = 505;      // The number of divisions in y-axis
     fFont = 42;             // Font index for titles and labels

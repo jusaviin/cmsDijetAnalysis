@@ -10,8 +10,12 @@
  *   TString inputFileName = File from which the histograms are read
  *   const char* outputFileName = If we are producing output file, name of the output file
  *   int histogramSelection = If > 0, select a preset group of histograms. Intended to be used for easier production of output files.
+ *   bool applyJffCorrection = When processing histograms, flag whether JFF correction is applied or not
+ *   TODO: Add variable for applySpilloverCorrection
+ *   int selectedPtBin = If 0 or greater, only look at pT bin corresponding to the index
+ *   int selectedCentralityBin = If 0 or greater, only look at centrality bin corresponding to the index
  */
-void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false, int selectedPtBin = -1, int selectedCentralityBin = -1){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -36,38 +40,38 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = true;
+  bool drawAnyJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
-  bool drawPtWeightedTrackSubleadingJetCorrelations = false;
+  bool drawPtWeightedTrackSubleadingJetCorrelations = true;
   bool drawTrackInclusiveJetCorrelations = false;
   bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
   if(histogramSelection > 0){
     drawEventInformation = (histogramSelection == 1);
-    drawDijetHistograms = (histogramSelection == 1);
-    drawLeadingJetHistograms = (histogramSelection == 1);
-    drawSubleadingJetHistograms = (histogramSelection == 1);
-    drawAnyJetHistograms = (histogramSelection == 1);
-    drawTracks = (histogramSelection == 1);
-    drawUncorrectedTracks = (histogramSelection == 1);
-    drawInclusiveTracks = (histogramSelection == 1);
-    drawUncorrectedInclusiveTracks = (histogramSelection == 1);
-    drawTrackLeadingJetCorrelations = (histogramSelection == 2);
-    drawUncorrectedTrackLeadingJetCorrelations = (histogramSelection == 3);
-    drawPtWeightedTrackLeadingJetCorrelations = (histogramSelection == 4);
+    drawDijetHistograms = (histogramSelection == 2);
+    drawLeadingJetHistograms = (histogramSelection == 2);
+    drawSubleadingJetHistograms = (histogramSelection == 2);
+    drawAnyJetHistograms = (histogramSelection == 2);
+    drawTracks = (histogramSelection == 3);
+    drawUncorrectedTracks = (histogramSelection == 3);
+    drawInclusiveTracks = (histogramSelection == 3);
+    drawUncorrectedInclusiveTracks = (histogramSelection == 3);
+    drawTrackLeadingJetCorrelations = (histogramSelection == 4);
+    drawUncorrectedTrackLeadingJetCorrelations = (histogramSelection == 5);
+    drawPtWeightedTrackLeadingJetCorrelations = (histogramSelection == 6);
     drawTrackSubleadingJetCorrelations = false;
     drawUncorrectedTrackSubleadingJetCorrelations = false;
     drawPtWeightedTrackSubleadingJetCorrelations = false;
-    drawTrackInclusiveJetCorrelations = (histogramSelection == 5);
-    drawPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 5);
+    drawTrackInclusiveJetCorrelations = (histogramSelection == 7);
+    drawPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 7);
   }
   
   // Draw different jet-track correlation histograms
@@ -81,14 +85,14 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
+  bool drawSameEvent = true;
   bool drawMixedEvent = false;
-  bool drawCorrected = true;
+  bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
+  bool drawBackground = false;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = true;
@@ -105,10 +109,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style3D = "surf1";
   
   // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-08-16.root";
+  TString jffCorrectionFileName = "data/jffCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_2018-10-01.root";
+  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_2018-10-01.root";
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection;
+  bool applySeagullCorrection = true;
   
   // Bin borders
   const int nCentralityBins = 4;
@@ -125,6 +130,16 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
+  
+  if(selectedCentralityBin >= 0){
+    firstDrawnCentralityBin = selectedCentralityBin;
+    lastDrawnCentralityBin = selectedCentralityBin;
+  }
+  
+  if(selectedPtBin >= 0){
+    firstDrawnTrackPtBin = selectedPtBin;
+    lastDrawnTrackPtBin = selectedPtBin;
+  }
   
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
@@ -155,7 +170,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Open the input file
   TFile *inputFile = TFile::Open(inputFileName);
   TFile *jffCorrectionFile;
+  TFile *spilloverFile;
   if(jffCorrectionFileName != "") jffCorrectionFile = TFile::Open(jffCorrectionFileName);
+  if(spilloverCorrectionFileName != "") spilloverFile = TFile::Open(spilloverCorrectionFileName);
   
   // Load the card from the file and read the collision system
   DijetCard *card = new DijetCard(inputFile);
@@ -208,6 +225,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Set the used dijet methods and corrections
   histograms->SetDijetMethods(methods);
   histograms->SetJffCorrection(jffCorrectionFile,applyJffCorrection);
+  histograms->SetSpilloverCorrection(spilloverFile,applyJffCorrection);
   histograms->SetSeagullCorrection(applySeagullCorrection);
   
   // With execution mode 0, only process the histograms and write them to file

@@ -19,6 +19,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fSystemAndEnergy(""),
   fCompactSystemAndEnergy(""),
   fApplyJffCorrection(false),
+  fApplySpilloverCorrection(false),
   fApplySeagullCorrection(false),
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
@@ -171,6 +172,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fMethods(in.fMethods),
   fJffCorrectionFinder(in.fJffCorrectionFinder),
   fApplyJffCorrection(in.fApplyJffCorrection),
+  fApplySpilloverCorrection(in.fApplySpilloverCorrection),
   fApplySeagullCorrection(in.fApplySeagullCorrection),
   fLoadEventInformation(in.fLoadEventInformation),
   fLoadDijetHistograms(in.fLoadDijetHistograms),
@@ -352,7 +354,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
   int connectedIndex;
   int nProjectedBins;
   bool isInclusive;
-  TH2D *jffCorrection;
+  TH2D *correctionHistogram;
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
@@ -372,8 +374,14 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
         
         // Apply the JFF correction to the background subtracted deltaEta-deltaPhi distribution
         if(fApplyJffCorrection && fJffCorrectionFinder->CorrectionReady()){
-          jffCorrection = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
-          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]->Add(jffCorrection,-1);
+          correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
+        }
+        
+        // Apply the spillover correction to the background subtracted deltaEta-deltaPhi distribution
+        if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
+          correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
         }
         
         // Calculate the jet shape from the background subtracted histogram
@@ -557,7 +565,11 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
       // Select the bin indices
-      if(iCentralityBin == fLastLoadedCentralityBin) duplicateRemoverCentrality = 0;
+      if(iCentralityBin == fLastLoadedCentralityBin) {
+        duplicateRemoverCentrality = 0;
+      } else {
+        duplicateRemoverCentrality = -1;
+      }
       lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
       higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
       
@@ -659,7 +671,11 @@ void DijetHistogramManager::LoadTrackHistograms(){
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         
         // Select the bin indices
-        if(iCentralityBin == fLastLoadedCentralityBin) duplicateRemoverCentrality = 0;
+        if(iCentralityBin == fLastLoadedCentralityBin) {
+          duplicateRemoverCentrality = 0;
+        } else {
+          duplicateRemoverCentrality = -1;
+        }
         lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
         higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
         
@@ -731,7 +747,11 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         
         // Select the bin indices
-        if(iCentralityBin == fLastLoadedCentralityBin) duplicateRemoverCentrality = 0;
+        if(iCentralityBin == fLastLoadedCentralityBin) {
+          duplicateRemoverCentrality = 0;
+        } else {
+          duplicateRemoverCentrality = -1;
+        }
         lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
         higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
         
@@ -849,7 +869,7 @@ TH1D* DijetHistogramManager::FindHistogram(TFile *inputFile, const char *name, i
   // Apply the restrictions in the set of axes
   for(int i = 0; i < nAxes; i++) histogramArray->GetAxis(axisNumber[i])->SetRange(lowBinIndex[i],highBinIndex[i]);
   
-  // Create a unique name for eeach histogram that is read from the file
+  // Create a unique name for each histogram that is read from the file
   char newName[200];
   sprintf(newName,"%s",histogramArray->GetName());
   for(int iBinIndex = 0; iBinIndex < nAxes; iBinIndex++){
@@ -1555,6 +1575,14 @@ void DijetHistogramManager::SetJffCorrection(TFile *jffFile, const bool applyCor
   fApplyJffCorrection = applyCorrection;
   if(fApplyJffCorrection){
     fJffCorrectionFinder->ReadInputFile(jffFile);
+  }
+}
+
+// Setter for spillover correction
+void DijetHistogramManager::SetSpilloverCorrection(TFile *spilloverFile, const bool applyCorrection){
+  fApplySpilloverCorrection = applyCorrection;
+  if(fApplySpilloverCorrection){
+    fJffCorrectionFinder->ReadSpilloverFile(spilloverFile);
   }
 }
 

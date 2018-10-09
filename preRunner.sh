@@ -1,0 +1,6 @@
+#!/bin/bash
+
+./processHistograms.sh "data/PbPbMC_GenGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_2018-10-01.root" "data/PbPbMC_GenGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_processed_2018-10-01.root" false
+./processHistograms.sh "data/PbPbMC_GenGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_2018-10-01.root" "data/PbPbMC_GenGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_processed_2018-10-01.root" false
+./processHistograms.sh "data/PbPbMC_RecoGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_2018-10-01.root" "data/PbPbMC_RecoGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_processed_2018-10-01.root" false
+./processHistograms.sh "data/PbPbMC_RecoGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_2018-10-01.root" "data/PbPbMC_RecoGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_processed_2018-10-01.root" false

@@ -141,12 +141,13 @@ public:
   void SetDijetMethods(DijetMethods* newMethods); // Setter for used DijetMethods
   
   // Setters for corrections
-  void SetJffCorrection(TFile *jffFile, const bool applyCorrection); // Setter for JFF corrector and flag
-  void SetSeagullCorrection(const bool applyCorrection);                             // Setter for seagull correction flag
+  void SetJffCorrection(TFile *jffFile, const bool applyCorrection);             // Setter for JFF corrector and flag
+  void SetSpilloverCorrection(TFile* spilloverFile, const bool applyCorrection); // Setter for spillover corrector and flag
+  void SetSeagullCorrection(const bool applyCorrection);                         // Setter for seagull correction flag
   
   // Getters for number of bins in histograms
   int GetNCentralityBins() const; // Getter for the number of centrality bins
-  int GetNTrackPtBins() const; // Getter for the number of track pT bins
+  int GetNTrackPtBins() const;    // Getter for the number of track pT bins
   double GetCentralityBinBorder(const int iCentrality) const;  // Getter for i:th centrality bin border
   double GetTrackPtBinBorder(const int iTrackPt) const;        // Getter for i:th track pT bin border
   double GetDeltaPhiBorderLow(const int iDeltaPhi) const;      // Getter for i:th low deltaPhi border
@@ -234,6 +235,7 @@ private:
   // =========== Flags for corrections ============
   // ==============================================
   bool fApplyJffCorrection;       // Flag for applying the JFF correction
+  bool fApplySpilloverCorrection; // Flag for applying the spillover correction
   bool fApplySeagullCorrection;   // Flag for applying the seagull correction
   
   // ==============================================

@@ -12,14 +12,14 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_processed_2018-08-16.root";  // File from which the RecoGen histograms are read for the correction
-  TString genGenFileName = "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-16.root";   // File from which the GenGen histograms are read for the correction
-  TString outputFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_2018-08-16.root";   // File name for the output file
+  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_processed_2018-10-01.root";  // File from which the RecoGen histograms are read for the correction
+  TString genGenFileName = "data/PbPbMC_GenGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_processed_2018-10-01.root";   // File from which the GenGen histograms are read for the correction
+  TString outputFileName = "data/jffCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_2018-10-01.root";   // File name for the output file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
-  bool uncorrectedJetTrack = true;  // Produce the correction for uncorrected jet-track correlations
+  bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -120,7 +120,7 @@ void produceJffCorrection(){
    // Save the obtained correction to the output file
   char histogramNamer[150];
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
-    if(!correlationSelector[iJetTrack % 3]) continue;  // Only write the corrections that are calculated
+    if(!correlationSelector[iJetTrack]) continue;  // Only write the corrections that are calculated
     
     // Create a directory for the histograms if it does not already exist
     sprintf(histogramNamer,"%s_%s",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
