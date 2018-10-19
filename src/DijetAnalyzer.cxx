@@ -475,8 +475,10 @@ void DijetAnalyzer::RunAnalysis(){
   Bool_t useDifferentReaderFotJetsAndTracks = (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco); // Use different forest reader for jets and tracks
   
   // Event mixing information
-  Bool_t mixEvents = (fCard->Get("DoEventMixing") == 1);    // Do or do not do event mixing
-  Bool_t mixWithPool = (fCard->Get("MixWithPool") == 1);    // Select whether to use mixing pool or directly vz and centrality difference in mixing file
+  Bool_t mixEvents = (fCard->Get("DoEventMixing") == 1);  // Do or do not do event mixing
+  Bool_t mixWithPool = (fCard->Get("MixWithPool") == 1);  // Select whether to use mixing pool or directly vz and centrality difference in mixing file
+  Bool_t onlyMix = (fCard->Get("OnlyMix") == 1); // Only fill mixed event histograms. Option to generate more mixing events and merge them with previous runs including same event histograms without duplicating same event statistics.
+
   
   // Variables for jets
   Double_t dijetAsymmetry = -99;   // Dijet asymmetry
@@ -736,7 +738,7 @@ void DijetAnalyzer::RunAnalysis(){
               leadingJetInfo[2] = jetEta;
               
               // Correlate inclusive jets with tracks
-              CorrelateTracksAndJets(leadingJetInfo,leadingJetInfo,DijetHistograms::kSameEvent,true);
+              if(!onlyMix) CorrelateTracksAndJets(leadingJetInfo,leadingJetInfo,DijetHistograms::kSameEvent,true);
               
               // Do event mixing using the selected mixing method
               if(mixEvents){
@@ -892,7 +894,7 @@ void DijetAnalyzer::RunAnalysis(){
         if(!fFillTrackHistograms && !fFillRegularJetTrackCorrelation && !fFillUncorrectedJetTrackCorrelation && !fFillPtWeightedJetTrackCorrelation) continue;
         
         // Correlate jets with tracks in dijet events
-        CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
+        if(!onlyMix) CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
         
         // Do event mixing using the selected mixing method
         if(mixEvents){
