@@ -820,7 +820,7 @@ void DijetAnalyzer::RunAnalysis(){
       } // End of dijet cuts
       
       // Inclusive track histograms
-      if(fFillTrackHistograms){
+      if(fFillTrackHistograms && !onlyMix){
         
         // Loop over all track in the event
         nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
