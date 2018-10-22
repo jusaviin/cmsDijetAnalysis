@@ -65,7 +65,10 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   for(int iJetShape = 0; iJetShape < DijetHistogramManager::knJetShapeTypes; iJetShape++){
     fDrawJetShape[iJetShape] = false;
   }
-
+  for(int iComment = 0; iComment < knMaxRatios+1; iComment++){
+    fLegendComment[iComment] = "";
+  }
+  
 }
 
 /*
@@ -88,6 +91,21 @@ void DijetComparingDrawer::AddHistogramToDraw(DijetHistogramManager *additionalH
   }
   
   fAddedHistograms[fnAddedHistograms++] = additionalHistogram;
+}
+
+/*
+ * Add comment to legend
+ *
+ *  Arguments:
+ *   TString comment = Comment given to the legend
+ */
+void DijetComparingDrawer::AddLegendComment(TString comment){
+  if(fnAddedHistograms == knMaxRatios){
+    cout << "Already at maximum amount of histograms (" << knMaxRatios << "), cannot add more!" << endl;
+    return;
+  }
+  
+  fLegendComment[fnAddedHistograms] = comment;
 }
 
 /*
@@ -1052,9 +1070,9 @@ void DijetComparingDrawer::SetupLegend(TLegend *legend, TString centralityString
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
-  legend->AddEntry(fMainHistogram,fBaseHistograms->GetSystem() + " subleading","l");
+  legend->AddEntry(fMainHistogram,fBaseHistograms->GetSystem() + " " + fLegendComment[0],"l");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    legend->AddEntry(fComparisonHistogram[iAdditional],fAddedHistograms[iAdditional]->GetSystem() + " subleading","l");
+    legend->AddEntry(fComparisonHistogram[iAdditional],fAddedHistograms[iAdditional]->GetSystem() + " " + fLegendComment[iAdditional+1],"l");
   }
 }
 

@@ -21,6 +21,7 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   fDrawJetTrackDeltaEtaDeltaPhi(false),
   fSaveFigures(false),
   fFigureFormat("pdf"),
+  fNormalizeJetShape(false),
   fLogPt(true),
   fLogCorrelation(true),
   fLogJetShape(true),
@@ -780,6 +781,7 @@ void DijetDrawer::DrawJetShapeStack(){
   TString compactCentralityString;
   TString compactTrackPtString = "_ptStack";
   char namerX[100];
+  const char *titleY;
   
   // Helper variables for legend
   TLegend *legend;
@@ -793,11 +795,32 @@ void DijetDrawer::DrawJetShapeStack(){
   
   // Helper variables for histograms added to stack
   TH1D *addedHistogram;
+  TH1D *sumHistogram;
+  TH1D *helperHistogram;
   
   // Logarithmic drawing for jet shape histograms
   fDrawer->SetLogY(fLogJetShape);
   fDrawer->SetRelativeCanvasSize(1,1);
-
+  
+  // If we want to do the normalization to 1, calculate the scaling here
+  // Loop over jet-track correlation categories
+  double shapeIntegral[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::knCentralityBins] = {{0}};
+  if(fNormalizeJetShape){
+    for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+      if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+      // Loop over centrality
+      for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+        // Loop over track pT bins
+        sumHistogram = (TH1D*) fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,fFirstDrawnTrackPtBin)->Clone();
+        for(int iTrackPt = fFirstDrawnTrackPtBin+1; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
+          helperHistogram = (TH1D*)fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
+          sumHistogram->Add(helperHistogram);
+        } // track pT
+        shapeIntegral[iJetTrack][iCentrality] = sumHistogram->Integral(1,sumHistogram->FindBin(0.29),"width");
+      } // centrality
+    } // jet-track categories
+  }
+  
   // Loop over jet-track correlation categories
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
@@ -817,6 +840,7 @@ void DijetDrawer::DrawJetShapeStack(){
         legendString[iTrackPt] = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
         
         addedHistogram = fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
+        if(fNormalizeJetShape) addedHistogram->Scale(1.0/shapeIntegral[iJetTrack][iCentrality]);
         
         jetShapeStack[iJetTrack][iCentrality]->addHist(addedHistogram);
         
@@ -824,11 +848,17 @@ void DijetDrawer::DrawJetShapeStack(){
       
       // Set up the axes and draw the stack
       fDrawer->CreateCanvas();
-      jetShapeStack[iJetTrack][iCentrality]->setRange(0, 0.99, "x");
-      jetShapeStack[iJetTrack][iCentrality]->setRange(0.7, 1000, "y");
+      legendX1 = 0; legendX2 = 0.99; legendY1 = 0.7; legendY2 = 1000; titleY = "P(#Deltar)";
+      if(fNormalizeJetShape){
+        legendY1 = 0.007; legendY2 = 20; titleY = "#rho(#Deltar)";
+      }
+      jetShapeStack[iJetTrack][iCentrality]->setRange(legendX1, legendX2, "x");
+      jetShapeStack[iJetTrack][iCentrality]->setRange(legendY1, legendY2, "y");
       jetShapeStack[iJetTrack][iCentrality]->drawStack();
-      jetShapeStack[iJetTrack][iCentrality]->hst->GetXaxis()->SetTitle("#DeltaR");
-      jetShapeStack[iJetTrack][iCentrality]->hst->GetYaxis()->SetTitle("P(#DeltaR)");
+      jetShapeStack[iJetTrack][iCentrality]->hst->GetXaxis()->SetTitle("#Deltar");
+      jetShapeStack[iJetTrack][iCentrality]->hst->GetXaxis()->SetTitleOffset(1.05);
+      jetShapeStack[iJetTrack][iCentrality]->hst->GetYaxis()->SetTitle(titleY);
+      jetShapeStack[iJetTrack][iCentrality]->hst->GetYaxis()->SetTitleOffset(1.05);
       jetShapeStack[iJetTrack][iCentrality]->hst->Draw();
       
       // Get legend from the stack and draw also that
@@ -837,9 +867,9 @@ void DijetDrawer::DrawJetShapeStack(){
         legendY1 = 0.55; legendY2 = 0.95;  // Move the legend up for subleading jet shape
       }
       legend = jetShapeStack[iJetTrack][iCentrality]->makeLegend(legendString,legendX1,legendY1,legendX2,legendY2,false,fLastDrawnTrackPtBin+1);
-      legend->Draw();
+      //legend->Draw();
       
-      systemLegend = new TLegend(0.1,0.95,0.6,0.99);
+      systemLegend = new TLegend(0.15,0.85,0.65,0.89);
       systemLegend->SetFillStyle(0);systemLegend->SetBorderSize(0);systemLegend->SetTextSize(0.05);systemLegend->SetTextFont(62);
       systemLegendString = fSystemAndEnergy + " " + centralityString;
       systemLegend->AddEntry((TObject*) 0, systemLegendString.Data(), "");
@@ -1109,6 +1139,11 @@ void DijetDrawer::SetLogAxes(const bool pt, const bool correlation, const bool j
   SetLogPt(pt);
   SetLogCorrelation(correlation);
   SetLogJetShape(jetShape);
+}
+
+// Setter for normalization of jet shape
+void DijetDrawer::SetNormalizeJetShape(const bool normalization){
+  fNormalizeJetShape = normalization;
 }
 
 // Setter for color palette

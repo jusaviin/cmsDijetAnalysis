@@ -24,10 +24,10 @@ void compareDijetHistograms(){
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
-  bool drawPtWeightedTrackSubleadingJetCorrelations = true;
+  bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   bool drawTrackInclusiveJetCorrelations = false;
   bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
@@ -58,7 +58,7 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
@@ -72,9 +72,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.6;
-  double maxZoom = 5;
-  TString ratioLabel = "PbPb / pp";
+  double minZoom = 0.4;
+  double maxZoom = 1.6;
+  TString ratioLabel = "Corr / Uncorr";
   
   // Scaling for histograms
   bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -90,7 +90,7 @@ void compareDijetHistograms(){
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -117,26 +117,15 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_3eventsMixed_combine0-12_processed_2018-10-02.root","data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"};
-  //  "data/dijet_ppMC_RecoReco_noMixing_pythia8Forest_2018-06-27.root" "data/dijet_ppMC_RecoGen_noMixing_pythia8Forest_2018-06-27.root"
-  //  "data/dijet_ppMC_GenGen_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_GenReco_noMixing_dhanushPythia8_2018-07-02.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_dhanushPythia8_2018-07-02.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_noWeights_dhanushPythia8_2018-07-03.root" "data/dijet_ppMC_RecoGen_noMixing_noWeights_dhanushPythia8_2018-07-03.root"
-  //  "data/dijet_ppMC_RecoReco_noMixing_mergedPythia6Skims_2018-07-06.root" "data/dijet_ppMC_RecoGen_noMixing_mergedPythia6Skims_2018-07-06.root"
-  //  "data/dijet_ppMC_RecoReco_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenGen_mergedPythia6Skims_processed_2018-07-06.root"
-  //  "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root" "data/dijet_ppMC_GenReco_mergedPythia6Skims_processed_2018-07-06.root"
-  //  "data/dijet_ppMC_RecoReco_dhanushPythia8_processed_2018-07-19.root" "data/dijet_ppMC_RecoGen_noMixing_dhanushPythia8_2018-07-02.root"
-  //  "data/dijet_ppMC_GenGen_dhanushPythia8_processed_2018-07-19.root"
-  //  "data/PbPbMC_RecoReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_RecoGen_noMixing_skims_processed_2018-07-20.root"
-  //  "data/PbPbMC_GenReco_noMixing_skims_processed_2018-07-20.root" "data/PbPbMC_GenGen_noMixing_skims_processed_2018-07-20.root"
-  //  "data/PbPbMC_RecoReco_noMixing_skims_xiaoCorrection_2018-07-25.root" "data/PbPbMC_RecoGen_noMixing_skims_xiaoCorrection_2018-07-26.root"
-  //  "data/dijet_pp_highForest_processed_2018-07-27.root" "data/dijet_pp_highForest_processed_2018-08-15.root"
-  //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-08-13.root" "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_processed_2018-07-27.root"
+  const int nDatasets = 3;
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_3eventsMixed_noUncorrected_processed_2018-10-02.root","data/dijetPbPb_pfJets_3eventsMixed_noSpillover_processed_2018-10-02.root","data/dijetPbPb_pfJets_3eventsMixed_noSpilloverOrJff_processed_2018-10-02.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
+  //  "data/dijetPbPb_pfJets_3eventsMixed_noUncorrected_processed_2018-10-02.root"
+  
+  TString legendComment[nDatasets] = {"corrected", "no spillover", "no JFF"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -209,8 +198,10 @@ void compareDijetHistograms(){
   } // Loop over datasets
 
   DijetComparingDrawer *drawer = new DijetComparingDrawer(histograms[0]);
+  drawer->AddLegendComment(legendComment[0]);
   for(int i = 1; i < nDatasets; i++){
     drawer->AddHistogramToDraw(histograms[i]);
+    drawer->AddLegendComment(legendComment[i]);
   }
   
   drawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);

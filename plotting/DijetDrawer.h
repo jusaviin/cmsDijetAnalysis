@@ -83,6 +83,7 @@ public:
   void SetLogCorrelation(const bool isLog); // Setter for logarithmic z axis for correlation plots
   void SetLogJetShape(const bool isLog);    // Setter for logarithmic jet shape drawing
   void SetLogAxes(const bool pt, const bool correlation, const bool jetShape); // Setter for logarithmic axes
+  void SetNormalizeJetShape(const bool normalization);  // Setter for normalization of jet shape
   
   // Setters for drawing style and colors
   void SetColorPalette(const int color);     // Setter for color palette
@@ -124,6 +125,9 @@ private:
   // Choose if you want to write the figures to pdf file
   bool fSaveFigures;           // Flag for saving the figures to file
   const char* fFigureFormat;   // Format in which the figures are saved
+  
+  // Normalization settings
+  bool fNormalizeJetShape;     // Normalize jet shape to one, meaning draw rho instead of P
   
   // Logarithmic scales for figures
   bool fLogPt;          // pT distributions

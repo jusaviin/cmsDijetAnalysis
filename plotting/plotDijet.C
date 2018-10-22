@@ -11,11 +11,11 @@
  *   const char* outputFileName = If we are producing output file, name of the output file
  *   int histogramSelection = If > 0, select a preset group of histograms. Intended to be used for easier production of output files.
  *   bool applyJffCorrection = When processing histograms, flag whether JFF correction is applied or not
- *   TODO: Add variable for applySpilloverCorrection
+ *   bool applySpilloverCorrection = When processing histograms, flag whether spillover correction is applied or not
  *   int selectedPtBin = If 0 or greater, only look at pT bin corresponding to the index
  *   int selectedCentralityBin = If 0 or greater, only look at centrality bin corresponding to the index
  */
-void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false, int selectedPtBin = -1, int selectedCentralityBin = -1){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false, bool applySpilloverCorrection = false, int selectedPtBin = -1, int selectedCentralityBin = -1){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -47,10 +47,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
-  bool drawPtWeightedTrackSubleadingJetCorrelations = true;
+  bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   bool drawTrackInclusiveJetCorrelations = false;
   bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
@@ -71,7 +71,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     drawUncorrectedTrackSubleadingJetCorrelations = false;
     drawPtWeightedTrackSubleadingJetCorrelations = false;
     drawTrackInclusiveJetCorrelations = (histogramSelection == 7);
-    drawPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 7);
+    drawPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 8);
   }
   
   // Draw different jet-track correlation histograms
@@ -95,8 +95,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawBackground = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
+  
+  // Normalization for jet shape plotting
+  bool normalizeJetShapePlot = true;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
@@ -109,8 +112,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style3D = "surf1";
   
   // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_2018-10-01.root";
-  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_2018-10-01.root";
+  TString jffCorrectionFileName = "data/jffCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_sube0_2018-10-09.root";
+  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_subeNon0_2018-10-09.root";
   
   // Define if you want to use seagull correction
   bool applySeagullCorrection = true;
@@ -126,7 +129,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -225,7 +228,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Set the used dijet methods and corrections
   histograms->SetDijetMethods(methods);
   histograms->SetJffCorrection(jffCorrectionFile,applyJffCorrection);
-  histograms->SetSpilloverCorrection(spilloverFile,applyJffCorrection);
+  histograms->SetSpilloverCorrection(spilloverFile,applySpilloverCorrection);
   histograms->SetSeagullCorrection(applySeagullCorrection);
   
   // With execution mode 0, only process the histograms and write them to file
@@ -269,6 +272,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   resultDrawer->SetSaveFigures(saveFigures,figureFormat);
   resultDrawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
+  resultDrawer->SetNormalizeJetShape(normalizeJetShapePlot);
   
   // Draw the selected histograms
   resultDrawer->DrawHistograms();

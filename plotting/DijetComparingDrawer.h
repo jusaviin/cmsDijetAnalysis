@@ -36,6 +36,7 @@ public:
   
   // Add histograms to draw together with base histograms
   void AddHistogramToDraw(DijetHistogramManager *additionalHistogram);
+  void AddLegendComment(TString comment);
   
   // Setters for single jets
   void SetDrawLeadingJetHistograms(const bool drawOrNot);    // Setter for drawing leading jet histograms
@@ -178,6 +179,9 @@ private:
   int fLastDrawnCentralityBin;   // Last centrality bin that is drawn
   int fFirstDrawnTrackPtBin;     // First track pT bin that is drawn
   int fLastDrawnTrackPtBin;      // Last track pT bin that is drawn
+  
+  // Comments given for legends
+  TString fLegendComment[knMaxRatios+1];
   
   // Methods for binning
   void BinSanityCheck(const int nBins, int first, int last);  // Sanity check for binning
