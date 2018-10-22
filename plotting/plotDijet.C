@@ -24,8 +24,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // ========================= Configuration ==========================
   // ==================================================================
   
-  // Choose to either process or draw the histograms
-  int executionMode = 2; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  // Automatically choose execution mode based on input parameters
+  int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
+  if(inputFileName.Contains("processed")) executionMode = 2;
   if(histogramSelection > 0) executionMode = 0;
   
   // We do not need to set bin indices if we use processed histograms
@@ -47,12 +48,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   bool drawTrackInclusiveJetCorrelations = false;
-  bool drawPtWeightedTrackInclusiveJetCorrelations = false;
+  bool drawPtWeightedTrackInclusiveJetCorrelations = true;
   
   if(histogramSelection > 0){
     drawEventInformation = (histogramSelection == 1);
@@ -99,7 +100,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* figureFormat = "pdf";
   
   // Normalization for jet shape plotting
-  bool normalizeJetShapePlot = true;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
+  bool normalizeJetShapePlot = false;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
