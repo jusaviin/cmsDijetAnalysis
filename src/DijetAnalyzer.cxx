@@ -598,16 +598,30 @@ void DijetAnalyzer::RunAnalysis(){
 
     // Check that the file exists
     if(!inputFile){
-      cout << "Error! Could not open the file: " << currentFile.Data() << endl;
+      cout << "Error! Could not find the file: " << currentFile.Data() << endl;
       assert(0);
     }
     
     // Check that the mixing file exists
     if(!mixedEventFile && mixEvents){
-      cout << "Error! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
+      cout << "Error! Could not find the mixing file: " << currentMixedEventFile.Data() << endl;
       assert(0);
     }
 
+    // Check that the file is open
+    if(!inputFile->IsOpen()){
+      cout << "Error! Could not open the file: " << currentFile.Data() << endl;
+      assert(0);
+    }
+    
+    // Check that the mixing file is open
+    if(mixEvents){
+      if(!mixedEventFile->IsOpen()){
+        cout << "Error! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
+        assert(0);
+      }
+    }
+    
     // Check that the file is not zombie
     if(inputFile->IsZombie()){
       cout << "Error! The following file is a zombie: " << currentFile.Data() << endl;
