@@ -191,8 +191,8 @@ void SkimForestReader::Initialize(){
     fEventTree->SetBranchStatus("HLT_AK4CaloJet80_Eta5p1_v1",1);
     fEventTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPb){ // PbPb
-    fEventTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
-    fEventTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    fEventTree->SetBranchStatus("HLT_ak4CaloJet100_Prescale",1);
+    fEventTree->SetBranchAddress("HLT_ak4CaloJet100_Prescale",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else { // Local test or MC
     fCaloJetFilterBit = 1;  // No filter for local test or MC
   }

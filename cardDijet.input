@@ -64,7 +64,7 @@ VzTolerance 0.5          # Maximum vz distance for event to be accepted in mixin
 MixingVzBinWidth 1       # Width of vz bins used for mixing in cm
 MixingHiBinWidth 5       # Number of centrality bins combined in a single mixing bin
 MixingPoolDepth 100      # Number of events selected for mixing for each vz and centrality bin
-MixingFileIndex 0        # Choose location of mixing file for PbPbMC, 0-4.
+MixingFileIndex 0        # Choose location of mixing file for PbPb (0-1) or PbPbMC (0-4).
 
 # Debug
 DebugLevel 2   # 0 = No debug messages, 1 = Some debug messages, 2 = All debug messages
