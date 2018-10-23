@@ -42,6 +42,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fMixingVzTolerance(0),
   fMixedEventVz(0),
   fMixedEventHiBin(0),
+  fJetAxis(0),
   fVzCut(0),
   fMinimumPtHat(0),
   fMaximumPtHat(0),
@@ -139,6 +140,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Amount of debugging messages
   fDebugLevel = fCard->Get("DebugLevel");
+  
+  // Jet axis type
+  fJetAxis = fCard->Get("JetAxis");
   
   // vz cut
   fVzCut = fCard->Get("ZVertexCut");          // Event cut vor the z-position of the primary vertex
@@ -258,6 +262,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fMixingVzTolerance(in.fMixingVzTolerance),
   fMixedEventVz(in.fMixedEventVz),
   fMixedEventHiBin(in.fMixedEventHiBin),
+  fJetAxis(in.fJetAxis),
   fVzCut(in.fVzCut),
   fMinimumPtHat(in.fMinimumPtHat),
   fMaximumPtHat(in.fMaximumPtHat),
@@ -329,6 +334,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fMixingVzTolerance = in.fMixingVzTolerance;
   fMixedEventVz = in.fMixedEventVz;
   fMixedEventHiBin = in.fMixedEventHiBin;
+  fJetAxis = in.fJetAxis;
   fVzCut = in.fVzCut;
   fMinimumPtHat = in.fMinimumPtHat;
   fMaximumPtHat = in.fMaximumPtHat;
@@ -383,12 +389,23 @@ DijetAnalyzer::~DijetAnalyzer(){
  *   Double_t jetPhi = Phi angle of the jet
  *   Double_t jetEta = Eta angle of the jet
  *
- *  return: Number of particle flow candidates within jet cone of R = 0.4 from jet axis
+ *  return: A tuple with the following information:
+ *            0: Number of particle flow candidates within jet cone of R = 0.4 from jet axis
+ *            1: Leading particle flow candidate phi
+ *            2: Leading particle flow candidate eta
  */
-Int_t DijetAnalyzer::GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta){
+std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta){
 
   // No correction for generator level jets
-  if(fJetReader->GetNParticleFlowCandidates() < 0) return -1;
+  if(fJetReader->GetNParticleFlowCandidates() < 0) return std::make_tuple(-1,0,0);
+  
+  // Variables for particle flow candidate properties
+  Double_t leadingParticleFlowCandidatePt = 0;
+  Double_t leadingParticleFlowCandidatePhi = 0;
+  Double_t leadingParticleFlowCandidateEta = 0;
+  Double_t particleFlowCandidatePt = 0;
+  Double_t particleFlowCandidatePhi = 0;
+  Double_t particleFlowCandidateEta = 0;
   
   // Start counting from zero
   Int_t nParticleFlowCandidatesInThisJet = 0;
@@ -397,14 +414,25 @@ Int_t DijetAnalyzer::GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t j
   // Loop over all particle flow candidates
   for(Int_t iParticleFlowCandidate = 0; iParticleFlowCandidate < fJetReader->GetNParticleFlowCandidates(); iParticleFlowCandidate++){
     if(fJetReader->GetParticleFlowCandidateId(iParticleFlowCandidate) != 1) continue; // Require ID 1 for candidates
-    if(fJetReader->GetParticleFlowCandidatePt(iParticleFlowCandidate) < 2) continue; // Require minimum pT of 2 GeV for candidates
-    distanceToThisJet = TMath::Power(TMath::Power(jetPhi-fJetReader->GetParticleFlowCandidatePhi(iParticleFlowCandidate),2)+TMath::Power(jetEta-fJetReader->GetParticleFlowCandidateEta(iParticleFlowCandidate),2),0.5);
+    particleFlowCandidatePt = fJetReader->GetParticleFlowCandidatePt(iParticleFlowCandidate);
+    if(particleFlowCandidatePt < 2) continue; // Require minimum pT of 2 GeV for candidates
+    particleFlowCandidatePhi = fJetReader->GetParticleFlowCandidatePhi(iParticleFlowCandidate);
+    particleFlowCandidateEta = fJetReader->GetParticleFlowCandidateEta(iParticleFlowCandidate);
+    distanceToThisJet = TMath::Power(TMath::Power(jetPhi-particleFlowCandidatePhi,2)+TMath::Power(jetEta-particleFlowCandidateEta,2),0.5);
     if(distanceToThisJet > 0.4) continue;  // Require the particle to be inside the jet cone of R = 0.4
     nParticleFlowCandidatesInThisJet++;
+    
+    // Update the information for the leading particle flow candidate in jet
+    if(particleFlowCandidatePt > leadingParticleFlowCandidatePt){
+      leadingParticleFlowCandidatePt = particleFlowCandidatePt;
+      leadingParticleFlowCandidatePhi = particleFlowCandidatePhi;
+      leadingParticleFlowCandidateEta = particleFlowCandidateEta;
+    }
+    
   }
   
-  // Return all we find
-  return nParticleFlowCandidatesInThisJet;
+  // Return a tuple of the number of particle flow candidates and information about leading particle flow candidate
+  return std::make_tuple(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta);
 }
 
 /*
@@ -488,6 +516,10 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t subleadingJetPt = 0;    // Subleading jet pT
   Double_t subleadingJetPhi = 0;   // Subleading jet phi
   Double_t subleadingJetEta = 0;   // Subleading jet eta
+  Double_t leadingParticleFlowCandidatePhi = 0;     // Leading particle lofw candidate phi
+  Double_t leadingParticleFlowCandidateEta = 0;     // Leading particle flow candidate eta
+  Double_t subleadingParticleFlowCandidatePhi = 0;  // Subleading particle flow candidate phi
+  Double_t subleadingParticleFlowCandidateEta = 0;  // Subleading particle flow candidate eta
   Double_t swapJetPt = 0;          // Swapping helper variable
   Double_t swapJetPhi = 0;         // Swapping helper variable
   Double_t swapJetEta = 0;         // Swapping helper variable
@@ -728,7 +760,7 @@ void DijetAnalyzer::RunAnalysis(){
           if(fFillJetHistograms){
             
             // Fill the axes in correct order
-            nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);       // Apply JFF correction for jet pT
+            std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);       // Apply JFF correction for jet pT
             fillerJet[0] = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);  // Axis 0 = any jet pT
             fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
@@ -741,7 +773,7 @@ void DijetAnalyzer::RunAnalysis(){
           if(fFillInclusiveJetTrackCorrelation){
             
             // Apply the JFF correction for leading and subleading jet pT
-            nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
+            std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
             jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
             
             // Check that the inclusive jet passes the pT cuts for the jet
@@ -751,6 +783,12 @@ void DijetAnalyzer::RunAnalysis(){
               leadingJetInfo[0] = jetPtCorrected;
               leadingJetInfo[1] = jetPhi;
               leadingJetInfo[2] = jetEta;
+              
+              // If we are using leading particle flow candidate as a probe for jet axis, change the jet info
+              if(fJetAxis == 1){
+                leadingJetInfo[1] = leadingParticleFlowCandidatePhi;
+                leadingJetInfo[2] = leadingParticleFlowCandidateEta;
+              }
               
               // Correlate inclusive jets with tracks
               if(!onlyMix) CorrelateTracksAndJets(leadingJetInfo,leadingJetInfo,DijetHistograms::kSameEvent,true);
@@ -805,9 +843,9 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetEta = fJetReader->GetJetEta(secondHighestIndex);
         
         // Apply the JFF correction for leading and subleading jet pT
-        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(leadingJetPhi,leadingJetEta);
+        std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(leadingJetPhi,leadingJetEta);
         leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
-        nParticleFlowCandidatesInThisJet = GetNParticleFlowCandidatesInJet(subleadingJetPhi,subleadingJetEta);
+        std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(subleadingJetPhi,subleadingJetEta);
         subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
         
         // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info
@@ -816,6 +854,12 @@ void DijetAnalyzer::RunAnalysis(){
           swapJetPhi = leadingJetPhi; leadingJetPhi = subleadingJetPhi;  subleadingJetPhi = swapJetPhi;
           swapJetEta = leadingJetEta; leadingJetEta = subleadingJetEta;  subleadingJetEta = swapJetEta;
           swapIndex = highestIndex;   highestIndex = secondHighestIndex; secondHighestIndex = swapIndex;
+          swapJetPhi = leadingParticleFlowCandidatePhi;
+          leadingParticleFlowCandidatePhi = subleadingParticleFlowCandidatePhi;
+          subleadingParticleFlowCandidatePhi = leadingParticleFlowCandidatePhi;
+          swapJetEta = leadingParticleFlowCandidateEta;
+          leadingParticleFlowCandidateEta = subleadingParticleFlowCandidateEta;
+          subleadingParticleFlowCandidateEta = leadingParticleFlowCandidateEta;
         }
         
         dijetFound = true;
@@ -904,6 +948,14 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetInfo[0] = subleadingJetPt;
         subleadingJetInfo[1] = subleadingJetPhi;
         subleadingJetInfo[2] = subleadingJetEta;
+        
+        // If we are using leading particle flow candidate as a probe for jet axis, change the jet info
+        if(fJetAxis == 1){
+          leadingJetInfo[1] = leadingParticleFlowCandidatePhi;
+          leadingJetInfo[2] = leadingParticleFlowCandidateEta;
+          subleadingJetInfo[1] = subleadingParticleFlowCandidatePhi;
+          subleadingJetInfo[2] = subleadingParticleFlowCandidateEta;
+        }
         
         // Do not do the jet-track correlation are not filling the relevant histograms
         if(!fFillTrackHistograms && !fFillRegularJetTrackCorrelation && !fFillUncorrectedJetTrackCorrelation && !fFillPtWeightedJetTrackCorrelation) continue;

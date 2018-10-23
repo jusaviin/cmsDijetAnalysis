@@ -7,7 +7,7 @@
 #include <vector>
 #include <bitset>
 #include <assert.h>   // Standard c++ debugging tool. Terminates the program if expression given evaluates to 0.
-
+#include <tuple>      // For returning several arguments in a transparent manner
 
 // Root includes
 #include <TString.h>
@@ -59,7 +59,8 @@ private:
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
-  Int_t GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta);
+  std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta);
+  
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
   Bool_t PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms); // Check if the event passes the event cuts
@@ -111,6 +112,7 @@ private:
   std::vector<Int_t> fMixedEventHiBin; // Vector for HiBins of events in mixing file. Needed for poolless mixing
   
   // Jet and track selection cuts
+  Int_t fJetAxis;                      // Used jet axis type. 0 = Anti-kT jet axis, 1 = Axis from leading PF candidate
   Double_t fVzCut;                     // Cut for vertez z-position in an event
   Double_t fMinimumPtHat;              // Minimum accepted pT hat value
   Double_t fMaximumPtHat;              // Maximum accepted pT hat value
