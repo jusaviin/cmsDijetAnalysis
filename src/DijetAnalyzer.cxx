@@ -406,6 +406,7 @@ std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJ
   Double_t particleFlowCandidatePt = 0;
   Double_t particleFlowCandidatePhi = 0;
   Double_t particleFlowCandidateEta = 0;
+  Double_t deltaPhi = 0;
   
   // Start counting from zero
   Int_t nParticleFlowCandidatesInThisJet = 0;
@@ -418,7 +419,13 @@ std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJ
     if(particleFlowCandidatePt < 2) continue; // Require minimum pT of 2 GeV for candidates
     particleFlowCandidatePhi = fJetReader->GetParticleFlowCandidatePhi(iParticleFlowCandidate);
     particleFlowCandidateEta = fJetReader->GetParticleFlowCandidateEta(iParticleFlowCandidate);
-    distanceToThisJet = TMath::Power(TMath::Power(jetPhi-particleFlowCandidatePhi,2)+TMath::Power(jetEta-particleFlowCandidateEta,2),0.5);
+    deltaPhi = jetPhi-particleFlowCandidatePhi;
+    
+    // Transform deltaPhi to interval [-pi,pi]
+    while(deltaPhi > (TMath::Pi())){deltaPhi += -2*TMath::Pi();}
+    while(deltaPhi < (-1.0*TMath::Pi())){deltaPhi += 2*TMath::Pi();}
+    
+    distanceToThisJet = TMath::Power(TMath::Power(deltaPhi,2)+TMath::Power(jetEta-particleFlowCandidateEta,2),0.5);
     if(distanceToThisJet > 0.4) continue;  // Require the particle to be inside the jet cone of R = 0.4
     nParticleFlowCandidatesInThisJet++;
     
@@ -1041,7 +1048,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t 
     deltaEtaTrackSubleadingJet = subleadingJetEta - trackEta;
     deltaPhiTrackSubleadingJet = subleadingJetPhi - trackPhi;
     
-    // Tranform deltaPhis to interval [-pi/2,3pi/2]
+    // Transform deltaPhis to interval [-pi/2,3pi/2]
     while(deltaPhiTrackLeadingJet > (1.5*TMath::Pi())){deltaPhiTrackLeadingJet += -2*TMath::Pi();}
     while(deltaPhiTrackSubleadingJet > (1.5*TMath::Pi())){deltaPhiTrackSubleadingJet += -2*TMath::Pi();}
     while(deltaPhiTrackLeadingJet < (-0.5*TMath::Pi())){deltaPhiTrackLeadingJet += 2*TMath::Pi();}
@@ -1064,14 +1071,13 @@ void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t 
       fillerTrack[0] = trackPt;                    // Axis 0: Track pT
       fillerTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and inclusive jet
       fillerTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and inclusive jet
-      fillerTrack[3] = centrality;                 // Axis 4: Centrality
-      fillerTrack[4] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      fillerTrack[3] = centrality;                 // Axis 3: Centrality
+      fillerTrack[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
       
       if(fFillInclusiveJetTrackCorrelation){
         fHistograms->fhTrackJetInclusive->Fill(fillerTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
         fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
       }
-      
     } else {
       
       // Fill the track-leading jet correlation histograms
