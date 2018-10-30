@@ -26,7 +26,7 @@ class DijetHistogramManager {
 public:
   
   // Indices for different correlation types
-  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kCorrected,kBackgroundSubtracted,kBackground,kBackgroundOverlap,kJetShapeBinMap,knCorrelationTypes};
+  enum enumCorrelationTypes{kSameEvent,kMixedEvent,kMixedEventNormalized,kCorrected,kBackgroundSubtracted,kBackground,kBackgroundOverlap,kJetShapeBinMap,knCorrelationTypes};
   
   // Indices for different jet-track correlation categories
   enum enumJetTrackCorrelation {kTrackLeadingJet, kUncorrectedTrackLeadingJet, kPtWeightedTrackLeadingJet, kTrackSubleadingJet, kUncorrectedTrackSubleadingJet, kPtWeightedTrackSubleadingJet, kTrackInclusiveJet, kPtWeightedTrackInclusiveJet, knJetTrackCorrelations};
@@ -53,8 +53,8 @@ public:
 private:
   
   // Naming for different correlation types
-  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Corrected","Background subtracted","Background","Background overlap","Jet Shape Bin Map"};
-  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_Corrected","_BackgroundSubtracted","_Background","_BackgroundOverlap","_JetShapeBinMap"};
+  TString fCorrelationTypeString[knCorrelationTypes] = {"Same Event","Mixed Event","Normalized ME","Corrected","Background subtracted","Background","Background overlap","Jet Shape Bin Map"};
+  TString fCompactCorrelationTypeString[knCorrelationTypes] = {"_SameEvent","_MixedEvent","_NormalizedME","_Corrected","_BackgroundSubtracted","_Background","_BackgroundOverlap","_JetShapeBinMap"};
   
   // Naming for jet-track correlation histograms
   const char* fJetTrackHistogramNames[knJetTrackCorrelations] = {"trackLeadingJet","trackLeadingJetUncorrected","trackLeadingJetPtWeighted","trackSubleadingJet","trackSubleadingJetUncorrected","trackSubleadingJetPtWeighted","trackJetInclusive","trackJetInclusivePtWeighted"}; // Names that different histograms have in the input file

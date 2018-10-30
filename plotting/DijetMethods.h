@@ -39,16 +39,17 @@ public:
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   
   // Getters for produced distributions
-  TH2D* GetBackground() const;        // Getter for the most recent background distribution used to subtract the background
-  TH2D* GetBackgroundOverlap() const; // Getter for the most recent background overlap distribution for normalization check
-  TH1D* GetJetShapeCounts() const;    // Getter for the jet shape count distribution
-  TH2D* GetJetShapeBinMap() const;    // Getter for the map between R bins and deltaEta-deltaPhi bins
-  TH1D* GetBackgroundEta() const;     // Getter for deltaEta distribution on background deltaPhi region used for seagull fit
-  TF1* GetSeagullFit() const;         // Getter for the most recent seagull fit
+  TH2D* GetNormalizedMixedEvent() const; // Getter for the most recent normalized mixed event histogram
+  TH2D* GetBackground() const;           // Getter for the most recent background distribution used to subtract the background
+  TH2D* GetBackgroundOverlap() const;    // Getter for the most recent background overlap distribution for normalization check
+  TH1D* GetJetShapeCounts() const;       // Getter for the jet shape count distribution
+  TH2D* GetJetShapeBinMap() const;       // Getter for the map between R bins and deltaEta-deltaPhi bins
+  TH1D* GetBackgroundEta() const;        // Getter for deltaEta distribution on background deltaPhi region used for seagull fit
+  TF1* GetSeagullFit() const;            // Getter for the most recent seagull fit
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
-  void SetMixedEventNormalization(const int normalizationType); // Setter for normalization method used for mixed event distributions
+  void SetMixedEventNormalization(const int normalizationType, const bool smoothenMixing); // Setter for normalization method used for mixed event distributions
   
   // Setters for background subtraction configuration
   void SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta); // Setter for background deltaEta region
@@ -71,8 +72,10 @@ private:
   // =========== Mixed event correction ==========
   // =============================================
   
+  TH2D *fNormalizedMixedEventHistogram; // Mixed event histogram after normalization
   double fMixedEventFitRegion;  // Region in deltaEta in which a constant fit is done to normalize mixed event distributions
   int fMixedEventNormalizationMethod; // Normalization method used for mixed event distributions
+  bool fSmoothMixing; // Smoothen the mixing distribution in phi
   
   // =============================================
   // =========== Background subtraction ==========

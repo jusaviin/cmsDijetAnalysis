@@ -330,6 +330,9 @@ void DijetHistogramManager::DoMixedEventCorrection(){
         // Do the mixed event correction for the current jet-track correlation histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iCentralityBin][iTrackPtBin]);
         
+        // Remember the normalized mixed events distribution
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEventNormalized][iCentralityBin][iTrackPtBin] = fMethods->GetNormalizedMixedEvent();
+        
         // Scale the histograms with the number of jets/dijets
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]->Scale(scalingFactor);
         
@@ -394,7 +397,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kJetShapeBinMap][iCentralityBin][iTrackPtBin] = fMethods->GetJetShapeBinMap();
         
         // Project the deltaPhi and deltaEta histograms from the processed two-dimensional histograms
-        for(int iCorrelationType = kCorrected; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+        for(int iCorrelationType = kMixedEventNormalized; iCorrelationType < knCorrelationTypes; iCorrelationType++){
           
           // DeltaPhi histogram over whole eta
           sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kWholeEta);
@@ -1068,7 +1071,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
           // Jet-track deltaPhi
           for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
            
-            if(iDeltaEta > kWholeEta && iCorrelationType < kCorrected) continue; // DeltaEta slicing not implemented for same and mixed event
+            if(iDeltaEta > kWholeEta && iCorrelationType < kMixedEventNormalized) continue; // DeltaEta slicing not implemented for same and mixed event
             sprintf(histogramNamer,"%sDeltaPhi%s%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta],iCentralityBin,iTrackPtBin);
           fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaEta]->Write(histogramNamer);
           }
@@ -1262,7 +1265,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
           // Jet-track deltaPhi
           for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
             
-            if(iDeltaEta > kWholeEta && iCorrelationType < kCorrected) continue; // DeltaEta slicing not implemented for same and mixed event
+            if(iDeltaEta > kWholeEta && iCorrelationType < kMixedEventNormalized) continue; // DeltaEta slicing not implemented for same and mixed event
             
             sprintf(histogramNamer,"%s/%sDeltaPhi%s%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack],fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta],iCentralityBin,iTrackPtBin);
             fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaEta] = (TH1D*) fInputFile->Get(histogramNamer);

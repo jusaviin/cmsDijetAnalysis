@@ -130,7 +130,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -148,6 +148,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
+  const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
@@ -195,7 +196,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Create and setup DijetMethods for mixed event correction and background subtraction
   DijetMethods *methods = new DijetMethods();
   methods->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
-  methods->SetMixedEventNormalization(mixedEventNormalizationType);
+  methods->SetMixedEventNormalization(mixedEventNormalizationType,smoothenMixing);
   methods->SetBackgroundDeltaEtaRegion(minBackgroundDeltaEta,maxBackgroundDeltaEta);
   methods->SetJetShapeBinEdges(nRBins,rBins);
   methods->SetRebinBoundaries(nRebinDeltaEta,rebinDeltaEta,nRebinDeltaPhi,rebinDeltaPhi);

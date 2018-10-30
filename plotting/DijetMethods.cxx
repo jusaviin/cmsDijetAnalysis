@@ -20,6 +20,7 @@ double seagullPoly2(double *x, double *par){
 DijetMethods::DijetMethods() :
   fMixedEventFitRegion(0.2),
   fMixedEventNormalizationMethod(kSingle),
+  fSmoothMixing(false),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
   fMinBackgroundDeltaPhi(1.4),
@@ -31,6 +32,7 @@ DijetMethods::DijetMethods() :
   fnRebinDeltaPhi(0)
 {
   // Constructor
+  fNormalizedMixedEventHistogram = NULL;
   fBackgroundDistribution = NULL;
   fBackgroundOverlap = NULL;
   fhJetShapeCounts = NULL;
@@ -51,8 +53,10 @@ DijetMethods::DijetMethods() :
  *  Copy constructor
  */
 DijetMethods::DijetMethods(const DijetMethods& in) :
+  fNormalizedMixedEventHistogram(in.fNormalizedMixedEventHistogram),
   fMixedEventFitRegion(in.fMixedEventFitRegion),
   fMixedEventNormalizationMethod(in.fMixedEventNormalizationMethod),
+  fSmoothMixing(in.fSmoothMixing),
   fBackgroundDistribution(in.fBackgroundDistribution),
   fBackgroundOverlap(in.fBackgroundOverlap),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
@@ -81,8 +85,10 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   
   if (&in==this) return *this;
   
+  fNormalizedMixedEventHistogram = in.fNormalizedMixedEventHistogram;
   fMixedEventFitRegion = in.fMixedEventFitRegion;
   fMixedEventNormalizationMethod = in.fMixedEventNormalizationMethod;
+  fSmoothMixing = in.fSmoothMixing;
   fBackgroundDistribution = in.fBackgroundDistribution;
   fBackgroundOverlap = in.fBackgroundOverlap;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
@@ -147,11 +153,40 @@ TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMix
   if(fMixedEventNormalizationMethod == kAverage) normalizationScale = averageScale;
 
   // Normalize the mixed event histogram and do the correction
-  leadingMixedEventHistogram->Scale(1.0/normalizationScale);
-  correctedHistogram->Divide(leadingMixedEventHistogram);
+  sprintf(newName,"%sNormalized",leadingMixedEventHistogram->GetName());
+  fNormalizedMixedEventHistogram = (TH2D*)leadingMixedEventHistogram->Clone(newName);
+  fNormalizedMixedEventHistogram->Scale(1.0/normalizationScale);
+  
+  // If configured to smoothen the mixing distribution, take an average in each phi slice
+  if(fSmoothMixing){
+    
+    // First project out phi and normalize the projection to one in the central region
+    TH1D *etaProjection = leadingMixedEventHistogram->ProjectionY("_eta");
+    int lowFitBin = etaProjection->FindBin(-fMixedEventFitRegion);
+    int highFitBin = etaProjection->FindBin(fMixedEventFitRegion);
+    double mean = 0;
+    for(int i = lowFitBin; i <= highFitBin; i++) mean += etaProjection->GetBinContent(i);
+    mean /= ((highFitBin-lowFitBin+1)*leadingMixedEventHistogram->GetNbinsX());
+    etaProjection->Scale(1.0/mean);
+    
+    // Then fill to the mixing histogram to each phi bin the average value over all phi
+    for(int iEta = 1; iEta <= leadingMixedEventHistogram->GetNbinsY(); iEta++){
+      for(int iPhi = 1; iPhi <= leadingMixedEventHistogram->GetNbinsX(); iPhi++){
+        if(iEta<=highFitBin && iEta>=lowFitBin){
+          fNormalizedMixedEventHistogram->SetBinContent(iPhi,iEta,1);
+          fNormalizedMixedEventHistogram->SetBinError(iPhi,iEta,0);
+        } else {
+          fNormalizedMixedEventHistogram->SetBinContent(iPhi, iEta, etaProjection->GetBinContent(iEta)/leadingMixedEventHistogram->GetNbinsX());
+          fNormalizedMixedEventHistogram->SetBinError(iPhi, iEta, etaProjection->GetBinError(iEta)/sqrt(leadingMixedEventHistogram->GetNbinsX()));
+        }
+      }
+    }
+  }
+  
+  correctedHistogram->Divide(fNormalizedMixedEventHistogram);
   
   // We need to rescale the mixed event histogram in the end, because it might later be used for another correction
-  leadingMixedEventHistogram->Scale(normalizationScale);
+  //leadingMixedEventHistogram->Scale(normalizationScale);
   
   // Return the corrected histogram
   return correctedHistogram;
@@ -786,6 +821,11 @@ TH1D* DijetMethods::GetJetShapeCounts() const{
   return fhJetShapeCounts;
 }
 
+// Getter for the most recent normalized mixed event histogram
+TH2D* DijetMethods::GetNormalizedMixedEvent() const{
+  return fNormalizedMixedEventHistogram;
+}
+
 // Getter for the most recent background distribution used to subtract the background
 TH2D* DijetMethods::GetBackground() const{
   return fBackgroundDistribution;
@@ -874,8 +914,9 @@ void DijetMethods::SetJetShapeNormalization(const int normalizationType){
 }
 
 // Setter for mixed event normalization method
-void DijetMethods::SetMixedEventNormalization(const int normalizationType){
+void DijetMethods::SetMixedEventNormalization(const int normalizationType, const bool smoothenMixing){
   fMixedEventNormalizationMethod = CheckNormalizationSanity(normalizationType,knMixedEventNormalizations);
+  fSmoothMixing = smoothenMixing;
 }
 
 // Setter for deltaPhi region considered as background in seagull correction
