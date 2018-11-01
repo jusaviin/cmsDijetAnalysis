@@ -537,6 +537,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t jetPtCorrected = 0;     // Jet pT corrected with the JFF correction
   Double_t jetPhi = 0;             // phi of the i:th jet in the event
   Double_t jetEta = 0;             // eta of the i:th jet in the event
+  Double_t highestAnyPt = 0;       // Highest pT filled for all jets
   Double_t dphi = 0;               // deltaPhi for the considered jets
   Double_t leadingJetInfo[3];      // Array for leading jet pT, phi and eta
   Double_t subleadingJetInfo[3];   // Array for subleading jet pT, phi and eta
@@ -749,6 +750,7 @@ void DijetAnalyzer::RunAnalysis(){
       secondHighestIndex = -1;
       leadingJetPt = 0;
       subleadingJetPt = 0;
+      highestAnyPt = 0;
       
       // Search for leading jet and fill histograms for all jets within the eta vut
       for(Int_t jetIndex = 0; jetIndex < fJetReader->GetNJets(); jetIndex++) {
@@ -768,23 +770,29 @@ void DijetAnalyzer::RunAnalysis(){
             
             // Fill the axes in correct order
             std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);       // Apply JFF correction for jet pT
-            fillerJet[0] = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);  // Axis 0 = any jet pT
+            jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
+            fillerJet[0] = jetPtCorrected;          // Axis 0 = any jet pT
             fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
             fillerJet[3] = centrality;              // Axis 3 = centrality
             fHistograms->fhAnyJet->Fill(fillerJet,fTotalEventWeight); // Fill the data point to histogram
+            
+            // Remember the hishest pT filled to any jet histograms
+            if(jetPtCorrected > highestAnyPt){
+              highestAnyPt = jetPtCorrected;
+            }
             
           } // Check if we want to fill any jet histograms
           
           // If we are filling the correlation histograms and jets pass the pT cuts, do inclusive jet-track correlations
           if(fFillInclusiveJetTrackCorrelation){
             
-            // Apply the JFF correction for leading and subleading jet pT
+            // Apply the JFF correction for inclusive jet pT
             std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
             jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
             
             // Check that the inclusive jet passes the pT cuts for the jet
-            if((jetPt > fLeadingJetMinPtCut) && (jetPt < fJetMaximumPtCut)){
+            if((jetPtCorrected > fLeadingJetMinPtCut) && (jetPtCorrected < fJetMaximumPtCut)){
               
               // Fill the array with jet information
               leadingJetInfo[0] = jetPtCorrected;
@@ -820,6 +828,11 @@ void DijetAnalyzer::RunAnalysis(){
           highestIndex = jetIndex;
         }
       } // End of search for leading jet loop
+      
+      // Fill a histogram for leading jet pT to get the number of leading jets
+      if(fFillJetHistograms){
+        fHistograms->fhPtLeadingJet->Fill(highestAnyPt,fTotalEventWeight);
+      }
       
       // Search for subleading jet
       for(Int_t jetIndex = 0 ; jetIndex < fJetReader->GetNJets(); jetIndex++){

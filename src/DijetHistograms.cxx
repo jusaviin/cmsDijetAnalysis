@@ -24,6 +24,7 @@ DijetHistograms::DijetHistograms() :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
+  fhPtLeadingJet(0),
   fhLeadingJet(0),
   fhSubleadingJet(0),
   fhDijet(0),
@@ -59,6 +60,7 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
+  fhPtLeadingJet(0),
   fhLeadingJet(0),
   fhSubleadingJet(0),
   fhDijet(0),
@@ -94,6 +96,7 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhCentralityDijet(in.fhCentralityDijet),
   fhPtHat(in.fhPtHat),
   fhPtHatWeighted(in.fhPtHatWeighted),
+  fhPtLeadingJet(in.fhPtLeadingJet),
   fhLeadingJet(in.fhLeadingJet),
   fhSubleadingJet(in.fhSubleadingJet),
   fhDijet(in.fhDijet),
@@ -133,6 +136,7 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhCentralityDijet = in.fhCentralityDijet;
   fhPtHat = in.fhPtHat;
   fhPtHatWeighted = in.fhPtHatWeighted;
+  fhPtLeadingJet = in.fhPtLeadingJet;
   fhLeadingJet = in.fhLeadingJet;
   fhSubleadingJet = in.fhSubleadingJet;
   fhDijet = in.fhDijet;
@@ -169,6 +173,7 @@ DijetHistograms::~DijetHistograms(){
   delete fhCentralityDijet;
   delete fhPtHat;
   delete fhPtHatWeighted;
+  delete fhPtLeadingJet;
   delete fhLeadingJet;
   delete fhSubleadingJet;
   delete fhDijet;
@@ -312,6 +317,7 @@ void DijetHistograms::CreateHistograms(){
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
+  fhPtLeadingJet = new TH1F("ptLeadingJet","ptLeadingJet",nPtBinsJet,minPtJet,maxPtJet); fhPtLeadingJet->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -589,6 +595,7 @@ void DijetHistograms::Write() const{
   fhCentralityDijet->Write();
   fhPtHat->Write();
   fhPtHatWeighted->Write();
+  fhPtLeadingJet->Write();
   fhLeadingJet->Write();
   fhSubleadingJet->Write();
   fhDijet->Write();

@@ -45,6 +45,7 @@ public:
   TH1F *fhCentralityDijet;      // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
   TH1F *fhPtHat;                // pT hat for MC events (only meaningful for MC)
   TH1F *fhPtHatWeighted;        // Weighted pT hat distribution
+  TH1F *fhPtLeadingJet;         // pT of the leading jet without dijet requirement
   THnSparseF *fhLeadingJet;     // Leading jet information [l-pT][l-phi][l-eta][Ajj][cent]
   THnSparseF *fhSubleadingJet;  // Leading jet information [s-pT][s-phi][s-eta][Ajj][cent]
   THnSparseF *fhDijet;          // Dijet information. Axes: [l-pT][s-pT][dphi][Ajj][cent]
