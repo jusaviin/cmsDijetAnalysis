@@ -315,6 +315,10 @@ private:
   // Jet shape histograms
   TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][knCentralityBins][knTrackPtBins];  // Jet shape histograms
   
+  // QA histograms for seagull correction
+  TH1D *fhSeagullDeltaEta[knJetTrackCorrelations][knCentralityBins][knTrackPtBins]; // Background eta projection for seagull fit
+  TF1 *fSeagullFit[knJetTrackCorrelations][knCentralityBins][knTrackPtBins];        // The seagull fit to background eta projection
+  
   // Private methods
   void SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices); // Read the bin indices for given bin borders
   void SetBinIndices(const int nBins, int *lowBinIndices, int *highBinIndices, const double *lowBinBorders, const double *highBinBorders, const int iAxis); // Read the bin indices for given bin borders

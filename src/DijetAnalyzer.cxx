@@ -492,6 +492,10 @@ void DijetAnalyzer::RunAnalysis(){
   //            All cuts set!
   //****************************************
   
+  //************************************************
+  //  Define variables needed in the analysis loop
+  //************************************************
+  
   // Input files and forest readers for analysis
   TFile *inputFile;
   TFile *copyInputFile; // If we read forest for tracks and jets with different readers, we need to give different file pointers to them
@@ -558,6 +562,10 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerJet[4];
   Double_t fillerDijet[5];
   
+  //************************************************
+  //      Find forest readers for data files
+  //************************************************
+  
   // Select the reader for jets based on forest and MC correlation type
   fForestType = fCard->Get("ForestType");
   fReadMode = fCard->Get("ReadMode");
@@ -608,9 +616,17 @@ void DijetAnalyzer::RunAnalysis(){
     }
   }
 
+  //************************************************
+  //       Main analysis loop over all files
+  //************************************************
+  
   // Loop over files
   Int_t nFiles = fFileNames.size();
   for(Int_t iFile = 0; iFile < nFiles; iFile++) {
+    
+    //************************************************
+    //              Find and open files
+    //************************************************
     
     // Find the filename and open the input file
     currentFile = fFileNames.at(iFile);
@@ -680,6 +696,10 @@ void DijetAnalyzer::RunAnalysis(){
     if(fDebugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
     if(fDebugLevel > 0 && mixEvents) cout << "Mixing file: " << currentMixedEventFile.Data() << endl;
     
+    //************************************************
+    //        Read forest and prepare mixing
+    //************************************************
+    
     // If file is good, read the forest from the file
     fJetReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
     if(useDifferentReaderFotJetsAndTracks) fTrackReader[DijetHistograms::kSameEvent]->ReadForestFromFile(copyInputFile); // If we mix reco and gen, the reader for jets and tracks is different
@@ -698,8 +718,16 @@ void DijetAnalyzer::RunAnalysis(){
       }
     }
 
+    //************************************************
+    //         Main event loop for each file
+    //************************************************
+    
     // Event loop
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
+      
+      //************************************************
+      //         Read basic event information
+      //************************************************
       
       // Print to console how the analysis is progressing
       if(fDebugLevel > 1 && iEvent % 1000 == 0) cout << "Analyzing event " << iEvent << endl;
@@ -737,11 +765,15 @@ void DijetAnalyzer::RunAnalysis(){
         fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight); // pT het histogram weighted with corresponding cross section and event number
       }
       
+      //  ============================================
       //  ===== Apply all the event quality cuts =====
+      //  ============================================
       
       if(!PassEventCuts(fJetReader,fFillEventInformation)) continue;
       
+      // ======================================
       // ===== Event quality cuts applied =====
+      // ======================================
       
       // Reset the variables used in dijet finding
       twoJetsFound = false;
@@ -752,18 +784,40 @@ void DijetAnalyzer::RunAnalysis(){
       subleadingJetPt = 0;
       highestAnyPt = 0;
       
+      //************************************************
+      //    Loop over all jets and find leading jet
+      //************************************************
+      
       // Search for leading jet and fill histograms for all jets within the eta vut
       for(Int_t jetIndex = 0; jetIndex < fJetReader->GetNJets(); jetIndex++) {
         jetPt = fJetReader->GetJetPt(jetIndex);
         jetPhi = fJetReader->GetJetPhi(jetIndex);
         jetEta = fJetReader->GetJetEta(jetIndex);
+        
+        //  ========================================
+        //  ======== Apply jet quality cuts ========
+        //  ========================================
+        
         if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
         if(fMinimumMaxTrackPtFraction >= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
+        //  ========================================
+        //  ======= Jet quality cuts applied =======
+        //  ========================================
+        
+        // Remember the highest jet pT
+        if(jetPt > leadingJetPt){
+          leadingJetPt = jetPt;
+          highestIndex = jetIndex;
+        }
         
         // For jets within the specified eta range, collect any jet histograms and inclusive jet-track correlations
         if(TMath::Abs(jetEta) < fJetEtaCut){
+          
+          //************************************************
+          //         Fill histograms for all jets
+          //************************************************
           
           // Only fill the any jet histogram if selected
           if(fFillJetHistograms){
@@ -783,6 +837,10 @@ void DijetAnalyzer::RunAnalysis(){
             }
             
           } // Check if we want to fill any jet histograms
+          
+          //************************************************
+          //   Do jet-track correlation for inclusive jets
+          //************************************************
           
           // If we are filling the correlation histograms and jets pass the pT cuts, do inclusive jet-track correlations
           if(fFillInclusiveJetTrackCorrelation){
@@ -818,37 +876,52 @@ void DijetAnalyzer::RunAnalysis(){
               }
               
             } // Jet passes the pT cuts
-            
           } // Check if we fill inclusive jet-track correlation histograms
-          
         } // Eta cut
         
-        if(jetPt > leadingJetPt){
-          leadingJetPt = jetPt;
-          highestIndex = jetIndex;
-        }
       } // End of search for leading jet loop
+      
+      //************************************************
+      //       Fill pT histogram for leading jets
+      //************************************************
       
       // Fill a histogram for leading jet pT to get the number of leading jets
       if(fFillJetHistograms){
         fHistograms->fhPtLeadingJet->Fill(highestAnyPt,fTotalEventWeight);
       }
       
+      //************************************************
+      //   Loop over all jets and find subleading jet
+      //************************************************
+      
       // Search for subleading jet
       for(Int_t jetIndex = 0 ; jetIndex < fJetReader->GetNJets(); jetIndex++){
         jetPt = fJetReader->GetJetPt(jetIndex);
         jetPhi = fJetReader->GetJetPhi(jetIndex);
         jetEta = fJetReader->GetJetEta(jetIndex);
+        
+        //  ========================================
+        //  ======== Apply jet quality cuts ========
+        //  ========================================
+        
         if(jetIndex == highestIndex) continue; // Do not consider leading particle
         if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
         if(fMinimumMaxTrackPtFraction >= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
         if(fMaximumMaxTrackPtFraction <= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
+        
+        //  ========================================
+        //  ======= Jet quality cuts applied =======
+        //  ========================================
         
         if(jetPt > subleadingJetPt){
           subleadingJetPt = jetPt;
           secondHighestIndex = jetIndex;
         }
       }  //End of subleading jet search
+      
+      //************************************************
+      //              Apply dijet criteria
+      //************************************************
       
       // Check if at least two jets were found
       if(highestIndex > -1 && secondHighestIndex > -1) twoJetsFound = true;
@@ -898,6 +971,10 @@ void DijetAnalyzer::RunAnalysis(){
         }
       } // End of dijet cuts
       
+      //************************************************
+      //       Fill histograms for inclusive tracks
+      //************************************************
+      
       // Inclusive track histograms
       if(fFillTrackHistograms && !onlyMix){
         
@@ -922,15 +999,20 @@ void DijetAnalyzer::RunAnalysis(){
         }
       }
       
+      //************************************************
+      //       Fill histograms for dijet events
+      //************************************************
       
       // If a dijet is found, fill some information to fHistograms
       if(dijetFound){
         
-        // Only fill the dijet histograms if selected
+        // Dijet event information
         if(fFillEventInformation){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
           fHistograms->fhCentralityDijet->Fill(centrality,fCentralityWeight);
         }
+        
+        // Single jet and dijet histograms in dijet events
         if(fFillJetHistograms){
           // Calculate the asymmetry
           dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
@@ -994,6 +1076,10 @@ void DijetAnalyzer::RunAnalysis(){
           
       } // Dijet in event
     } // Event loop
+    
+    //************************************************
+    //      Cleanup at the end of the file loop
+    //************************************************
     
     // Close the input files after the event has been read
     inputFile->Close();

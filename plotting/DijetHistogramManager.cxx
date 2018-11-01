@@ -130,12 +130,17 @@ DijetHistogramManager::DijetHistogramManager() :
       } // Jet-track correlation type loop
     } // Event correlation type loop
     
-    // Jet shape histograms
+    // Jet shape and seagull correction histograms
     for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
       for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
         for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
           fhJetShape[iJetShape][iJetTrack][iCentrality][iTrackPt] = NULL;
         } // Jet shape type loop
+        
+        // Seagull background eta histogram and fit
+        fhSeagullDeltaEta[iJetTrack][iCentrality][iTrackPt] = NULL;
+        fSeagullFit[iJetTrack][iCentrality][iTrackPt] = NULL;
+        
       } // Track pT loop
     } // Jet-track correlation type loop
   } // Centrality loop
@@ -273,12 +278,17 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
       } // Jet-track correlation type loop
     } // Event correlation type loop
     
-    // Jet shape histograms
+    // Jet shape and seagull correction histograms
     for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
       for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
         for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
           fhJetShape[iJetShape][iJetTrack][iCentrality][iTrackPt] = in.fhJetShape[iJetShape][iJetTrack][iCentrality][iTrackPt];
         } // Jet shape type loop
+        
+        // Seagull background eta histogram and fit
+        fhSeagullDeltaEta[iJetTrack][iCentrality][iTrackPt] = in.fhSeagullDeltaEta[iJetTrack][iCentrality][iTrackPt];
+        fSeagullFit[iJetTrack][iCentrality][iTrackPt] = in.fSeagullFit[iJetTrack][iCentrality][iTrackPt];
+        
       } // Track pT loop
     } // Jet-track correlation type loop
   } // Centrality loop
@@ -339,6 +349,10 @@ void DijetHistogramManager::DoMixedEventCorrection(){
         // Apply the seagull correction after the mixed event correction
         if(fApplySeagullCorrection){
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin]);
+          
+          // Get the used background eta histogram and fitted function for QA purposes
+          fhSeagullDeltaEta[iJetTrack][iCentralityBin][iTrackPtBin] = (TH1D*)fMethods->GetBackgroundEta()->Clone();
+          fSeagullFit[iJetTrack][iCentralityBin][iTrackPtBin] = (TF1*)fMethods->GetSeagullFit()->Clone();
         }
 
       } // Track pT loop
@@ -590,13 +604,6 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
 
 /*
  * Loader for dijet histograms
- *
- *  Arguments:
- *    TH1D *hDeltaPhi[knCentralityBins] = Array of dijet deltaPhi histogams
- *    TH1D *hAsymmetry[knCentralityBins] = Array of dijet asymmetry histograms
- *    TH2D *hLeadingSubleadingPt[knCentralityBins] = Array of leading jet pT vs. subleading jet pT histograms
- *    const char* name = Name of the histogram in the input file
- *    const int iCentralityAxis = Index of centrality axis in THnSparse
  *
  * THnSparse for dijets:
  *
@@ -1133,6 +1140,63 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
   // Delete the outputFile object
   delete outputFile;
   
+  // Write the QA histograms to a separate QA file
+  TString qaFileName = fileName;
+  qaFileName.ReplaceAll(".root","_QA.root");
+  TFile *qaFile = new TFile(qaFileName,fileOption);
+  
+  if(fApplySeagullCorrection){
+    
+    // Loop over jet-track correlation categories
+    for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+      if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+      
+      // Create a directory for the histograms if it does not already exist
+      sprintf(histogramNamer,"seagullDeltaEta_%s",fJetTrackHistogramNames[iJetTrack]);
+      if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+      gDirectory->cd(histogramNamer);
+      
+      // Loop over centrality
+      for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+        
+        // Loop over track pT bins
+        for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
+          sprintf(histogramNamer,"seagullDeltaEta_%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],iCentrality,iTrackPt);
+          fhSeagullDeltaEta[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+          
+        } // Track pT loop
+      } // Centrality loop
+      
+      // Return back to main directory
+      gDirectory->cd("../");
+      
+      // Create a directory for the histograms if it does not already exist
+      sprintf(histogramNamer,"seagullFit_%s",fJetTrackHistogramNames[iJetTrack]);
+      if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+      gDirectory->cd(histogramNamer);
+      
+      // Loop over centrality
+      for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+        
+        // Loop over track pT bins
+        for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
+          sprintf(histogramNamer,"seagullFit_%s_C%dT%d",fJetTrackHistogramNames[iJetTrack],iCentrality,iTrackPt);
+          fSeagullFit[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+          
+        } // Track pT loop
+      } // Centrality loop
+      
+      // Return back to main directory
+      gDirectory->cd("../");
+      
+    } // Jet-track correlation category loop
+  } // Seagull correction
+  
+  // Close the QA file after everything is written
+  qaFile->Close();
+  
+  // Delete the qaFile object
+  delete qaFile;
 }
 
 /*
