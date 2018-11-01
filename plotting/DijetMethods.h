@@ -46,6 +46,10 @@ public:
   TH2D* GetJetShapeBinMap() const;       // Getter for the map between R bins and deltaEta-deltaPhi bins
   TH1D* GetBackgroundEta() const;        // Getter for deltaEta distribution on background deltaPhi region used for seagull fit
   TF1* GetSeagullFit() const;            // Getter for the most recent seagull fit
+  TH1D* GetSpilloverDeltaEta() const;    // Getter for projected eta distribution for spillover calculation
+  TH1D* GetSpilloverDeltaPhi() const;    // Getter for projected phi distribution for spillover calculation
+  TF1* GetSpilloverDeltaEtaFit() const;  // Getter for fit to projected eta distribution for spillover calculation
+  TF1* GetSpilloverDeltaPhiFit() const;  // Getter for fit to projected phi distribution for spillover calculation
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
@@ -100,6 +104,14 @@ private:
   // ============ DeltaPhi projections ===========
   // =============================================
   double fMaxSignalDeltaEta;      // Maximum deltaEta value accepted for the signal region
+  
+  // =============================================
+  // ============ Spillover correction ===========
+  // =============================================
+  TH1D *fSpilloverDeltaEta;       // DeltaEta projection for spillover calculation
+  TH1D *fSpilloverDeltaPhi;       // DeltaPhi projection for spillover calculation
+  TF1 *fSpilloverFitDeltaEta;     // Fit to deltaEta projection during spillover calculation
+  TF1 *fSpilloverFitDeltaPhi;     // Fir to deltaPhi projection during spillover calculation
   
   // =============================================
   // =========== Jet shape calculation ===========

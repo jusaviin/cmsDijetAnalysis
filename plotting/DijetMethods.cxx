@@ -35,6 +35,10 @@ DijetMethods::DijetMethods() :
   fNormalizedMixedEventHistogram = NULL;
   fBackgroundDistribution = NULL;
   fBackgroundOverlap = NULL;
+  fSpilloverDeltaEta = NULL;
+  fSpilloverDeltaPhi = NULL;
+  fSpilloverFitDeltaEta = NULL;
+  fSpilloverFitDeltaPhi = NULL;
   fhJetShapeCounts = NULL;
   fhJetShapeBinMap = NULL;
   fBackgroundEtaProjection = NULL;
@@ -68,6 +72,10 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fSeagullRebin(in.fSeagullRebin),
   fMaxSignalDeltaEta(in.fMaxSignalDeltaEta),
   fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
+  fSpilloverDeltaEta(in.fSpilloverDeltaEta),
+  fSpilloverDeltaPhi(in.fSpilloverDeltaPhi),
+  fSpilloverFitDeltaEta(in.fSpilloverFitDeltaEta),
+  fSpilloverFitDeltaPhi(in.fSpilloverFitDeltaPhi),
   fhJetShapeCounts(in.fhJetShapeCounts),
   fhJetShapeBinMap(in.fhJetShapeBinMap)
 {
@@ -100,6 +108,10 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fSeagullRebin = in.fSeagullRebin;
   fMaxSignalDeltaEta = in.fMaxSignalDeltaEta;
   fJetShapeNormalizationMethod = in.fJetShapeNormalizationMethod;
+  fSpilloverDeltaEta = in.fSpilloverDeltaEta;
+  fSpilloverDeltaPhi = in.fSpilloverDeltaPhi;
+  fSpilloverFitDeltaEta = in.fSpilloverFitDeltaEta;
+  fSpilloverFitDeltaPhi = in.fSpilloverFitDeltaPhi;
   fhJetShapeCounts = in.fhJetShapeCounts;
   fhJetShapeBinMap = in.fhJetShapeBinMap;
   
@@ -421,18 +433,18 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
   double spilloverPhiRange = 1.5;
   
   // First get the projections for the deltaEta and deltaPhi distributions
-  TH1D *deltaEtaProjection = ProjectRegionDeltaEta(onlyHydjetHistogram,-spilloverPhiRange,spilloverPhiRange,"spillover");
-  TH1D *deltaPhiProjection = ProjectRegionDeltaPhi(onlyHydjetHistogram,0,spilloverEtaRange,"spillover");
+  fSpilloverDeltaEta = ProjectRegionDeltaEta(onlyHydjetHistogram,-spilloverPhiRange,spilloverPhiRange,"spillover");
+  fSpilloverDeltaPhi = ProjectRegionDeltaPhi(onlyHydjetHistogram,0,spilloverEtaRange,"spillover");
   
   // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
-  TF1 *gaussForEta = FitGauss(deltaEtaProjection,spilloverEtaRange);
-  TF1 *gaussForPhi = FitGauss(deltaPhiProjection,spilloverPhiRange);
+  fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta,spilloverEtaRange);
+  fSpilloverFitDeltaPhi = FitGauss(fSpilloverDeltaPhi,spilloverPhiRange);
   
   // Combine the one-dimensional fits to a two-dimensional Gaussian distribution
   TF2 *gauss2D = new TF2("gauss2D", "[0]/(2*TMath::Pi()*[1]*[2])*TMath::Exp(-0.5*TMath::Power(x/[1],2))*TMath::Exp(-0.5*TMath::Power(y/[2],2))",-TMath::Pi()/2,3*TMath::Pi()/2,-5,5);
-  gauss2D->SetParameter(0,gaussForEta->GetParameter(0));
-  gauss2D->SetParameter(1,gaussForPhi->GetParameter(1));
-  gauss2D->SetParameter(2,gaussForEta->GetParameter(1));
+  gauss2D->SetParameter(0,fSpilloverFitDeltaEta->GetParameter(0));
+  gauss2D->SetParameter(1,fSpilloverFitDeltaPhi->GetParameter(1));
+  gauss2D->SetParameter(2,fSpilloverFitDeltaEta->GetParameter(1));
   
   // Create a new two-dimensional histogram from the two-dimensional Gaussian function
   char histogramName[150];
@@ -447,7 +459,7 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
     }
   }
   spilloverCorrection->Eval(gauss2D,"A");
-  
+    
   // Return the spillover correction
   return spilloverCorrection;
 }
@@ -844,6 +856,26 @@ TH1D* DijetMethods::GetBackgroundEta() const{
 // Getter for the most recent seagull fit
 TF1* DijetMethods::GetSeagullFit() const{
   return fSeagullFit;
+}
+
+// Getter for the most recent spillover deltaEta distribution
+TH1D* DijetMethods::GetSpilloverDeltaEta() const{
+  return fSpilloverDeltaEta;
+}
+
+// Getter for the most recent spillover deltaPhi distribution
+TH1D* DijetMethods::GetSpilloverDeltaPhi() const{
+  return fSpilloverDeltaPhi;
+}
+
+// Getter for the most recent fit to spillover deltaEta distribution
+TF1* DijetMethods::GetSpilloverDeltaEtaFit() const{
+  return fSpilloverFitDeltaEta;
+}
+
+// Getter for the most recent fit to spillover deltaPhi distribution
+TF1* DijetMethods::GetSpilloverDeltaPhiFit() const{
+  return fSpilloverFitDeltaPhi;
 }
 
 // Setter for deltaEta range used for normalizing the mixed event
