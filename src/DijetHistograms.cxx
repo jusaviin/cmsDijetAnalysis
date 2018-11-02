@@ -24,9 +24,9 @@ DijetHistograms::DijetHistograms() :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
-  fhPtLeadingJet(0),
   fhLeadingJet(0),
-  fhSubleadingJet(0),
+  fhLeadingDijet(0),
+  fhSubleadingDijet(0),
   fhDijet(0),
   fhAnyJet(0),
   fhTrack(0),
@@ -60,9 +60,9 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
-  fhPtLeadingJet(0),
   fhLeadingJet(0),
-  fhSubleadingJet(0),
+  fhLeadingDijet(0),
+  fhSubleadingDijet(0),
   fhDijet(0),
   fhAnyJet(0),
   fhTrack(0),
@@ -96,9 +96,9 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhCentralityDijet(in.fhCentralityDijet),
   fhPtHat(in.fhPtHat),
   fhPtHatWeighted(in.fhPtHatWeighted),
-  fhPtLeadingJet(in.fhPtLeadingJet),
   fhLeadingJet(in.fhLeadingJet),
-  fhSubleadingJet(in.fhSubleadingJet),
+  fhLeadingDijet(in.fhLeadingDijet),
+  fhSubleadingDijet(in.fhSubleadingDijet),
   fhDijet(in.fhDijet),
   fhAnyJet(in.fhAnyJet),
   fhTrack(in.fhTrack),
@@ -136,9 +136,9 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhCentralityDijet = in.fhCentralityDijet;
   fhPtHat = in.fhPtHat;
   fhPtHatWeighted = in.fhPtHatWeighted;
-  fhPtLeadingJet = in.fhPtLeadingJet;
   fhLeadingJet = in.fhLeadingJet;
-  fhSubleadingJet = in.fhSubleadingJet;
+  fhLeadingDijet = in.fhLeadingDijet;
+  fhSubleadingDijet = in.fhSubleadingDijet;
   fhDijet = in.fhDijet;
   fhAnyJet = in.fhAnyJet;
   fhTrack = in.fhTrack;
@@ -173,9 +173,9 @@ DijetHistograms::~DijetHistograms(){
   delete fhCentralityDijet;
   delete fhPtHat;
   delete fhPtHatWeighted;
-  delete fhPtLeadingJet;
   delete fhLeadingJet;
-  delete fhSubleadingJet;
+  delete fhLeadingDijet;
+  delete fhSubleadingDijet;
   delete fhDijet;
   delete fhAnyJet;
   delete fhTrack;
@@ -317,7 +317,6 @@ void DijetHistograms::CreateHistograms(){
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
-  fhPtLeadingJet = new TH1F("ptLeadingJet","ptLeadingJet",nPtBinsJet,minPtJet,maxPtJet); fhPtLeadingJet->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -361,16 +360,16 @@ void DijetHistograms::CreateHistograms(){
   highBinBorder5D[4] = maxCentrality; // high bin border for centrality
   
   // Create the histograms for leading and subleading jets using the above binning information
-  fhLeadingJet = new THnSparseF("leadingJet","leadingJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhLeadingJet->Sumw2();
-  fhSubleadingJet = new THnSparseF("subleadingJet","subleadingJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhSubleadingJet->Sumw2();
+  fhLeadingDijet = new THnSparseF("leadingJet","leadingJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhLeadingDijet->Sumw2();
+  fhSubleadingDijet = new THnSparseF("subleadingJet","subleadingJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhSubleadingDijet->Sumw2();
   
   // Set custom dijet asymmetry bins for histograms
-  fhLeadingJet->SetBinEdges(3,wideAsymmetryBins);
-  fhSubleadingJet->SetBinEdges(3,wideAsymmetryBins);
+  fhLeadingDijet->SetBinEdges(3,wideAsymmetryBins);
+  fhSubleadingDijet->SetBinEdges(3,wideAsymmetryBins);
   
   // Set custom centrality bins for histograms
-  fhLeadingJet->SetBinEdges(4,wideCentralityBins);
-  fhSubleadingJet->SetBinEdges(4,wideCentralityBins);
+  fhLeadingDijet->SetBinEdges(4,wideCentralityBins);
+  fhSubleadingDijet->SetBinEdges(4,wideCentralityBins);
 
   // ========= THnSparse for dijets =========
   
@@ -429,9 +428,11 @@ void DijetHistograms::CreateHistograms(){
   
   // Create the histogram for all jets using the above binning information
   fhAnyJet = new THnSparseF("anyJet","anyJet",4,nBins4D,lowBinBorder4D,highBinBorder4D); fhAnyJet->Sumw2();
-  
+  fhLeadingJet = new THnSparseF("anyLeadingJet","anyLeadingJet",4,nBins4D,lowBinBorder4D,highBinBorder4D); fhLeadingJet->Sumw2();
+
   // Set custom centrality bins for histograms
   fhAnyJet->SetBinEdges(3,wideCentralityBins);
+  fhLeadingJet->SetBinEdges(3,wideCentralityBins);
   
   // ======== THnSparses for tracks and uncorrected tracks ========
   
@@ -595,9 +596,9 @@ void DijetHistograms::Write() const{
   fhCentralityDijet->Write();
   fhPtHat->Write();
   fhPtHatWeighted->Write();
-  fhPtLeadingJet->Write();
   fhLeadingJet->Write();
-  fhSubleadingJet->Write();
+  fhLeadingDijet->Write();
+  fhSubleadingDijet->Write();
   fhDijet->Write();
   fhAnyJet->Write();
   fhTrack->Write();

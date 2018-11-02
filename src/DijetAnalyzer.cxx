@@ -542,6 +542,8 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t jetPhi = 0;             // phi of the i:th jet in the event
   Double_t jetEta = 0;             // eta of the i:th jet in the event
   Double_t highestAnyPt = 0;       // Highest pT filled for all jets
+  Double_t highestPhi = 0;         // phi of any leading jet
+  Double_t highestEta = 0;         // eta of any leading jet
   Double_t dphi = 0;               // deltaPhi for the considered jets
   Double_t leadingJetInfo[3];      // Array for leading jet pT, phi and eta
   Double_t subleadingJetInfo[3];   // Array for subleading jet pT, phi and eta
@@ -783,6 +785,8 @@ void DijetAnalyzer::RunAnalysis(){
       leadingJetPt = 0;
       subleadingJetPt = 0;
       highestAnyPt = 0;
+      highestPhi = 0;
+      highestEta = 0;
       
       //************************************************
       //    Loop over all jets and find leading jet
@@ -834,6 +838,8 @@ void DijetAnalyzer::RunAnalysis(){
             // Remember the hishest pT filled to any jet histograms
             if(jetPtCorrected > highestAnyPt){
               highestAnyPt = jetPtCorrected;
+              highestPhi = jetPhi;
+              highestEta = jetEta;
             }
             
           } // Check if we want to fill any jet histograms
@@ -882,12 +888,16 @@ void DijetAnalyzer::RunAnalysis(){
       } // End of search for leading jet loop
       
       //************************************************
-      //       Fill pT histogram for leading jets
+      //     Fill histograms for all leading jets
       //************************************************
       
-      // Fill a histogram for leading jet pT to get the number of leading jets
-      if(fFillJetHistograms){
-        fHistograms->fhPtLeadingJet->Fill(highestAnyPt,fTotalEventWeight);
+      // Fill histograms for all leading jets
+      if(fFillJetHistograms && highestAnyPt > 0){
+        fillerJet[0] = highestAnyPt;          // Axis 0 = any leading jet pT
+        fillerJet[1] = highestPhi;            // Axis 1 = any leading jet phi
+        fillerJet[2] = highestEta;            // Axis 2 = any leading jet eta
+        fillerJet[3] = centrality;            // Axis 3 = centrality
+        fHistograms->fhLeadingJet->Fill(fillerJet,fTotalEventWeight);
       }
       
       //************************************************
@@ -1023,7 +1033,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[2] = leadingJetEta;                  // Axis 2: Leading jet eta
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fHistograms->fhLeadingJet->Fill(fillerDijet,fTotalEventWeight);    // Fill the data point to leading jet histogram
+          fHistograms->fhLeadingDijet->Fill(fillerDijet,fTotalEventWeight);    // Fill the data point to leading jet histogram
           
           // Fill the subleading jet histogram
           fillerDijet[0] = subleadingJetPt;                // Axis 0: Subleading jet pT
@@ -1031,7 +1041,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[2] = subleadingJetEta;               // Axis 2: Subleading jet eta
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fHistograms->fhSubleadingJet->Fill(fillerDijet,fTotalEventWeight); // Fill the data point to subleading jet histogram
+          fHistograms->fhSubleadingDijet->Fill(fillerDijet,fTotalEventWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT

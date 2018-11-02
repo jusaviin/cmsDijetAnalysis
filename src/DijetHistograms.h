@@ -35,23 +35,23 @@ public:
   
   // Histograms defined public to allow easier access to them. Should not be abused
   // Notation in comments: l = leading jet, s = subleading jet, inc - inclusive jet, uc = uncorrected, ptw = pT weighted
-  TH1F *fhVertexZ;              // Vertex z-position
-  TH1F *fhVertexZWeighted;      // Weighted vertex z-position (only meaningfull for MC)
-  TH1F *fhEvents;               // Number of events. For binning see enumEventTypes.
-  TH1F *fhTrackCuts;            // Number of tracks. For binning see enumTrackCuts.
-  TH1F *fhTrackCutsInclusive;   // Number of tracks. For binning see enumTrackCuts.
-  TH1F *fhCentrality;           // Centrality information. -0.5 for pp or PYTHIA.
-  TH1F *fhCentralityWeighted;   // Weighted centrality distribution (only meaningful for MC)
-  TH1F *fhCentralityDijet;      // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
-  TH1F *fhPtHat;                // pT hat for MC events (only meaningful for MC)
-  TH1F *fhPtHatWeighted;        // Weighted pT hat distribution
-  TH1F *fhPtLeadingJet;         // pT of the leading jet without dijet requirement
-  THnSparseF *fhLeadingJet;     // Leading jet information [l-pT][l-phi][l-eta][Ajj][cent]
-  THnSparseF *fhSubleadingJet;  // Leading jet information [s-pT][s-phi][s-eta][Ajj][cent]
-  THnSparseF *fhDijet;          // Dijet information. Axes: [l-pT][s-pT][dphi][Ajj][cent]
-  THnSparseF *fhAnyJet;         // Any jet information. Axes: [jet pT][jet phi][jet eta][cent]
-  THnSparseF *fhTrack;          // Track histogram. Axes: [pT][phi][eta][cent][same/mixed]
-  THnSparseF *fhTrackInclusive; // Track histogram. Axes: [pT][phi][eta][cent][same/mixed]
+  TH1F *fhVertexZ;               // Vertex z-position
+  TH1F *fhVertexZWeighted;       // Weighted vertex z-position (only meaningfull for MC)
+  TH1F *fhEvents;                // Number of events. For binning see enumEventTypes.
+  TH1F *fhTrackCuts;             // Number of tracks. For binning see enumTrackCuts.
+  TH1F *fhTrackCutsInclusive;    // Number of tracks. For binning see enumTrackCuts.
+  TH1F *fhCentrality;            // Centrality information. -0.5 for pp or PYTHIA.
+  TH1F *fhCentralityWeighted;    // Weighted centrality distribution (only meaningful for MC)
+  TH1F *fhCentralityDijet;       // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
+  TH1F *fhPtHat;                 // pT hat for MC events (only meaningful for MC)
+  TH1F *fhPtHatWeighted;         // Weighted pT hat distribution
+  THnSparseF *fhLeadingJet;      // Leading jet without dijet requirement [l-pT][l-phi][l-eta][Ajj][cent]
+  THnSparseF *fhLeadingDijet;    // Leading jet in dijet events [l-pT][l-phi][l-eta][Ajj][cent]
+  THnSparseF *fhSubleadingDijet; // Subleading jet in dijet events [s-pT][s-phi][s-eta][Ajj][cent]
+  THnSparseF *fhDijet;           // Dijet information. Axes: [l-pT][s-pT][dphi][Ajj][cent]
+  THnSparseF *fhAnyJet;          // Any jet information. Axes: [jet pT][jet phi][jet eta][cent]
+  THnSparseF *fhTrack;           // Track histogram. Axes: [pT][phi][eta][cent][same/mixed]
+  THnSparseF *fhTrackInclusive;  // Track histogram. Axes: [pT][phi][eta][cent][same/mixed]
   THnSparseF *fhTrackLeadingJet;               // Track correlation with leading jet [pT track][l-dphi][l-deta][Ajj][cent][same/mixed]
   THnSparseF *fhTrackSubleadingJet;            // Track correlation with subleading jet [pT track][s-dphi][s-deta][Ajj][cent][same/mixed]
   THnSparseF *fhTrackUncorrected;              // Track histogram for uncorrected tracks. Axes: [uc pT][uc phi][uc eta][cent][same/mixed]
