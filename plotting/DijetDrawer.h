@@ -34,7 +34,8 @@ public:
   void SetDrawLeadingJetHistograms(const bool drawOrNot);    // Setter for drawing leading jet histograms
   void SetDrawSubleadingJetHistograms(const bool drawOrNot); // Setter for drawing subleading jet histograms
   void SetDrawAnyJetHistograms(const bool drawOrNot);        // Setter for drawing all jet histograms
-  void SetDrawAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny);   // Setter for drawing jet histograms
+  void SetDrawAnyLeadingJetHistograms(const bool drawOrNot); // Setter for drawing all leading jet histograms
+  void SetDrawAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny, const bool drawAnyLeading);   // Setter for drawing jet histograms
   
   // Setters for tracks
   void SetDrawTracks(const bool drawOrNot);            // Setter for drawing tracks

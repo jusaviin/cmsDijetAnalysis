@@ -18,6 +18,7 @@ void compareDijetHistograms(){
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
+  bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
@@ -169,7 +170,7 @@ void compareDijetHistograms(){
     // Set which histograms to draw and the drawing style to use
     histograms[iDataset]->SetLoadEventInformation(drawEventInformation);
     histograms[iDataset]->SetLoadDijetHistograms(drawDijetHistograms);
-    histograms[iDataset]->SetLoadAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);
+    histograms[iDataset]->SetLoadAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms,drawAnyLeadingJetHistograms);
     histograms[iDataset]->SetLoadAllTracks(drawTracks,drawUncorrectedTracks);
     histograms[iDataset]->SetLoadAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
     histograms[iDataset]->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
@@ -204,7 +205,7 @@ void compareDijetHistograms(){
     drawer->AddLegendComment(legendComment[i]);
   }
   
-  drawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);
+  drawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms,drawAnyLeadingJetHistograms);
   drawer->SetDrawAllTracks(drawTracks,drawUncorrectedTracks);
   drawer->SetDrawAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
   drawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);

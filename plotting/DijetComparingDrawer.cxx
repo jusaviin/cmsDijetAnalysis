@@ -1115,11 +1115,17 @@ void DijetComparingDrawer::SetDrawAnyJetHistograms(const bool drawOrNot){
   fDrawSingleJets[DijetHistogramManager::kAnyJet] = drawOrNot;
 }
 
+// Setter for drawing all leading jet histograms
+void DijetComparingDrawer::SetDrawAnyLeadingJetHistograms(const bool drawOrNot){
+  fDrawSingleJets[DijetHistogramManager::kAnyLeadingJet] = drawOrNot;
+}
+
 // Setter for drawing jet histograms
-void DijetComparingDrawer::SetDrawAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny){
+void DijetComparingDrawer::SetDrawAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny, const bool drawAnyLeading){
   SetDrawLeadingJetHistograms(drawLeading);
   SetDrawSubleadingJetHistograms(drawSubleading);
   SetDrawAnyJetHistograms(drawAny);
+  SetDrawAnyLeadingJetHistograms(drawAnyLeading);
 }
 
 // Setter for drawing tracks

@@ -35,7 +35,7 @@ public:
   enum enumTrackHistograms{kTrack, kUncorrectedTrack, kInclusiveTrack, kUncorrectedInclusiveTrack, knTrackCategories};
   
   // Indices for different single jet histogram categories
-  enum enumSingleJet{kLeadingJet, kSubleadingJet, kAnyJet, knSingleJetCategories};
+  enum enumSingleJet{kLeadingJet, kSubleadingJet, kAnyJet, kAnyLeadingJet, knSingleJetCategories};
   
   // Indices for different deltaPhi bins
   enum enumDeltaPhiBins{kWholePhi, kNearSide, kAwaySide, kBetweenPeaks, knDeltaPhiBins};
@@ -65,8 +65,8 @@ private:
   const char* fTrackAxisNames[knTrackCategories] = {"Track","Uncorrected track", "Inclusive track", "UC Inclusive Track"}; // Names attached to the figure axes
   
   // Naming for single jet histograms
-  const char* fSingleJetHistogramName[knSingleJetCategories] = {"leadingJet","subleadingJet","anyJet"}; // Names that different single jet histograms have in the input file
-  const char* fSingleJetAxisNames[knSingleJetCategories] = {"Leading jet","Subleading jet","Any jet"}; // Names attached to the figure axes
+  const char* fSingleJetHistogramName[knSingleJetCategories] = {"leadingJet","subleadingJet","anyJet","anyLeadingJet"}; // Names that different single jet histograms have in the input file
+  const char* fSingleJetAxisNames[knSingleJetCategories] = {"Leading jet","Subleading jet","Any jet","Leading jet"}; // Names attached to the figure axes
   
   // Naming for jet shape histograms
   const char* fJetShapeHistogramName[knJetShapeTypes] = {"JetShape","JetShapeCounts"};
@@ -103,7 +103,8 @@ public:
   void SetLoadLeadingJetHistograms(const bool loadOrNot);    // Setter for loading leading jet histograms
   void SetLoadSubleadingJetHistograms(const bool loadOrNot); // Setter for loading subleading jet histograms
   void SetLoadAnyJetHistograms(const bool loadOrNot);        // Setter for loading all jet histograms
-  void SetLoadAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny);   // Setter for loading jet histograms
+  void SetLoadAnyLeadingJetHistograms(const bool loadOrNot); // Setter for loading all leading jet histograms
+  void SetLoadAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny, const bool drawAnyLeading);   // Setter for loading jet histograms
   
   // Setters for tracks
   void SetLoadTracks(const bool loadOrNot);            // Setter for loading tracks
@@ -219,6 +220,7 @@ public:
   int GetNEvents() const;                      // Getter for the number of events passing the cuts
   int GetNDijets() const;                      // Getter for the number of dijets
   double GetPtIntegral(int iCentrality) const; // Getter for integral over leading jet pT in a given centrality bin
+  double GetAnyLeadingJetPtIntegral(int iCentrality) const; // Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
   double GetInclusiveJetPtIntegral(int iCentrality) const; // Getter for integral over inclusive jet pT above 120 GeV in a given centrality bin
   
 private:

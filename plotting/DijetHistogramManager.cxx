@@ -575,7 +575,7 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
   int lowerCentralityBin = 0;
   int higherCentralityBin = 0;
   
-  int centralityIndex[] = {4,4,3}; // TODO: Change the main analysis file such that anyJet has dummy axis for asymmetry to simplify loading here
+  int centralityIndex[] = {4,4,3,3}; // For jet histograms without dijet requirement, there are only three axes.
   
   for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
     
@@ -814,6 +814,12 @@ TH2D* DijetHistogramManager::FindHistogram2D(TFile *inputFile, const char *name,
   // Read the histogram with the given name from the file
   THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
   
+  // If cannot find histogram, inform that it could not be found and return null
+  if(histogramArray == nullptr){
+    cout << "Could not find " << name << ". Skipping loading this histogram." << endl;
+    return NULL;
+  }
+  
   // Apply the restrictions in the set of axes
   for(int i = 0; i < nAxes; i++) histogramArray->GetAxis(axisNumber[i])->SetRange(lowBinIndex[i],highBinIndex[i]);
   
@@ -875,6 +881,12 @@ TH1D* DijetHistogramManager::FindHistogram(TFile *inputFile, const char *name, i
   
   // Read the histogram with the given name from the file
   THnSparseD *histogramArray = (THnSparseD*) inputFile->Get(name);
+  
+  // If cannot find histogram, inform that it could not be found and return null
+  if(histogramArray == nullptr){
+    cout << "Could not find " << name << ". Skipping loading this histogram." << endl;
+    return NULL;
+  }
   
   // Apply the restrictions in the set of axes
   for(int i = 0; i < nAxes; i++) histogramArray->GetAxis(axisNumber[i])->SetRange(lowBinIndex[i],highBinIndex[i]);
@@ -950,7 +962,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
  
   // Write the single jet histograms to the output file
   for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
-    if(!fLoadSingleJets[iJetCategory]) continue;  // Only write the loaded the selected histograms
+    if(!fLoadSingleJets[iJetCategory]) continue;  // Only write the selected histograms
     
     // Create a directory for the histograms if it does not already exist
     if(!gDirectory->GetDirectory(fSingleJetHistogramName[iJetCategory])) gDirectory->mkdir(fSingleJetHistogramName[iJetCategory]);
@@ -958,6 +970,12 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
+      // Check that the histograms are actually there before trying to save them.
+      if(fhJetPt[iJetCategory][iCentralityBin] == NULL) {
+        cout << "Could not find histograms of type " << fSingleJetHistogramName[iJetCategory] << " to write. Will skip writing these." << endl;
+        continue;
+      }
+        
       // Single jet pT
       sprintf(histogramNamer,"%sPt_C%d",fSingleJetHistogramName[iJetCategory],iCentralityBin);
       fhJetPt[iJetCategory][iCentralityBin]->Write(histogramNamer);
@@ -1349,7 +1367,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     } // Correlation type loop
   } // Jet-track correlation category loop
   
-  // Write the jet shape histograms to the output file
+  // Loas the jet shape histograms from the input file
   for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
     
     // Loop over jet-track correlation categories
@@ -1471,11 +1489,17 @@ void DijetHistogramManager::SetLoadAnyJetHistograms(const bool loadOrNot){
   fLoadSingleJets[kAnyJet] = loadOrNot;
 }
 
+// Setter for loading all leading jet histograms
+void DijetHistogramManager::SetLoadAnyLeadingJetHistograms(const bool loadOrNot){
+  fLoadSingleJets[kAnyLeadingJet] = loadOrNot;
+}
+
 // Setter for loading jet histograms
-void DijetHistogramManager::SetLoadAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny){
+void DijetHistogramManager::SetLoadAllJets(const bool drawLeading, const bool drawSubleading, const bool drawAny, const bool drawAnyLeading){
   SetLoadLeadingJetHistograms(drawLeading);
   SetLoadSubleadingJetHistograms(drawSubleading);
   SetLoadAnyJetHistograms(drawAny);
+  SetLoadAnyLeadingJetHistograms(drawAnyLeading);
 }
 
 // Setter for loading tracks
@@ -1961,6 +1985,11 @@ int DijetHistogramManager::GetNDijets() const{
 // Getter for integral over leading jet pT
 double DijetHistogramManager::GetPtIntegral(int iCentrality) const{
   return fhJetPt[kLeadingJet][iCentrality]->Integral("width");
+}
+
+// Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
+double DijetHistogramManager::GetAnyLeadingJetPtIntegral(int iCentrality) const{
+  return fhJetPt[kAnyLeadingJet][iCentrality]->Integral(fhJetPt[kAnyLeadingJet][iCentrality]->FindBin(120),fhJetPt[kAnyLeadingJet][iCentrality]->GetNbinsX(),"width");
 }
 
 // Getter for integral over inclusive jet pT over 120 GeV

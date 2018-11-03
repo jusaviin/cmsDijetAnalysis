@@ -24,6 +24,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // ========================= Configuration ==========================
   // ==================================================================
   
+  // Flag if you only want to print out numbers of jets
+  bool printJetNumbers = true;
+  
   // Automatically choose execution mode based on input parameters
   int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
   if(inputFileName.Contains("processed")) executionMode = 2;
@@ -42,18 +45,19 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
+  bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   bool drawTrackInclusiveJetCorrelations = false;
-  bool drawPtWeightedTrackInclusiveJetCorrelations = true;
+  bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
   if(histogramSelection > 0){
     drawEventInformation = (histogramSelection == 1);
@@ -61,6 +65,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     drawLeadingJetHistograms = (histogramSelection == 2);
     drawSubleadingJetHistograms = (histogramSelection == 2);
     drawAnyJetHistograms = (histogramSelection == 2);
+    drawAnyLeadingJetHistograms = (histogramSelection == 2);
     drawTracks = (histogramSelection == 3);
     drawUncorrectedTracks = (histogramSelection == 3);
     drawInclusiveTracks = (histogramSelection == 3);
@@ -212,7 +217,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Set which histograms to draw and the drawing style to use
   histograms->SetLoadEventInformation(drawEventInformation);
   histograms->SetLoadDijetHistograms(drawDijetHistograms);
-  histograms->SetLoadAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);
+  histograms->SetLoadAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms,drawAnyLeadingJetHistograms);
   histograms->SetLoadAllTracks(drawTracks,drawUncorrectedTracks);
   histograms->SetLoadAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);
   histograms->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
@@ -249,6 +254,24 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     histograms->LoadProcessedHistograms();
   }
   
+  // Print the number of
+  if(printJetNumbers){
+    double allJets, allLeadingJets, dijets = 0;
+    for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
+      allJets = histograms->GetInclusiveJetPtIntegral(iCentrality);
+      //allLeadingJets = histograms->GetAnyLeadingJetPtIntegral(iCentrality);
+      dijets = histograms->GetPtIntegral(iCentrality);
+      
+      cout << "Numbers for centrality bin: " << iCentrality << endl;
+      cout << "All jets above 120 GeV: " << allJets << endl;
+      cout << "Leading jets above 120 GeV: " << allLeadingJets << endl;
+      cout << "Leading dijets above 120 GeV: " << dijets << endl;
+      cout << "Leading jets / all jets: " << allLeadingJets/allJets << endl;
+      cout << "Dijets / all jets: " << dijets/allJets << endl;
+    }
+    return;
+  }
+  
   //////////////////////////////////
   //          DijetDrawer         //
   //////////////////////////////////
@@ -259,7 +282,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Set which histograms to draw and the drawing style to use
   resultDrawer->SetDrawEventInformation(drawEventInformation);
   resultDrawer->SetDrawDijetHistograms(drawDijetHistograms);
-  resultDrawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms);
+  resultDrawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms,drawAnyLeadingJetHistograms);
   resultDrawer->SetDrawAllTracks(drawTracks,drawUncorrectedTracks);
   resultDrawer->SetDrawAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations,drawUncorrectedTrackLeadingJetCorrelations,drawPtWeightedTrackLeadingJetCorrelations);
   resultDrawer->SetDrawAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations,drawUncorrectedTrackSubleadingJetCorrelations,drawPtWeightedTrackSubleadingJetCorrelations);
