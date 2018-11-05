@@ -12,10 +12,10 @@ void produceSpilloverCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  bool yieldQA = false;  // Print out relative yields between uncorrected data and spillover distribution
+  bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
   TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_smoothedMixing_processed_2018-10-30.root";  // File from which the RecoGen histograms are read for the correction
-  TString outputFileName = "data/xzxzztest.root";//data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_subeNon0_smoothedMixing_2018-10-31.root";   // File name for the output file
+  TString outputFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_subeNon0_smoothedMixing_2018-11-05.root";   // File name for the output file
   TString uncorrectedDataFileName = "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-10-19.root"; // Data file to compare yields with spillover file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
@@ -25,53 +25,47 @@ void produceSpilloverCorrection(){
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
-  // Open the input file
+  // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
-  TFile *yieldQAfile;
-  if(yieldQA) yieldQAfile = TFile::Open(uncorrectedDataFileName);
+  TFile *yieldQAfile = TFile::Open(uncorrectedDataFileName);
+  
+  // Make an array of input files for easier initialization of histogram readers
+  TFile *inputFiles[2] = {recoGenFile,yieldQAfile};
+  DijetHistogramManager *histograms[2];
   
   // Create histogram managers to provide the histograms for the correction
-  DijetHistogramManager *recoGenHistograms = new DijetHistogramManager(recoGenFile);
-  recoGenHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
-  recoGenHistograms->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
-  recoGenHistograms->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
-  recoGenHistograms->SetLoad2DHistograms(true);              // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
-  recoGenHistograms->LoadProcessedHistograms();
-  
-  // If we are printing out QA numbers for yields, initialize histogram manager for uncorrected data file
-  DijetHistogramManager *yieldQAhistograms;
-  if(yieldQA){
-    yieldQAhistograms = new DijetHistogramManager(yieldQAfile);
-    yieldQAhistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
-    yieldQAhistograms->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
-    yieldQAhistograms->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
-    yieldQAhistograms->SetLoad2DHistograms(true);              // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
-    yieldQAhistograms->LoadProcessedHistograms();
+  for(int iInputFile = 0; iInputFile < 2; iInputFile++){
+    histograms[iInputFile] = new DijetHistogramManager(inputFiles[iInputFile]);
+    histograms[iInputFile]->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
+    histograms[iInputFile]->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
+    histograms[iInputFile]->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
+    histograms[iInputFile]->SetLoad2DHistograms(true);  // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
+    histograms[iInputFile]->LoadProcessedHistograms();
   }
   
   // Find the correct number of centrality and track pT bins
-  const int nCentralityBins = recoGenHistograms->GetNCentralityBins();
-  const int nTrackPtBins = recoGenHistograms->GetNTrackPtBins();
+  const int nCentralityBins = histograms[0]->GetNCentralityBins();
+  const int nTrackPtBins = histograms[0]->GetNTrackPtBins();
   
   // Initialize correction histograms and helper histograms
-  TH2D *spilloverDeltaEtaDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH2D *spilloverHelperDeltaEtaDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH1D *spilloverDeltaEtaProjection[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH1D *spilloverDeltaPhiProjection[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TF1 *spilloverDeltaEtaFit[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TF1 *spilloverDeltaPhiFit[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH2D *yieldQAdeltaEtaDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  
-  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-        spilloverDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
-        spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
-        spilloverDeltaEtaProjection[iJetTrack][iCentrality][iTrackPt] = NULL;
-        spilloverDeltaPhiProjection[iJetTrack][iCentrality][iTrackPt] = NULL;
-        spilloverDeltaEtaFit[iJetTrack][iCentrality][iTrackPt] = NULL;
-        spilloverDeltaPhiFit[iJetTrack][iCentrality][iTrackPt] = NULL;
-        yieldQAdeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
+  TH2D *spilloverDeltaEtaDeltaPhi[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH2D *spilloverHelperDeltaEtaDeltaPhi[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *spilloverDeltaEtaProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *spilloverDeltaPhiProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TF1 *spilloverDeltaEtaFit[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TF1 *spilloverDeltaPhiFit[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+
+  for(int iDataType = 0; iDataType < 2; iDataType++){
+    for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
+          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
+          spilloverDeltaEtaProjection[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
+          spilloverDeltaPhiProjection[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
+          spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
+          spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
+        }
       }
     }
   }
@@ -91,31 +85,35 @@ void produceSpilloverCorrection(){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
-        // Get the signal histogram and extract the correction from it
-        spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
-        spilloverDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]);
-        
-        // Get the QA histograms and functions
-        spilloverDeltaEtaProjection[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaEta();
-        spilloverDeltaPhiProjection[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaPhi();
-        spilloverDeltaEtaFit[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaEtaFit();
-        spilloverDeltaPhiFit[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaPhiFit();
-        
+        for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
+          // Get the signal histogram and extract the correction from it
+          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
+          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt]);
+          
+          // Get the QA histograms and functions
+          // Need to change name, because corrector gives the same name in both loops, which causes problems with root
+          spilloverDeltaEtaProjection[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaEta();
+          spilloverDeltaEtaProjection[iDataType][iJetTrack][iCentrality][iTrackPt]->SetName(Form("%s%d",spilloverDeltaEtaProjection[iDataType][iJetTrack][iCentrality][iTrackPt]->GetName(),iDataType));
+          spilloverDeltaPhiProjection[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaPhi();
+          spilloverDeltaPhiProjection[iDataType][iJetTrack][iCentrality][iTrackPt]->SetName(Form("%s%d",spilloverDeltaPhiProjection[iDataType][iJetTrack][iCentrality][iTrackPt]->GetName(),iDataType));
+          spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaEtaFit();
+          spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt]->SetName(Form("%s%d",spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt]->GetName(),iDataType));
+          spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaPhiFit();
+          spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt]->SetName(Form("%s%d",spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt]->GetName(),iDataType));
+        }
+
         // Print out the QA numbers for yield
         if(yieldQA){
           
-          // Find the data histogram
-          yieldQAdeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = yieldQAhistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
-          
-          // Find the bins for signal region
-          lowXbin = spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(-1.5);
-          highXbin = spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(1.5);
-          lowYbin = spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(-1.5);
-          highYbin = spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(1.5);
+                    // Find the bins for signal region
+          lowXbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(-1.5);
+          highXbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(1.5);
+          lowYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(-1.5);
+          highYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(1.5);
           
           // Get the yields by integration and calculate ratio
-          spilloverYield[iJetTrack][iCentrality][iTrackPt] = spilloverHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin);
-          dataYield[iJetTrack][iCentrality][iTrackPt] = yieldQAdeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin);
+          spilloverYield[iJetTrack][iCentrality][iTrackPt] = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin);
+          dataYield[iJetTrack][iCentrality][iTrackPt] = spilloverHelperDeltaEtaDeltaPhi[1][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin);
           yieldRatio[iJetTrack][iCentrality][iTrackPt] = spilloverYield[iJetTrack][iCentrality][iTrackPt]/dataYield[iJetTrack][iCentrality][iTrackPt];
 
         }
@@ -130,7 +128,7 @@ void produceSpilloverCorrection(){
       if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-          cout << "Type: " << yieldQAhistograms->GetJetTrackHistogramName(iJetTrack) << " Centrality: " << iCentrality << " pT " << iTrackPt <<" Spillover yield: " << spilloverYield[iJetTrack][iCentrality][iTrackPt] << " Signal yield: " << dataYield[iJetTrack][iCentrality][iTrackPt] << " Ratio: " << yieldRatio[iJetTrack][iCentrality][iTrackPt] << endl;
+          cout << "Type: " << histograms[1]->GetJetTrackHistogramName(iJetTrack) << " Centrality: " << iCentrality << " pT " << iTrackPt <<" Spillover yield: " << spilloverYield[iJetTrack][iCentrality][iTrackPt] << " Signal yield: " << dataYield[iJetTrack][iCentrality][iTrackPt] << " Ratio: " << yieldRatio[iJetTrack][iCentrality][iTrackPt] << endl;
         }
       }
     }
@@ -146,7 +144,7 @@ void produceSpilloverCorrection(){
     if(!correlationSelector[iJetTrack]) continue;  // Only write the corrections that are calculated
     
     // Create a directory for the histograms if it does not already exist
-    sprintf(histogramNamer,"%sDeltaEtaDeltaPhi",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
+    sprintf(histogramNamer,"%sDeltaEtaDeltaPhi",histograms[0]->GetJetTrackHistogramName(iJetTrack));
     if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
     gDirectory->cd(histogramNamer);
     
@@ -154,8 +152,8 @@ void produceSpilloverCorrection(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
         // Create a new name to the histogram and write it into file
-        sprintf(histogramNamer,"spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        sprintf(histogramNamer,"spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
       }
     }
@@ -175,16 +173,62 @@ void produceSpilloverCorrection(){
     if(!correlationSelector[iJetTrack]) continue;  // Only write the corrections that are calculated
     
     // Create a directory for the histograms if it does not already exist
-    sprintf(histogramNamer,"%sDeltaEtaProjection",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
+    sprintf(histogramNamer,"%sDeltaEtaProjection",histograms[0]->GetJetTrackHistogramName(iJetTrack));
     if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
     gDirectory->cd(histogramNamer);
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
-        // Create a new name to the histogram and write it into file
-        sprintf(histogramNamer,"spilloverQA_%sDeltaEtaProjection_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverDeltaEtaProjection[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        // Create a new name to the RecoGen histogram and write it into file
+        sprintf(histogramNamer,"spilloverQA_%sDeltaEtaProjection_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+        // Create a new name to the PbPb histogram and write it into file
+        sprintf(histogramNamer,"dataReplica_%sDeltaEtaProjection_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaEtaProjection[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+      }
+    }
+    
+    // Return back to main directory
+    gDirectory->cd("../");
+    
+    // Create a directory for the histograms if it does not already exist
+    sprintf(histogramNamer,"%sDeltaPhiProjection",histograms[0]->GetJetTrackHistogramName(iJetTrack));
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        
+        // Create a new name to the RecoGen histogram and write it into file
+        sprintf(histogramNamer,"spilloverQA_%sDeltaPhiProjection_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+        // Create a new name to the PbPb histogram and write it into file
+        sprintf(histogramNamer,"dataReplica_%sDeltaPhiProjection_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaPhiProjection[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+      }
+    }
+    
+    // Return back to main directory
+    gDirectory->cd("../");
+    
+    // Create a directory for the histograms if it does not already exist
+    sprintf(histogramNamer,"%sDeltaEtaFit",histograms[0]->GetJetTrackHistogramName(iJetTrack));
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        
+        // Create a new name to the RecoGen histogram and write it into file
+        sprintf(histogramNamer,"spilloverQA_%sDeltaEtaFit_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+        // Create a new name to the PbPb histogram and write it into file
+        sprintf(histogramNamer,"dataReplica_%sDeltaEtaFit_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
       }
     }
@@ -193,52 +237,20 @@ void produceSpilloverCorrection(){
     gDirectory->cd("../");
     
     // Create a directory for the histograms if it does not already exist
-    sprintf(histogramNamer,"%sDeltaPhiProjection",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
+    sprintf(histogramNamer,"%sDeltaPhiFit",histograms[0]->GetJetTrackHistogramName(iJetTrack));
     if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
     gDirectory->cd(histogramNamer);
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
-        // Create a new name to the histogram and write it into file
-        sprintf(histogramNamer,"spilloverQA_%sDeltaPhiProjection_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverDeltaPhiProjection[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        // Create a new name to the RecoGen histogram and write it into file
+        sprintf(histogramNamer,"spilloverQA_%sDeltaPhiFit_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
-      }
-    }
-    
-    // Return back to main directory
-    gDirectory->cd("../");
-    
-    // Create a directory for the histograms if it does not already exist
-    sprintf(histogramNamer,"%sDeltaEtaFit",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
-    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
-    gDirectory->cd(histogramNamer);
-    
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-        
-        // Create a new name to the histogram and write it into file
-        sprintf(histogramNamer,"spilloverQA_%sDeltaEtaFit_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverDeltaEtaFit[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
-        
-      }
-    }
-    
-    // Return back to main directory
-    gDirectory->cd("../");
-    
-    // Create a directory for the histograms if it does not already exist
-    sprintf(histogramNamer,"%sDeltaPhiFit",recoGenHistograms->GetJetTrackHistogramName(iJetTrack));
-    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
-    gDirectory->cd(histogramNamer);
-    
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-        
-        // Create a new name to the histogram and write it into file
-        sprintf(histogramNamer,"spilloverQA_%sDeltaPhiFit_C%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverDeltaPhiFit[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        // Create a new name to the PbPb histogram and write it into file
+        sprintf(histogramNamer,"daatReplica_%sDeltaPhiFit_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
       }
     }

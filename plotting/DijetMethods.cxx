@@ -433,8 +433,20 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
   double spilloverPhiRange = 1.5;
   
   // First get the projections for the deltaEta and deltaPhi distributions
-  fSpilloverDeltaEta = ProjectRegionDeltaEta(onlyHydjetHistogram,-spilloverPhiRange,spilloverPhiRange,"spillover");
-  fSpilloverDeltaPhi = ProjectRegionDeltaPhi(onlyHydjetHistogram,0,spilloverEtaRange,"spillover");
+  fSpilloverDeltaEta = ProjectRegionDeltaEta(onlyHydjetHistogram,-spilloverPhiRange,spilloverPhiRange,"spilloverDeltaEta");
+  fSpilloverDeltaPhi = ProjectRegionDeltaPhi(onlyHydjetHistogram,0,spilloverEtaRange,"spilloverDeltaPhi");
+  
+  // Do some rebin
+  int etaRebin = 4;
+  int phiRebin = 2;
+  if(etaRebin > 1){
+    fSpilloverDeltaEta->Rebin(etaRebin);
+    fSpilloverDeltaEta->Scale(1.0/etaRebin);
+  }
+  if(phiRebin > 1){
+    fSpilloverDeltaPhi->Rebin(phiRebin);
+    fSpilloverDeltaPhi->Scale(1.0/phiRebin);
+  }
   
   // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
   fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta,spilloverEtaRange);
@@ -504,7 +516,7 @@ TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange){
  *
  *   return: DeltaPhi distribution projected from the input deltaEta region
  */
-TH1D* DijetMethods::ProjectRegionDeltaEta(TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName){
+TH1D* DijetMethods::ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName){
   
   // Start by finding the bin indices for the defined deltaEta region
   // Apply a little offset for the defined eta region borders to avoid bin border effects
@@ -539,7 +551,7 @@ TH1D* DijetMethods::ProjectRegionDeltaEta(TH2D* deltaPhiDeltaEtaHistogram, const
  *
  *   return: DeltaPhi distribution projected from the input deltaEta region
  */
-TH1D* DijetMethods::ProjectRegionDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName){
+TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName){
   
   // If the minimum is zero, do the projection from -maxDeltaEta to maxDeltaEta
   bool oneRegion = (minDeltaEta < 0.01);
