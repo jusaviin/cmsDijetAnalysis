@@ -271,6 +271,7 @@ TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
   double binEta;
   double seagullCorrection;
   double binContent;
+  double binError;
   
   for(int iEta = 1; iEta <= seagullCorrectedHistogram->GetNbinsY(); iEta++){
     
@@ -281,7 +282,9 @@ TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
     // Apply the correction for all deltaPhi bins in the deltaEta strip
     for(int iPhi = 1; iPhi <= seagullCorrectedHistogram->GetNbinsX(); iPhi++){
       binContent = seagullCorrectedHistogram->GetBinContent(iPhi,iEta);
+      binError = seagullCorrectedHistogram->GetBinError(iPhi,iEta);
       seagullCorrectedHistogram->SetBinContent(iPhi,iEta,binContent*seagullCorrection);
+      seagullCorrectedHistogram->SetBinError(iPhi,iEta,binError*seagullCorrection);
     }
   }
   

@@ -433,7 +433,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
             
             // To retain the normalization, we must scale the histograms with the number of bins projected over and by the width of deltaPhi bin
             nProjectedBins = fHighDeltaPhiBinIndices[iDeltaPhi] - fLowDeltaPhiBinIndices[iDeltaPhi] + 1;
-            //fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(1.0/nProjectedBins);
+            if(iDeltaPhi > kWholePhi) fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(1.0/nProjectedBins);
             fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetXaxis()->GetBinWidth(1));
             
           } // DeltaPhi loop

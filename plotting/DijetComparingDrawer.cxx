@@ -372,6 +372,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   double zoomRegion;
   double ratioZoomLow;
   double ratioZoomHigh;
+  double legendX1, legendX2, legendY1, legendY2;
   
   // Helper variables for centrality naming in figures
   TString centralityString;
@@ -411,7 +412,6 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
-        fMainHistogram->Scale(1.0/fBaseHistograms->GetNDijets());       // Normalize with the number of dijets
         //fMainHistogram->Rebin(nRebin);                                  // Possibility to de rebinning
 
         fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
@@ -430,7 +430,6 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         }
 
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
-        fComparisonHistogram[0]->Scale(1.0/fBaseHistograms->GetNDijets());  // Normalize with the number of dijets
         //fComparisonHistogram[0]->Rebin(nRebin);                             // Possibility to de rebinning
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         if(fEventMixingZoom) fComparisonHistogram[0]->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
@@ -439,7 +438,11 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         DrawToUpperPad(namerX,"#frac{1}{N_{jets}}  #frac{dN}{d#Delta#varphi}");
 
         // Setup a legend to the plot
-        legend = new TLegend(0.22,0.71,0.5,0.91);
+        legendX1 = 0.22; legendX2 = 0.5; legendY1 = 0.71; legendY2 = 0.91;
+        if(fBaseHistograms->GetSystem().Contains("PbPb")){
+          legendY1 = 0.65; legendY2 = 0.92;
+        }
+        legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
         legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
@@ -463,7 +466,6 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
-        fMainHistogram->Scale(1.0/fBaseHistograms->GetNEvents());       // Normalize with the number of dijets
         fMainHistogram->Rebin(nRebin);                                  // Possibility to de rebinning
         fMainHistogram->Scale(1.0/nRebin);
         fMainHistogram->GetXaxis()->SetRangeUser(-4,4);                 // Zoom the interesting region
@@ -480,7 +482,6 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         }
         
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
-        fComparisonHistogram[0]->Scale(1.0/fBaseHistograms->GetNEvents());  // Normalize with the number of dijets
         fComparisonHistogram[0]->Rebin(nRebin);                             // Possibility to de rebinning
         fComparisonHistogram[0]->Scale(1.0/nRebin);
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-4,4);            // Zoom the interesting region
@@ -490,7 +491,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         DrawToUpperPad(namerX,"#frac{1}{N_{jets}}  #frac{dN}{d#Delta#eta}");
         
         // Setup a legend to the plot
-        legend = new TLegend(0.22,0.71,0.5,0.91);
+        legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
         legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
@@ -512,7 +513,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaEtaCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
         fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
-        DrawToLowerPad(namerX,namerY,ratioZoomLow,ratioZoomHigh);
+        DrawToLowerPad(namerX,namerY,fRatioZoomMin,fRatioZoomMax);
         
         // Save the figure to a file
         sprintf(namerX,"%sMixedEventEtaCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));

@@ -25,7 +25,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // ==================================================================
   
   // Flag if you only want to print out numbers of jets
-  bool printJetNumbers = true;
+  bool printJetNumbers = false;
   
   // Automatically choose execution mode based on input parameters
   int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
@@ -50,9 +50,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -81,19 +81,19 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaEta = true;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
+  bool drawJetShape = false;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
@@ -135,7 +135,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;//nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -183,6 +183,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TFile *spilloverFile;
   if(jffCorrectionFileName != "") jffCorrectionFile = TFile::Open(jffCorrectionFileName);
   if(spilloverCorrectionFileName != "") spilloverFile = TFile::Open(spilloverCorrectionFileName);
+  
+  if(inputFile == NULL){
+    cout << "Error! The file " << inputFileName.Data() << " does not exist!" << endl;
+    cout << "Maybe you forgot the data/ folder path?" << endl;
+    cout << "Will not execute the code" << endl;
+    return;
+  }
   
   // Load the card from the file and read the collision system
   DijetCard *card = new DijetCard(inputFile);
@@ -259,7 +266,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     double allJets, allLeadingJets, dijets = 0;
     for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
       allJets = histograms->GetInclusiveJetPtIntegral(iCentrality);
-      //allLeadingJets = histograms->GetAnyLeadingJetPtIntegral(iCentrality);
+      allLeadingJets = histograms->GetAnyLeadingJetPtIntegral(iCentrality);
       dijets = histograms->GetPtIntegral(iCentrality);
       
       cout << "Numbers for centrality bin: " << iCentrality << endl;

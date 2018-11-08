@@ -23,9 +23,9 @@ void compareDijetHistograms(){
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -41,7 +41,7 @@ void compareDijetHistograms(){
   
   // Draw jet shape histograms
   bool drawJetShape = false;
-  bool drawJetShapeMCComparison = true;
+  bool drawJetShapeMCComparison = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
@@ -55,7 +55,7 @@ void compareDijetHistograms(){
   bool drawBackground = false;
   
   // Draw histograms to make a check on the validity of the event mixing method
-  bool drawEventMixingCheck = false;
+  bool drawEventMixingCheck = true;
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
@@ -73,8 +73,8 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.4;
-  double maxZoom = 1.6;
+  double minZoom = 0.6;
+  double maxZoom = 1.4;
   TString ratioLabel = "Corr / Uncorr";
   
   // Scaling for histograms
@@ -118,15 +118,15 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 3;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_3eventsMixed_noUncorrected_processed_2018-10-02.root","data/dijetPbPb_pfJets_3eventsMixed_noSpillover_processed_2018-10-02.root","data/dijetPbPb_pfJets_3eventsMixed_noSpilloverOrJff_processed_2018-10-02.root"};
+  const int nDatasets = 1;
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_noSeagull_smoothedMixing_processed_2018-11-06.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijetPbPb_pfJets_3eventsMixed_noUncorrected_processed_2018-10-02.root"
   
-  TString legendComment[nDatasets] = {"corrected", "no spillover", "no JFF"};
+  TString legendComment[nDatasets] = {"corrected"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -137,7 +137,7 @@ void compareDijetHistograms(){
   // Use the same DijetMethods for all sets used for comparison
   DijetMethods *methods = new DijetMethods();
   methods->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
-  methods->SetMixedEventNormalization(mixedEventNormalizationType);
+  methods->SetMixedEventNormalization(mixedEventNormalizationType,true);
   methods->SetBackgroundDeltaEtaRegion(minBackgroundDeltaEta,maxBackgroundDeltaEta);
   methods->SetJetShapeBinEdges(nRBins,rBins);
   methods->SetRebinBoundaries(nRebinDeltaEta,rebinDeltaEta,nRebinDeltaPhi,rebinDeltaPhi);
@@ -153,6 +153,11 @@ void compareDijetHistograms(){
     
     // Open the file for the given dataset
     inputFile[iDataset] = TFile::Open(inputFileName[iDataset]);
+    if(inputFile[iDataset] == NULL){
+      cout << "Error! The file " << inputFileName[iDataset].Data() << " does not exist!" << endl;
+      cout << "Please give a file that exists. Will not exacute the code" << endl;
+      return;
+    }
 
     // Load the card from the file and read the collision system
     card[iDataset] = new DijetCard(inputFile[iDataset]);
