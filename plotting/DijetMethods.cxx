@@ -26,6 +26,7 @@ DijetMethods::DijetMethods() :
   fMinBackgroundDeltaPhi(1.4),
   fMaxBackgroundDeltaPhi(1.7),
   fSeagullRebin(4),
+  fnBinsProjectedOver(0),
   fMaxSignalDeltaEta(1.0),
   fJetShapeNormalizationMethod(kBinWidth),
   fnRebinDeltaEta(0),
@@ -70,12 +71,13 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fMinBackgroundDeltaPhi(in.fMinBackgroundDeltaPhi),
   fMaxBackgroundDeltaPhi(in.fMaxBackgroundDeltaPhi),
   fSeagullRebin(in.fSeagullRebin),
+  fnBinsProjectedOver(in.fnBinsProjectedOver),
   fMaxSignalDeltaEta(in.fMaxSignalDeltaEta),
-  fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
   fSpilloverDeltaEta(in.fSpilloverDeltaEta),
   fSpilloverDeltaPhi(in.fSpilloverDeltaPhi),
   fSpilloverFitDeltaEta(in.fSpilloverFitDeltaEta),
   fSpilloverFitDeltaPhi(in.fSpilloverFitDeltaPhi),
+  fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
   fhJetShapeCounts(in.fhJetShapeCounts),
   fhJetShapeBinMap(in.fhJetShapeBinMap)
 {
@@ -106,6 +108,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fMinBackgroundDeltaPhi = in.fMinBackgroundDeltaPhi;
   fMaxBackgroundDeltaPhi = in.fMaxBackgroundDeltaPhi;
   fSeagullRebin = in.fSeagullRebin;
+  fnBinsProjectedOver = in.fnBinsProjectedOver;
   fMaxSignalDeltaEta = in.fMaxSignalDeltaEta;
   fJetShapeNormalizationMethod = in.fJetShapeNormalizationMethod;
   fSpilloverDeltaEta = in.fSpilloverDeltaEta;
@@ -350,11 +353,16 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     // Repopulate the deltaEta axis
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
       
-      // Insert the values to the two-dimensional background histogram
-      fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
-      fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear/binWidthDeltaEta);
-      fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
-      fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiErrorAway/binWidthDeltaEta);
+      // If there is no content in the histogram, do not subtract background from it
+      if(leadingHistogramWithBackground->GetBinContent(iDeltaPhi,iDeltaEta) > 0){
+
+        // Insert the values to the two-dimensional background histogram
+        fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
+        fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaEta);
+        fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
+        fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,deltaPhiErrorAway*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaEta);
+        
+      }
       
       // Set the contants of the background overlap to zero
       fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,0);
@@ -363,12 +371,11 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
       fBackgroundOverlap->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,0);
       
       /*
-       * Note: In Hallie's code there is a multiplication by sqrt(bins) for the bin error here
-       *       I do not think it is needed, since the error should shrink as we calculate average
-       *       and then assign this average to each bin. The sqrt(bins) gives the average error in
-       *       each bin you are likely to see, but I do not think this is what we want here. If
-       *       we just fill the histogram with the average, we should use the error of the average
-       *       which comes without sqrt(bins).
+       * Note: There is a multiplication by sqrt(bins) for the bin error to get the average error
+       *       in each bin. We want the average error rather than error of the average here, because
+       *       otherwise the errors become too small. You can see this the most clearly by plotting
+       *       the distribution and see that adjacent bins fluctuate much more than would be expected
+       *       from the error bars. Thus the sqrt(bins) to properly treat the errors.
        */
       
     } // DeltaEta loop
@@ -387,11 +394,17 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     
     // Repopulate the deltaEta axis
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
-      // Set the contants of the background overlap to zero
-      fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
-      fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear/binWidthDeltaEta);
-      fBackgroundOverlap->SetBinContent(iDeltaPhi-3,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
-      fBackgroundOverlap->SetBinError(iDeltaPhi-3,iDeltaEta,deltaPhiErrorAway/binWidthDeltaEta);
+      
+      // Do not set anything for the overlap if there is no content in the original histogram
+      if(leadingHistogramWithBackground->GetBinContent(iDeltaPhi,iDeltaEta) > 0){
+        
+        // Set the contants of the background overlap
+        fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
+        fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaEta);
+        fBackgroundOverlap->SetBinContent(iDeltaPhi-3,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
+        fBackgroundOverlap->SetBinError(iDeltaPhi-3,iDeltaEta,deltaPhiErrorAway*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaEta);
+        
+      }
     } // DeltaEta loop
   } // DeltaPhi loop
   
@@ -527,7 +540,7 @@ TH1D* DijetMethods::ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram,
   int highDeltaPhiBin = deltaPhiDeltaEtaHistogram->GetXaxis()->FindBin(maxDeltaPhi-0.0001);
   
   // Calculate the number of deltaPhi bins in the projected region
-  int nBinsProjectedRegion = highDeltaPhiBin-lowDeltaPhiBin+1;
+  fnBinsProjectedOver = highDeltaPhiBin-lowDeltaPhiBin+1;
   
   // Project out the deltaPhi distribution in the background
   char histogramName[200];
@@ -536,7 +549,7 @@ TH1D* DijetMethods::ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram,
   projectedDeltaEta = deltaPhiDeltaEtaHistogram->ProjectionY(histogramName,lowDeltaPhiBin,highDeltaPhiBin);
   
   // Scale the projected deltaEta distribution with the number of deltaPhi bins projected over and deltaPhi bin width to retain normalization
-  projectedDeltaEta->Scale(1.0/nBinsProjectedRegion);
+  projectedDeltaEta->Scale(1.0/fnBinsProjectedOver);
   projectedDeltaEta->Scale(deltaPhiDeltaEtaHistogram->GetXaxis()->GetBinWidth(1));
   
   // Return the scaled projection
@@ -567,8 +580,8 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram,
   int highPositiveDeltaEtaBin = deltaPhiDeltaEtaHistogram->GetYaxis()->FindBin(maxDeltaEta-0.0001);
   
   // Calculate the number of deltaEta bins in the projected region
-  int nBinsProjectedRegion = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
-  if(oneRegion) nBinsProjectedRegion = nBinsProjectedRegion-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
+  fnBinsProjectedOver = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
+  if(oneRegion) fnBinsProjectedOver =fnBinsProjectedOver-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
   
   // Project out the deltaPhi distribution in the defined region
   char histogramName[200];
@@ -582,7 +595,7 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram,
   }
   
   // Scale the projected deltaPhi distribution with the number of deltaEta bins projected over and deltaEta bin width to retain normalization
-  projectedDeltaPhi->Scale(1.0/nBinsProjectedRegion);
+  projectedDeltaPhi->Scale(1.0/fnBinsProjectedOver);
   projectedDeltaPhi->Scale(deltaPhiDeltaEtaHistogram->GetYaxis()->GetBinWidth(1));
   
   // Return the scaled projection
@@ -725,6 +738,42 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
   // Return the calculated jet shape histogram
   return jetShapeHistogram;
   
+}
+
+/*
+ * Do a Fourier fit for the background deltaPhi distribution
+ *
+ *  TH1D* backgroundDeltaPhi = Background deltaPhi histogram
+ *
+ *  return = The Fourier fit function
+ */
+TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi){
+  
+  // Define the fourier fit. Use fit parameters up to v3
+  TF1 *fourier = new TF1("fourier","[0]*(1+2.0*[1]*TMath::Cos(1.0*x)+2.0*[2]*TMath::Cos(2.0*x)+2.0*[3]*TMath::Cos(3.0*x))",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+  
+  // Set names for the parameters
+  fourier->SetParName(0,"BkgLevel");
+  fourier->SetParName(1,"v1");
+  fourier->SetParName(2,"v2");
+  fourier->SetParName(3,"v3");
+  
+  // Set initial values for the parameters
+  fourier->SetParameter(0,backgroundDeltaPhi->GetBinContent(backgroundDeltaPhi->FindBin(TMath::Pi()/2)));
+  fourier->SetParameter(1,0);
+  fourier->SetParameter(2,0.03);
+  fourier->SetParameter(3,0);
+  
+  // Set limits such that the parameters must remain sensible
+  fourier->SetParLimits(1,-1.0,1.0);
+  fourier->SetParLimits(2,0,1.0);
+  fourier->SetParLimits(3,0,1.0);
+  
+  // Do the fit!
+  backgroundDeltaPhi->Fit("fourier","","",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+  
+  // Return the fitted distribution
+  return fourier;
 }
 
 /*

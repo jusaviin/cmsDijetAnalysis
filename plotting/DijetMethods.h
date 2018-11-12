@@ -37,6 +37,7 @@ public:
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
+  TF1* FourierFit(TH1D* backgroundDeltaPhi); // Do a Fourier fit for the background deltaPhi distribution
   
   // Getters for produced distributions
   TH2D* GetNormalizedMixedEvent() const; // Getter for the most recent normalized mixed event histogram
@@ -103,6 +104,7 @@ private:
   // =============================================
   // ============ DeltaPhi projections ===========
   // =============================================
+  int fnBinsProjectedOver;        // Number of bins projected over when projection a region of histogram
   double fMaxSignalDeltaEta;      // Maximum deltaEta value accepted for the signal region
   
   // =============================================

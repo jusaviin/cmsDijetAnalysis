@@ -38,8 +38,8 @@ void setupRatioLegend(TLegend* legend, TH1* dataHistogram, TH1* mcHistogram){
   int highXbin = dataHistogram->GetXaxis()->FindBin(1.5);
   
   // Get the yields by integration and calculate ratio
-  double dataYield = dataHistogram->Integral(lowXbin,highXbin);
-  double mcYield = mcHistogram->Integral(lowXbin,highXbin);
+  double dataYield = dataHistogram->Integral(lowXbin,highXbin,"width");
+  double mcYield = mcHistogram->Integral(lowXbin,highXbin,"width");
   double yieldRatio = mcYield/dataYield;
   
   char namer[100];
@@ -65,8 +65,8 @@ void qaPlotter(){
   
   bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = false;        // Draw the QA plots for spillover correction
-  bool drawSeagull = true;           // Draw the QA plots for seagull correction
+  bool drawSpillover = true;        // Draw the QA plots for spillover correction
+  bool drawSeagull = false;           // Draw the QA plots for seagull correction
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
