@@ -65,8 +65,8 @@ void qaPlotter(){
   
   bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = true;        // Draw the QA plots for spillover correction
-  bool drawSeagull = false;           // Draw the QA plots for seagull correction
+  bool drawSpillover = false;        // Draw the QA plots for spillover correction
+  bool drawSeagull = true;           // Draw the QA plots for seagull correction
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
@@ -202,7 +202,7 @@ void qaPlotter(){
           legend->Draw();
           
           // Find the correct pad inside the canvas
-          deltaPhiCanvas[iJetTrack]->cd(iCentrality+nCentralityBins*iTrackPt+1);
+          deltaPhiCanvas[iJetTrack]->cd(nCentralityBins-1-iCentrality+nCentralityBins*iTrackPt+1);
           gPad->SetTopMargin(0.1);
           gPad->SetBottomMargin(0.2);
           
@@ -282,7 +282,7 @@ void qaPlotter(){
           titleString = Form("Cent: %.0f-%.0f%% - Track pT: %.1f-%.1f GeV",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1],trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
           
           // Find the correct pad inside the canvas
-          seagullCanvas[iJetTrack]->cd(iCentrality+nCentralityBins*iTrackPt+1);
+          seagullCanvas[iJetTrack]->cd(nCentralityBins-1-iCentrality+nCentralityBins*iTrackPt+1);
           gPad->SetTopMargin(0.1);
           gPad->SetBottomMargin(0.2);
           
