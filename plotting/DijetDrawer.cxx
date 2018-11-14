@@ -58,6 +58,9 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   for(int iJetShape = 0; iJetShape < DijetHistogramManager::knJetShapeTypes; iJetShape++){
     fDrawJetShape[iJetShape] = false;
   }
+  for(int iStyle = 0; iStyle < knBackgroundStyles; iStyle++){
+    fBackgroundDrawStyle[iStyle] = false;
+  }
   
   // Setup the centrality and track pT bins to be drawn
   fFirstDrawnCentralityBin = fHistograms->GetFirstCentralityBin();
@@ -534,17 +537,51 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               }
             }
             
+            // If you do not want to draw the background fit, remove it from background histogram
+            if(iCorrelationType == DijetHistogramManager::kBackground && !fBackgroundDrawStyle[kDrawFit]){
+              TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
+              fourierFit->SetLineWidth(0);
+            }
+            
             sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
             fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
             legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
             SetupLegend(legend,centralityString,trackPtString);
             legend->Draw();
             
-            // In case of background histogram, draw the background overlap to the same figure
+            // In case of background histogram, draw the selected additional components
             if(iCorrelationType == DijetHistogramManager::kBackground){
-              additionalHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundOverlap,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
-              additionalHistogram->SetLineColor(kRed);
-              additionalHistogram->Draw("same");
+              
+              // Draw a few overlapping bins from near and away side background estimates
+              if(fBackgroundDrawStyle[kDrawOverlap]){
+                additionalHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundOverlap,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
+                additionalHistogram->SetLineColor(kRed);
+                additionalHistogram->Draw("same");
+              }
+              
+              // If we want to draw a decomposition of the fourier fit, do it
+              if(fBackgroundDrawStyle[kDrawFitComposition]){
+                TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
+                
+                TF1 *fourierV1 = new TF1("fv1","[0]+[0]*[1]*2.0*TMath::Cos(1.0*x)",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fourierV1->SetParameter(0,fourierFit->GetParameter(0));
+                fourierV1->SetParameter(1,fourierFit->GetParameter(1));
+                fourierV1->SetLineColor(kGreen+4);
+                
+                TF1 *fourierV2 = new TF1("fv2","[0]+[0]*[1]*2.0*TMath::Cos(2.0*x)",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fourierV2->SetParameter(0,fourierFit->GetParameter(0));
+                fourierV2->SetParameter(1,fourierFit->GetParameter(2));
+                fourierV2->SetLineColor(kBlue);
+                
+                TF1 *fourierV3 = new TF1("fv3","[0]+[0]*[1]*2.0*TMath::Cos(3.0*x)",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fourierV3->SetParameter(0,fourierFit->GetParameter(0));
+                fourierV3->SetParameter(1,fourierFit->GetParameter(3));
+                fourierV3->SetLineColor(kMagenta);
+                
+                fourierV1->Draw("same");
+                fourierV2->Draw("same");
+                fourierV3->Draw("same");
+              }
             }
             
             // Save the figure to a file
@@ -1173,4 +1210,26 @@ void DijetDrawer::SetDrawingStyles(const int color, const char* style2D, const c
   SetColorPalette(color);
   SetDrawingStyle2D(style2D);
   SetDrawingStyle3D(style3D);
+}
+
+// Setter for background draw style
+void DijetDrawer::SetBackgroundDrawStyle(const int style){
+  
+  // Sanity check for input
+  if(style < 0){
+    cout << "Background draw style cannot be a negative number. Please give a number between 0 and " << TMath::Power(knBackgroundStyles,2)-1 << endl;
+    cout << "Default background style will be used" << endl;
+    return;
+  }
+  
+  if(style > TMath::Power(knBackgroundStyles,2)-1){
+    cout << "Too large number given for background style. Please give a number between 0 and " << TMath::Power(knBackgroundStyles,2)-1 << endl;
+    cout << "Default background style will be used" << endl;
+    return;
+  }
+  
+  std::bitset<knBackgroundStyles> bitChecker(style);
+  fBackgroundDrawStyle[kDrawOverlap] = bitChecker.test(kDrawOverlap);
+  fBackgroundDrawStyle[kDrawFit] = bitChecker.test(kDrawFit);
+  fBackgroundDrawStyle[kDrawFitComposition] = bitChecker.test(kDrawFitComposition);
 }

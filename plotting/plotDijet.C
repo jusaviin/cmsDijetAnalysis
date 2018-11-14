@@ -25,7 +25,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // ==================================================================
   
   // Flag if you only want to print out numbers of jets
-  bool printJetNumbers = true;
+  bool printJetNumbers = false;
   
   // Automatically choose execution mode based on input parameters
   int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
@@ -50,10 +50,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = false;
+  bool drawTrackSubleadingJetCorrelations = true;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   bool drawTrackInclusiveJetCorrelations = false;
@@ -81,9 +81,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
-  bool drawJetTrackDeltaEta = true;
-  bool drawJetTrackDeltaEtaDeltaPhi = false;
+  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaEtaDeltaPhi = true;
   
   // Draw jet shape histograms
   bool drawJetShape = false;
@@ -98,7 +98,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = false;
+  bool drawBackground = true;
+  int backgroundStyle = 6; // Drawing style for background deltaPhi. The following options are currently implemented:
+                           // Bit 0 = Draw background overlap (int = 1)
+                           // Bit 1 = Draw background fit (int = 2)
+                           // Bit 2 = Draw fit composition (int = 4)
+                           // It follows that this number must be between 0 and 7.
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -135,9 +140,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;//nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 0;
+  int firstDrawnTrackPtBin = nTrackPtBins-2;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
   
   if(selectedCentralityBin >= 0){
@@ -305,6 +310,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   resultDrawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
   resultDrawer->SetNormalizeJetShape(normalizeJetShapePlot);
+  resultDrawer->SetBackgroundDrawStyle(backgroundStyle);
   
   // Draw the selected histograms
   resultDrawer->DrawHistograms();

@@ -33,6 +33,9 @@ private:
   TVectorT<float> *fDataTypeVector;                 // Vector for data type
   TVectorT<float> *fMcCorrelationTypeVector;        // Vector for Monte Carlo correlation type
   TVectorT<float> *fForestTypeVector;               // Vector for the used forest type
+  TVectorT<float> *fReadModeVector;                 // Vector telling if the used file was skim of high forest
+  TVectorT<float> *fJetTypeVector;                  // Vector telling if we used particle flow or calorimeter jets
+  TVectorT<float> *fJetAxisVector;                  // Vector telling if we used anti-kT or leading PF candidate jet axis
   TVectorT<float> *fJetEtaCutVector;                // Vector for the used eta cut for jets
   TVectorT<float> *fSearchEtaCutVector;             // Vector for the eta region from which the jets are searched in the analysis
   TVectorT<float> *fMaxPtCutVector;                 // Vector for maximum pT accepted for the leading jet
@@ -58,8 +61,12 @@ private:
   TVectorT<float> *fAsymmetryBinEdgesVector;        // Vector for the used dijet asymmetry bin edges
   TVectorT<float> *fPtHatBinEdgesVector;            // Vector for the used pT hat bin edges
   TVectorT<float> *fDoEventMixingVector;            // Vector for the event mixing flag
+  TVectorT<float> *fMixWithPoolVector;              // Vector telling if we do mixing with or without mixing pool
   TVectorT<float> *fNMixedEventsPerDijetVector;     // Vector for the number of events used in the event mixing
   TVectorT<float> *fVzToleranceVector;              // Vector for maximum accepted distance between same event vz and mixed event vz
+  TVectorT<float> *fMixingVzBinWidthVector;         // Vector telling vz bin width, in case we use mixing pool
+  TVectorT<float> *fMixingHiBinWidthVector;         // Vector telling hibin width, in case we use mixing pool
+  TVectorT<float> *fMixingPoolDepthVector;          // Vector telling the mixing pool depth
   
 public:
   

@@ -41,6 +41,9 @@ void DijetCard::ReadVectors(){
   fDataTypeVector = (TVectorT<float>*) gDirectory->Get("DataType");
   fMcCorrelationTypeVector = (TVectorT<float>*) gDirectory->Get("McCorrelationType");
   fForestTypeVector = (TVectorT<float>*) gDirectory->Get("ForestType");
+  fReadModeVector = (TVectorT<float>*) gDirectory->Get("ReadMode");
+  fJetTypeVector = (TVectorT<float>*) gDirectory->Get("JetType");
+  fJetAxisVector = (TVectorT<float>*) gDirectory->Get("JetAxis");
   fJetEtaCutVector = (TVectorT<float>*) gDirectory->Get("JetEtaCut");
   fSearchEtaCutVector = (TVectorT<float>*) gDirectory->Get("SearchEtaCut");
   fMaxPtCutVector = (TVectorT<float>*) gDirectory->Get("MaxPtCut");
@@ -66,8 +69,12 @@ void DijetCard::ReadVectors(){
   fAsymmetryBinEdgesVector = (TVectorT<float>*) gDirectory->Get("AsymmetryBinEdges");
   fPtHatBinEdgesVector = (TVectorT<float>*) gDirectory->Get("PtHatBinEdges");
   fDoEventMixingVector = (TVectorT<float>*) gDirectory->Get("DoEventMixing");
+  fMixWithPoolVector = (TVectorT<float>*) gDirectory->Get("MixWithPool");
   fNMixedEventsPerDijetVector = (TVectorT<float>*) gDirectory->Get("NMixedEventsPerDijet");
   fVzToleranceVector = (TVectorT<float>*) gDirectory->Get("VzTolerance");
+  fMixingVzBinWidthVector = (TVectorT<float>*) gDirectory->Get("MixingVzBinWidth");
+  fMixingHiBinWidthVector = (TVectorT<float>*) gDirectory->Get("MixingHiBinWidth");
+  fMixingPoolDepthVector = (TVectorT<float>*) gDirectory->Get("MixingPoolDepth");
 }
 
 /*
@@ -117,6 +124,9 @@ void DijetCard::Write(TDirectory *file){
   fDataTypeVector->Write("DataType");
   fMcCorrelationTypeVector->Write("McCorrelationType");
   fForestTypeVector->Write("ForestType");
+  fReadModeVector->Write("ReadMode");
+  fJetTypeVector->Write("JetType");
+  fJetAxisVector->Write("JetAxis");
   fJetEtaCutVector->Write("JetEtaCut");
   fSearchEtaCutVector->Write("SearchEtaCut");
   fMaxPtCutVector->Write("MaxPtCut");
@@ -142,8 +152,12 @@ void DijetCard::Write(TDirectory *file){
   fAsymmetryBinEdgesVector->Write("AsymmetryBinEdges");
   fPtHatBinEdgesVector->Write("PtHatBinEdges");
   fDoEventMixingVector->Write("DoEventMixing");
+  fMixWithPoolVector->Write("MixWithPool");
   fNMixedEventsPerDijetVector->Write("NMixedEventsPerDijet");
   fVzToleranceVector->Write("VzTolerance");
+  fMixingVzBinWidthVector->Write("MixingVzBinWidth");
+  fMixingHiBinWidthVector->Write("MixingHiBinWidth");
+  fMixingPoolDepthVector->Write("MixingPoolDepth");
   
   // Return back to the main directory
   file->cd("../");

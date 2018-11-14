@@ -1,6 +1,9 @@
 #ifndef DIJETDRAWER_H
 #define DIJETDRAWER_H
 
+// C++ includes
+#include <bitset>
+
 // Root includes
 #include <TH1.h>
 #include <TH2.h>
@@ -19,6 +22,9 @@
 class DijetDrawer {
   
 public:
+  
+  // Indices for different background drawing styles
+  enum enumBackgroundStyles{kDrawOverlap,kDrawFit,kDrawFitComposition,knBackgroundStyles};
   
   DijetDrawer(DijetHistogramManager *inputHistograms);  // Constructor
   ~DijetDrawer();                 // Destructor
@@ -91,6 +97,7 @@ public:
   void SetDrawingStyle2D(const char* style); // Setter for 2D drawing style
   void SetDrawingStyle3D(const char* style); // Setter for 3D drawing style
   void SetDrawingStyles(const int color, const char* style2D, const char* style3D); // Setter for drawing styles
+  void SetBackgroundDrawStyle(const int style); // Setter for background deltaPhi draw styles
   
   
 private:
@@ -122,6 +129,7 @@ private:
   bool fDrawJetTrackDeltaEta;                                            // Draw the jet-track deltaEta correlation
   bool fDrawJetTrackDeltaEtaDeltaPhi;                                    // Draw the jet-track deltaEta-deltaPhi correlation
   bool fDrawJetShape[DijetHistogramManager::knJetShapeTypes];            // Draw the jet shape histograms
+  bool fBackgroundDrawStyle[knBackgroundStyles];                         // Bacroung drawing style settings
   
   // Choose if you want to write the figures to pdf file
   bool fSaveFigures;           // Flag for saving the figures to file
