@@ -73,8 +73,9 @@ public:
   DijetCard(TFile *inFile); // Contructor with input file
   ~DijetCard();             // Destructor
   
-  TString GetDataType() const;  // Getter for data type string
-  void Write(TDirectory *file); // Write the contents of the card to a file
+  TString GetDataType() const;   // Getter for data type string
+  void Write(TDirectory *file);  // Write the contents of the card to a file
+  double GetMaxDeltaEta() const; // Get maximum deltaEta possible using jet and track cuts in the card
   
 };
 

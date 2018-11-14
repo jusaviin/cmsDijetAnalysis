@@ -314,7 +314,7 @@ TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
  *
  *  return: Background subtracted leading jet-track correlation histogram
  */
-TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, bool isInclusive){
+TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, double maxDeltaEta, bool isInclusive){
   
   // Start by projecting the deltaPhi distribution from the leading and subleading histograms in the background region
   // For inclusive distribution, same inclusive distribution should be given as both input histograms
@@ -340,9 +340,9 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   double binWidthDeltaEta = leadingHistogramWithBackground->GetYaxis()->GetBinWidth(1);
   int offset = isInclusive ? nDeltaPhiBins/2 : 0;  // Apply offset for inclusive histograms to scan over whole deltaPhi space
 
-  // Do not apply background to region where there is no content. TODO: Read number 4 from JCard.
-  int minFilledDeltaEtaBin = leadingHistogramWithBackground->GetYaxis()->FindBin(-4+0.001);
-  int maxFilledDeltaEtaBin = leadingHistogramWithBackground->GetYaxis()->FindBin(4-0.001);
+  // Do not apply background to region where there is no content
+  int minFilledDeltaEtaBin = leadingHistogramWithBackground->GetYaxis()->FindBin(-maxDeltaEta+0.001);
+  int maxFilledDeltaEtaBin = leadingHistogramWithBackground->GetYaxis()->FindBin(maxDeltaEta-0.001);
   
   // Loop over deltaPhi bins and fill the leading jet-track correlation result in the near side
   // and the subleading set-track correlation result in the away side

@@ -31,7 +31,7 @@ public:
   
   TH2D* MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram); // Mixed event correction for a two-dimensional histogram
   TH2D* DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram);  // Apply a seagull correction to the histogram
-  TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
+  TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, double maxDeltaEta, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
   TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram);  // Get the spillover correction from only hydjet histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram

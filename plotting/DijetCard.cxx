@@ -112,6 +112,13 @@ TString DijetCard::GetDataType() const{
 }
 
 /*
+ *  Getter for maximum deltaEta
+ */
+double DijetCard::GetMaxDeltaEta() const{
+  return (*fJetEtaCutVector)[1] + (*fTrackEtaCutVector)[1];
+}
+
+/*
  * Reader for all the vectors from the input file
  */
 void DijetCard::Write(TDirectory *file){
@@ -120,44 +127,44 @@ void DijetCard::Write(TDirectory *file){
   if(!file->GetDirectory("JCard")) file->mkdir("JCard");
   file->cd("JCard");
   
-  // Write all the vectors to the file
-  fDataTypeVector->Write("DataType");
-  fMcCorrelationTypeVector->Write("McCorrelationType");
-  fForestTypeVector->Write("ForestType");
-  fReadModeVector->Write("ReadMode");
-  fJetTypeVector->Write("JetType");
-  fJetAxisVector->Write("JetAxis");
-  fJetEtaCutVector->Write("JetEtaCut");
-  fSearchEtaCutVector->Write("SearchEtaCut");
-  fMaxPtCutVector->Write("MaxPtCut");
-  fMinPtCutVector->Write("MinPtCut");
-  fSubleadingPtCutVector->Write("SubleadingPtCut");
-  fDeltaPhiCutVector->Write("DeltaPhiCut");
-  fMinMaxTrackPtFractionVector->Write("MinMaxTrackPtFraction");
-  fMaxMaxTrackPtFractionVector->Write("MaxMaxTrackPtFraction");
-  fTrackEtaCutVector->Write("TrackEtaCut");
-  fMinTrackPtCutVector->Write("MinTrackPtCut");
-  fMaxTrackPtRelativeErrorVector->Write("MaxTrackPtRelativeError");
-  fVertexMaxDistanceVector->Write("VertexMaxDistance");
-  fCalorimeterSignalLimitPtVector->Write("CalorimeterSignalLimitPt");
-  fHighPtEtFractionVector->Write("HighPtEtFraction");
-  fChi2QualityCutVector->Write("Chi2QualityCut");
-  fMinimumTrackHitsVector->Write("MinimumTrackHits");
-  fSubeventCutVector->Write("SubeventCut");
-  fZVertexCutVector->Write("ZVertexCut");
-  fLowPtHatCutVector->Write("LowPtHatCut");
-  fHighPtHatCutVector->Write("HighPtHatCut");
-  fCentralityBinEdgesVector->Write("CentralityBinEdges");
-  fTrackPtBinEdgesVector->Write("TrackPtBinEdges");
-  fAsymmetryBinEdgesVector->Write("AsymmetryBinEdges");
-  fPtHatBinEdgesVector->Write("PtHatBinEdges");
-  fDoEventMixingVector->Write("DoEventMixing");
-  fMixWithPoolVector->Write("MixWithPool");
-  fNMixedEventsPerDijetVector->Write("NMixedEventsPerDijet");
-  fVzToleranceVector->Write("VzTolerance");
-  fMixingVzBinWidthVector->Write("MixingVzBinWidth");
-  fMixingHiBinWidthVector->Write("MixingHiBinWidth");
-  fMixingPoolDepthVector->Write("MixingPoolDepth");
+  // Write all the vectors to the file. Not all of these exist in older versions of cards, thus check if exists before writing.
+  if(fDataTypeVector) fDataTypeVector->Write("DataType");
+  if(fMcCorrelationTypeVector) fMcCorrelationTypeVector->Write("McCorrelationType");
+  if(fForestTypeVector) fForestTypeVector->Write("ForestType");
+  if(fReadModeVector) fReadModeVector->Write("ReadMode");
+  if(fJetTypeVector) fJetTypeVector->Write("JetType");
+  if(fJetAxisVector) fJetAxisVector->Write("JetAxis");
+  if(fJetEtaCutVector) fJetEtaCutVector->Write("JetEtaCut");
+  if(fSearchEtaCutVector) fSearchEtaCutVector->Write("SearchEtaCut");
+  if(fMaxPtCutVector) fMaxPtCutVector->Write("MaxPtCut");
+  if(fMinPtCutVector) fMinPtCutVector->Write("MinPtCut");
+  if(fSubleadingPtCutVector) fSubleadingPtCutVector->Write("SubleadingPtCut");
+  if(fDeltaPhiCutVector) fDeltaPhiCutVector->Write("DeltaPhiCut");
+  if(fMinMaxTrackPtFractionVector) fMinMaxTrackPtFractionVector->Write("MinMaxTrackPtFraction");
+  if(fMaxMaxTrackPtFractionVector) fMaxMaxTrackPtFractionVector->Write("MaxMaxTrackPtFraction");
+  if(fTrackEtaCutVector) fTrackEtaCutVector->Write("TrackEtaCut");
+  if(fMinTrackPtCutVector) fMinTrackPtCutVector->Write("MinTrackPtCut");
+  if(fMaxTrackPtRelativeErrorVector) fMaxTrackPtRelativeErrorVector->Write("MaxTrackPtRelativeError");
+  if(fVertexMaxDistanceVector) fVertexMaxDistanceVector->Write("VertexMaxDistance");
+  if(fCalorimeterSignalLimitPtVector) fCalorimeterSignalLimitPtVector->Write("CalorimeterSignalLimitPt");
+  if(fHighPtEtFractionVector) fHighPtEtFractionVector->Write("HighPtEtFraction");
+  if(fChi2QualityCutVector) fChi2QualityCutVector->Write("Chi2QualityCut");
+  if(fMinimumTrackHitsVector) fMinimumTrackHitsVector->Write("MinimumTrackHits");
+  if(fSubeventCutVector) fSubeventCutVector->Write("SubeventCut");
+  if(fZVertexCutVector) fZVertexCutVector->Write("ZVertexCut");
+  if(fLowPtHatCutVector) fLowPtHatCutVector->Write("LowPtHatCut");
+  if(fHighPtHatCutVector) fHighPtHatCutVector->Write("HighPtHatCut");
+  if(fCentralityBinEdgesVector) fCentralityBinEdgesVector->Write("CentralityBinEdges");
+  if(fTrackPtBinEdgesVector) fTrackPtBinEdgesVector->Write("TrackPtBinEdges");
+  if(fAsymmetryBinEdgesVector) fAsymmetryBinEdgesVector->Write("AsymmetryBinEdges");
+  if(fPtHatBinEdgesVector) fPtHatBinEdgesVector->Write("PtHatBinEdges");
+  if(fDoEventMixingVector) fDoEventMixingVector->Write("DoEventMixing");
+  if(fMixWithPoolVector) fMixWithPoolVector->Write("MixWithPool");
+  if(fNMixedEventsPerDijetVector) fNMixedEventsPerDijetVector->Write("NMixedEventsPerDijet");
+  if(fVzToleranceVector) fVzToleranceVector->Write("VzTolerance");
+  if(fMixingVzBinWidthVector) fMixingVzBinWidthVector->Write("MixingVzBinWidth");
+  if(fMixingHiBinWidthVector) fMixingHiBinWidthVector->Write("MixingHiBinWidth");
+  if(fMixingPoolDepthVector) fMixingPoolDepthVector->Write("MixingPoolDepth");
   
   // Return back to the main directory
   file->cd("../");

@@ -383,7 +383,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
         connectedIndex = GetConnectedIndex(iJetTrack);
         
         // Subtract the background from the mixed event corrected histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iCentralityBin][iTrackPtBin],isInclusive);
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),isInclusive);
         
         // Get also the background and background overlap region for QA purposes
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
