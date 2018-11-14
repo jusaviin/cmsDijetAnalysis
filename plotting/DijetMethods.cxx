@@ -340,6 +340,10 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   double binWidthDeltaEta = leadingHistogramWithBackground->GetYaxis()->GetBinWidth(1);
   int offset = isInclusive ? nDeltaPhiBins/2 : 0;  // Apply offset for inclusive histograms to scan over whole deltaPhi space
 
+  // Do not apply background to region where there is no content. TODO: Read number 4 from JCard.
+  int minFilledDeltaEtaBin = leadingHistogramWithBackground->GetYaxis()->FindBin(-4+0.001);
+  int maxFilledDeltaEtaBin = leadingHistogramWithBackground->GetYaxis()->FindBin(4-0.001);
+  
   // Loop over deltaPhi bins and fill the leading jet-track correlation result in the near side
   // and the subleading set-track correlation result in the away side
   for(int iDeltaPhi = 1; iDeltaPhi <= nDeltaPhiBins/2; iDeltaPhi++){
@@ -354,7 +358,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
       
       // If there is no content in the histogram, do not subtract background from it
-      if(leadingHistogramWithBackground->GetBinContent(iDeltaPhi,iDeltaEta) > 0){
+      if(iDeltaEta >= minFilledDeltaEtaBin && iDeltaEta <= maxFilledDeltaEtaBin){
 
         // Insert the values to the two-dimensional background histogram
         fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
@@ -396,7 +400,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
       
       // Do not set anything for the overlap if there is no content in the original histogram
-      if(leadingHistogramWithBackground->GetBinContent(iDeltaPhi,iDeltaEta) > 0){
+      if(iDeltaEta >= minFilledDeltaEtaBin && iDeltaEta <= maxFilledDeltaEtaBin){
         
         // Set the contants of the background overlap
         fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
