@@ -24,7 +24,7 @@ class DijetDrawer {
 public:
   
   // Indices for different background drawing styles
-  enum enumBackgroundStyles{kDrawOverlap,kDrawFit,kDrawFitComposition,knBackgroundStyles};
+  enum enumBackgroundStyles{kDrawOverlap,kOverlapZoom,kDrawFit,kDrawFitComposition,knBackgroundStyles};
   
   DijetDrawer(DijetHistogramManager *inputHistograms);  // Constructor
   ~DijetDrawer();                 // Destructor
@@ -85,7 +85,7 @@ public:
   void SetDrawSameMixedDeltaEtaRatio(const bool drawOrNot); // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region
   
   // Setters for figure saving and logarithmic axes
-  void SetSaveFigures(const bool saveOrNot, const char *format);  // Setter for saving the figures to a file
+  void SetSaveFigures(const bool saveOrNot, const char *format, const TString suffix);  // Setter for saving the figures to a file
   void SetLogPt(const bool isLog);          // Setter for logarithmic pT axis
   void SetLogCorrelation(const bool isLog); // Setter for logarithmic z axis for correlation plots
   void SetLogJetShape(const bool isLog);    // Setter for logarithmic jet shape drawing
@@ -106,6 +106,7 @@ private:
   DijetHistogramManager *fHistograms; // Manager for all the drawn histograms
   TString fSystemAndEnergy;           // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
   TString fCompactSystemAndEnergy;    // Same a before but without white spaces and dots
+  TString fFigureSaveNameAppend;      // Text that can be appended to standard figure naming scheme
   JDrawer *fDrawer;                   // JDrawer for drawing the histograms
   
   // ==============================================

@@ -13,6 +13,7 @@
  */
 DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   fHistograms(inputHistograms),
+  fFigureSaveNameAppend(""),
   fDrawEventInformation(false),
   fDrawDijetHistograms(false),
   fDrawSameMixedDeltaEtaRatio(false),
@@ -527,7 +528,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
             if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
               if(iCorrelationType == DijetHistogramManager::kBackground) { // Move legend to top left corner for leading jet-track background figures
-                legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
+                legendX1 = 0.33; legendY1 = 0.75; legendX2 = 0.53; legendY2 = 0.9;  // -> x1 = 0.17, x2 = 0.37
               } else if (iCorrelationType == DijetHistogramManager::kCorrected || iCorrelationType == DijetHistogramManager::kBackgroundSubtracted){ // Move legend away from peaks
                 if(iTrackPt == 2 || iTrackPt == 3){
                   legendX1 = 0.31; legendY1 = 0.75; legendX2 = 0.61; legendY2 = 0.9;
@@ -537,10 +538,18 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               }
             }
             
-            // If you do not want to draw the background fit, remove it from background histogram
-            if(iCorrelationType == DijetHistogramManager::kBackground && !fBackgroundDrawStyle[kDrawFit]){
-              TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
-              fourierFit->SetLineWidth(0);
+            if(iCorrelationType == DijetHistogramManager::kBackground){
+              
+              // If you do not want to draw the background fit, remove it from background histogram
+              if(!fBackgroundDrawStyle[kDrawFit]){
+                TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
+                fourierFit->SetLineWidth(0);
+              }
+              
+              // If set to zoom to background overlap region, do the zoom
+              if(fBackgroundDrawStyle[kOverlapZoom]){
+                drawnHistogram->GetXaxis()->SetRangeUser(1.2,1.95);
+              }
             }
             
             sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
@@ -578,9 +587,15 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 fourierV3->SetParameter(1,fourierFit->GetParameter(3));
                 fourierV3->SetLineColor(kMagenta);
                 
+                TF1 *fourierV4 = new TF1("fv4","[0]+[0]*[1]*2.0*TMath::Cos(4.0*x)",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fourierV4->SetParameter(0,fourierFit->GetParameter(0));
+                fourierV4->SetParameter(1,fourierFit->GetParameter(4));
+                fourierV4->SetLineColor(kCyan);
+                
                 fourierV1->Draw("same");
                 fourierV2->Draw("same");
                 fourierV3->Draw("same");
+                fourierV4->Draw("same");
               }
             }
             
@@ -957,6 +972,7 @@ void DijetDrawer::SaveFigure(TString figureName, TString centralityString, TStri
   figName.Append(trackPtString);
   figName.Append(correlationTypeString);
   figName.Append(deltaPhiString);
+  figName.Append(fFigureSaveNameAppend);
   gPad->GetCanvas()->SaveAs(Form("%s.%s",figName.Data(),fFigureFormat));
   
 }
@@ -1157,9 +1173,10 @@ void DijetDrawer::SetDrawSameMixedDeltaEtaRatio(const bool drawOrNot){
 }
 
 // Setter for saving the figures to a file
-void DijetDrawer::SetSaveFigures(const bool saveOrNot, const char *format){
+void DijetDrawer::SetSaveFigures(const bool saveOrNot, const char *format, const TString suffix){
   fSaveFigures = saveOrNot;
   fFigureFormat = format;
+  fFigureSaveNameAppend = suffix;
 }
 
 // Setter for logarithmic pT axis
@@ -1230,6 +1247,7 @@ void DijetDrawer::SetBackgroundDrawStyle(const int style){
   
   std::bitset<knBackgroundStyles> bitChecker(style);
   fBackgroundDrawStyle[kDrawOverlap] = bitChecker.test(kDrawOverlap);
+  fBackgroundDrawStyle[kOverlapZoom] = bitChecker.test(kOverlapZoom);
   fBackgroundDrawStyle[kDrawFit] = bitChecker.test(kDrawFit);
   fBackgroundDrawStyle[kDrawFitComposition] = bitChecker.test(kDrawFitComposition);
 }

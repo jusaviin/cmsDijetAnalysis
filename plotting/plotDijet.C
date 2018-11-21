@@ -53,7 +53,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = true;
+  bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   bool drawTrackInclusiveJetCorrelations = false;
@@ -81,9 +81,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaPhi = true;
   bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
   bool drawJetShape = false;
@@ -93,21 +93,23 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
-  bool drawCorrected = true;
+  bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
   bool drawBackground = true;
-  int backgroundStyle = 6; // Drawing style for background deltaPhi. The following options are currently implemented:
+  int backgroundStyle = 3; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
-                           // Bit 1 = Draw background fit (int = 2)
-                           // Bit 2 = Draw fit composition (int = 4)
-                           // It follows that this number must be between 0 and 7.
+                           // Bit 1 = Zoom to overlap region (int = 2)
+                           // Bit 2 = Draw background fit (int = 4)
+                           // Bit 3 = Draw fit composition (int = 8)
+                           // It follows that this number must be between 0 and 15.
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
   const char* figureFormat = "pdf";
+  TString figureNameSuffix = "";
   
   // Normalization for jet shape plotting
   bool normalizeJetShapePlot = false;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
@@ -140,10 +142,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;//nCentralityBins-1;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = nTrackPtBins-2;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = 2;
   
   if(selectedCentralityBin >= 0){
     firstDrawnCentralityBin = selectedCentralityBin;
@@ -306,7 +308,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   resultDrawer->SetDrawBackgroundSubtracted(drawBackgroundSubtracted);
   resultDrawer->SetDrawBackground(drawBackground);
   resultDrawer->SetDrawSameMixedDeltaEtaRatio(drawSameMixedDeltaEtaRatio);
-  resultDrawer->SetSaveFigures(saveFigures,figureFormat);
+  resultDrawer->SetSaveFigures(saveFigures,figureFormat,figureNameSuffix);
   resultDrawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   resultDrawer->SetDrawingStyles(colorPalette,style2D,style3D);
   resultDrawer->SetNormalizeJetShape(normalizeJetShapePlot);

@@ -23,9 +23,9 @@ void compareDijetHistograms(){
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -40,7 +40,7 @@ void compareDijetHistograms(){
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeMCComparison = false;
   bool drawJetShapeBinMap = false;
   
@@ -55,7 +55,7 @@ void compareDijetHistograms(){
   bool drawBackground = false;
   
   // Draw histograms to make a check on the validity of the event mixing method
-  bool drawEventMixingCheck = true;
+  bool drawEventMixingCheck = false;
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
@@ -119,12 +119,14 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_noSeagull_smoothedMixing_processed_2018-11-06.root"};
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijetPbPb_pfJets_3eventsMixed_noUncorrected_processed_2018-10-02.root"
+  //  "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"
+  //  "data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root"
   
   TString legendComment[nDatasets] = {"corrected"};
   

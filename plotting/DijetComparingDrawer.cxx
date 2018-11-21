@@ -712,29 +712,36 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   TFile *comparisonFile = TFile::Open("data/JS5TeV_HIN_16_020.root");
   //TFile *comparisonFile = TFile::Open("data/inclJetShapes_GenGen_PYTHIA6.root");
   const int nTrackPtBins = fBaseHistograms->GetNTrackPtBins();
-  TH1D *comparisonHistograms[nTrackPtBins];
-  TH1D *sumHistogram;
+  const int nCentralityBins = fBaseHistograms->GetNCentralityBins();
+  TH1D *comparisonHistograms[nCentralityBins][nTrackPtBins];
+  TH1D *sumHistogram[nCentralityBins];
   TH1D *dijetSumHistogram;
   TH1D *helperHistogram;
   
   // Find the histograms to compare with from the comparison file
-  comparisonHistograms[0] = (TH1D*) comparisonFile->Get("JS_pp_0");
   //comparisonHistograms[0] = (TH1D*) comparisonFile->Get("dr_pTweighted_0_0");
-  sumHistogram = (TH1D*) comparisonHistograms[0]->Clone("normalizationSum");
-  for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
-    sprintf(namerX,"JS_pp_%d",iTrackPt);
-    //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
-    comparisonHistograms[iTrackPt] = (TH1D*) comparisonFile->Get(namerX);
-    sumHistogram->Add(comparisonHistograms[iTrackPt]);
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    sprintf(namerX,"JS_pb_0_%d",iCentrality);
+    comparisonHistograms[iCentrality][0] = (TH1D*) comparisonFile->Get(namerX);
+    sprintf(namerX,"normalizationSum%d",iCentrality);
+    sumHistogram[iCentrality] = (TH1D*) comparisonHistograms[iCentrality][0]->Clone(namerX);
+    for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
+      sprintf(namerX,"JS_pb_%d_%d",iTrackPt,iCentrality);
+      //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
+      comparisonHistograms[iCentrality][iTrackPt] = (TH1D*) comparisonFile->Get(namerX);
+      sumHistogram[iCentrality]->Add(comparisonHistograms[iCentrality][iTrackPt]);
+    }
   }
   
   // There are more pT bins in the comparison file, so sum them up to match the pT bins in this analysis
-  for(int iTrackPt = nTrackPtBins; iTrackPt < 9; iTrackPt++){
-    sprintf(namerX,"JS_pp_%d",iTrackPt);
-    //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
-    helperHistogram = (TH1D*) comparisonFile->Get(namerX);
-    comparisonHistograms[nTrackPtBins-1]->Add(helperHistogram);
-    sumHistogram->Add(helperHistogram);
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    for(int iTrackPt = nTrackPtBins; iTrackPt < 9; iTrackPt++){
+      sprintf(namerX,"JS_pb_%d_%d",iTrackPt,iCentrality);
+      //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
+      helperHistogram = (TH1D*) comparisonFile->Get(namerX);
+      comparisonHistograms[iCentrality][nTrackPtBins-1]->Add(helperHistogram);
+      sumHistogram[iCentrality]->Add(helperHistogram);
+    }
   }
   
   // Normalize the jet shape histograms from the comparison file
@@ -772,7 +779,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         sprintf(namerY,"%s",fBaseHistograms->GetJetShapeAxisName(DijetHistogramManager::kJetShape));
         
         // Prepare the histograms and draw then to the upper pad
-        fComparisonHistogram[0] = comparisonHistograms[iTrackPt];
+        fComparisonHistogram[0] = comparisonHistograms[iCentrality][iTrackPt];
         fMainHistogram = (TH1D*) fComparisonHistogram[0]->Clone(Form("Klooni%d%d%d",iJetTrack,iCentrality,iTrackPt));
         helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
         
@@ -825,7 +832,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
       
       // Setup the main histogram and comparison histogram and draw them
       fMainHistogram = dijetSumHistogram;
-      fComparisonHistogram[0] = sumHistogram;
+      fComparisonHistogram[0] = sumHistogram[iCentrality];
       
       DrawToUpperPad(namerX,namerY,fLogJetShape);
       
