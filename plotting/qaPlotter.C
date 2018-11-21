@@ -51,6 +51,58 @@ void setupRatioLegend(TLegend* legend, TH1* dataHistogram, TH1* mcHistogram){
   legend->AddEntry(mcHistogram,"Hydjet","l");
 }
 
+/*
+ * Print a slide with background overlap information to console
+ *
+ *
+ */
+void printBackgroundOverlapSlide(bool subleadingOverlap, double binValues[6][6], double binErrors[6][6], double averageValues[6], double averageErrors[6], TString centrality){
+  
+  // Create a histogram manager to facilitate binning info exchange
+  const int nTrackPtBins = 6;
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  
+  // Set up correct naming based on background type
+  int binNumbers[3] = {101,102,103};
+  char namer[100];
+  sprintf(namer,"\\frametitle{Subleading bg/leading overlap %s}",centrality.Data());
+  int adder = 3;
+  
+  if(subleadingOverlap){
+    sprintf(namer,"\\frametitle{Leading bg/subleading overlap %s}",centrality.Data());
+    binNumbers[0] = 98; binNumbers[1] = 99; binNumbers[2] = 100;
+    adder = 0;
+  }
+  
+  
+  cout << endl;
+  cout << "\\begin{frame}" << endl;
+  cout << namer << endl;
+  cout << "\\begin{center}" << endl;
+  cout << "  \\begin{tabular}{ccccc}" << endl;
+  cout << "    \\toprule" << endl;
+  cout << "    $p_{\\mathrm{T}} (GeV)$ & Bin "<< binNumbers[0] << " & Bin " << binNumbers[1] << " & Bin " << binNumbers[2] << " & Average \\\\" << endl;
+  cout << "    \\midrule" << endl;
+
+  // Set the correct precision for printing floating point numbers
+  cout << fixed << setprecision(3);
+  
+  // Print one line for each track pT bin
+  for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    sprintf(namer,"    %.1f-%.1f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+    cout << namer;
+    for(int iBin = 0; iBin < 3; iBin++){
+      cout << " & $" << binValues[iTrackPt][iBin+adder] << "\\pm" << binErrors[iTrackPt][iBin+adder] << "$";
+    }
+    cout << " & $" << averageValues[iTrackPt] << "\\pm" << averageErrors[iTrackPt] << "$";
+    cout << " \\\\" << endl;
+  }
+  
+  cout << "    \\bottomrule" << endl;
+  cout << "  \\end{tabular}" << endl;
+  cout << "\\end{center}" << endl;
+  cout << "\\end{frame}" << endl;
+}
 
 /*
  * Plotter for QA related histograms
@@ -65,8 +117,9 @@ void qaPlotter(){
   
   bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = false;        // Draw the QA plots for spillover correction
-  bool drawSeagull = true;           // Draw the QA plots for seagull correction
+  bool drawSpillover = false;              // Draw the QA plots for spillover correction
+  bool drawSeagull = false;                 // Draw the QA plots for seagull correction
+  bool calculateBackgroundOverlap = true; // Check difference in background overlap region of leading and subleading jets
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
@@ -74,6 +127,7 @@ void qaPlotter(){
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
+  const char *titleAddition[DijetHistogramManager::knJetTrackCorrelations] = {"",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", $p_{\\mathrm{T}}$ weighted"};
   
   /////////////////
   // Config done //
@@ -81,7 +135,8 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
   TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_subeNon0_smoothedMixing_2018-11-05_QA.root");
-  TFile *seagullFile = TFile::Open("data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-06_QA.root");
+  TFile *seagullFile = TFile::Open("data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19_QA.root");
+  TFile *backgroundFile = TFile::Open("data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root");
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
@@ -94,6 +149,8 @@ void qaPlotter(){
   TH1D *spilloverDeltaEtaProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *spilloverDeltaPhiProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *seagullDeltaEtaWings[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *backgroundDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *backgroundDeltaPhiOverlap[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   
   const char *histogramNames[2] = {"spilloverQA","dataReplica"};
   
@@ -106,6 +163,12 @@ void qaPlotter(){
         
         sprintf(histogramNamer,"seagullDeltaEta_%s/seagullDeltaEta_%s_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         seagullDeltaEtaWings[iJetTrack][iCentrality][iTrackPt] = (TH1D*) seagullFile->Get(histogramNamer);
+        
+        sprintf(histogramNamer,"%s/%sDeltaPhi_Background_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt] = (TH1D*) backgroundFile->Get(histogramNamer);
+        
+        sprintf(histogramNamer,"%s/%sDeltaPhi_BackgroundOverlap_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        backgroundDeltaPhiOverlap[iJetTrack][iCentrality][iTrackPt] = (TH1D*) backgroundFile->Get(histogramNamer);
         
         for(int iDataType = 0; iDataType < 2; iDataType++){
         
@@ -301,4 +364,73 @@ void qaPlotter(){
     } // jet-track loop
     
   } // Drawing the seagull correction
+  
+  // In the overlap histogram the filled bins are: 98-103
+  if(calculateBackgroundOverlap){
+    
+    // Turn off subleading side, since it is same as leading but mirrored
+    for(int i = 3; i < 6; i++){
+      correlationSelector[i] = false;
+    }
+    
+    // Define helper variables to calculate ratios and errors
+    double backgroundValue, overlapValue, backgroundError, overlapError;
+    double ratioValue[nTrackPtBins][6], ratioError[nTrackPtBins][6];
+    double averageValue[nTrackPtBins], averageError[nTrackPtBins];
+    double averageSubleadingOverlap[nTrackPtBins], averageSubleadingOverlapError[nTrackPtBins];
+    double averageLeadingOverlap[nTrackPtBins], averageLeadingOverlapError[nTrackPtBins];
+    
+    // Loop over all the bins
+    for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+      if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        titleString = Form("Cent: %.0f-%.0f\\%%%s",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1],titleAddition[iJetTrack]);
+        
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          
+          // Initialize averages to 0
+          averageValue[iTrackPt] = 0;
+          averageError[iTrackPt] = 0;
+          averageLeadingOverlap[iTrackPt] = 0;
+          averageSubleadingOverlap[iTrackPt] = 0;
+          averageLeadingOverlapError[iTrackPt] = 0;
+          averageSubleadingOverlapError[iTrackPt] = 0;
+          
+          // Loop over the bins which have content in the background overlap histogram
+          for(int iBin = 98; iBin <= 103; iBin++){
+            backgroundValue = backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetBinContent(iBin);
+            overlapValue = backgroundDeltaPhiOverlap[iJetTrack][iCentrality][iTrackPt]->GetBinContent(iBin);
+            backgroundError = backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetBinError(iBin);
+            overlapError = backgroundDeltaPhiOverlap[iJetTrack][iCentrality][iTrackPt]->GetBinError(iBin);
+            
+            // Calcaulate the ratio and the error for the ratio for overlapping points
+            ratioValue[iTrackPt][iBin-98] = backgroundValue/overlapValue;
+            ratioError[iTrackPt][iBin-98] = TMath::Sqrt(TMath::Power(backgroundError/overlapValue,2)+TMath::Power((backgroundValue*overlapError)/(overlapValue*overlapValue),2));
+            
+            // Calculate average of the ratios in both overlapping areas
+            averageValue[iTrackPt] += ratioValue[iTrackPt][iBin-98]/6.0;
+            averageError[iTrackPt] += TMath::Power(ratioError[iTrackPt][iBin-98]/6.0,2);
+            if(iBin <= 100){
+              averageSubleadingOverlap[iTrackPt] += ratioValue[iTrackPt][iBin-98]/3.0;
+              averageSubleadingOverlapError[iTrackPt] += TMath::Power(ratioError[iTrackPt][iBin-98]/3.0,2);
+            } else {
+              averageLeadingOverlap[iTrackPt] += ratioValue[iTrackPt][iBin-98]/3.0;
+              averageLeadingOverlapError[iTrackPt] += TMath::Power(ratioError[iTrackPt][iBin-98]/3.0,2);
+            }
+          } // Loop over bins that are filled in the overlap histogram
+          averageError[iTrackPt] = TMath::Sqrt(averageError[iTrackPt]);
+          averageLeadingOverlapError[iTrackPt] = TMath::Sqrt(averageLeadingOverlapError[iTrackPt]);
+          averageSubleadingOverlapError[iTrackPt] = TMath::Sqrt(averageSubleadingOverlapError[iTrackPt]);
+          
+        } // Track pT loop
+        
+        // Print the obtained results to LaTeX slides
+        printBackgroundOverlapSlide(true,ratioValue,ratioError,averageSubleadingOverlap,averageSubleadingOverlapError,titleString);
+        
+        printBackgroundOverlapSlide(false,ratioValue,ratioError,averageLeadingOverlap,averageLeadingOverlapError,titleString);
+        
+      } // Centrality loop
+
+    } // Jet-track type loop
+  } // Background overlap numbers
 }
