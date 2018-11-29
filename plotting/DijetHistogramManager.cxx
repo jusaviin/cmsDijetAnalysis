@@ -421,7 +421,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           
           // Do a fourier fit for the background deltaPhi distribution
           if(iCorrelationType == kBackground){
-            fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta]);
+            fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta],knFittedFlowComponents);
           }
           
           // DeltaPhi histogram over signal eta region

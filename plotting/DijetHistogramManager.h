@@ -47,8 +47,9 @@ public:
   enum enumJetShape{kJetShape, kJetShapeBinCount, knJetShapeTypes};
   
   // Dimensions for histogram arrays
-  static const int knCentralityBins = 4;   // Number of centrality bins
-  static const int knTrackPtBins = 6;      // Number of track pT bins
+  static const int knCentralityBins = 4;       // Number of centrality bins
+  static const int knTrackPtBins = 6;          // Number of track pT bins
+  static const int knFittedFlowComponents = 4; // Number of fitted flow components
   
 private:
   

@@ -748,33 +748,41 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
  * Do a Fourier fit for the background deltaPhi distribution
  *
  *  TH1D* backgroundDeltaPhi = Background deltaPhi histogram
+ *  const int maxVn = Largest vn included in the Fourier fit
  *
  *  return = The Fourier fit function
  */
-TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi){
+TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi, const int maxVn){
   
-  // Define the fourier fit. Use fit parameters up to v3
-  TF1 *fourier = new TF1("fourier","[0]*(1+2.0*[1]*TMath::Cos(1.0*x)+2.0*[2]*TMath::Cos(2.0*x)+2.0*[3]*TMath::Cos(3.0*x)+2.0*[4]*TMath::Cos(4.0*x))",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+  // Define the fourier fit. Use fit parameters up to maxVn
+  char fourierFormula[300] = "[0]*(1";
+  for(int vn = 1; vn <= maxVn; vn++){
+    sprintf(fourierFormula,"%s+2.0*[%d]*TMath::Cos(%d.0*x)",fourierFormula,vn,vn);
+  }
+  sprintf(fourierFormula,"%s)",fourierFormula);
   
+  TF1 *fourier = new TF1("fourier",fourierFormula,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+
   // Set names for the parameters
   fourier->SetParName(0,"BkgLevel");
-  fourier->SetParName(1,"v1");
-  fourier->SetParName(2,"v2");
-  fourier->SetParName(3,"v3");
-  fourier->SetParName(4,"v4");
+  for(int vn = 1; vn <= maxVn; vn++){
+    sprintf(fourierFormula,"v%d",vn);
+    fourier->SetParName(vn,fourierFormula);
+  }
   
   // Set initial values for the parameters
   fourier->SetParameter(0,backgroundDeltaPhi->GetBinContent(backgroundDeltaPhi->FindBin(TMath::Pi()/2)));
   fourier->SetParameter(1,0);
   fourier->SetParameter(2,0.03);
-  fourier->SetParameter(3,0);
-  fourier->SetParameter(4,0);
+  for(int vn = 3; vn <= maxVn; vn++){
+    fourier->SetParameter(vn,0);
+  }
   
   // Set limits such that the parameters must remain sensible
   fourier->SetParLimits(1,-1.0,1.0);
-  fourier->SetParLimits(2,0,1.0);
-  fourier->SetParLimits(3,0,1.0);
-  fourier->SetParLimits(4,0,1.0);
+  for(int vn = 2; vn <= maxVn; vn++){
+    fourier->SetParLimits(vn,0,1.0);
+  }
   
   // Do the fit!
   backgroundDeltaPhi->Fit("fourier","","",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
