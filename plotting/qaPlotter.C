@@ -56,6 +56,47 @@ void setupRatioLegend(TLegend* legend, TH1* dataHistogram, TH1* mcHistogram){
  *
  *
  */
+void printBackroundSumSlide(double leadingValues[4][6], double leadingErrors[4][6], double subleadingValues[4][6], double subleadingErrors[4][6]){
+  
+  // Create a histogram manager to facilitate binning info exchange
+  const int nTrackPtBins = 6;
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  
+  char namer[100];
+  
+  cout << endl;
+  cout << "\\begin{frame}" << endl;
+  cout << "\\frametitle{Leading background/subleading background}" << endl;
+  cout << "\\begin{center}" << endl;
+  cout << "  \\begin{tabular}{ccccc}" << endl;
+  cout << "    \\toprule" << endl;
+  cout << "    $p_{\\mathrm{T}} (GeV)$ & C: 0-10 \\% & C: 10-30 \\% & C: 30-50 \\% & C: 50-100 \\% \\\\" << endl;
+  cout << "    \\midrule" << endl;
+  
+  // Set the correct precision for printing floating point numbers
+  cout << fixed << setprecision(3);
+  
+  // Print one line for each track pT bin
+  for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    sprintf(namer,"    %.1f-%.1f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+    cout << namer;
+    for(int iCentrality = 0; iCentrality < 4; iCentrality++){
+      cout << " & $" << leadingValues[iCentrality][iTrackPt]/subleadingValues[iCentrality][iTrackPt] << "\\pm" << TMath::Sqrt(TMath::Power(leadingErrors[iCentrality][iTrackPt]/subleadingValues[iCentrality][iTrackPt],2)+TMath::Power(leadingValues[iCentrality][iTrackPt]*subleadingErrors[iCentrality][iTrackPt]/TMath::Power(subleadingValues[iCentrality][iTrackPt],2),2)) << "$";
+    }
+    cout << " \\\\" << endl;
+  }
+  
+  cout << "    \\bottomrule" << endl;
+  cout << "  \\end{tabular}" << endl;
+  cout << "\\end{center}" << endl;
+  cout << "\\end{frame}" << endl;
+}
+
+/*
+ * Print a slide with background overlap information to console
+ *
+ *
+ */
 void printBackgroundOverlapSlide(bool subleadingOverlap, double binValues[6][6], double binErrors[6][6], double averageValues[6], double averageErrors[6], TString centrality){
   
   // Create a histogram manager to facilitate binning info exchange
@@ -107,7 +148,10 @@ void printBackgroundOverlapSlide(bool subleadingOverlap, double binValues[6][6],
 /*
  * Plotter for QA related histograms
  *
- *  Currently only plotting QA for spillover correction. More QA plots to be added.
+ *  Implemented QA checks:
+ *    - spillover correction
+ *    - seagull correction
+ *    - background level check (TODO: for the six overlapping bins, do ratio of leading sum and subleading sum)
  */
 void qaPlotter(){
   
@@ -376,6 +420,8 @@ void qaPlotter(){
     // Define helper variables to calculate ratios and errors
     double backgroundValue, overlapValue, backgroundError, overlapError;
     double ratioValue[nTrackPtBins][6], ratioError[nTrackPtBins][6];
+    double leadingSum[nCentralityBins][6], subleadingSum[nCentralityBins][6];
+    double leadingSumError[nCentralityBins][6], subleadingSumError[nCentralityBins][6];
     double averageValue[nTrackPtBins], averageError[nTrackPtBins];
     double averageSubleadingOverlap[nTrackPtBins], averageSubleadingOverlapError[nTrackPtBins];
     double averageLeadingOverlap[nTrackPtBins], averageLeadingOverlapError[nTrackPtBins];
@@ -395,6 +441,10 @@ void qaPlotter(){
           averageSubleadingOverlap[iTrackPt] = 0;
           averageLeadingOverlapError[iTrackPt] = 0;
           averageSubleadingOverlapError[iTrackPt] = 0;
+          leadingSum[iCentrality][iTrackPt] = 0;
+          subleadingSum[iCentrality][iTrackPt] = 0;
+          leadingSumError[iCentrality][iTrackPt] = 0;
+          subleadingSumError[iCentrality][iTrackPt] = 0;
           
           // Loop over the bins which have content in the background overlap histogram
           for(int iBin = 98; iBin <= 103; iBin++){
@@ -402,6 +452,19 @@ void qaPlotter(){
             overlapValue = backgroundDeltaPhiOverlap[iJetTrack][iCentrality][iTrackPt]->GetBinContent(iBin);
             backgroundError = backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetBinError(iBin);
             overlapError = backgroundDeltaPhiOverlap[iJetTrack][iCentrality][iTrackPt]->GetBinError(iBin);
+            
+            // Sum together all leading and subleading
+            if(iBin < 101){  // If background = leading and overlap = subleading
+              leadingSum[iCentrality][iTrackPt] += backgroundValue;
+              leadingSumError[iCentrality][iTrackPt] += backgroundError;
+              subleadingSum[iCentrality][iTrackPt] += overlapValue;
+              subleadingSumError[iCentrality][iTrackPt] += overlapError;
+            } else { // If background = subleading and overlap = leading
+              leadingSum[iCentrality][iTrackPt] += overlapValue;
+              leadingSumError[iCentrality][iTrackPt] += overlapError;
+              subleadingSum[iCentrality][iTrackPt] += backgroundValue;
+              subleadingSumError[iCentrality][iTrackPt] += backgroundError;
+            }
             
             // Calcaulate the ratio and the error for the ratio for overlapping points
             ratioValue[iTrackPt][iBin-98] = backgroundValue/overlapValue;
@@ -431,6 +494,8 @@ void qaPlotter(){
         
       } // Centrality loop
 
+      printBackroundSumSlide(leadingSum,leadingSumError,subleadingSum,subleadingSumError);
+      
     } // Jet-track type loop
   } // Background overlap numbers
 }
