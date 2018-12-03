@@ -95,7 +95,8 @@ void GeneratorLevelSkimForestReader::Initialize(){
   fEventTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
   
   // Connect the branches to the HLT tree
-  fCaloJetFilterBit = 1;  // No calorimeter filter bit is present in the skims
+  fCaloJetFilterBit = 1;         // No calorimeter filter bit is present in the skims
+  fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   
   // Connect the branches containing event selection filter bits
   if (fDataType == kPpMC){

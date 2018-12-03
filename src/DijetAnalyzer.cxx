@@ -782,7 +782,7 @@ void DijetAnalyzer::RunAnalysis(){
       //  ===== Apply all the event quality cuts =====
       //  ============================================
       
-      if(!PassEventCuts(fJetReader,fFillEventInformation)) continue;
+      if(!PassEventCuts(fJetReader,fFillEventInformation,DijetHistograms::kSameEvent)) continue;
       
       // ======================================
       // ===== Event quality cuts applied =====
@@ -1520,11 +1520,12 @@ Bool_t DijetAnalyzer::PassSubeventCut(const Int_t subeventIndex) const{
  *
  *  Arguments:
  *   ForestReader *eventReader = ForestReader containing the event information checked for event cuts
- *   const Bool_t fillHistograms = Flag for filling the event information histograms
+ *   const Bool_t fillHistograms = Flag for filling the event information histograms.
+ *   const Int_t correlationType = Index for correlation type (same or mixed event)
  *
  *   return = True if all event cuts are passed, false otherwise
  */
-Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms){
+Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms, const Int_t correlationType){
 
   // Cut for primary vertex. Only applied for data.
   if(eventReader->GetPrimaryVertexFilterBit() == 0) return false;
@@ -1550,8 +1551,10 @@ Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fill
   if(eventReader->GetClusterCompatibilityFilterBit() == 0) return false;
   if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
   
-  // Cut for calirimeter jet quality. Only applied for data.
-  if(eventReader->GetCaloJetFilterBit() == 0) return false;
+  // Cut for calorimeter jet quality. Only applied for data.
+  if(fDataType != ForestReader::kPbPb && eventReader->GetCaloJetFilterBit() == 0) return false;  // Not PbPb, use unprescaled trigger
+  else if(fDataType == ForestReader::kPbPb && correlationType == DijetHistograms::kSameEvent && eventReader->GetCaloJetFilterBit() == 0) return false; // Regular PbPb, use unprescaled trigger
+  else if(fDataType == ForestReader::kPbPb && correlationType == DijetHistograms::kMixedEvent && eventReader->GetPrescaledCaloJetFilterBit() == 0) return false; // PbPb mixing, use prescaled trigger
   if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
   
   // Cut for vertex z-position
@@ -1708,7 +1711,7 @@ void DijetAnalyzer::CreateMixingPool(){
     
     // Read vz and HiBin for the current event
     fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(iCurrentEvent);
-    if(!PassEventCuts(fTrackReader[DijetHistograms::kMixedEvent],false)) continue;
+    if(!PassEventCuts(fTrackReader[DijetHistograms::kMixedEvent],false,DijetHistograms::kMixedEvent)) continue;
     mixedEventVz = fTrackReader[DijetHistograms::kMixedEvent]->GetVz();
     mixedEventHiBin = fTrackReader[DijetHistograms::kMixedEvent]->GetHiBin();
     
@@ -1806,7 +1809,7 @@ void DijetAnalyzer::PrepareMixingVectors(){
   fMixedEventHiBin.clear();  // contents they might have
   for(Int_t iMixedEvent = 0; iMixedEvent < fnEventsInMixingFile; iMixedEvent++){
     fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(iMixedEvent);
-    if(PassEventCuts(fTrackReader[DijetHistograms::kMixedEvent],false)){
+    if(PassEventCuts(fTrackReader[DijetHistograms::kMixedEvent],false,DijetHistograms::kMixedEvent)){
       fMixedEventVz.push_back(fTrackReader[DijetHistograms::kMixedEvent]->GetVz());
       fMixedEventHiBin.push_back(fTrackReader[DijetHistograms::kMixedEvent]->GetHiBin());
     } else { // If event cuts not passed, input values such that events will never be mixed with these

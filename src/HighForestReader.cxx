@@ -250,6 +250,7 @@ void HighForestReader::Initialize(){
   } else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }
+  fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   
   // Connect the branches to the skim tree (different for pp and PbPb data and Monte Carlo)
   fSkimTree->SetBranchStatus("*",0);

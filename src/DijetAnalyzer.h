@@ -63,7 +63,7 @@ private:
   
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
-  Bool_t PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms); // Check if the event passes the event cuts
+  Bool_t PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms, const Int_t correlationType); // Check if the event passes the event cuts
   Double_t GetTrackEfficiencyCorrection(const Int_t correlationType, const Int_t iTrack); // Get the track efficiency correction for a given track
   Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system

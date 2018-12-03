@@ -188,13 +188,17 @@ void SkimForestReader::Initialize(){
   
   // Connect the branches to the HLT tree
   if(fDataType == kPp){ // pp data
-    fEventTree->SetBranchStatus("HLT_AK4CaloJet80_Eta5p1_v1",1);
-    fEventTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    fEventTree->SetBranchStatus("HLT_ak4CaloJet80",1);
+    fEventTree->SetBranchAddress("HLT_ak4CaloJet80",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    fCaloJetFilterBitPrescale = 1; // No prescaled filter bit for pp
   } else if (fDataType == kPbPb){ // PbPb
+    fEventTree->SetBranchStatus("HLT_ak4CaloJet100",1);
+    fEventTree->SetBranchAddress("HLT_ak4CaloJet100",&fCaloJetFilterBit,&fCaloJetFilterBranch);
     fEventTree->SetBranchStatus("HLT_ak4CaloJet100_Prescale",1);
-    fEventTree->SetBranchAddress("HLT_ak4CaloJet100_Prescale",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    fEventTree->SetBranchAddress("HLT_ak4CaloJet100_Prescale",&fCaloJetFilterBitPrescale,&fCaloJetFilterPrescaleBranch);
   } else { // Local test or MC
-    fCaloJetFilterBit = 1;  // No filter for local test or MC
+    fCaloJetFilterBit = 1;         // No filter for local test or MC
+    fCaloJetFilterBitPrescale = 1; // No prescaled filter for local test or MC
   }
   
   // Connect the branches containing event selection filter bits

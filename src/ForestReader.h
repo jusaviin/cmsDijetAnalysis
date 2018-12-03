@@ -60,7 +60,8 @@ public:
   virtual Float_t GetJetMaxTrackPt(Int_t iJet) const = 0; // Getter for maximum track pT inside a jet
   
   // Getters for leaves in HLT tree
-  Int_t GetCaloJetFilterBit() const;  // Getter for calorimeter jet filter bit
+  Int_t GetCaloJetFilterBit() const;           // Getter for calorimeter jet filter bit
+  Int_t GetPrescaledCaloJetFilterBit() const;  // Getter for calorimeter jet filter bit
   
   // Getters for leaves in skim tree
   Int_t GetPrimaryVertexFilterBit() const;           // Getter for primary vertex filter bit
@@ -123,7 +124,8 @@ protected:
   TBranch *fJetMaxTrackPtBranch; // Maximum pT for a track inside a jet
   
   // Branches for HLT tree
-  TBranch *fCaloJetFilterBranch;    // Branch for calo jet filter bit
+  TBranch *fCaloJetFilterBranch;         // Branch for calo jet filter bit
+  TBranch *fCaloJetFilterPrescaleBranch; // Branch for prescaled calo jet filter bit
   
   // Branches for skim tree
   TBranch *fPrimaryVertexBranch;           // Branch for primary vertex filter bit
@@ -166,7 +168,8 @@ protected:
   Int_t fnJets;                                // number of jets in an event
   
   // Leaves for the HLT tree
-  Int_t fCaloJetFilterBit;    // Filter bit for calorimeter jets
+  Int_t fCaloJetFilterBit;         // Filter bit for calorimeter jets
+  Int_t fCaloJetFilterBitPrescale; // Prescaled filter bit needed for the minimum bias file in PbPb mixing
   
   // Leaves for the skim tree
   Int_t fPrimaryVertexFilterBit;           // Filter bit for primary vertex

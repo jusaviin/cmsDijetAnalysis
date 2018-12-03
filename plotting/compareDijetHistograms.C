@@ -40,8 +40,8 @@ void compareDijetHistograms(){
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
-  bool drawJetShapeMCComparison = false;
+  bool drawJetShape = false;
+  bool drawJetShapeMCComparison = true;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
@@ -118,8 +118,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"};
+  const int nDatasets = 2;
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_pfCandAxis_noInclusiveOrUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-10-31_combine0-10.root","data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -128,7 +128,7 @@ void compareDijetHistograms(){
   //  "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"
   //  "data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root"
   
-  TString legendComment[nDatasets] = {"corrected"};
+  TString legendComment[nDatasets] = {"highForest","skims"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   

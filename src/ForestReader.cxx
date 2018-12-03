@@ -19,6 +19,7 @@ ForestReader::ForestReader() :
   fJetRawPtBranch(0),
   fJetMaxTrackPtBranch(0),
   fCaloJetFilterBranch(0),
+  fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
   fBeamScrapingBranch(0),
   fCollisionEventSelectionBranch(0),
@@ -49,6 +50,7 @@ ForestReader::ForestReader() :
   fPtHat(0),
   fnJets(0),
   fCaloJetFilterBit(0),
+  fCaloJetFilterBitPrescale(0),
   fPrimaryVertexFilterBit(0),
   fBeamScrapingFilterBit(0),
   fCollisionEventSelectionFilterBit(0),
@@ -91,6 +93,7 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
   fJetRawPtBranch(0),
   fJetMaxTrackPtBranch(0),
   fCaloJetFilterBranch(0),
+  fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
   fBeamScrapingBranch(0),
   fCollisionEventSelectionBranch(0),
@@ -121,6 +124,7 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
   fPtHat(0),
   fnJets(0),
   fCaloJetFilterBit(0),
+  fCaloJetFilterBitPrescale(0),
   fPrimaryVertexFilterBit(0),
   fBeamScrapingFilterBit(0),
   fCollisionEventSelectionFilterBit(0),
@@ -160,6 +164,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fJetRawPtBranch(in.fJetRawPtBranch),
   fJetMaxTrackPtBranch(in.fJetMaxTrackPtBranch),
   fCaloJetFilterBranch(in.fCaloJetFilterBranch),
+  fCaloJetFilterPrescaleBranch(in.fCaloJetFilterPrescaleBranch),
   fPrimaryVertexBranch(in.fPrimaryVertexBranch),
   fBeamScrapingBranch(in.fBeamScrapingBranch),
   fCollisionEventSelectionBranch(in.fCollisionEventSelectionBranch),
@@ -190,6 +195,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fPtHat(in.fPtHat),
   fnJets(in.fnJets),
   fCaloJetFilterBit(in.fCaloJetFilterBit),
+  fCaloJetFilterBitPrescale(in.fCaloJetFilterBitPrescale),
   fPrimaryVertexFilterBit(in.fPrimaryVertexFilterBit),
   fBeamScrapingFilterBit(in.fBeamScrapingFilterBit),
   fCollisionEventSelectionFilterBit(in.fCollisionEventSelectionFilterBit),
@@ -233,6 +239,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fJetRawPtBranch = in.fJetRawPtBranch;
   fJetMaxTrackPtBranch = in.fJetMaxTrackPtBranch;
   fCaloJetFilterBranch = in.fCaloJetFilterBranch;
+  fCaloJetFilterPrescaleBranch = in.fCaloJetFilterPrescaleBranch;
   fPrimaryVertexBranch = in.fPrimaryVertexBranch;
   fBeamScrapingBranch = in.fBeamScrapingBranch;
   fCollisionEventSelectionBranch = in.fCollisionEventSelectionBranch;
@@ -263,6 +270,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fPtHat = in.fPtHat;
   fnJets = in.fnJets;
   fCaloJetFilterBit = in.fCaloJetFilterBit;
+  fCaloJetFilterBitPrescale = in.fCaloJetFilterBitPrescale;
   fPrimaryVertexFilterBit = in.fPrimaryVertexFilterBit;
   fBeamScrapingFilterBit = in.fBeamScrapingFilterBit;
   fCollisionEventSelectionFilterBit = in.fCollisionEventSelectionFilterBit;
@@ -345,6 +353,11 @@ Float_t ForestReader::GetPtHat() const{
 // Getter for calorimeter jet filter bit. Always 1 for MC (set in the initializer).
 Int_t ForestReader::GetCaloJetFilterBit() const{
   return fCaloJetFilterBit;
+}
+
+// Getter for prescaled calorimeter jet filter bit. Always 1 for MC (set in the initializer).
+Int_t ForestReader::GetPrescaledCaloJetFilterBit() const{
+  return fCaloJetFilterBitPrescale;
 }
 
 // Getter for primary vertex filter bit. Always 1 for MC (set in the initializer).
