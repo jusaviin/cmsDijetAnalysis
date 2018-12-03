@@ -488,6 +488,16 @@ void DijetAnalyzer::RunAnalysis(){
   fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
   Int_t mixingFileIndex = fCard->Get("MixingFileIndex");        // Select the used mixing file for PbPb MC
 
+  //**********************************************
+  //    Turn off track cuts for generated tracks
+  //**********************************************
+  
+  if(fMcCorrelationType == kGenGen || fMcCorrelationType == kRecoGen){
+    fCalorimeterSignalLimitPt = 10000;
+    fChi2QualityCut = 10000;
+    fMinimumTrackHits = 0;
+  }
+  
   //****************************************
   //            All cuts set!
   //****************************************
@@ -572,6 +582,7 @@ void DijetAnalyzer::RunAnalysis(){
   fForestType = fCard->Get("ForestType");
   fReadMode = fCard->Get("ReadMode");
   fJetType = fCard->Get("JetType");
+  
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
       fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType);

@@ -197,32 +197,32 @@ Float_t GeneratorLevelSkimForestReader::GetTrackVertexDistanceXYError(Int_t iTra
 
 // Getter for track chi2 value from reconstruction fit (not relevant for generator tracks)
 Float_t GeneratorLevelSkimForestReader::GetTrackChi2(Int_t iTrack) const{
-  return 1; // Note: The cut on chi2 quality should be disabled in the card for generator tracks
+  return 1; // Note: The chi2 quality cut is disabled for generator level tracks in the main analysis code
 }
 
 // Getter for number of degrees of freedom in reconstruction fit (not relevant for generator tracks)
 Int_t GeneratorLevelSkimForestReader::GetNTrackDegreesOfFreedom(Int_t iTrack) const{
-  return 1; // Note: The cut on chi2 quality should be disabled in the card for generator tracks
+  return 1; // Note: The chi2 quality cut is disabled for generator level tracks in the main analysis code
 }
 
 // Getter for number of hits in tracker layers (not relevant for generator tracks)
 Int_t GeneratorLevelSkimForestReader::GetNHitsTrackerLayer(Int_t iTrack) const{
-  return 1; // Note: The cut on chi2 quality should be disabled in the card for generator tracks
+  return 1; // Note: The chi2 quality cut is disabled for generator level tracks in the main analysis code
 }
 
 // Getter for number of hits for the track (not relevant for generator tracks)
 Int_t GeneratorLevelSkimForestReader::GetNHitsTrack(Int_t iTrack) const{
-  return 1; // Note: The cut on NHits should be disabled in the card for generator tracks
+  return 1; // Note: The cut on NHits is disabled for generator level tracks in the main analysis code
 }
 
 // Getter for track energy in ECal (not relevant for generator tracks)
 Float_t GeneratorLevelSkimForestReader::GetTrackEnergyEcal(Int_t iTrack) const{
-  return 1; // Note: The cut on Et should be disabled on the ConfigurationCard for generator tracks
+  return 1; // Note: The cut on Et is disabled for generator level tracks in the main analysis code
 }
 
 // Getter for track energy in HCal (not relevant for generator tracks)
 Float_t GeneratorLevelSkimForestReader::GetTrackEnergyHcal(Int_t iTrack) const{
-  return 1; // Note: The cut on Et should be disabled on the ConfigurationCard for generator tracks
+  return 1; // Note: The cut on Et is disabled for generator level tracks in the main analysis code
 }
 
 // Getter for particle flow candidate ID (not relevant for generator tracks)
