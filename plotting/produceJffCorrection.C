@@ -12,14 +12,14 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorrected_3eventsMixed_sube0_processed_2018-10-09.root";  // File from which the RecoGen histograms are read for the correction
-  TString genGenFileName = "data/PbPbMC_GenGen_skims_pfJets_noUncorrected_3eventsMixed_sube0_processed_2018-10-09.root";   // File from which the GenGen histograms are read for the correction
-  TString outputFileName = "data/jffCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_sube0_2018-10-09.root";   // File name for the output file
+  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_sube0_smoothedMixing_processed_2018-11-05.root";  // File from which the RecoGen histograms are read for the correction
+  TString genGenFileName = "data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root";   // File from which the GenGen histograms are read for the correction
+  TString outputFileName = "data/jffCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_sube0_2018-12-05.root";   // File name for the output file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   

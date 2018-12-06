@@ -124,7 +124,7 @@ void stackHist::addDiff(TH1** h ,int num, float *weight){
 TH1* stackHist::sumOver(){
 	TString stemp = st_name+"_sum";
 	hist_sum = (TH1*)hist_trunk.front()->Clone(stemp);
-	for(int i=1;i<hist_trunk.size();i++){
+	for(std::string::size_type i=1;i<hist_trunk.size();i++){
 		hist_sum->Add(hist_trunk.at(i));
 	}
 	hist_sum->SetLineWidth(1);
@@ -222,11 +222,11 @@ void stackHist::setFillColor(){
 		return;	
 	}
 	else {
-		for(int i=0;i<hist_trunk.size();i++){
+		for(std::string::size_type i=0;i<hist_trunk.size();i++){
 			hist_trunk.at(i)->SetFillColor(color_v->at(i));
 		}
 		if(doDiff){
-			for(int i=0;i<hist_trunk_up.size();i++){
+			for(std::string::size_type i=0;i<hist_trunk_up.size();i++){
 				hist_trunk_up.at(i)->SetFillColor(color_v->at(i));
 				hist_trunk_down.at(i)->SetFillColor(color_v->at(i));
 			}

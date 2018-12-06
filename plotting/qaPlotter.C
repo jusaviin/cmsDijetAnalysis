@@ -162,7 +162,7 @@ void qaPlotter(){
   bool saveFigures = false;          // Save the figures to a file
   
   bool drawSpillover = false;              // Draw the QA plots for spillover correction
-  bool drawSeagull = false;                 // Draw the QA plots for seagull correction
+  bool drawSeagull = false;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = true; // Check difference in background overlap region of leading and subleading jets
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
@@ -178,9 +178,9 @@ void qaPlotter(){
   /////////////////
   
   // Open files containing the QA histograms
-  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_subeNon0_smoothedMixing_2018-11-05_QA.root");
-  TFile *seagullFile = TFile::Open("data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19_QA.root");
-  TFile *backgroundFile = TFile::Open("data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root");
+  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-12-05_QA.root");
+  TFile *seagullFile = TFile::Open("data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19_QA.root");
+  TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19.root");
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();

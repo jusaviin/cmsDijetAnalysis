@@ -21,6 +21,7 @@ DijetMethods::DijetMethods() :
   fMixedEventFitRegion(0.2),
   fMixedEventNormalizationMethod(kSingle),
   fSmoothMixing(false),
+  fMaximumDeltaEta(4),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
   fMinBackgroundDeltaPhi(1.4),
@@ -62,6 +63,7 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fMixedEventFitRegion(in.fMixedEventFitRegion),
   fMixedEventNormalizationMethod(in.fMixedEventNormalizationMethod),
   fSmoothMixing(in.fSmoothMixing),
+  fMaximumDeltaEta(in.fMaximumDeltaEta),
   fBackgroundDistribution(in.fBackgroundDistribution),
   fBackgroundOverlap(in.fBackgroundOverlap),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
@@ -99,6 +101,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fMixedEventFitRegion = in.fMixedEventFitRegion;
   fMixedEventNormalizationMethod = in.fMixedEventNormalizationMethod;
   fSmoothMixing = in.fSmoothMixing;
+  fMaximumDeltaEta = in.fMaximumDeltaEta;
   fBackgroundDistribution = in.fBackgroundDistribution;
   fBackgroundOverlap = in.fBackgroundOverlap;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
@@ -146,18 +149,32 @@ DijetMethods::~DijetMethods()
  * leading and subleading distributions are needed for the background subrtaction.
  *
  * Arguments:
- *  TH2D* sameEventHistogram = Histogram with correlation from the same event
- *  TH2D* leadingMixedEventHistogram = Leading jet-mixed event track histogram
- *  TH2D* subleadingMixedEventHistogram = Subleading jet-mixed event track histogram
+ *  const TH2D* sameEventHistogram = Histogram with correlation from the same event
+ *  const TH2D* leadingMixedEventHistogram = Leading jet-mixed event track histogram
+ *  const TH2D* subleadingMixedEventHistogram = Subleading jet-mixed event track histogram
  *
  *  return: Corrected same event histogram
  */
-TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMixedEventHistogram, TH2D *subleadingMixedEventHistogram){
+TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D *leadingMixedEventHistogram, const TH2D *subleadingMixedEventHistogram){
 
   // Clone the same event histogram for correction
   char newName[100];
   sprintf(newName,"%sCorrected",sameEventHistogram->GetName());
   TH2D* correctedHistogram = (TH2D*) sameEventHistogram->Clone(newName);
+  
+  // Set bins above maximum deltaEta to zero. This helps to suppress fluctuations at high deltaEta
+  int minimumDeltaEtaBin = correctedHistogram->GetYaxis()->FindBin(-fMaximumDeltaEta-0.001);
+  int maximumDeltaEtaBin = correctedHistogram->GetYaxis()->FindBin(fMaximumDeltaEta+0.001);
+  for(int iDeltaPhi = 1; iDeltaPhi <= correctedHistogram->GetNbinsX(); iDeltaPhi++){
+    for(int iDeltaEta = 1; iDeltaEta <= minimumDeltaEtaBin; iDeltaEta++){
+      correctedHistogram->SetBinContent(iDeltaPhi,iDeltaEta,0);
+      correctedHistogram->SetBinError(iDeltaPhi,iDeltaEta,0);
+    }
+    for(int iDeltaEta = maximumDeltaEtaBin; iDeltaEta <= correctedHistogram->GetNbinsY(); iDeltaEta++){
+      correctedHistogram->SetBinContent(iDeltaPhi,iDeltaEta,0);
+      correctedHistogram->SetBinError(iDeltaPhi,iDeltaEta,0);
+    }
+  }
   
   // Calculate the average scale from leading and subleading event scales
   double leadingScale = GetMixedEventScale(leadingMixedEventHistogram);
@@ -215,7 +232,7 @@ TH2D* DijetMethods::MixedEventCorrect(TH2D *sameEventHistogram, TH2D *leadingMix
  *
  *   return: Scale to be used for normalization
  */
-double DijetMethods::GetMixedEventScale(TH2D* mixedEventHistogram){
+double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram){
   
   // In the 2D histograms deltaPhi is x-axis and deltaEta y-axis. We need deltaEta for the correction
   TH1D *hDeltaEtaMixed = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjection",1,mixedEventHistogram->GetNbinsX());

@@ -14,9 +14,9 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_subeNon0_smoothedMixing_processed_2018-10-30.root";  // File from which the RecoGen histograms are read for the correction
-  TString outputFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorrected_3eventsMixed_subeNon0_smoothedMixing_2018-11-05.root";   // File name for the output file
-  TString uncorrectedDataFileName = "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-10-19.root"; // Data file to compare yields with spillover file
+  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_processed_2018-11-05.root";  // File from which the RecoGen histograms are read for the correction
+  TString outputFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-12-05.root";   // File name for the output file
+  TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19.root"; // Data file to compare yields with spillover file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
