@@ -650,8 +650,8 @@ void DijetAnalyzer::RunAnalysis(){
     // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
     if(mixEvents){
       if(fDataType == ForestReader::kPbPb){
-        //const char* pbpbMixingFileNames[] = {"root://cmsxrootd.fnal.gov//store/user/jviinika/PbPbMixing/Data2015_finalTrkCut_1Mevts.root","root://cmsxrootd.fnal.gov//store/user/jviinika/PbPbMixing/Data2015_finalTrkCut_1Mevts_copy1.root","root://cmsxrootd.fnal.gov//store/user/jviinika/PbPbMixing/Data2015_finalTrkCut_1Mevts_copy2.root","root://cmsxrootd.fnal.gov//store/user/jviinika/PbPbMixing/Data2015_finalTrkCut_1Mevts_copy3.root","root://cmsxrootd.fnal.gov//store/user/jviinika/PbPbMixing/Data2015_finalTrkCut_1Mevts_copy4.root","root://cmsxrootd.fnal.gov//store/user/jviinika/PbPbMixing/Data2015_finalTrkCut_1Mevts_copy5.root"};
-        currentMixedEventFile = "root://cmsxrootd.fnal.gov//store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root";
+        const char* pbpbMixingFileNames[] = {"root://cmsxrootd.fnal.gov//store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root","root://eosuser.cern.ch//eos/user/j/jviinika/mixing/Data2015_finalTrkCut_1Mevts_copy1.root"};
+        currentMixedEventFile = pbpbMixingFileNames[mixingFileIndex];
       } else if(fDataType == ForestReader::kPbPbMC){
         //const char* pbpbMCMixingFileNames[] = {"root://cmsxrootd.fnal.gov///store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy1.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy2.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy3.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy4.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy5.root","root://cmsxrootd.fnal.gov///store/user/jviinika/PbPbMCMixing/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged_copy6.root"};
         currentMixedEventFile = "root://cmsxrootd.fnal.gov//store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root";
@@ -1030,6 +1030,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Dijet event information
         if(fFillEventInformation){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
+          fHistograms->fhVertexZDijet->Fill(vz,fVzWeight);
           fHistograms->fhCentralityDijet->Fill(centrality,fCentralityWeight);
         }
         
@@ -1361,6 +1362,7 @@ void DijetAnalyzer::MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Doub
     
     // If match vz and hiBin, then load the event from the mixed event tree and mark that we have mixed this event
     fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(mixedEventIndex);
+    //if(FindHighestJetPt(fTrackReader[DijetHistograms::kMixedEvent]) > 120) continue;   // No jet events for MB XXXXXXX TEST
     mixedEventIndices.push_back(mixedEventIndex);
     
     // Do the correlations with the dijet from current event and track from mixing event
@@ -1843,4 +1845,17 @@ Int_t DijetAnalyzer::FindMixingHiBin(const Int_t hiBin) const{
  */
 DijetHistograms* DijetAnalyzer::GetHistograms() const{
   return fHistograms;
+}
+
+/*
+ * Find highest jet pT
+ */
+Double_t DijetAnalyzer::FindHighestJetPt(const ForestReader* jetReader) const{
+  Double_t jetPt;
+  Double_t highestJetPt = 0;
+  for(Int_t jetIndex = 0; jetIndex < fJetReader->GetNJets(); jetIndex++) {
+    jetPt = fJetReader->GetJetPt(jetIndex);
+    if(jetPt > highestJetPt) highestJetPt = jetPt;
+  }
+  return highestJetPt;
 }

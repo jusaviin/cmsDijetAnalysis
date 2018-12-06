@@ -16,6 +16,7 @@
 DijetHistograms::DijetHistograms() :
   fhVertexZ(0),
   fhVertexZWeighted(0),
+  fhVertexZDijet(0),
   fhEvents(0),
   fhTrackCuts(0),
   fhTrackCutsInclusive(0),
@@ -52,6 +53,7 @@ DijetHistograms::DijetHistograms() :
 DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhVertexZ(0),
   fhVertexZWeighted(0),
+  fhVertexZDijet(0),
   fhEvents(0),
   fhTrackCuts(0),
   fhTrackCutsInclusive(0),
@@ -88,6 +90,7 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
 DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhVertexZ(in.fhVertexZ),
   fhVertexZWeighted(in.fhVertexZWeighted),
+  fhVertexZDijet(in.fhVertexZDijet),
   fhEvents(in.fhEvents),
   fhTrackCuts(in.fhTrackCuts),
   fhTrackCutsInclusive(in.fhTrackCutsInclusive),
@@ -128,6 +131,7 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   
   fhVertexZ = in.fhVertexZ;
   fhVertexZWeighted = in.fhVertexZWeighted;
+  fhVertexZDijet = in.fhVertexZDijet;
   fhEvents = in.fhEvents;
   fhTrackCuts = in.fhTrackCuts;
   fhTrackCutsInclusive = in.fhTrackCutsInclusive;
@@ -165,6 +169,7 @@ DijetHistograms::~DijetHistograms(){
   // destructor
   delete fhVertexZ;
   delete fhVertexZWeighted;
+  delete fhVertexZDijet;
   delete fhEvents;
   delete fhTrackCuts;
   delete fhTrackCutsInclusive;
@@ -309,6 +314,7 @@ void DijetHistograms::CreateHistograms(){
   
   fhVertexZ = new TH1F("vertexZ","vertexZ",nVzBins,minVz,maxVz); fhVertexZ->Sumw2();
   fhVertexZWeighted = new TH1F("vertexZweighted","vertexZweighted",nVzBins,minVz,maxVz); fhVertexZWeighted->Sumw2();
+  fhVertexZDijet = new TH1F("vertexZdijet","vertexZdijet",nVzBins,minVz,maxVz); fhVertexZDijet->Sumw2();
   fhEvents = new TH1F("nEvents","nEvents",knEventTypes,-0.5,knEventTypes-0.5); fhEvents->Sumw2();
   fhTrackCuts = new TH1F("trackCuts","trackCuts",knTrackCuts,-0.5,knTrackCuts-0.5); fhTrackCuts->Sumw2();
   fhTrackCutsInclusive = new TH1F("trackCutsInclusive","trackCutsInclusive",knTrackCuts,-0.5,knTrackCuts-0.5); fhTrackCutsInclusive->Sumw2();
@@ -588,6 +594,7 @@ void DijetHistograms::Write() const{
   // Write the histograms to file
   fhVertexZ->Write();
   fhVertexZWeighted->Write();
+  fhVertexZDijet->Write();
   fhEvents->Write();
   fhTrackCuts->Write();
   fhTrackCutsInclusive->Write();

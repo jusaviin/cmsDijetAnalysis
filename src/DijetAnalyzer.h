@@ -70,6 +70,7 @@ private:
   Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
   Int_t FindMixingVzBin(const Double_t vz) const; // Find a vz bin from mixing table for a given vz value
   Int_t FindMixingHiBin(const Int_t hiBin) const; // Find a centrality bin from the mixing table for a given hiBin value
+  Double_t FindHighestJetPt(const ForestReader *jetReader) const; // Find the highest jet pT in an event
   
   // Private data members
   ForestReader *fJetReader;           // Reader for jets in the event

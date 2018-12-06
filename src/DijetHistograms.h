@@ -37,6 +37,7 @@ public:
   // Notation in comments: l = leading jet, s = subleading jet, inc - inclusive jet, uc = uncorrected, ptw = pT weighted
   TH1F *fhVertexZ;               // Vertex z-position
   TH1F *fhVertexZWeighted;       // Weighted vertex z-position (only meaningfull for MC)
+  TH1F *fhVertexZDijet;          // Vertex z-position in dijet events
   TH1F *fhEvents;                // Number of events. For binning see enumEventTypes.
   TH1F *fhTrackCuts;             // Number of tracks. For binning see enumTrackCuts.
   TH1F *fhTrackCutsInclusive;    // Number of tracks. For binning see enumTrackCuts.
