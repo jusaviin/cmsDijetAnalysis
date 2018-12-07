@@ -50,6 +50,7 @@ public:
   static const int knCentralityBins = 4;       // Number of centrality bins
   static const int knTrackPtBins = 6;          // Number of track pT bins
   static const int knFittedFlowComponents = 4; // Number of fitted flow components
+  static const int knAsymmetryBins = 4;        // Number of dijet asymmetry bins
   
 private:
   
@@ -184,10 +185,10 @@ public:
   TH1D* GetHistogramCentralityDijet() const; // Getter for centrality histogram in dijet events
   
   // Getters for single jet histograms
-  TH1D* GetHistogramJetPt(const int iJetType, const int iCentrality) const;      // Jet pT histograms
-  TH1D* GetHistogramJetPhi(const int iJetType, const int iCentrality) const;     // Jet phi histograms
-  TH1D* GetHistogramJetEta(const int iJetType, const int iCentrality) const;     // Jet eta histograms
-  TH2D* GetHistogramJetEtaPhi(const int iJetType, const int iCentrality) const;  // 2D eta-phi histogram for jets
+  TH1D* GetHistogramJetPt(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const;     // Jet pT histograms
+  TH1D* GetHistogramJetPhi(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const;    // Jet phi histograms
+  TH1D* GetHistogramJetEta(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const;    // Jet eta histograms
+  TH2D* GetHistogramJetEtaPhi(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const; // 2D eta-phi histogram for jets
   
   // Getters for dijet histograms
   TH1D* GetHistogramDijetDeltaPhi(const int iCentrality) const;              // Dijet deltaPhi histograms
@@ -220,7 +221,7 @@ public:
   // Getters for normalization information
   int GetNEvents() const;                      // Getter for the number of events passing the cuts
   int GetNDijets() const;                      // Getter for the number of dijets
-  double GetPtIntegral(int iCentrality) const; // Getter for integral over leading jet pT in a given centrality bin
+  double GetPtIntegral(const int iCentrality, const int iAsymmetry = knAsymmetryBins) const; // Getter for integral over leading jet pT in a given centrality and dijet asymmetry bin
   double GetAnyLeadingJetPtIntegral(int iCentrality) const; // Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
   double GetInclusiveJetPtIntegral(int iCentrality) const; // Getter for integral over inclusive jet pT above 120 GeV in a given centrality bin
   
@@ -294,10 +295,10 @@ private:
   TH1D *fhPtHatWeighted;      // Weighted pT hat distribution (only meaningful for MC)
   
   // Histograms for single jets
-  TH1D *fhJetPt[knSingleJetCategories][knCentralityBins];      // Jet pT histograms
-  TH1D *fhJetPhi[knSingleJetCategories][knCentralityBins];     // Jet phi histograms
-  TH1D *fhJetEta[knSingleJetCategories][knCentralityBins];     // Jet eta histograms
-  TH2D *fhJetEtaPhi[knSingleJetCategories][knCentralityBins];  // 2D eta-phi histogram for jets
+  TH1D *fhJetPt[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];      // Jet pT histograms
+  TH1D *fhJetPhi[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];     // Jet phi histograms
+  TH1D *fhJetEta[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];     // Jet eta histograms
+  TH2D *fhJetEtaPhi[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];  // 2D eta-phi histogram for jets
   
   // Histograms for dijets
   TH1D *fhDijetDphi[knCentralityBins];                  // Dijet deltaPhi histograms
@@ -325,6 +326,7 @@ private:
   // Private methods
   void SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices); // Read the bin indices for given bin borders
   void SetBinIndices(const int nBins, int *lowBinIndices, int *highBinIndices, const double *lowBinBorders, const double *highBinBorders, const int iAxis); // Read the bin indices for given bin borders
+  void SetBinIndices(const char* histogramName, const int nBins, int *lowBinIndices, int *highBinIndices, const double *lowBinBorders, const double *highBinBorders, const int iAxis); // Read the bin indices for given bin borders
   void SetLoadJetTrackCorrelations(const bool loadOrNot, const int primaryIndex, const int connectedIndex); // Setter for drawing and loading the jet-track correlation histograms
   int GetConnectedIndex(const int jetTrackIndex) const;
   
