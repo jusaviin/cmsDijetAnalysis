@@ -228,25 +228,25 @@ Float_t GeneratorLevelSkimForestReader::GetTrackEnergyHcal(Int_t iTrack) const{
 
 // Getter for particle flow candidate ID (not relevant for generator tracks)
 Int_t GeneratorLevelSkimForestReader::GetParticleFlowCandidateId(Int_t iCandidate) const{
-  return -1; // Return negative value to show that correction is not needed
+  return 1; // Return 1 as we use regular generator lavel tracks to determine leading particle flow candidate
 }
 
-// Getter for particle flow candidate pT (not relevant for generator tracks)
+// Getter for particle flow candidate pT (just regular tracks in generator level)
 Float_t GeneratorLevelSkimForestReader::GetParticleFlowCandidatePt(Int_t iCandidate) const{
-  return -1; // Return negative value to show that correction is not needed
+  return fTrackPtArray->at(iCandidate);  // Use regular generated particle pT for particle flow cnadidates
 }
 
-// Getter for particle flow candidate phi (not relevant for generator tracks)
+// Getter for particle flow candidate phi (just regular tracks in generator level)
 Float_t GeneratorLevelSkimForestReader::GetParticleFlowCandidatePhi(Int_t iCandidate) const{
-  return -1; // Return negative value to show that correction is not needed
+  return fTrackPhiArray->at(iCandidate); // Use regular track phi for particle flow candidates
 }
 
-// Getter for particle flow candidate eta (not relevant for generator tracks)
+// Getter for particle flow candidate eta (just regular tracks in generator level)
 Float_t GeneratorLevelSkimForestReader::GetParticleFlowCandidateEta(Int_t iCandidate) const{
-  return -1; // Return negative value to show that correction is not needed
+  return fTrackEtaArray->at(iCandidate); // Use regular track eta for particle flow candidates
 }
 
-// Getter number of particle flow candidates in an event (not relevant for generator tracks)
+// Getter number of particle flow candidates in an event (just regular tracks in generator level)
 Int_t GeneratorLevelSkimForestReader::GetNParticleFlowCandidates() const{
-  return -1; // Return negative value to show that correction is not needed
+  return fnTracks; // Use regular tracks in generator level
 }

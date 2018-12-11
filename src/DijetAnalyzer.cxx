@@ -417,6 +417,14 @@ std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJ
     if(fJetReader->GetParticleFlowCandidateId(iParticleFlowCandidate) != 1) continue; // Require ID 1 for candidates
     particleFlowCandidatePt = fJetReader->GetParticleFlowCandidatePt(iParticleFlowCandidate);
     if(particleFlowCandidatePt < 2) continue; // Require minimum pT of 2 GeV for candidates
+    
+    // Specific cuts only for generator level tracks
+    if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
+      if(fJetReader->GetTrackCharge(iParticleFlowCandidate) == 0) continue;                 // Require that the track is charged
+      if(!PassSubeventCut(fJetReader->GetTrackSubevent(iParticleFlowCandidate))) continue;  // Require desired subevent
+      if(fJetReader->GetTrackMCStatus(iParticleFlowCandidate) != 1) continue;               // Require final state particles
+    }
+    
     particleFlowCandidatePhi = fJetReader->GetParticleFlowCandidatePhi(iParticleFlowCandidate);
     particleFlowCandidateEta = fJetReader->GetParticleFlowCandidateEta(iParticleFlowCandidate);
     deltaPhi = jetPhi-particleFlowCandidatePhi;
@@ -437,6 +445,9 @@ std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJ
     }
     
   }
+  
+  // For generator level jets, set nParticleFlowCandidates to -1 to show that no correction is needed
+  if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen) nParticleFlowCandidatesInThisJet = -1;
   
   // Return a tuple of the number of particle flow candidates and information about leading particle flow candidate
   return std::make_tuple(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta);
