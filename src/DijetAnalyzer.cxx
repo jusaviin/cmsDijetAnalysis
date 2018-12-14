@@ -394,10 +394,7 @@ DijetAnalyzer::~DijetAnalyzer(){
  *            1: Leading particle flow candidate phi
  *            2: Leading particle flow candidate eta
  */
-std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta){
-
-  // No correction for generator level jets
-  if(fJetReader->GetNParticleFlowCandidates() < 0) return std::make_tuple(-1,0,0);
+std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJet(const Double_t jetPhi, const Double_t jetEta){
   
   // Variables for particle flow candidate properties
   Double_t leadingParticleFlowCandidatePt = 0;
@@ -433,7 +430,7 @@ std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJ
     while(deltaPhi > (TMath::Pi())){deltaPhi += -2*TMath::Pi();}
     while(deltaPhi < (-1.0*TMath::Pi())){deltaPhi += 2*TMath::Pi();}
     
-    distanceToThisJet = TMath::Power(TMath::Power(deltaPhi,2)+TMath::Power(jetEta-particleFlowCandidateEta,2),0.5);
+    distanceToThisJet = TMath::Sqrt(TMath::Power(deltaPhi,2)+TMath::Power(jetEta-particleFlowCandidateEta,2));
     if(distanceToThisJet > 0.4) continue;  // Require the particle to be inside the jet cone of R = 0.4
     nParticleFlowCandidatesInThisJet++;
     
@@ -1129,9 +1126,9 @@ void DijetAnalyzer::RunAnalysis(){
  *  Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
  *  Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
  *  const Int_t correlationType = DijetHistograms::kSameEvent for same event correlations, DijetHistograms::kMixedEvent for mixed event correlations
- *  const Bool_t useInclusiveJets = True: Correlation done for inclusive jets. False: Correlation done for leadingand subleading jets
+ *  const Bool_t useInclusiveJets = True: Correlation done for inclusive jets. False: Correlation done for leading and subleading jets
  */
-void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets){
+void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets){
   
   // Define a filler for THnSparses
   Double_t fillerJetTrack[6];
@@ -1248,7 +1245,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t 
  *  const Int_t hiBin = HiBin of the main event
  *  const Bool_t useInclusiveJets = True: Use inclusive jets for correlations. False: Use leading/subleading jets for correlations
  */
-void DijetAnalyzer::MixTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
+void DijetAnalyzer::MixTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex;                        // Index of current event in mixing loop
@@ -1310,7 +1307,7 @@ void DijetAnalyzer::MixTracksAndJets(Double_t leadingJetInfo[3], Double_t sublea
  *  const Int_t hiBin = HiBin of the main event
  *  const Bool_t useInclusiveJets = True: Use inclusive jets for correlations. False: Use leading/subleading jets for correlations
  */
-void DijetAnalyzer::MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
+void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex = fMixingStartIndex; // Index of current event in mixing loop
@@ -1373,7 +1370,7 @@ void DijetAnalyzer::MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Doub
     
     // If match vz and hiBin, then load the event from the mixed event tree and mark that we have mixed this event
     fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(mixedEventIndex);
-    //if(FindHighestJetPt(fTrackReader[DijetHistograms::kMixedEvent]) > 120) continue;   // No jet events for MB XXXXXXX TEST
+    if(CheckForSameEvent(avoidIndex,mixedEventIndex)) continue;  // Check that the mixing file does not have exactly the same event as regular data file
     mixedEventIndices.push_back(mixedEventIndex);
     
     // Do the correlations with the dijet from current event and track from mixing event
@@ -1859,14 +1856,37 @@ DijetHistograms* DijetAnalyzer::GetHistograms() const{
 }
 
 /*
- * Find highest jet pT
+ * Check if the mixed event is the same as regular event or not
+ *
+ *  return: True is events are the same, false if not
  */
-Double_t DijetAnalyzer::FindHighestJetPt(const ForestReader* jetReader) const{
-  Double_t jetPt;
-  Double_t highestJetPt = 0;
-  for(Int_t jetIndex = 0; jetIndex < fJetReader->GetNJets(); jetIndex++) {
-    jetPt = fJetReader->GetJetPt(jetIndex);
-    if(jetPt > highestJetPt) highestJetPt = jetPt;
+Bool_t DijetAnalyzer::CheckForSameEvent(const Int_t sameEventIndex, const Int_t mixedEventIndex) const{
+  
+  // First, check if the events have the same number of tracks
+  const Int_t nTracksSameEvent = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+  const Int_t nTracksMixedEvent = fTrackReader[DijetHistograms::kMixedEvent]->GetNTracks();
+  
+  // If there is different number of tracks, events must be different
+  if(nTracksSameEvent != nTracksMixedEvent) return false;
+  
+  // Loop over the tracks and check whether they have the same pT ot not
+  Double_t sameEventTrackPt;
+  Double_t mixedEventTrackPt;
+  for(Int_t iTrack = 0; iTrack < nTracksSameEvent; iTrack++){
+    sameEventTrackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+    mixedEventTrackPt = fTrackReader[DijetHistograms::kMixedEvent]->GetTrackPt(iTrack);
+    
+    // If tracks with same index have different pT, the events must be different
+    if(TMath::Abs(sameEventTrackPt-mixedEventTrackPt) > 0.001) return false;
   }
-  return highestJetPt;
+  
+  // If all the tracks have exactly the same pT, the events must be the same
+  cout << "Attention!" << endl;
+  cout << "Attention!" << endl;
+  cout << "Attention!" << endl;
+  cout << "Events " << sameEventIndex << " in the same event file and " << mixedEventIndex << " in the mixed event file are the same!" << endl;
+  cout << "Attention!" << endl;
+  cout << "Attention!" << endl;
+  cout << "Attention!" << endl;
+  return true;
 }

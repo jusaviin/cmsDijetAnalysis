@@ -41,10 +41,11 @@ void closurePlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = true;          // Save the figures to a file
+  bool saveFigures = false;          // Save the figures to a file
   
-  bool drawCentrality = true;        // Draw the QA plots for spillover correction
-  bool drawVz = true;                // Draw the QA plots for seagull correction
+  bool drawCentrality = false;        // Draw the QA plots for spillover correction
+  bool drawVz = false;                // Draw the QA plots for seagull correction
+  bool drawTrackClosure = true;      // Draw the tracking closures
   
   /////////////////
   // Config done //
@@ -53,6 +54,7 @@ void closurePlotter(){
   //Define types for histogram arrays
   enum enumCollisionSystem {kPp, kPbPb, knCollisionSystems};
   enum enumDataType {kData, kMC, knDataTypes};
+  enum enumMonteCarloType{kRecoReco, kRecoGen, kGenReco, kGenGen, knMonteCarloTypes};
   
   const char *legendNames[knCollisionSystems][knDataTypes+1] = {{"pp","Raw Pythia", "Weighted Pythia"},{"PbPb","Raw P+H", "Weighted P+H"}};
   TString systemString[knCollisionSystems] = {"Pp","PbPb"};
@@ -64,6 +66,17 @@ void closurePlotter(){
   inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
   inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root");
   
+  // Open files for the closure tests
+  TFile *closureFile[knCollisionSystems][knMonteCarloTypes];
+  closureFile[kPp][kRecoReco] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
+  closureFile[kPp][kRecoGen] = TFile::Open("data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
+  closureFile[kPp][kGenReco] = TFile::Open("data/dijet_ppMC_GenReco_mergedSkims_Pythia6_processed_2018-08-16.root");
+  closureFile[kPp][kGenGen] = TFile::Open("data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
+  closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC_RecoReco_skims_pfJets_pfCandAxis_noMixing_processed_2018-12-06.root");
+  closureFile[kPbPb][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noMixing_processed_2018-12-06.root");
+  closureFile[kPbPb][kGenReco] = TFile::Open("data/PbPbMC_GenReco_skims_pfJets_pfCandAxis_noMixing_processed_2018-12-06.root");
+  closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noMixing_processed_2018-12-06.root");
+  
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
   const int nCentralityBins = dummyManager->GetNCentralityBins();
@@ -74,6 +87,14 @@ void closurePlotter(){
   // Define needed histograms
   TH1D *hVz[knCollisionSystems][knDataTypes+1];
   TH1D *hCentrality[knDataTypes+1];
+  TH1D *trackPt[2][2][knCollisionSystems][knMonteCarloTypes][nCentralityBins]; // First bin = Dijet/inclusive
+  TH1D *trackEta[2][2][knCollisionSystems][knMonteCarloTypes][nCentralityBins][nTrackPtBins+1]; // Second bin = Corrected/Uncorrected
+  TH1D *trackPhi[2][2][knCollisionSystems][knMonteCarloTypes][nCentralityBins][nTrackPtBins+1];
+  
+  // String for finding inclusive histograms
+  const char *inclusiveString[2] = {"","Inclusive"};   // 0 = Tracks in dijet events, 1 = Inclusive tracks
+  const char *correctionString[2] = {"","Uncorrected"}; // 0 = Track correction included, 1 = No tracking corrections
+  char namer[200];
   
   // Read the histograms from files
   char histogramNamer[200];
@@ -97,8 +118,40 @@ void closurePlotter(){
           setStyleAndNormalize(hCentrality[iDataType+1],iDataType+1);
         }
       }
-
     } // Data type loop
+    
+    for(int iInclusive = 0; iInclusive < 2; iInclusive++){
+      for(int iCorrection = 0; iCorrection < 2; iCorrection++){
+        for(int iMonteCarloType = 0; iMonteCarloType < knMonteCarloTypes; iMonteCarloType++){
+          for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+            
+            // Read track pT histograms
+            sprintf(namer,"track%s%s/track%s%sPt_SameEvent_C%d",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality);
+            trackPt[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
+            
+            // Read track eta histograms without pT cut
+            sprintf(namer,"track%s%s/track%s%sEta_SameEvent_C%dT6",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality);
+            trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
+            
+            // Read track phi histograms without pT cut
+            sprintf(namer,"track%s%s/track%s%sPhi_SameEvent_C%dT6",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality);
+            trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
+            
+            for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+              
+              // Read track eta histograms in pT bins
+              sprintf(namer,"track%s%s/track%s%sEta_SameEvent_C%dT%d",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality,iTrackPt);
+              trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
+              
+              // Read track phi histograms in pT bins
+              sprintf(namer,"track%s%s/track%s%sPhi_SameEvent_C%dT%d",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality,iTrackPt);
+              trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
+              
+            } // Track pT loop
+          } // Centrality loop
+        } // Loop over Monte Carlo types
+      } // Corrected - Uncorrected loop
+    } // Dijet - inclusive loop
   } // Collision system loop
   
   // Drawing class for drawing your favorite root style
@@ -163,5 +216,30 @@ void closurePlotter(){
     if(saveFigures){
       gPad->GetCanvas()->SaveAs("figures/centralityComparison.pdf");
     }
+  }
+  
+  // ***************************************
+  // **    Drawing track closure plots    **
+  // ***************************************
+  
+  if(drawTrackClosure){
+    
+    drawer->SetDefaultAppearanceSplitCanvas();
+    drawer->SetLogY(logAxis);
+    drawer->DrawHistogramToUpperPad(fMainHistogram,xTitle,yTitle," ");
+    
+    for(int iInclusive = 0; iInclusive < 2; iInclusive++){
+      for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
+        for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          
+          // No centrality binning for pp
+          if(iSystem == kPp && iCentrality > 0) continue;
+          
+          drawer->CreateSplitCanvas();
+          TH1D *trackPt[iInclusive][0][iSystem][knMonteCarloTypes][nCentralityBins];
+          
+        }
+      } // Collision system loop
+    } // Dijet- inclusive loop
   }
 }

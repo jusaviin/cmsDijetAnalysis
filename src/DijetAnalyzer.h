@@ -53,13 +53,13 @@ public:
 private:
   
   // Private methods
-  void CorrelateTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlations
-  void MixTracksAndJets(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
-  void MixTracksAndJetsWithoutPool(Double_t leadingJetInfo[3], Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
+  void CorrelateTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlations
+  void MixTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
+  void MixTracksAndJetsWithoutPool(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
-  std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(Double_t jetPhi, Double_t jetEta);
+  std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(const Double_t jetPhi, const Double_t jetEta);
   
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
@@ -70,7 +70,7 @@ private:
   Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
   Int_t FindMixingVzBin(const Double_t vz) const; // Find a vz bin from mixing table for a given vz value
   Int_t FindMixingHiBin(const Int_t hiBin) const; // Find a centrality bin from the mixing table for a given hiBin value
-  Double_t FindHighestJetPt(const ForestReader *jetReader) const; // Find the highest jet pT in an event
+  Bool_t CheckForSameEvent(const Int_t sameEventIndex, const Int_t mixedEventIndex) const; // Check if mixed event is tha same as regular event
   
   // Private data members
   ForestReader *fJetReader;           // Reader for jets in the event
