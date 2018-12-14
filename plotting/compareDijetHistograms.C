@@ -73,9 +73,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.6;
-  double maxZoom = 1.4;
-  TString ratioLabel = "Corr / Uncorr";
+  double minZoom = 0;
+  double maxZoom = 3;
+  TString ratioLabel = "PbPb / pp";
   
   // Scaling for histograms
   bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -119,7 +119,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_pfJets_pfCandAxis_noInclusiveOrUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-10-31_combine0-10.root","data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19.root"};
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-12-03.root","data/dijet_pp_highForest_pfJets_pfCandAxis_smoothedMixing_noCorrections_processed_2018-12-07.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -128,7 +128,7 @@ void compareDijetHistograms(){
   //  "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"
   //  "data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root"
   
-  TString legendComment[nDatasets] = {"highForest","skims"};
+  TString legendComment[nDatasets] = {"",""};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -230,6 +230,7 @@ void compareDijetHistograms(){
   drawer->SetApplyScaling(scaleHistograms);
   
   // Set the binning information
+  lastDrawnCentralityBin = nCentralityBins-1;
   drawer->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   drawer->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
 

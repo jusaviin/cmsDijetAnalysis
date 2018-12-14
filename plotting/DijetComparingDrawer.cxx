@@ -962,7 +962,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         fComparisonHistogram[iAdditional] = comparisonSum[iAdditional];
         fRatioHistogram[iAdditional] = comparisonSumRatio[iAdditional];
       }
-      
+
       // Draw the track phi distributions to the upper panel of a split canvas plot
       sprintf(namerX,"#DeltaR");
       DrawToUpperPad(namerX, "P(#DeltaR)", fLogJetShape);
@@ -1004,13 +1004,13 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   
   // Helper variable
   char namer[100];
-    
+
   // Read the histograms, scale them to one and take the ratio
   fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
   if(rebin > 1) fMainHistogram->Rebin(rebin);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fMainHistogram->Integral());
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
+    fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,0,bin5)->Clone();
     if(rebin > 1) fComparisonHistogram[iAdditional]->Rebin(rebin);
     if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fComparisonHistogram[iAdditional]->Integral());
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);

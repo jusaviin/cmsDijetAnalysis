@@ -71,6 +71,7 @@ DijetHistogramManager::DijetHistogramManager() :
   // Initialize all the other histograms to null
   fhVertexZ = NULL;            // Vertex z position
   fhVertexZWeighted = NULL;    // Weighted vertex z-position (only meaningfull for MC)
+  fhVertexZDijet = NULL;       // Vertex z position in dijet events
   fhEvents = NULL;             // Number of events surviving different event cuts
   fhTrackCuts = NULL;          // Number of tracks surviving different track cuts
   fhTrackCutsInclusive = NULL; // Number of inclusive tracks surviving different track cuts
@@ -189,9 +190,12 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
   fLastLoadedTrackPtBin(in.fLastLoadedTrackPtBin),
   fhVertexZ(in.fhVertexZ),
+  fhVertexZWeighted(in.fhVertexZWeighted),
+  fhVertexZDijet(in.fhVertexZDijet),
   fhEvents(in.fhEvents),
   fhTrackCuts(in.fhTrackCuts),
   fhCentrality(in.fhCentrality),
+  fhCentralityWeighted(in.fhCentralityWeighted),
   fhCentralityDijet(in.fhCentralityDijet)
 {
   // Copy constructor
@@ -539,6 +543,7 @@ void DijetHistogramManager::LoadHistograms(){
   if(fLoadEventInformation){
     fhVertexZ = (TH1D*) fInputFile->Get("vertexZ");                        // Vertex z position
     fhVertexZWeighted = (TH1D*) fInputFile->Get("vertexZweighted");        // MC weighted vertex z position
+    fhVertexZDijet = (TH1D*) fInputFile->Get("vertexZdijet");              // Vertex z position in dijet events
     fhTrackCuts = (TH1D*) fInputFile->Get("trackCuts");                    // Number of tracks surviving different track cuts
     fhTrackCutsInclusive = (TH1D*) fInputFile->Get("trackCutsInclusive");  // Number of inclusive tracks surviving different track cuts
     fhCentrality = (TH1D*) fInputFile->Get("centrality");                  // Centrality in all events
@@ -995,6 +1000,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     fhEvents->Write();             // Number of events surviving different event cuts
     fhVertexZ->Write();            // Vertex z position
     fhVertexZWeighted->Write();    // MC weighted vertex z position
+    if(fhVertexZDijet) fhVertexZDijet->Write();  // Vertex z position in dijet events
     fhTrackCuts->Write();          // Number of tracks surviving different track cuts
     fhTrackCutsInclusive->Write(); // Number of inclusive tracks surviving different track cuts
     fhCentrality->Write();         // Centrality in all events
@@ -1295,6 +1301,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
   if(fLoadEventInformation){
     fhVertexZ = (TH1D*) fInputFile->Get("vertexZ");                        // Vertex z position
     fhVertexZWeighted = (TH1D*) fInputFile->Get("vertexZweighted");        // MC weighted vertex z position
+    fhVertexZDijet = (TH1D*) fInputFile->Get("vertexZdijet");              // Vertex z position in dijet events
     fhTrackCuts = (TH1D*) fInputFile->Get("trackCuts");                    // Number of tracks surviving different track cuts
     fhTrackCutsInclusive = (TH1D*) fInputFile->Get("trackCutsInclusive");  // Number of inclusive tracks surviving different track cuts
     fhCentrality = (TH1D*) fInputFile->Get("centrality");                  // Centrality in all events
@@ -1892,6 +1899,16 @@ double DijetHistogramManager::GetDeltaPhiBorderHigh(const int iDeltaPhi) const{
 // Getter for z-vertex histogram
 TH1D* DijetHistogramManager::GetHistogramVertexZ() const{
   return fhVertexZ;
+}
+
+// Getter for z-vertex histogram
+TH1D* DijetHistogramManager::GetHistogramVertexZWeighted() const{
+  return fhVertexZWeighted;
+}
+
+// Getter for z-vertex histogram
+TH1D* DijetHistogramManager::GetHistogramVertexZDijet() const{
+  return fhVertexZDijet;
 }
 
 // Getter for histogram for number of events surviving different event cuts

@@ -179,6 +179,8 @@ public:
   
   // Getters for event information histograms
   TH1D* GetHistogramVertexZ() const;         // Getter for z-vertex histogram
+  TH1D* GetHistogramVertexZWeighted() const;  // Getter for weighted z-vertex histogram
+  TH1D* GetHistogramVertexZDijet() const;     // Getter for z-vertex histogram in dijet events
   TH1D* GetHistogramEvents() const;          // Getter for histogram for number of events surviving different event cuts
   TH1D* GetHistogramTrackCuts() const;       // Getter for histogram for number of tracks surviving different track cuts
   TH1D* GetHistogramCentrality() const;      // Getter for centrality histogram in all events
@@ -285,6 +287,7 @@ private:
   // Event information histograms
   TH1D *fhVertexZ;            // Vertex z position
   TH1D *fhVertexZWeighted;    // Weighted vertex z-position (only meaningfull for MC)
+  TH1D *fhVertexZDijet;       // Vertex z position in dijet events
   TH1D *fhEvents;             // Number of events surviving different event cuts
   TH1D *fhTrackCuts;          // Number of tracks surviving different track cuts
   TH1D *fhTrackCutsInclusive; // Number of inclusive tracks surviving different track cuts
