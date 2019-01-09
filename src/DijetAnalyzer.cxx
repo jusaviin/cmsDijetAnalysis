@@ -895,7 +895,6 @@ void DijetAnalyzer::RunAnalysis(){
               
               // Increase the number of jets we have found in the event
               nJetsInThisEvent++;
-              cout << "Incrementing jet counter in event: " << iEvent << endl;
               
               // Correlate inclusive jets with tracks
               if(!onlyMix) CorrelateTracksAndJets(inclusiveJetInfo[nJetsInThisEvent],inclusiveJetInfo[nJetsInThisEvent],DijetHistograms::kSameEvent,true);
@@ -1104,7 +1103,6 @@ void DijetAnalyzer::RunAnalysis(){
       // Do not go to mixing if no inclusive jets are found and we are doing inclusive jet mixing or no dijet are found
       // and we are doing dijet mixing
       if(mixEvents && ((fFillInclusiveJetTrackCorrelation && (nJetsInThisEvent > 0)) || (fFillDijetJetTrackCorrelation && dijetFound))){
-        cout << "Mixing activated for event: " << iEvent << endl;
         if(mixWithPool) {
           MixTracksAndJets(inclusiveJetInfo,leadingJetInfo,subleadingJetInfo,iEvent,nJetsInThisEvent,vz,hiBin,dijetFound);
         } else {
