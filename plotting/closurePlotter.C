@@ -150,27 +150,39 @@ void plotTrackClosure(JDrawer *drawer, TH1 *genHistogram, TH1 *recoHistogram, TH
  */
 void plotJetKinematics(JDrawer *drawer, TH1 *dataHistogram, TH1 *mcHistogram, const char *xTitle, const char *yTitle, bool logScale, int rebin, double xRangeMin, double yZoom, double legendX, double legendY, const char *header, const char *centralityString, const char *dataString, const char *mcString, int markerStyleData, int markerColorData, int markerStyleMC, int markerColorMC){
   
+  // Helper variable for naming
+  char namer[100];
+  
   // Set up the histogram style
   stylistForHistogram(dataHistogram,markerStyleData,markerColorData,rebin);
   stylistForHistogram(mcHistogram,markerStyleMC,markerColorMC,rebin);
   
   drawer->SetLogY(logScale);
-  if(xRangeMin > -100) dataHistogram->GetXaxis()->SetRangeUser(xRangeMin,300);
-  if(yZoom > 0) dataHistogram->GetYaxis()->SetRangeUser(0,yZoom);
-  drawer->DrawHistogram(dataHistogram,xTitle,yTitle," ");
+  double minY = logScale ? 8e-5 : 0;
+  if(xRangeMin > -100) mcHistogram->GetXaxis()->SetRangeUser(xRangeMin,300);
+  if(yZoom > 0) mcHistogram->GetYaxis()->SetRangeUser(minY,yZoom);
+  
+  // Special case for inclusive pT plots to force the x-axis range from 50 to 300
+  if(logScale && (xRangeMin > -100) && (yZoom > 0)){
+    drawer->CreateCanvas(xRangeMin,300,minY,yZoom,xTitle,yTitle," ");
+    mcHistogram->Draw("same");
+  } else {
+    drawer->DrawHistogram(mcHistogram,xTitle,yTitle," ");
+  }
   
   double ySpace = 0;
   if(strncmp(centralityString,"",2) != 0) ySpace += 0.025;
   
-  mcHistogram->Draw("same");
+  dataHistogram->Draw("same");
   
   TLegend *legend = new TLegend(legendX,legendY-ySpace,legendX+0.3,legendY+0.15+ySpace);
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   
-  legend->SetHeader(header);
+  sprintf(namer,"%s jet",header);
+  legend->SetHeader(namer);
   if(strncmp(centralityString,"",2) != 0) legend->AddEntry((TObject*) 0,centralityString,"");
-  legend->AddEntry(dataHistogram,dataString,"p");
-  legend->AddEntry(mcHistogram,mcString,"p");
+  legend->AddEntry(dataHistogram,dataString,"pl");
+  legend->AddEntry(mcHistogram,mcString,"pl");
   legend->Draw();
 
   drawer->SetLogY(false);
@@ -260,8 +272,8 @@ void closurePlotter(){
   bool drawVz = false;                // Draw the QA plots for seagull correction
   bool drawTrackClosure = false;      // Draw the tracking closures
   
-  bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
-  bool drawJetKinematicsAsymmerty = true;        // Draw the jet kinematics figures in different asymmetry bins
+  bool drawJetKinematicsMcComparison = true;     // Draw the jet kinematics figures comparing data and simulation
+  bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
   int ptRebin = 4;                  // Rebin for track pT closure histograms (there are 500 bins)
@@ -730,7 +742,7 @@ void closurePlotter(){
           for(int iJetType = 0; iJetType < 3; iJetType++){
             
             // Plot the kinematics figures for jet pT
-            plotJetKinematics(drawer,jetPt[iJetType][iSystem][kData][iCentrality],jetPt[iJetType][iSystem][kMC][iCentrality],"p_{T} (GeV)","#frac{dN}{dp_{T}}",true,1,50,-1,0.2,0.25,inclusiveJetHeader[iJetType],centralityString,legendNames[iSystem][0],monteCarloName[iSystem],markerStyleData,markerColorData[iJetType],markerStyleMC,markerColorMC[iJetType]);
+            plotJetKinematics(drawer,jetPt[iJetType][iSystem][kData][iCentrality],jetPt[iJetType][iSystem][kMC][iCentrality],"p_{T} (GeV)","#frac{1}{N_{dijet}} #frac{dN}{dp_{T}} (1/GeV)",true,1,50,0.08,0.25,0.25,inclusiveJetHeader[iJetType],centralityString,legendNames[iSystem][0],monteCarloName[iSystem],markerStyleData,markerColorData[iJetType],markerStyleMC,markerColorMC[iJetType]);
             
             // Save the figures for jet pT
             if(saveFigures){
@@ -739,7 +751,7 @@ void closurePlotter(){
             }
             
             // Plot the kinematics figures for jet eta
-            plotJetKinematics(drawer,jetEta[iJetType][iSystem][kData][iCentrality],jetEta[iJetType][iSystem][kMC][iCentrality],"#eta","#frac{dN}{d#eta}",false,1,-1000,-1,0.2,0.25,inclusiveJetHeader[iJetType],centralityString,legendNames[iSystem][0],monteCarloName[iSystem],markerStyleData,markerColorData[iJetType],markerStyleMC,markerColorMC[iJetType]);
+            plotJetKinematics(drawer,jetEta[iJetType][iSystem][kData][iCentrality],jetEta[iJetType][iSystem][kMC][iCentrality],"#eta","#frac{1}{N_{dijet}} #frac{dN}{d#eta}",false,1,-1000,0.45,0.4,0.25,inclusiveJetHeader[iJetType],centralityString,legendNames[iSystem][0],monteCarloName[iSystem],markerStyleData,markerColorData[iJetType],markerStyleMC,markerColorMC[iJetType]);
             
             // Save the figures for jet eta
             if(saveFigures){
@@ -748,7 +760,7 @@ void closurePlotter(){
             }
             
             // Plot the kinematics figures for jet phi
-            plotJetKinematics(drawer,jetPhi[iJetType][iSystem][kData][iCentrality],jetPhi[iJetType][iSystem][kMC][iCentrality],"#phi","#frac{dN}{d#phi}",false,1,-1000,-1,0.2,0.25,inclusiveJetHeader[iJetType],centralityString,legendNames[iSystem][0],monteCarloName[iSystem],markerStyleData,markerColorData[iJetType],markerStyleMC,markerColorMC[iJetType]);
+            plotJetKinematics(drawer,jetPhi[iJetType][iSystem][kData][iCentrality],jetPhi[iJetType][iSystem][kMC][iCentrality],"#phi","#frac{1}{N_{dijet}} #frac{dN}{d#phi}",false,1,-1000,0.22,0.4,0.25,inclusiveJetHeader[iJetType],centralityString,legendNames[iSystem][0],monteCarloName[iSystem],markerStyleData,markerColorData[iJetType],markerStyleMC,markerColorMC[iJetType]);
             
             // Save the figures for jet phi
             if(saveFigures){
