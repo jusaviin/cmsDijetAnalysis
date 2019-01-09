@@ -70,7 +70,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fFillRegularJetTrackCorrelation(false),
   fFillUncorrectedJetTrackCorrelation(false),
   fFillPtWeightedJetTrackCorrelation(false),
-  fFillInclusiveJetTrackCorrelation(false)
+  fFillInclusiveJetTrackCorrelation(false),
+  fFillDijetJetTrackCorrelation(false)
 {
   // Default constructor
   fHistograms = new DijetHistograms();
@@ -217,6 +218,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFillUncorrectedJetTrackCorrelation = bitChecker.test(kFillUncorrectedJetTrackCorrelation);
   fFillPtWeightedJetTrackCorrelation = bitChecker.test(kFillPtWeightedJetTrackCorrelation);
   fFillInclusiveJetTrackCorrelation = bitChecker.test(kFillInclusiveJetTrackCorrelation);
+  fFillDijetJetTrackCorrelation = (fFillRegularJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation || fFillTrackHistograms);
   
   // Do a sanity check for given bin widths for mixing pool
   if(fMaximumMixingHiBin >= kMaxMixingHiBins){
@@ -549,22 +551,24 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t leadingParticleFlowCandidateEta = 0;     // Leading particle flow candidate eta
   Double_t subleadingParticleFlowCandidatePhi = 0;  // Subleading particle flow candidate phi
   Double_t subleadingParticleFlowCandidateEta = 0;  // Subleading particle flow candidate eta
-  Double_t swapJetPt = 0;          // Swapping helper variable
-  Double_t swapJetPhi = 0;         // Swapping helper variable
-  Double_t swapJetEta = 0;         // Swapping helper variable
-  Int_t secondHighestIndex = -1;   // Index of the subleading jet in the event
-  Int_t highestIndex = -1;         // Index of the leading jet in the event
-  Int_t swapIndex = -1;            // Swapping helper variable
-  Double_t jetPt = 0;              // pT of the i:th jet in the event
-  Double_t jetPtCorrected = 0;     // Jet pT corrected with the JFF correction
-  Double_t jetPhi = 0;             // phi of the i:th jet in the event
-  Double_t jetEta = 0;             // eta of the i:th jet in the event
-  Double_t highestAnyPt = 0;       // Highest pT filled for all jets
-  Double_t highestPhi = 0;         // phi of any leading jet
-  Double_t highestEta = 0;         // eta of any leading jet
-  Double_t dphi = 0;               // deltaPhi for the considered jets
-  Double_t leadingJetInfo[3];      // Array for leading jet pT, phi and eta
-  Double_t subleadingJetInfo[3];   // Array for subleading jet pT, phi and eta
+  Double_t swapJetPt = 0;           // Swapping helper variable
+  Double_t swapJetPhi = 0;          // Swapping helper variable
+  Double_t swapJetEta = 0;          // Swapping helper variable
+  Int_t secondHighestIndex = -1;    // Index of the subleading jet in the event
+  Int_t highestIndex = -1;          // Index of the leading jet in the event
+  Int_t swapIndex = -1;             // Swapping helper variable
+  Double_t jetPt = 0;               // pT of the i:th jet in the event
+  Double_t jetPtCorrected = 0;      // Jet pT corrected with the JFF correction
+  Double_t jetPhi = 0;              // phi of the i:th jet in the event
+  Double_t jetEta = 0;              // eta of the i:th jet in the event
+  Double_t highestAnyPt = 0;        // Highest pT filled for all jets
+  Double_t highestPhi = 0;          // phi of any leading jet
+  Double_t highestEta = 0;          // eta of any leading jet
+  Double_t dphi = 0;                // deltaPhi for the considered jets
+  Double_t leadingJetInfo[3] = {0};       // Array for leading jet pT, phi and eta
+  Double_t subleadingJetInfo[3] = {0};    // Array for subleading jet pT, phi and eta
+  Double_t inclusiveJetInfo[60][3] = {{0}}; // Array for jet pT, phi and eta for all the jets in the event
+  Int_t nJetsInThisEvent = 0;             // Number of jets in the event
   
   // Variables for tracks
   Double_t fillerTrack[4];            // Track histogram filler
@@ -806,6 +810,7 @@ void DijetAnalyzer::RunAnalysis(){
       highestAnyPt = 0;
       highestPhi = 0;
       highestEta = 0;
+      nJetsInThisEvent = 0;
       
       //************************************************
       //    Loop over all jets and find leading jet
@@ -878,27 +883,22 @@ void DijetAnalyzer::RunAnalysis(){
             if((jetPtCorrected > fLeadingJetMinPtCut) && (jetPtCorrected < fJetMaximumPtCut)){
               
               // Fill the array with jet information
-              leadingJetInfo[0] = jetPtCorrected;
-              leadingJetInfo[1] = jetPhi;
-              leadingJetInfo[2] = jetEta;
+              inclusiveJetInfo[nJetsInThisEvent][0] = jetPtCorrected;
+              inclusiveJetInfo[nJetsInThisEvent][1] = jetPhi;
+              inclusiveJetInfo[nJetsInThisEvent][2] = jetEta;
               
               // If we are using leading particle flow candidate as a probe for jet axis, change the jet info
               if(fJetAxis == 1){
-                leadingJetInfo[1] = leadingParticleFlowCandidatePhi;
-                leadingJetInfo[2] = leadingParticleFlowCandidateEta;
+                inclusiveJetInfo[nJetsInThisEvent][1] = leadingParticleFlowCandidatePhi;
+                inclusiveJetInfo[nJetsInThisEvent][2] = leadingParticleFlowCandidateEta;
               }
+              
+              // Increase the number of jets we have found in the event
+              nJetsInThisEvent++;
+              cout << "Incrementing jet counter in event: " << iEvent << endl;
               
               // Correlate inclusive jets with tracks
-              if(!onlyMix) CorrelateTracksAndJets(leadingJetInfo,leadingJetInfo,DijetHistograms::kSameEvent,true);
-              
-              // Do event mixing using the selected mixing method
-              if(mixEvents){
-                if(mixWithPool) {
-                  MixTracksAndJets(leadingJetInfo,leadingJetInfo,iEvent,vz,hiBin,true);
-                } else {
-                  MixTracksAndJetsWithoutPool(leadingJetInfo,leadingJetInfo,iEvent,vz,hiBin,true);
-                }
-              }
+              if(!onlyMix) CorrelateTracksAndJets(inclusiveJetInfo[nJetsInThisEvent],inclusiveJetInfo[nJetsInThisEvent],DijetHistograms::kSameEvent,true);
               
             } // Jet passes the pT cuts
           } // Check if we fill inclusive jet-track correlation histograms
@@ -1090,21 +1090,28 @@ void DijetAnalyzer::RunAnalysis(){
         }
         
         // Do not do the jet-track correlation are not filling the relevant histograms
-        if(!fFillTrackHistograms && !fFillRegularJetTrackCorrelation && !fFillUncorrectedJetTrackCorrelation && !fFillPtWeightedJetTrackCorrelation) continue;
-        
-        // Correlate jets with tracks in dijet events
-        if(!onlyMix) CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
-        
-        // Do event mixing using the selected mixing method
-        if(mixEvents){
-          if(mixWithPool) {
-            MixTracksAndJets(leadingJetInfo,subleadingJetInfo,iEvent,vz,hiBin);
-          } else {
-            MixTracksAndJetsWithoutPool(leadingJetInfo,subleadingJetInfo,iEvent,vz,hiBin);
-          }
+        if(fFillDijetJetTrackCorrelation){
+          
+          // Correlate jets with tracks in dijet events
+          if(!onlyMix) CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kSameEvent);
+          
         }
           
       } // Dijet in event
+      
+      // Do event mixing for tracks and inclusive jets, leading jet and subleading jet using the selected mixing method
+      // This is best done for everything at once to avoid loading mixing event several times (slow process)
+      // Do not go to mixing if no inclusive jets are found and we are doing inclusive jet mixing or no dijet are found
+      // and we are doing dijet mixing
+      if(mixEvents && ((fFillInclusiveJetTrackCorrelation && (nJetsInThisEvent > 0)) || (fFillDijetJetTrackCorrelation && dijetFound))){
+        cout << "Mixing activated for event: " << iEvent << endl;
+        if(mixWithPool) {
+          MixTracksAndJets(inclusiveJetInfo,leadingJetInfo,subleadingJetInfo,iEvent,nJetsInThisEvent,vz,hiBin,dijetFound);
+        } else {
+          MixTracksAndJetsWithoutPool(inclusiveJetInfo,leadingJetInfo,subleadingJetInfo,iEvent,nJetsInThisEvent,vz,hiBin,dijetFound);
+        }
+      }
+      
     } // Event loop
     
     //************************************************
@@ -1123,8 +1130,8 @@ void DijetAnalyzer::RunAnalysis(){
 /*
  * Method for all jet-track correlations
  *
- *  Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
- *  Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
+ *  const Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
+ *  const Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
  *  const Int_t correlationType = DijetHistograms::kSameEvent for same event correlations, DijetHistograms::kMixedEvent for mixed event correlations
  *  const Bool_t useInclusiveJets = True: Correlation done for inclusive jets. False: Correlation done for leading and subleading jets
  */
@@ -1238,27 +1245,36 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
 /*
  * Do the jet-track correlations with mixed events
  *
- *  Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
- *  Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
+ *  const Double_t inclusiveJetInfo[60][3] = Array containing pT, phi and eta for all jets above the leading jet cut in the event
+ *  const Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
+ *  const Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
  *  const Int_t avoidIndex = Index of the current event. Do not use this index for mixing in order not to mix with the same event
+ *  const Int_t nJetsInThisEvent = Number of jets above the leading jet cut in this event
  *  const Double_t vz = Vertex z-position for the main event
  *  const Int_t hiBin = HiBin of the main event
- *  const Bool_t useInclusiveJets = True: Use inclusive jets for correlations. False: Use leading/subleading jets for correlations
+ *  const Bool_t dijetInEvent = True: Event has dijet. False: No dijet in this event
  */
-void DijetAnalyzer::MixTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
+void DijetAnalyzer::MixTracksAndJets(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex;                        // Index of current event in mixing loop
+  Int_t mixedEventPosition;                     // Position of the mixed event in the event pool
   Int_t eventsMixed = 0;                        // Number of events mixed thus far
   Int_t mixingVzBin = FindMixingVzBin(vz);      // Bin index for the vz bin in mixing pool
   Int_t mixingHiBin = FindMixingHiBin(hiBin);   // Bin index for the centrality bin in the mixing pool
-  Bool_t startOfLoop = true;                    // Bool for writing debuggin messages is same event are used many times for mixing
-  Int_t nLoops = 0;                             // Counter of how many times same event are used for mixing
-  Int_t firstMixingIndex = 0;                   // Index for the first event used in event mixing
+  //Bool_t startOfLoop = true;                    // Bool for writing debugging messages is same event are used many times for mixing
+  //Int_t nLoops = 0;                             // Counter of how many times same event are used for mixing
+  //Int_t firstMixingIndex = 0;                   // Index for the first event used in event mixing
   
-  // Continue mixing until we have reached required number of evens
+  // Initialize the mixed event randomizer
+  TRandom3 *mixedEventRandomizer = new TRandom3();  // Randomizer for starting point in the mixed event file
+  mixedEventRandomizer->SetSeed(0);
+  
+  // Continue mixing until we have reached required number of events
   while (eventsMixed < fnMixedEventsPerDijet) {
     
+    // Original implementation for the mixing pool using running index to go over pool and a message if events are used more than once
+    /*
     // If the running index is outside of the vector range, start over
     if(fRunningMixingIndex >= fMixingPool[mixingVzBin][mixingHiBin].size()) fRunningMixingIndex = 0;
     
@@ -1278,10 +1294,17 @@ void DijetAnalyzer::MixTracksAndJets(const Double_t leadingJetInfo[3], const Dou
         cout << "Note! In the mixing for event " << avoidIndex << " same mixing events are used for " << nLoops << " times!" << endl;
         cout << "Size of the mixing vector: " << fMixingPool[mixingVzBin][mixingHiBin].size() << endl;
       }
-    }
+    }*/
     
-    // Get the index for mixing event for the mixed event pool and increment the running counter
-    mixedEventIndex = fMixingPool[mixingVzBin][mixingHiBin].at(fRunningMixingIndex++);
+    // Implementation in Kurt's code: Read a random event to mix with the current event. No check for duplicates.
+    
+    // Get the index for mixing event from a random position in the mixed event pool
+    mixedEventPosition = mixedEventRandomizer->Rndm()*(fMixingPool[mixingVzBin][mixingHiBin].size());
+    // Note: use size instead of size-1 because conversion from double to int only checks the integer part of the number
+    // and using size-1 makes it impossible to reach the last index in vector (unless random floating point number is exactly 1)
+    // If this extremely rare case happens, change the index by one to stay in bounds of the vector.
+    if(mixedEventPosition == fMixingPool[mixingVzBin][mixingHiBin].size()) mixedEventPosition--;
+    mixedEventIndex = fMixingPool[mixingVzBin][mixingHiBin].at(mixedEventPosition);
     
     // Never mix with an event having the same index to avoid same event correlations
     if(mixedEventIndex == avoidIndex) continue;
@@ -1289,25 +1312,38 @@ void DijetAnalyzer::MixTracksAndJets(const Double_t leadingJetInfo[3], const Dou
     // Get the event defined by the index in the mixing pool
     fTrackReader[DijetHistograms::kMixedEvent]->GetEvent(mixedEventIndex);
     
-    // Do the correlations with the dijet from current event and track from mixing event
-    CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent,useInclusiveJets);
+    // Do the correlation with a jet from the current event and track from mixing event
+    if(fFillInclusiveJetTrackCorrelation){
+      for(int iJet = 0; iJet < nJetsInThisEvent; iJet++){
+        CorrelateTracksAndJets(inclusiveJetInfo[iJet],inclusiveJetInfo[iJet],DijetHistograms::kMixedEvent,true);
+      }
+    }
+    
+    // Do the correlations with the dijet from current event and tracks from mixing event
+    if(fFillDijetJetTrackCorrelation && dijetInEvent){
+      CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent,false);
+    }
     eventsMixed++;
     
   } // While loop for finding events to mix
+  
+  delete mixedEventRandomizer;
   
 }
 
 /*
  * Do the jet-track correlations with mixed events in a poolless way
  *
- *  Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
- *  Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
+ *  const Double_t inclusiveJetInfo[60][3] = Array containing pT, phi and eta for all jets above the leading jet cut in the event
+ *  const Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
+ *  const Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
  *  const Int_t avoidIndex = Index of the current event. Do not use this index for mixing in order not to mix with the same event
+ *  const Int_t nJetsInThisEvent = Number of jets above the leading jet cut in this event
  *  const Double_t vz = Vertex z-position for the main event
  *  const Int_t hiBin = HiBin of the main event
- *  const Bool_t useInclusiveJets = True: Use inclusive jets for correlations. False: Use leading/subleading jets for correlations
+ *  const Bool_t dijetInEvent = True: Event has dijet. False: No dijet in this event
  */
-void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets){
+void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex = fMixingStartIndex; // Index of current event in mixing loop
@@ -1373,8 +1409,18 @@ void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t leadingJetInfo[3]
     if(CheckForSameEvent(avoidIndex,mixedEventIndex)) continue;  // Check that the mixing file does not have exactly the same event as regular data file
     mixedEventIndices.push_back(mixedEventIndex);
     
-    // Do the correlations with the dijet from current event and track from mixing event
-    CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent,useInclusiveJets);
+    // Do the correlation with a jet from the current event and track from mixing event
+    if(fFillInclusiveJetTrackCorrelation){
+      for(int iJet = 0; iJet < nJetsInThisEvent; iJet++){
+        CorrelateTracksAndJets(inclusiveJetInfo[iJet],inclusiveJetInfo[iJet],DijetHistograms::kMixedEvent,true);
+      }
+    }
+    
+    // Do the correlations with the dijet from current event and tracks from mixing event
+    if(fFillDijetJetTrackCorrelation && dijetInEvent){
+      CorrelateTracksAndJets(leadingJetInfo,subleadingJetInfo,DijetHistograms::kMixedEvent,false);
+    }
+    
     eventsMixed++;
     
   } // While loop for finding events to mix
@@ -1758,8 +1804,10 @@ void DijetAnalyzer::ValidateMixingPool(){
         // Print a debug message about the events in the mixing bin
         if(fDebugLevel > 0) {
           cout << "No events in mixing pool for bin vz: " << iVz << " hibin: " << iHiBin << endl;
-          cout << "Filling this bin from adjacent bins" << endl;
+          cout << "Filling this bin from adjacent bins with distance " << offset << endl;
         }
+        
+        // TODO: Validation with offset to both vz and hiBin
         
         // While there are no events in the bin, check as many adjacent bins as needed to find some events
         if(iVz - offset >= 0){
@@ -1844,7 +1892,8 @@ Int_t DijetAnalyzer::FindMixingVzBin(const Double_t vz) const{
  *  Find a bin for the input hiBin. There are 200 hiBins
  */
 Int_t DijetAnalyzer::FindMixingHiBin(const Int_t hiBin) const{
-  if(hiBin == 200) return (hiBin/fMixingHiBinWidth) - 1; // If we are exactly at the upper limit, put the result to last available bin
+  if(hiBin < 0) return 0; // For pp, return 0 as hiBin
+  if(hiBin == 200 && fMixingHiBinWidth > 1) return (hiBin/fMixingHiBinWidth) - 1; // If we are exactly at the upper limit, put the result to last available bin (to avoid the lowest statistics bin to be alone)
   return hiBin/fMixingHiBinWidth;
 }
 

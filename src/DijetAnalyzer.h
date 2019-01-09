@@ -35,7 +35,7 @@ private:
   enum enumForestType{kHighForest,kSkimForest,knForestTypes}; // What type of forest is used for reader
   
   static const Int_t kMaxMixingVzBins = 30;      // Maximum number of vz bins in the mixing pool
-  static const Int_t kMaxMixingHiBins = 200;     // Maximum number of CMS HiBins in the mixing pool
+  static const Int_t kMaxMixingHiBins = 201;     // Maximum number of CMS HiBins in the mixing pool
   
 public:
   
@@ -54,8 +54,8 @@ private:
   
   // Private methods
   void CorrelateTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlations
-  void MixTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
-  void MixTracksAndJetsWithoutPool(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Double_t vz, const Int_t hiBin, const Bool_t useInclusiveJets = false); // Do jet-track correlations with mixed events
+  void MixTracksAndJets(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
+  void MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
@@ -146,6 +146,7 @@ private:
   Bool_t fFillUncorrectedJetTrackCorrelation; // Fill uncorrected jet-track correlation histograms
   Bool_t fFillPtWeightedJetTrackCorrelation;  // Fill pT weighted jet-track correlation histograms
   Bool_t fFillInclusiveJetTrackCorrelation;   // Fill inclusive jet-track correlation histograms
+  Bool_t fFillDijetJetTrackCorrelation;       // Fill dijet jet-track correlation histograms
 
 };
 
