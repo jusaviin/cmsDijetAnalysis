@@ -158,6 +158,7 @@ private:
   
   // Choose if we should scale the histograms before comparing them
   bool fApplyScaling;
+  double fScalingFactors[knMaxRatios+1];
   
   // Logarithmic scales for figures
   bool fLogPt;          // pT distributions
@@ -199,6 +200,9 @@ private:
   void PrepareRatio(TString name, int rebin, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0); // Prepare the ratio histograms out of input histograms
   void DrawToUpperPad(const char* xTitle, const char* yTitle, bool logAxis = false); // Draw the histograms to the same figure in the upper pad of JDrawer
   void DrawToLowerPad(const char* xTitle, const char* yTitle, const double zoomMin, const double zoomMax); // Draw the ratios to the lower pad of the JDrawer
+  
+  // Find the per jet scaling factor
+  void FindScalingFactors(int iJetCategory, int iCentrality, int iAsymmetry);
   
   
 };

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-#./processHistogramsInSteps.sh "data/PbPbMC_GenGen_skims_pfJets_noUncorrected_3eventsMixed_sube0_2018-10-09.root" "data/PbPbMC_GenGen_skims_pfJets_noInclusiveOrUncorrected_3eventsMixed_sube0_smoothedMixing_processed_2018-10-30.root" false false
-#./processHistogramsInSteps.sh "data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_2018-11-19.root" "data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root" false false
-#./processHistogramsInSteps.sh "data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_sube0_2018-11-05.root" "data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_sube0_smoothedMixing_processed_2018-11-05.root" false false
-./processHistogramsInSteps.sh "data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorr_10mixedEventsWothPool_2018-12-12_combine00.root" "data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorr_10mixedEventsWothPool_noCorrections_smoothedMixing_processed_2018-12-12_combine00.root" false false
+#./processHistogramsInSteps.sh "data/PbPbMC_GenGen_skims_pfJets_noMixing_2019-01-04.root" "data/PbPbMC_GenGen_skims_pfJets_noMixing_processed_2019-01-04.root" false false
+#./processHistogramsInSteps.sh "data/PbPbMC_GenReco_skims_pfJets_noMixing_2019-01-04.root" "data/PbPbMC_GenReco_skims_pfJets_noMixing_processed_2019-01-04.root" false false
+#./processHistogramsInSteps.sh "data/PbPbMC_RecoGen_skims_pfJets_noMixing_2019-01-04.root" "data/PbPbMC_RecoGen_skims_pfJets_noMixing_processed_2019-01-04.root" false false
+./processHistogramsInSteps.sh "data/PbPbMC_RecoReco_skims_pfJets_noMixing_sube0_2019-01-04.root" "data/PbPbMC_RecoReco_skims_pfJets_noMixing_sube0_noCorrelations_processed_2019-01-04.root" false false
+

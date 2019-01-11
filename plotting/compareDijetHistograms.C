@@ -17,7 +17,7 @@ void compareDijetHistograms(){
   bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = false;
+  bool drawAnyJetHistograms = true;
   bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
@@ -25,7 +25,7 @@ void compareDijetHistograms(){
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -59,7 +59,7 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
@@ -73,12 +73,12 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0;
-  double maxZoom = 3;
-  TString ratioLabel = "PbPb / pp";
+  double minZoom = 0.4;
+  double maxZoom = 1.6;
+  TString ratioLabel = "PbPb / MC";
   
   // Scaling for histograms
-  bool scaleHistograms = ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
+  bool scaleHistograms = true; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
   
   // Bin borders
   const int nCentralityBins = 4;
@@ -118,8 +118,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-12-03.root","data/dijet_pp_highForest_pfJets_pfCandAxis_smoothedMixing_noCorrections_processed_2018-12-07.root"};
+  const int nDatasets = 3;
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root","data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root","data/PbPbMC_GenGen_skims_pfJets_noMixing_processed_2019-01-04.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -128,7 +128,7 @@ void compareDijetHistograms(){
   //  "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"
   //  "data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root"
   
-  TString legendComment[nDatasets] = {"",""};
+  TString legendComment[nDatasets] = {"PbPb inclusive","P+H RecoJets","P+H GenJets"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   

@@ -305,8 +305,8 @@ void closurePlotter(){
   
   // Open files containing the QA histograms
   TFile *inputFile[knCollisionSystems][knDataTypes];
-  inputFile[kPp][kData] = TFile::Open("data/dijet_pp_highForest_pfJets_smoothedMixing_noCorrections_2019-01-07.root");
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_2019-01-07.root");
+  inputFile[kPp][kData] = TFile::Open("data/dijet_pp_highForest_pfJets_smoothedMixing_noCorrections_processed_2019-01-07.root");
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root");
   inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_noCorrelations_2019-01-08.root");
   inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root");
   

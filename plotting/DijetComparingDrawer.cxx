@@ -67,6 +67,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   }
   for(int iComment = 0; iComment < knMaxRatios+1; iComment++){
     fLegendComment[iComment] = "";
+    fScalingFactors[iComment] = 1;
   }
   
 }
@@ -143,6 +144,11 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
   TString centralityString;
   TString compactCentralityString;
   char namerX[100];
+  char namerY[100];
+  const char* singleJetNormalizationName[4] = {"dijet","dijet","jet","jet"};
+  
+  // Asymmetry bin to be used
+  int iAsymmetryBin = 0; //DijetHistogramManager::knAsymmetryBins;
   
   // Loop over single jet categories
   for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
@@ -157,17 +163,20 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // Select logarithmic drawing for pT
       fDrawer->SetLogY(fLogPt);
       
+      if(fApplyScaling) FindScalingFactors(iJetCategory, iCentrality, iAsymmetryBin);
+      
       // === Jet pT ===
       
       // Prepare the jet pT histograms and ratio to be drawn
-      PrepareRatio("jetPt", 1, iJetCategory, iCentrality);
+      PrepareRatio("jetPt", 1, iJetCategory, iCentrality, iAsymmetryBin);
       
       // Draw the jet pT distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
-      DrawToUpperPad(namerX, "#frac{dN}{dp_{T}}  (1/GeV)", fLogPt);
+      sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{dp_{T}}  (1/GeV)",singleJetNormalizationName[iJetCategory]);
+      DrawToUpperPad(namerX, namerY, fLogPt);
       
       // Add a legend to the plot
-      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend = new TLegend(0.27,0.05,0.55,0.3);
       SetupLegend(legend,centralityString);
       legend->Draw();
       
@@ -181,14 +190,15 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // === Jet phi ===
       
       // Prepare the jet phi histograms and ratio to be drawn
-      PrepareRatio("jetPhi", 1, iJetCategory, iCentrality);
+      PrepareRatio("jetPhi", 1, iJetCategory, iCentrality, iAsymmetryBin);
       
       // Draw the jet phi distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s #varphi",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
-      DrawToUpperPad(namerX,"#frac{dN}{d#varphi}");
+      sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{d#varphi}",singleJetNormalizationName[iJetCategory]);
+      DrawToUpperPad(namerX,namerY);
       
       // Add a legend to the plot
-      legend = new TLegend(0.62,0.75,0.82,0.9);
+      legend = new TLegend(0.62,0.65,0.82,0.9);
       SetupLegend(legend,centralityString);
       legend->Draw();
       
@@ -196,20 +206,21 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
       
       // Save the figure to a file
-      sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
+      sprintf(namerX,"%sPhiRatio",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
       SaveFigure(namerX,compactCentralityString);
 
       // === Jet eta ===
       
       // Prepare the jet eta histograms and ratio to be drawn
-      PrepareRatio("jetEta", 1, iJetCategory, iCentrality);
+      PrepareRatio("jetEta", 1, iJetCategory, iCentrality, iAsymmetryBin);
       
       // Draw the jet eta distributions to the upper panel of a split canvas plot
-      sprintf(namerX,"%s #eta",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
-      DrawToUpperPad(namerX,"#frac{dN}{d#eta}");
+      sprintf(namerX,"%s #eta",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
+      sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{d#eta}",singleJetNormalizationName[iJetCategory]);
+      DrawToUpperPad(namerX,namerY);
       
       // Add a legend to the plot
-      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend = new TLegend(0.42,0.07,0.62,0.32);
       SetupLegend(legend,centralityString);
       legend->Draw();
 
@@ -1004,19 +1015,40 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   
   // Helper variable
   char namer[100];
-
+  
   // Read the histograms, scale them to one and take the ratio
   fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
   if(rebin > 1) fMainHistogram->Rebin(rebin);
-  if(fApplyScaling) fMainHistogram->Scale(1.0/fMainHistogram->Integral());
+  if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,0,bin5)->Clone();
     if(rebin > 1) fComparisonHistogram[iAdditional]->Rebin(rebin);
-    if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fComparisonHistogram[iAdditional]->Integral());
+    if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
     fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
     fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
   }
+}
+
+/*
+ * Find the scaling factors for drawn distributions from the jet pT distribution
+ *
+ *  int iJetCategory = Index for the catogery of jets we are looking at
+ *  int iCentrality = Index for the centrality bin of the jet
+ *  int iAsymmetry = Index for the asymmetry bin of the jet
+ */
+void DijetComparingDrawer::FindScalingFactors(int iJetCategory, int iCentrality, int iAsymmetry){
+  
+  // Helper variable for reading the normalization scales
+  TH1D *scaleReader;
+  
+  scaleReader = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
+  fScalingFactors[0] = scaleReader->Integral("width");
+  for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+    scaleReader = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
+    fScalingFactors[1+iAdditional] = scaleReader->Integral("width");
+  }
+  
 }
 
 /*
@@ -1078,9 +1110,9 @@ void DijetComparingDrawer::SetupLegend(TLegend *legend, TString centralityString
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
-  legend->AddEntry(fMainHistogram,fBaseHistograms->GetSystem() + " " + fLegendComment[0],"l");
+  legend->AddEntry(fMainHistogram,/*fBaseHistograms->GetSystem() + " " +*/ fLegendComment[0],"l");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    legend->AddEntry(fComparisonHistogram[iAdditional],fAddedHistograms[iAdditional]->GetSystem() + " " + fLegendComment[iAdditional+1],"l");
+    legend->AddEntry(fComparisonHistogram[iAdditional],/*fAddedHistograms[iAdditional]->GetSystem() + " " +*/ fLegendComment[iAdditional+1],"l");
   }
 }
 
