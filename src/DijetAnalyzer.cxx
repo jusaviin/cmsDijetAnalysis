@@ -1225,6 +1225,15 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
       if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
       if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
       
+      // Mixing debug. See if the peak in low pT central collisions is here also.
+      if(correlationType == DijetHistograms::kMixedEvent){
+        if(trackPt > 0.7 && trackPt < 1.0){
+          if(centrality < 10){
+            fHistograms->fhMixingDebug->Fill(deltaEtaTrackLeadingJet,deltaPhiTrackLeadingJet,trackEfficiencyCorrection*fTotalEventWeight);
+          }
+        }
+      }
+      
       // Fill the track-subleading jet correlation histograms
       fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
       fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet

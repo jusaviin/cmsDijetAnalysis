@@ -46,6 +46,7 @@ public:
   TH1F *fhCentralityDijet;       // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
   TH1F *fhPtHat;                 // pT hat for MC events (only meaningful for MC)
   TH1F *fhPtHatWeighted;         // Weighted pT hat distribution
+  TH2F *fhMixingDebug;           // Histogram to debug mixed event distribution
   THnSparseF *fhLeadingJet;      // Leading jet without dijet requirement [l-pT][l-phi][l-eta][Ajj][cent]
   THnSparseF *fhLeadingDijet;    // Leading jet in dijet events [l-pT][l-phi][l-eta][Ajj][cent]
   THnSparseF *fhSubleadingDijet; // Subleading jet in dijet events [s-pT][s-phi][s-eta][Ajj][cent]
