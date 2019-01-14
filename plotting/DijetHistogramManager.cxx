@@ -2097,17 +2097,19 @@ int DijetHistogramManager::GetNDijets() const{
   return fhEvents->GetBinContent(fhEvents->FindBin(DijetHistograms::kDijet));
 }
 
-// Getter for integral over leading jet pT
+// Getter for integral over leading jet pT. Include the overflow bin in the integral. There is no jet pT limit
+// in for the correlation but the histogram has limited range, so to get all the jets into normalization we
+// need to include the overflow bin in the intagral.
 double DijetHistogramManager::GetPtIntegral(const int iCentrality, const int iAsymmetry) const{
-  return fhJetPt[kLeadingJet][iCentrality][iAsymmetry]->Integral("width");
+  return fhJetPt[kLeadingJet][iCentrality][iAsymmetry]->Integral(1,fhJetPt[kLeadingJet][iCentrality][iAsymmetry]->GetNbinsX()+1,"width");
 }
 
-// Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
+// Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin. Include the overflow bin in the integral
 double DijetHistogramManager::GetAnyLeadingJetPtIntegral(const int iCentrality) const{
-  return fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->FindBin(120),fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->GetNbinsX(),"width");
+  return fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->FindBin(120),fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
 }
 
-// Getter for integral over inclusive jet pT over 120 GeV
+// Getter for integral over inclusive jet pT over 120 GeV. Include the overflow bin in the integral
 double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality) const{
-  return fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->FindBin(120),fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->GetNbinsX(),"width");
+  return fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->FindBin(120),fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
 }
