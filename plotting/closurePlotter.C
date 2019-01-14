@@ -71,20 +71,30 @@ void setStyleAndNormalize(TH1 *histogram, int iDataType){
  *  bool logScale = Use logarithmic scale for the main histogram
  *  int rebin = Rebin for the histograms
  *  double yZoom = Range for the y-axis in the main histogram
+ *  bool bigZoom = Zoom to very close range to show exactly the deviation from one
  *  legendX = Left side x-position of the title
  *  legendY = Bottom side y-position of the title
  *  const char *header = Header for the legend
  *  const char *centralityString = String for the centrality
  *  const char *trackPtString = String for track pT
  */
-void plotTrackClosure(JDrawer *drawer, TH1 *genHistogram, TH1 *recoHistogram, TH1 *uncorrectedHistogram, const char *xTitle, const char *yTitle, bool logScale, int rebin, double yZoom, double legendX, double legendY, const char *header, const char *centralityString, const char *trackPtString){
+void plotTrackClosure(JDrawer *drawer, TH1 *genHistogram, TH1 *recoHistogram, TH1 *uncorrectedHistogram, const char *xTitle, const char *yTitle, bool logScale, int rebin, double yZoom, bool bigZoom, double legendX, double legendY, const char *header, const char *centralityString, const char *trackPtString){
 
   // Helper variable to name the histograms
   char namer[200];
   
+  // Style settings for the markers
+  int markerStyleGen = 21;     // Full color square marker
+  int markerColorGen = 38;     // Grey-blue
+  int markerStyleReco = 20;    // Full color round masker
+  int markerColorCorr = kRed;  // Red
+  int markerColorReco = kBlue; // Blue
+ 
+  stylistForHistogram(genHistogram,markerStyleGen,markerColorGen,rebin);
+  genHistogram->SetMarkerSize(1.2);
+  
   drawer->SetLogY(logScale);
   drawer->CreateSplitCanvas();
-  genHistogram->Rebin(rebin);
   if(yZoom > 0) genHistogram->GetYaxis()->SetRangeUser(0,yZoom);
   drawer->DrawHistogramToUpperPad(genHistogram,xTitle,yTitle," ");
 
@@ -92,12 +102,10 @@ void plotTrackClosure(JDrawer *drawer, TH1 *genHistogram, TH1 *recoHistogram, TH
   if(strncmp(centralityString,"",2) != 0) ySpace += 0.025;
   if(strncmp(trackPtString,"",2) != 0) ySpace += 0.025;
   
-  recoHistogram->SetLineColor(kBlue);
-  recoHistogram->Rebin(rebin);
+  stylistForHistogram(recoHistogram,markerStyleReco,markerColorCorr,rebin);
   recoHistogram->Draw("same");
-  uncorrectedHistogram->SetLineColor(kRed);
-  uncorrectedHistogram->Rebin(rebin);
-  uncorrectedHistogram->Draw("same");
+  stylistForHistogram(uncorrectedHistogram,markerStyleReco,markerColorReco,rebin);
+  if(!bigZoom)  uncorrectedHistogram->Draw("same");
 
   TLegend *legend = new TLegend(legendX,legendY-ySpace,legendX+0.3,legendY+0.25+ySpace);
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
@@ -105,23 +113,27 @@ void plotTrackClosure(JDrawer *drawer, TH1 *genHistogram, TH1 *recoHistogram, TH
   legend->SetHeader(header);
   if(strncmp(centralityString,"",2) != 0) legend->AddEntry((TObject*) 0,centralityString,"");
   if(strncmp(trackPtString,"",2) != 0) legend->AddEntry((TObject*) 0,trackPtString,"");
-  legend->AddEntry(genHistogram,"Gen. particles","l");
-  legend->AddEntry(recoHistogram,"Corr. tracks","l");
-  legend->AddEntry(uncorrectedHistogram,"Reco. tracks","l");
+  legend->AddEntry(genHistogram,"Gen. particles","pl");
+  legend->AddEntry(recoHistogram,"Corr. tracks","pl");
+  if(!bigZoom) legend->AddEntry(uncorrectedHistogram,"Reco. tracks","pl");
   legend->Draw();
 
   sprintf(namer,"%sRatio",recoHistogram->GetName());
   TH1D *recoRatio = (TH1D*) recoHistogram->Clone(namer);
   recoRatio->Divide(genHistogram);
-
+  
   sprintf(namer,"%sRatio",uncorrectedHistogram->GetName());
   TH1D *uncorrectedRatio = (TH1D*) uncorrectedHistogram->Clone(namer);
   uncorrectedRatio->Divide(genHistogram);
-
+  
   drawer->SetLogY(false);
-  recoRatio->GetYaxis()->SetRangeUser(0,2);
+  if(bigZoom){
+    recoRatio->GetYaxis()->SetRangeUser(0.9,1.1);
+  } else {
+    recoRatio->GetYaxis()->SetRangeUser(0,2);
+  }
   drawer->DrawHistogramToLowerPad(recoRatio,xTitle,"Reco/Gen"," ");
-  uncorrectedRatio->Draw("same");
+  if(!bigZoom) uncorrectedRatio->Draw("same");
 
 }
 
@@ -270,13 +282,14 @@ void closurePlotter(){
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = false;      // Draw the tracking closures
+  bool drawTrackClosure = true;      // Draw the tracking closures
   
-  bool drawJetKinematicsMcComparison = true;     // Draw the jet kinematics figures comparing data and simulation
+  bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
   bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
-  int ptRebin = 4;                  // Rebin for track pT closure histograms (there are 500 bins)
+  int ptRebin = 10;                  // Rebin for track pT closure histograms (there are 500 bins)
+  int trackAngleRebin = 2;          // Rebin for track eta and phi histograms
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
@@ -291,8 +304,11 @@ void closurePlotter(){
   int firstCentralityBin = 0;
   int lastCentralityBin = nCentralityBins-1;
   
-  int firstTrackPtBin = 5;
-  int lastTrackPtBin = 5;
+  int firstTrackPtBin = 0;
+  int lastTrackPtBin = nTrackPtBins-1;
+  
+  // Zoom very close to one in closure plots
+  bool bigClosureZoom = false;
   
   /////////////////
   // Config done //
@@ -552,8 +568,11 @@ void closurePlotter(){
     
     char header[100];
     char trackPtString[100];
+    char trackPtName[100];
     char centralityString[100];
+    char centralityName[100];
     char figureName[100];
+    const char* zoomerName;
     drawer->SetDefaultAppearanceSplitCanvas();
     
     // Bins: Dijet/inclusive, pp/PbPb, centrality, track pT
@@ -608,6 +627,12 @@ void closurePlotter(){
           // Inclusive Pythia+Hydjet Centrality 50-100 %
                  { 25,   25,     5,   1.6, 1.6,    1,        60   }}}};
     
+    if(bigClosureZoom){
+      zoomerName = "bigZoom_";
+    } else {
+      zoomerName = "";
+    }
+    
     for(int iInclusive = 0; iInclusive < 2; iInclusive++){
       for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
         for(int iCentrality = firstCentralityBin; iCentrality <= lastCentralityBin; iCentrality++){
@@ -618,8 +643,10 @@ void closurePlotter(){
           sprintf(header,"%s, %s", monteCarloName[iSystem],inclusiveLegend[iInclusive]);
           if(iSystem == kPp){
             sprintf(centralityString,"");
+            sprintf(centralityName,"");
           } else {
             sprintf(centralityString,"Cent: %.0f-%.0f%%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+            sprintf(centralityName,"_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
           }
           
           sprintf(trackPtString,"p_{T} inclusive");
@@ -636,6 +663,7 @@ void closurePlotter(){
            *  bool logScale = Use logarithmic scale for the main histogram
            *  int rebin = Rebin for the histograms
            *  double yZoom = Range for the y-axis in the main histogram
+           *  bool bigZoom = Zoom to very close range to show exactly the deviation from one
            *  legendX = Left side x-position of the title
            *  legendY = Bottom side y-position of the title
            *  const char *header = Header for the legend
@@ -644,29 +672,54 @@ void closurePlotter(){
            */
           
           // Plot the closure for track pT
-          plotTrackClosure(drawer, trackPt[iInclusive][0][iSystem][kRecoGen][iCentrality], trackPt[iInclusive][0][iSystem][kRecoReco][iCentrality], trackPt[iInclusive][1][iSystem][kRecoReco][iCentrality], "p_{T} (GeV)", "#frac{dN}{dp_{T}} (1/GeV)", true, ptRebin, -1, 0.5, 0.5, header, centralityString, "");
+          plotTrackClosure(drawer, trackPt[iInclusive][0][iSystem][kRecoGen][iCentrality], trackPt[iInclusive][0][iSystem][kRecoReco][iCentrality], trackPt[iInclusive][1][iSystem][kRecoReco][iCentrality], "p_{T} (GeV)", "#frac{dN}{dp_{T}} (1/GeV)", true, ptRebin, -1, bigClosureZoom, 0.5, 0.5, header, centralityString, "");
           
-          // Save the figures
-          /*if(saveFigures){
-           sprintf(figureName,"figures/trackPtClosure.pdf");  // TODO: Figure naming for the saved plots
+          // Save the figures for track pT closure
+          if(saveFigures){
+            sprintf(figureName,"figures/trackPtClosure_%s%s%s%s.pdf",zoomerName,inclusiveJetHeader[iInclusive],systemString[iSystem].Data(),centralityName);
             gPad->GetCanvas()->SaveAs(figureName);
-          }*/
+          }
           
           // Plot the closure for pT inclusive track eta
-          plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#eta", "#frac{dN}{d#eta}", false, 1, etaZoom[iSystem][iInclusive][iCentrality][nTrackPtBins], 0.5, 0.5, header, centralityString, trackPtString);
+          plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#eta", "#frac{dN}{d#eta}", false, trackAngleRebin, etaZoom[iSystem][iInclusive][iCentrality][nTrackPtBins], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+          
+          // Save the figures for track eta closure
+          if(saveFigures){
+            sprintf(figureName,"figures/trackEtaClosure_%s%s%s%s.pdf",zoomerName,inclusiveJetHeader[iInclusive],systemString[iSystem].Data(),centralityName);
+            gPad->GetCanvas()->SaveAs(figureName);
+          }
           
           // Plot the closure for pT inclusive track phi
-          plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#phi", "#frac{dN}{d#phi}", false, 1, phiZoom[iSystem][iInclusive][iCentrality][nTrackPtBins], 0.5, 0.5, header, centralityString, trackPtString);
+          plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#phi", "#frac{dN}{d#phi}", false, trackAngleRebin, phiZoom[iSystem][iInclusive][iCentrality][nTrackPtBins], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+          
+          // Save the figures for track phi closure
+          if(saveFigures){
+            sprintf(figureName,"figures/trackPhiClosure_%s%s%s%s.pdf",zoomerName,inclusiveJetHeader[iInclusive],systemString[iSystem].Data(),centralityName);
+            gPad->GetCanvas()->SaveAs(figureName);
+          }
           
           for(int iTrackPt = firstTrackPtBin; iTrackPt <= lastTrackPtBin; iTrackPt++){
             
             sprintf(trackPtString,"%.1f < p_{T} < %.1f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+            sprintf(trackPtName,"_pT=%.0f-%.0f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
             
             // Closure plots for track eta
-            plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#eta", "#frac{dN}{d#eta}", false, 1, etaZoom[iSystem][iInclusive][iCentrality][iTrackPt], 0.5, 0.5, header, centralityString, trackPtString);
+            plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#eta", "#frac{dN}{d#eta}", false, trackAngleRebin, etaZoom[iSystem][iInclusive][iCentrality][iTrackPt], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+            
+            // Save the figures for track eta closure
+            if(saveFigures){
+              sprintf(figureName,"figures/trackEtaClosure_%s%s%s%s%s.pdf",zoomerName,inclusiveJetHeader[iInclusive],systemString[iSystem].Data(),centralityName,trackPtName);
+              gPad->GetCanvas()->SaveAs(figureName);
+            }
             
             // Closure plots for track phi
-            plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#phi", "#frac{dN}{d#phi}", false, 1, phiZoom[iSystem][iInclusive][iCentrality][iTrackPt], 0.5, 0.5, header, centralityString, trackPtString);
+            plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#phi", "#frac{dN}{d#phi}", false, trackAngleRebin, phiZoom[iSystem][iInclusive][iCentrality][iTrackPt], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+            
+            // Save the figures for track phi closure
+            if(saveFigures){
+              sprintf(figureName,"figures/trackPhiClosure_%s%s%s%s%s.pdf",zoomerName,inclusiveJetHeader[iInclusive],systemString[iSystem].Data(),centralityName,trackPtName);
+              gPad->GetCanvas()->SaveAs(figureName);
+            }
           } // Track pT loop
           
         } // Centrality loop
