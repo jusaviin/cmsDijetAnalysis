@@ -59,6 +59,7 @@ public:
   // Setters for background subtraction configuration
   void SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta); // Setter for background deltaEta region
   void SetSignalDeltaEtaRegion(const double maxDeltaEta);                               // Setter for signal deltaEta region
+  void SetBackgroundAdjustment(const bool adjust, const int overlapBins);               // Setter for background adjustment
   
   // Setters for jet shape calculation configuration
   void SetJetShapeBinEdges(const int nBins, double *binBorders); // Setter for R-binning for jet shape histograms
@@ -91,6 +92,8 @@ private:
   TH2D *fBackgroundOverlap;       // Fill a few points over the gluing point to see how well the gluing works
   double fMinBackgroundDeltaEta;  // Minimum deltaEta for background subtraction region
   double fMaxBackgroundDeltaEta;  // Maximum deltaEta for background subtraction region
+  bool fAdjustBackground;         // Adjust the level of background based on the ratio of leading and subleading sides in overlapping bins
+  int fnOverlapBins;              // Number of overlapping bins to be used in background adjustment and overlap
   
   // =============================================
   // ============ Seagull correction =============

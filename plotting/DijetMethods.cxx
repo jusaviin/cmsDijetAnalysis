@@ -24,6 +24,8 @@ DijetMethods::DijetMethods() :
   fMaximumDeltaEta(4),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
+  fAdjustBackground(false),
+  fnOverlapBins(3),
   fMinBackgroundDeltaPhi(1.4),
   fMaxBackgroundDeltaPhi(1.7),
   fSeagullRebin(4),
@@ -68,6 +70,8 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fBackgroundOverlap(in.fBackgroundOverlap),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
   fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta),
+  fAdjustBackground(in.fAdjustBackground),
+  fnOverlapBins(in.fnOverlapBins),
   fBackgroundEtaProjection(in.fBackgroundEtaProjection),
   fSeagullFit(in.fSeagullFit),
   fMinBackgroundDeltaPhi(in.fMinBackgroundDeltaPhi),
@@ -106,6 +110,8 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fBackgroundOverlap = in.fBackgroundOverlap;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
   fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
+  fAdjustBackground = in.fAdjustBackground;
+  fnOverlapBins = in.fnOverlapBins;
   fBackgroundEtaProjection = in.fBackgroundEtaProjection;
   fSeagullFit = in.fSeagullFit;
   fMinBackgroundDeltaPhi = in.fMinBackgroundDeltaPhi;
@@ -345,6 +351,12 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   double deltaPhiValueAway;    // Value in the subleading deltaPhi histogram bin
   double deltaPhiErrorAway;    // Error of the subleading deltaPhi histogram bin
   
+  // Variables needed in the background level adjustment
+  double leadingOverlap = 0;
+  double leadingOverlapError = 0;
+  double subleadingOverlap = 0;
+  double subleadingOverlapError = 0;
+  
   sprintf(histogramName,"%sBackground",leadingHistogramWithBackground->GetName());
   fBackgroundDistribution = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
   int nDeltaPhiBins = fBackgroundDistribution->GetNbinsX(); // Number of deltaPhi bins
@@ -370,6 +382,16 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     deltaPhiErrorNear = backgroundDeltaPhiLeading->GetBinError(iDeltaPhi);
     deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi+offset);
     deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi+offset);
+    
+    // Calculate the sum of leading and subleading backgrounds in the overlap region
+    if(iDeltaPhi <= fnOverlapBins){
+      subleadingOverlap += deltaPhiValueAway;
+      subleadingOverlapError += deltaPhiErrorAway;
+    }
+    if(iDeltaPhi > (nDeltaPhiBins/2 - fnOverlapBins)){
+      leadingOverlap += deltaPhiValueNear;
+      leadingOverlapError += deltaPhiErrorNear;
+    }
     
     // Repopulate the deltaEta axis
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
@@ -402,16 +424,22 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     } // DeltaEta loop
   } // DeltaPhi loop
   
-  // For the background overlap distribution, fill three bins on each side of the gluing point
-  for(int iDeltaPhi = nDeltaPhiBins/2 + 1; iDeltaPhi <= nDeltaPhiBins/2 + 3; iDeltaPhi++){
+  // For the background overlap distribution, fill a few bins on each side of the gluing point
+  for(int iDeltaPhi = nDeltaPhiBins/2 + 1; iDeltaPhi <= nDeltaPhiBins/2 + fnOverlapBins; iDeltaPhi++){
     
     // Read the values from the deltaPhi background histogram
     deltaPhiValueNear = backgroundDeltaPhiLeading->GetBinContent(iDeltaPhi);
     deltaPhiErrorNear = backgroundDeltaPhiLeading->GetBinError(iDeltaPhi);
     
-    // For the away side we need to continue to the left, which rotates to the three last bins in deltaPhi
-    deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi + nDeltaPhiBins/2 - 3);
-    deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi + nDeltaPhiBins/2 - 3);
+    // For the away side we need to continue to the left, which rotates to the few last bins in deltaPhi
+    deltaPhiValueAway = backgroundDeltaPhiSubleading->GetBinContent(iDeltaPhi + nDeltaPhiBins/2 - fnOverlapBins);
+    deltaPhiErrorAway = backgroundDeltaPhiSubleading->GetBinError(iDeltaPhi + nDeltaPhiBins/2 - fnOverlapBins);
+    
+    // Calculate the sum of leading and subleading backgrounds in the overlap region
+    leadingOverlap += deltaPhiValueNear;
+    leadingOverlapError += deltaPhiErrorNear;
+    subleadingOverlap += deltaPhiValueAway;
+    subleadingOverlapError += deltaPhiErrorAway;
     
     // Repopulate the deltaEta axis
     for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
@@ -422,12 +450,69 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
         // Set the contants of the background overlap
         fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,deltaPhiValueNear/binWidthDeltaEta);
         fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,deltaPhiErrorNear*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaEta);
-        fBackgroundOverlap->SetBinContent(iDeltaPhi-3,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
-        fBackgroundOverlap->SetBinError(iDeltaPhi-3,iDeltaEta,deltaPhiErrorAway*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaEta);
+        fBackgroundOverlap->SetBinContent(iDeltaPhi-fnOverlapBins,iDeltaEta,deltaPhiValueAway/binWidthDeltaEta);
+        fBackgroundOverlap->SetBinError(iDeltaPhi-fnOverlapBins,iDeltaEta,deltaPhiErrorAway*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaEta);
         
       }
     } // DeltaEta loop
   } // DeltaPhi loop
+  
+  // In the optimal case the ratio of overlapping bins from leading and subleading backgrounds is 1.
+  // We can adjust the subleading background level based on the sum of background level in the overlap
+  // region to make this happen.
+  if(fAdjustBackground){
+    double leadingToSubleadingRatio = leadingOverlap/subleadingOverlap;
+    double subleadingToLeadingRatio = subleadingOverlap/leadingOverlap;
+    double leadingToSubleadingRatioError = TMath::Sqrt(TMath::Power(leadingOverlapError/subleadingOverlap,2)+TMath::Power(leadingOverlap*subleadingOverlapError/TMath::Power(subleadingOverlap,2),2));
+    double leadingScalingFactor;
+    double subleadingScalingFactor;
+    double scaledLeadingContent, scaledLeadingError;
+    double scaledSubleadingContent, scaledSubleadingError;
+    
+    // Only do the adjustment if the error of the ratio is somewhat reasonable
+    if(leadingToSubleadingRatioError < 1){
+      
+      // Scale both sides to match in the middle
+      if(leadingToSubleadingRatio > 1){
+        leadingScalingFactor = 1 + ((leadingToSubleadingRatio-1)/2);
+        subleadingScalingFactor = 1 - ((1-subleadingToLeadingRatio)/2);
+      } else {
+        leadingScalingFactor = 1 - ((1-leadingToSubleadingRatio)/2);
+        subleadingScalingFactor = 1 + ((subleadingToLeadingRatio-1)/2);
+      }
+      
+      for(int iDeltaPhi = 1; iDeltaPhi <= nDeltaPhiBins/2; iDeltaPhi++){
+        for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
+          
+          // If there is no content in the histogram, do not do adjustments
+          if(iDeltaEta >= minFilledDeltaEtaBin && iDeltaEta <= maxFilledDeltaEtaBin){
+            
+            // Scale the actual distribution
+            scaledLeadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
+            scaledLeadingError = fBackgroundDistribution->GetBinError(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
+            scaledSubleadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
+            scaledSubleadingError = fBackgroundDistribution->GetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
+            fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,scaledLeadingContent);
+            fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,scaledLeadingError);
+            fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingContent);
+            fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingError);
+            
+            // Scale also the overlap histogram for debugging purposes
+            scaledLeadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
+            scaledLeadingError = fBackgroundOverlap->GetBinError(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
+            scaledSubleadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
+            scaledSubleadingError = fBackgroundOverlap->GetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
+            fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,scaledLeadingContent);
+            fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,scaledLeadingError);
+            fBackgroundOverlap->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingContent);
+            fBackgroundOverlap->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingError);
+            
+          } // Bins that are actually filled
+          
+        } // DeltaEta loop
+      } // DeltaPhi loop
+    } // Reasonable error if
+  } // Adjusting the background if
   
   // Subtract the generated background from the histogram including the background
   sprintf(histogramName,"%sBackgroundSubtracted",leadingHistogramWithBackground->GetName());
@@ -994,6 +1079,12 @@ void DijetMethods::SetBackgroundDeltaEtaRegion(const double minDeltaEta, const d
 // Setter for signal deltaEta region
 void DijetMethods::SetSignalDeltaEtaRegion(const double maxDeltaEta){
   fMaxSignalDeltaEta = maxDeltaEta;
+}
+
+// Setter for background adjustment
+void DijetMethods::SetBackgroundAdjustment(const bool adjust, const int overlapBins){
+  fAdjustBackground = adjust;
+  fnOverlapBins = overlapBins;
 }
 
 // Setter for new bin borders
