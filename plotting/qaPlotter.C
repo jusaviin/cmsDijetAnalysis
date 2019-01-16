@@ -151,7 +151,7 @@ void printBackgroundOverlapSlide(bool subleadingOverlap, double binValues[6][6],
  *  Implemented QA checks:
  *    - spillover correction
  *    - seagull correction
- *    - background level check (TODO: for the six overlapping bins, do ratio of leading sum and subleading sum)
+ *    - background level check
  */
 void qaPlotter(){
   
@@ -167,10 +167,10 @@ void qaPlotter(){
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
-  bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
+  bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,(regularJetTrack && !calculateBackgroundOverlap),uncorrectedJetTrack,(ptWeightedJetTrack && !calculateBackgroundOverlap),inclusiveJetTrack,inclusiveJetTrack};
   const char *titleAddition[DijetHistogramManager::knJetTrackCorrelations] = {"",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", $p_{\\mathrm{T}}$ weighted"};
   
   /////////////////
@@ -180,7 +180,10 @@ void qaPlotter(){
   // Open files containing the QA histograms
   TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-12-05_QA.root");
   TFile *seagullFile = TFile::Open("data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19_QA.root");
-  TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19.root");
+  TFile *backgroundFile = TFile::Open("debugBackground.root");
+  // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14.root"
+  // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
+  // "data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19.root"
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
@@ -188,6 +191,9 @@ void qaPlotter(){
   const int nTrackPtBins = dummyManager->GetNTrackPtBins();
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  
+  // Centrality range to be considered (only implemented to background check at the moment)
+  int lastCentralityBin = 0;
   
   // Define needed histograms
   TH1D *spilloverDeltaEtaProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
@@ -203,6 +209,7 @@ void qaPlotter(){
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      if(iCentrality > lastCentralityBin) continue; // No centrality selection for pp
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
         sprintf(histogramNamer,"seagullDeltaEta_%s/seagullDeltaEta_%s_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
@@ -426,6 +433,26 @@ void qaPlotter(){
     double averageSubleadingOverlap[nTrackPtBins], averageSubleadingOverlapError[nTrackPtBins];
     double averageLeadingOverlap[nTrackPtBins], averageLeadingOverlapError[nTrackPtBins];
     
+    // Initialize all the helper variables to zero
+    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+      averageValue[iTrackPt] = 0;
+      averageError[iTrackPt] = 0;
+      averageSubleadingOverlap[iTrackPt] = 0;
+      averageSubleadingOverlapError[iTrackPt] = 0;
+      averageLeadingOverlap[iTrackPt] = 0;
+      averageLeadingOverlapError[iTrackPt] = 0;
+      for(int iBin = 0; iBin < 6; iBin ++){
+        ratioValue[iTrackPt][iBin] = 0;
+        ratioError[iTrackPt][iBin] = 0;
+      }
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        leadingSum[iCentrality][iTrackPt] = 0;
+        subleadingSum[iCentrality][iTrackPt] = 0;
+        leadingSumError[iCentrality][iTrackPt] = 0;
+        subleadingSumError[iCentrality][iTrackPt] = 0;
+      }
+    }
+    
     // Loop over all the bins
     for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
       if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
@@ -445,6 +472,9 @@ void qaPlotter(){
           subleadingSum[iCentrality][iTrackPt] = 0;
           leadingSumError[iCentrality][iTrackPt] = 0;
           subleadingSumError[iCentrality][iTrackPt] = 0;
+          
+          // For pp, no centrality binning
+          if(iCentrality > lastCentralityBin) continue;
           
           // Loop over the bins which have content in the background overlap histogram
           for(int iBin = 98; iBin <= 103; iBin++){

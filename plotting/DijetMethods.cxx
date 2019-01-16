@@ -488,20 +488,20 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
           if(iDeltaEta >= minFilledDeltaEtaBin && iDeltaEta <= maxFilledDeltaEtaBin){
             
             // Scale the actual distribution
-            scaledLeadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
-            scaledLeadingError = fBackgroundDistribution->GetBinError(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
-            scaledSubleadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
-            scaledSubleadingError = fBackgroundDistribution->GetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
+            scaledLeadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi,iDeltaEta)/leadingScalingFactor;
+            scaledLeadingError = fBackgroundDistribution->GetBinError(iDeltaPhi,iDeltaEta)/leadingScalingFactor;
+            scaledSubleadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)/subleadingScalingFactor;
+            scaledSubleadingError = fBackgroundDistribution->GetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)/subleadingScalingFactor;
             fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,scaledLeadingContent);
             fBackgroundDistribution->SetBinError(iDeltaPhi,iDeltaEta,scaledLeadingError);
             fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingContent);
             fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingError);
             
             // Scale also the overlap histogram for debugging purposes
-            scaledLeadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
-            scaledLeadingError = fBackgroundOverlap->GetBinError(iDeltaPhi,iDeltaEta)*leadingScalingFactor;
-            scaledSubleadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
-            scaledSubleadingError = fBackgroundOverlap->GetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)*subleadingScalingFactor;
+            scaledLeadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi,iDeltaEta)/subleadingScalingFactor;
+            scaledLeadingError = fBackgroundOverlap->GetBinError(iDeltaPhi,iDeltaEta)/subleadingScalingFactor;
+            scaledSubleadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)/leadingScalingFactor;
+            scaledSubleadingError = fBackgroundOverlap->GetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)/leadingScalingFactor;
             fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,scaledLeadingContent);
             fBackgroundOverlap->SetBinError(iDeltaPhi,iDeltaEta,scaledLeadingError);
             fBackgroundOverlap->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingContent);
