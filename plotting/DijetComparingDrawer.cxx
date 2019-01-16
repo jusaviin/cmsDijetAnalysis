@@ -37,7 +37,8 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fFirstDrawnCentralityBin(0),
   fLastDrawnCentralityBin(0),
   fFirstDrawnTrackPtBin(0),
-  fLastDrawnTrackPtBin(0)
+  fLastDrawnTrackPtBin(0),
+  fAsymmetryBin(DijetHistogramManager::knAsymmetryBins)
 {
   
   // Create a new drawer
@@ -146,29 +147,26 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
   char namerX[100];
   char namerY[100];
   const char* singleJetNormalizationName[4] = {"dijet","dijet","jet","jet"};
-  
-  // Asymmetry bin to be used
-  int iAsymmetryBin = 0; //DijetHistogramManager::knAsymmetryBins;
-  
+
   // Loop over single jet categories
   for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
     if(!fDrawSingleJets[iJetCategory]) continue;  // Only draw selected jet categories
     
     // Loop over centrality
     for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
-      
+
       centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       
       // Select logarithmic drawing for pT
       fDrawer->SetLogY(fLogPt);
       
-      if(fApplyScaling) FindScalingFactors(iJetCategory, iCentrality, iAsymmetryBin);
+      if(fApplyScaling) FindScalingFactors(iJetCategory, iCentrality, fAsymmetryBin);
       
       // === Jet pT ===
       
       // Prepare the jet pT histograms and ratio to be drawn
-      PrepareRatio("jetPt", 1, iJetCategory, iCentrality, iAsymmetryBin);
+      PrepareRatio("jetPt", 1, iJetCategory, iCentrality, fAsymmetryBin);
       
       // Draw the jet pT distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -190,7 +188,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // === Jet phi ===
       
       // Prepare the jet phi histograms and ratio to be drawn
-      PrepareRatio("jetPhi", 1, iJetCategory, iCentrality, iAsymmetryBin);
+      PrepareRatio("jetPhi", 1, iJetCategory, iCentrality, fAsymmetryBin);
       
       // Draw the jet phi distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s #varphi",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -212,7 +210,7 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // === Jet eta ===
       
       // Prepare the jet eta histograms and ratio to be drawn
-      PrepareRatio("jetEta", 1, iJetCategory, iCentrality, iAsymmetryBin);
+      PrepareRatio("jetEta", 1, iJetCategory, iCentrality, fAsymmetryBin);
       
       // Draw the jet eta distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s #eta",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -1041,7 +1039,6 @@ void DijetComparingDrawer::FindScalingFactors(int iJetCategory, int iCentrality,
   
   // Helper variable for reading the normalization scales
   TH1D *scaleReader;
-  
   scaleReader = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
   fScalingFactors[0] = scaleReader->Integral("width");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
@@ -1435,6 +1432,15 @@ void DijetComparingDrawer::SetTrackPtBinRange(const int first, const int last){
   
   // Sanity check for drawn track pT bins
   BinSanityCheck(fBaseHistograms->GetNTrackPtBins(),fFirstDrawnTrackPtBin,fLastDrawnTrackPtBin);
+}
+
+// Setter for the selected asymmetry bin
+void DijetComparingDrawer::SetAsymmetryBin(const int asymmetry){
+  if(asymmetry >= 0 && asymmetry < DijetHistogramManager::knAsymmetryBins){
+    fAsymmetryBin = asymmetry;
+  } else {
+    fAsymmetryBin = DijetHistogramManager::knAsymmetryBins;
+  }
 }
 
 // Sanity check for set bins

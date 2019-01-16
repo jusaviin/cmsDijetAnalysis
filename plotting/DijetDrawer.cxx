@@ -295,7 +295,7 @@ void DijetDrawer::DrawDijetHistograms(){
     // === Dijet asymmetry ===
     drawnHistogram = fHistograms->GetHistogramDijetAsymmetry(iCentrality);
     drawnHistogram->Scale(1.0/fHistograms->GetNDijets());   // Normalize by the number of dijets
-    fDrawer->DrawHistogram(drawnHistogram,"A_{jj}","#frac{1}{N_{jets}} #frac{dN}{dA_{jj}}"," ");
+    fDrawer->DrawHistogram(drawnHistogram,"A_{J}","#frac{1}{N_{jets}} #frac{dN}{dA_{J}}"," ");
     legend = new TLegend(0.62,0.75,0.82,0.9);
     SetupLegend(legend,centralityString);
     legend->Draw();

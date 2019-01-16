@@ -116,6 +116,7 @@ public:
   // Setters for drawing ranges for different bins
   void SetCentralityBinRange(const int first, const int last); // Setter for drawn centrality bins
   void SetTrackPtBinRange(const int first, const int last);    // Setter for drawn track pT bins
+  void SetAsymmetryBin(const int asymmetry);                   // Setter for the selected asymmetry bin
   
 private:
   
@@ -181,6 +182,7 @@ private:
   int fLastDrawnCentralityBin;   // Last centrality bin that is drawn
   int fFirstDrawnTrackPtBin;     // First track pT bin that is drawn
   int fLastDrawnTrackPtBin;      // Last track pT bin that is drawn
+  int fAsymmetryBin;             // Asymmetry bin selected to be drawn
   
   // Comments given for legends
   TString fLegendComment[knMaxRatios+1];

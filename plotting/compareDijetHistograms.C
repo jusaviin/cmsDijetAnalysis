@@ -75,7 +75,7 @@ void compareDijetHistograms(){
   // Settings for ratios
   double minZoom = 0.4;
   double maxZoom = 1.6;
-  TString ratioLabel = "PbPb / MC";
+  TString ratioLabel = "pp / MC";
   
   // Scaling for histograms
   bool scaleHistograms = true; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -95,6 +95,8 @@ void compareDijetHistograms(){
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
+  
+  int asymmetryBin = 0; // Asymmetry selection: -1 = No selection, 0 = 0 < AJ < 0.11, 1 = 0.11 < AJ < 0.22, 2 = 0.22 < AJ < 0.33, 3 = 0.33 < AJ < 0.75. For inclusive, set this to 0 to select only jets above 120 GeV.
   
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
@@ -119,7 +121,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 3;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root","data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root","data/PbPbMC_GenGen_skims_pfJets_noMixing_processed_2019-01-04.root"};
+  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_pfJets_smoothedMixing_noCorrections_processed_2019-01-07.root","data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_newProcessing_processed_2018-09-15.root","data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_newProcessing_processed_2018-09-15.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -128,7 +130,7 @@ void compareDijetHistograms(){
   //  "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"
   //  "data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root"
   
-  TString legendComment[nDatasets] = {"PbPb inclusive","P+H RecoJets","P+H GenJets"};
+  TString legendComment[nDatasets] = {"pp inclusive","Pythia RecoJets","Pythia GenJets"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -204,7 +206,6 @@ void compareDijetHistograms(){
     }
 
   } // Loop over datasets
-
   DijetComparingDrawer *drawer = new DijetComparingDrawer(histograms[0]);
   drawer->AddLegendComment(legendComment[0]);
   for(int i = 1; i < nDatasets; i++){
@@ -230,9 +231,9 @@ void compareDijetHistograms(){
   drawer->SetApplyScaling(scaleHistograms);
   
   // Set the binning information
-  lastDrawnCentralityBin = nCentralityBins-1;
   drawer->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   drawer->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
+  drawer->SetAsymmetryBin(asymmetryBin);
 
   // Draw the selected histograms
   drawer->DrawHistograms();

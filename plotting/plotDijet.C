@@ -25,7 +25,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // ==================================================================
   
   // Flag if you only want to print out numbers of jets
-  bool printJetNumbers = true;
+  bool printJetNumbers = false;
   
   // Automatically choose execution mode based on input parameters
   int executionMode = 1; // 0 = Process histograms and save them to file. 1 = Draw histograms from unprocessed file. 2 = Draw histograms from processed file
@@ -42,8 +42,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
-  bool drawSubleadingJetHistograms = false;
+  bool drawLeadingJetHistograms = false;
+  bool drawSubleadingJetHistograms = true;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
@@ -167,7 +167,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
   double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
-  bool adjustBackground = false;        // Adjust background level based on differences on leading an subleading sides
+  bool adjustBackground = true;        // Adjust background level based on differences on leading an subleading sides
   int backgroundOverlapBins = 3;       // Number of bins around deltaPhi = Pi/2 used to calculate background adjustment
   
   // Jet shape
