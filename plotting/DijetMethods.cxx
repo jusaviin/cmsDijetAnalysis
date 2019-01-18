@@ -459,8 +459,8 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   
   // In the optimal case the ratio of overlapping bins from leading and subleading backgrounds is 1.
   // We can adjust the subleading background level based on the sum of background level in the overlap
-  // region to make this happen.
-  if(fAdjustBackground){
+  // region to make this happen. Nothing to adjust for inclusive jet-track correlation
+  if(fAdjustBackground && !isInclusive){
     double leadingToSubleadingRatio = leadingOverlap/subleadingOverlap;
     double subleadingToLeadingRatio = subleadingOverlap/leadingOverlap;
     double leadingToSubleadingRatioError = TMath::Sqrt(TMath::Power(leadingOverlapError/subleadingOverlap,2)+TMath::Power(leadingOverlap*subleadingOverlapError/TMath::Power(subleadingOverlap,2),2));
@@ -498,6 +498,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
             fBackgroundDistribution->SetBinError(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingError);
             
             // Scale also the overlap histogram for debugging purposes
+            // Note that for overlap leading and subleading sides change with respect to pi/2
             scaledLeadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi,iDeltaEta)/subleadingScalingFactor;
             scaledLeadingError = fBackgroundOverlap->GetBinError(iDeltaPhi,iDeltaEta)/subleadingScalingFactor;
             scaledSubleadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)/leadingScalingFactor;
