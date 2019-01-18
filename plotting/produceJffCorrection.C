@@ -12,18 +12,21 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_pfCandAxis_processed_2018-12-08.root";  // File from which the RecoGen histograms are read for the correction
-  // data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_pfCandAxis_processed_2018-12-08.root   // File for pp
+  TString recoGenFileName = "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root";  // File from which the RecoGen histograms are read for the correction
+  // data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root  // File for pp
   // data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_sube0_smoothedMixing_processed_2018-11-05.root // File for PbPb
-  TString genGenFileName = "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_pfCandAxis_processed_2018-12-08.root";   // File from which the GenGen histograms are read for the correction
-  // data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_pfCandAxis_processed_2018-12-08.root // File for pp
+  TString genGenFileName = "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root";   // File from which the GenGen histograms are read for the correction
+  // data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root // File for pp
   // data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root // File for PbPb
-  TString outputFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_pfCandAxis_2018-12-08.root";   // File name for the output file
+  TString outputFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC2_smoothedMixing_adjustedBackground_2019-01-15.root";   // File name for the output file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
-  bool uncorrectedJetTrack = true;  // Produce the correction for uncorrected jet-track correlations
+  bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
+  
+  // If MC files give too much fluctuations to the results, can try to fit the distributions there to suppress fluctuations
+  bool fitDistributions = true;
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -99,7 +102,7 @@ void produceJffCorrection(){
         jffCorrectionDeltaPhi[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
         
         jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
-        //jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt)); // If bad statistics, can try to fir the distribution to suppress fluctuations
+        if(fitDistributions) jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt)); // If bad statistics, can try to fit the distribution to suppress fluctuations
         
         // Get the jet shape for GenGen and normalize it by the number of dijets
         jffHelperJetShape[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
@@ -109,7 +112,7 @@ void produceJffCorrection(){
         jffHelperDeltaPhi[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
         
         jffHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
-        //jffHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt)); // If bad statistics, can try to fir the distribution to suppress fluctuations
+        if(fitDistributions) jffHelperDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt)); // If bad statistics, can try to fit the distribution to suppress fluctuations
         
         // The correction is obtained by subtracting GenGen from RecoGen
         jffCorrectionJetShape[iJetTrack][iCentrality][iTrackPt]->Add(jffHelperJetShape[iJetTrack][iCentrality][iTrackPt],-1);

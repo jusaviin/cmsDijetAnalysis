@@ -14,10 +14,10 @@ void compareDijetHistograms(){
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = false;
+  bool drawDijetHistograms = true;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = true;
+  bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
@@ -59,7 +59,7 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
@@ -73,8 +73,8 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.4;
-  double maxZoom = 1.6;
+  double minZoom = 0;
+  double maxZoom = 2;
   TString ratioLabel = "pp / MC";
   
   // Scaling for histograms
@@ -120,8 +120,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 3;
-  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_pfJets_smoothedMixing_noCorrections_processed_2019-01-07.root","data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_newProcessing_processed_2018-09-15.root","data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_newProcessing_processed_2018-09-15.root"};
+  const int nDatasets = 2;
+  TString inputFileName[nDatasets] = {"data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_processed_2019-01-14.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
   //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -130,7 +130,7 @@ void compareDijetHistograms(){
   //  "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"
   //  "data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root"
   
-  TString legendComment[nDatasets] = {"pp inclusive","Pythia RecoJets","Pythia GenJets"};
+  TString legendComment[nDatasets] = {"pp Regular JFF","pp Fitted JFF"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -171,6 +171,9 @@ void compareDijetHistograms(){
     if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
       lastDrawnCentralityBin = 0;
       centralityBinBorders[0] = -0.5;
+    } else if (collisionSystem.Contains("PbPb") && drawDijetHistograms){
+      lastDrawnCentralityBin = nCentralityBins-1;
+      centralityBinBorders[0] = 0;
     }
     
     // Create a new histogram manager
@@ -213,6 +216,7 @@ void compareDijetHistograms(){
     drawer->AddLegendComment(legendComment[i]);
   }
   
+  drawer->SetDrawDijetHistograms(drawDijetHistograms);
   drawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms,drawAnyLeadingJetHistograms);
   drawer->SetDrawAllTracks(drawTracks,drawUncorrectedTracks);
   drawer->SetDrawAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);

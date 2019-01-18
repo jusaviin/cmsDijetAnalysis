@@ -17,6 +17,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fBaseHistograms(fBaseHistograms),
   fnAddedHistograms(0),
   fMainHistogram(0),
+  fDrawDijets(false),
   fDrawJetTrackDeltaPhi(false),
   fDrawJetTrackDeltaEta(false),
   fDrawJetTrackDeltaEtaDeltaPhi(false),
@@ -115,6 +116,9 @@ void DijetComparingDrawer::AddLegendComment(TString comment){
  */
 void DijetComparingDrawer::DrawHistograms(){
   
+  // Draw dijet histograms
+  DrawDijetHistograms();
+  
   // Draw the single jet histograms
   DrawSingleJetHistograms();
   
@@ -131,6 +135,57 @@ void DijetComparingDrawer::DrawHistograms(){
   // Draw the event mixing check
   DrawEventMixingCheck();
   
+}
+
+/*
+ * Draw dijet histograms
+ */
+void DijetComparingDrawer::DrawDijetHistograms(){
+  
+  if(!fDrawDijets) return;
+  
+  // For the event mixing check, there will be four added histograms, one for each centrality bin
+  fnAddedHistograms = DijetHistogramManager::knCentralityBins;
+  
+  // Legend helper variable
+  TLegend *legend = new TLegend(0.5,0.48,0.8,0.83);
+  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+  
+  // Helper variables for centrality naming in figures
+  TString centralityString;
+  char namer[100];
+  
+  // Main histogram is the dijet asymmetry from pp file
+  fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram("dijetasymmetry",0)->Clone();
+  fMainHistogram->Scale(1.0/fBaseHistograms->GetPtIntegral(0));
+  legend->AddEntry(fMainHistogram,"pp","l");
+  
+  // Loop over centrality
+  for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
+    
+    centralityString = Form("PbPb Cent: %.0f-%.0f%%",fAddedHistograms[0]->GetCentralityBinBorder(iCentrality),fAddedHistograms[0]->GetCentralityBinBorder(iCentrality+1));
+    
+    fComparisonHistogram[iCentrality] = (TH1D*)fAddedHistograms[0]->GetOneDimensionalHistogram("dijetAsymmetry",iCentrality)->Clone();
+    fComparisonHistogram[iCentrality]->Scale(1.0/fAddedHistograms[0]->GetPtIntegral(iCentrality));
+    legend->AddEntry(fComparisonHistogram[iCentrality],centralityString.Data(),"l");
+    
+    sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iCentrality);
+    fRatioHistogram[iCentrality] = (TH1D*)fMainHistogram->Clone(namer);
+    fRatioHistogram[iCentrality]->Divide(fComparisonHistogram[iCentrality]);
+    
+    
+  } // Centrality loop
+  
+  // Draw the jet pT distributions to the upper panel of a split canvas plot
+  DrawToUpperPad("A_{J}","#frac{1}{N_{dijet}} #frac{dN}{dA_{J}}");
+  legend->Draw();
+  
+  // Draw the ratios to the lower portion of the split canvas
+  DrawToLowerPad("A_{J}","#frac{PbPb}{pp}",fRatioZoomMin,fRatioZoomMax);
+  
+  // Save the figure to a file
+  //sprintf(namerX,"%sPtRatio",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));
+  //SaveFigure(namerX,compactCentralityString);
 }
 
 /*
@@ -1135,6 +1190,11 @@ void DijetComparingDrawer::SaveFigure(TString figureName, TString centralityStri
   figName.Append(deltaPhiString);
   gPad->GetCanvas()->SaveAs(Form("%s.%s",figName.Data(),fFigureFormat));
   
+}
+
+// Setter for drawing dijet histograms
+void DijetComparingDrawer::SetDrawDijetHistograms(const bool drawOrNot){
+  fDrawDijets = drawOrNot;
 }
 
 // Setter for drawing leading jet histograms

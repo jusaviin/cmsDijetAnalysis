@@ -43,14 +43,14 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
-  bool drawSubleadingJetHistograms = true;
+  bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -91,8 +91,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
-  bool drawMixedEvent = false;
+  bool drawSameEvent = false;
+  bool drawMixedEvent = true;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
@@ -107,7 +107,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
                            // It follows that this number must be between 0 and 15.
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   TString figureNameSuffix = "";
   
@@ -125,9 +125,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style3D = "surf1";
   
   // File for JFF correction
-  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_pfCandAxis_2018-12-08.root";
-  // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_pfCandAxis_2018-12-08.root // File for pp
-  // data/jffCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_sube0_2018-12-05.root"; // File for PbPb
+  TString jffCorrectionFileName = "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC_smoothedMixing_adjustedBackground_2019-01-15.root";
+  // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root  File for pp
+  // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC_smoothedMixing_adjustedBackground_2019-01-15.root  Alternative file for pp
+  // data/jffCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_sube0_2018-12-05.root";  File for PbPb
   TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-12-05.root";
   
   // Define if you want to use seagull correction

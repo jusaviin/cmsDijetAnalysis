@@ -274,17 +274,21 @@ void DijetDrawer::DrawDijetHistograms(){
   // Helper variables for centrality naming in figures
   TString centralityString;
   TString compactCentralityString;
+
+  // Helper variable for histogram notmalization
+  double nDijets;
   
   // Loop over centrality
   for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
     
     centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
     compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+    nDijets = fHistograms->GetPtIntegral(iCentrality);
     
     // === Dijet DeltaPhi ===
     drawnHistogram = fHistograms->GetHistogramDijetDeltaPhi(iCentrality);
-    drawnHistogram->Scale(1.0/fHistograms->GetNDijets());   // Normalize by the number of dijets
-    fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jets}} #frac{dN}{d#Delta#varphi}"," ");
+    drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
+    fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{dijet}} #frac{dN}{d#Delta#varphi}"," ");
     legend = new TLegend(0.17,0.75,0.37,0.9);
     SetupLegend(legend,centralityString);
     legend->Draw();
@@ -294,8 +298,8 @@ void DijetDrawer::DrawDijetHistograms(){
     
     // === Dijet asymmetry ===
     drawnHistogram = fHistograms->GetHistogramDijetAsymmetry(iCentrality);
-    drawnHistogram->Scale(1.0/fHistograms->GetNDijets());   // Normalize by the number of dijets
-    fDrawer->DrawHistogram(drawnHistogram,"A_{J}","#frac{1}{N_{jets}} #frac{dN}{dA_{J}}"," ");
+    drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
+    fDrawer->DrawHistogram(drawnHistogram,"A_{J}","#frac{1}{N_{dijet}} #frac{dN}{dA_{J}}"," ");
     legend = new TLegend(0.62,0.75,0.82,0.9);
     SetupLegend(legend,centralityString);
     legend->Draw();

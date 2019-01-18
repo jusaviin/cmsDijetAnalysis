@@ -27,7 +27,7 @@ void graphFlow(){
   /////////////////
   
   // Open files containing the background histograms with the fit
-  TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10mixedEvents_smoothedMixing_processed_2018-11-19.root");
+  TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root");
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();

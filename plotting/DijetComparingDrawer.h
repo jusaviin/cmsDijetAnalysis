@@ -38,6 +38,9 @@ public:
   void AddHistogramToDraw(DijetHistogramManager *additionalHistogram);
   void AddLegendComment(TString comment);
   
+  // Setter for dijets
+  void SetDrawDijetHistograms(const bool drawOrNot);  // Setter for drawing dijet histograms
+  
   // Setters for single jets
   void SetDrawLeadingJetHistograms(const bool drawOrNot);    // Setter for drawing leading jet histograms
   void SetDrawSubleadingJetHistograms(const bool drawOrNot); // Setter for drawing subleading jet histograms
@@ -137,6 +140,7 @@ private:
   // ======== Flags for histograms to draw ========
   // ==============================================
   
+  bool fDrawDijets;                                                               // Draw the dijet histograms
   bool fDrawSingleJets[DijetHistogramManager::knSingleJetCategories];             // Draw the single jet histograms
   bool fDrawTracks[DijetHistogramManager::knTrackCategories];                     // Draw the track histograms
   bool fDrawJetTrackCorrelations[DijetHistogramManager::knJetTrackCorrelations];  // Draw the jet-track correlation histograms
@@ -191,6 +195,7 @@ private:
   void BinSanityCheck(const int nBins, int first, int last);  // Sanity check for binning
   
   // Methods for drawing
+  void DrawDijetHistograms();     // Draw dijet histograms
   void DrawSingleJetHistograms(); // Draw single jet histograms
   void DrawTrackHistograms();     // Draw track histograms
   void DrawJetTrackCorrelationHistograms(); // Draw jet-track correlation histograms
