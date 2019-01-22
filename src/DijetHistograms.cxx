@@ -25,7 +25,6 @@ DijetHistograms::DijetHistograms() :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
-  fhMixingDebug(0),
   fhLeadingJet(0),
   fhLeadingDijet(0),
   fhSubleadingDijet(0),
@@ -63,7 +62,6 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
-  fhMixingDebug(0),
   fhLeadingJet(0),
   fhLeadingDijet(0),
   fhSubleadingDijet(0),
@@ -101,7 +99,6 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhCentralityDijet(in.fhCentralityDijet),
   fhPtHat(in.fhPtHat),
   fhPtHatWeighted(in.fhPtHatWeighted),
-  fhMixingDebug(in.fhMixingDebug),
   fhLeadingJet(in.fhLeadingJet),
   fhLeadingDijet(in.fhLeadingDijet),
   fhSubleadingDijet(in.fhSubleadingDijet),
@@ -143,7 +140,6 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhCentralityDijet = in.fhCentralityDijet;
   fhPtHat = in.fhPtHat;
   fhPtHatWeighted = in.fhPtHatWeighted;
-  fhMixingDebug = in.fhMixingDebug;
   fhLeadingJet = in.fhLeadingJet;
   fhLeadingDijet = in.fhLeadingDijet;
   fhSubleadingDijet = in.fhSubleadingDijet;
@@ -182,7 +178,6 @@ DijetHistograms::~DijetHistograms(){
   delete fhCentralityDijet;
   delete fhPtHat;
   delete fhPtHatWeighted;
-  delete fhMixingDebug;
   delete fhLeadingJet;
   delete fhLeadingDijet;
   delete fhSubleadingDijet;
@@ -328,7 +323,6 @@ void DijetHistograms::CreateHistograms(){
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
-  fhMixingDebug = new TH2F("mixingDebug","mixingDebug",nDeltaEtaBinsJetTrack,minDeltaEtaJetTrack,maxDeltaEtaJetTrack,nDeltaPhiBinsJetTrack,minDeltaPhiJetTrack,maxDeltaPhiJetTrack); fhMixingDebug->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -609,7 +603,6 @@ void DijetHistograms::Write() const{
   fhCentralityDijet->Write();
   fhPtHat->Write();
   fhPtHatWeighted->Write();
-  fhMixingDebug->Write();
   fhLeadingJet->Write();
   fhLeadingDijet->Write();
   fhSubleadingDijet->Write();
