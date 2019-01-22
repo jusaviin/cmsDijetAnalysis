@@ -379,6 +379,8 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
   int connectedIndex;
   int nProjectedBins;
   bool isInclusive;
+  double binError;
+  double errorScale;
   TH2D *correctionHistogram;
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -425,10 +427,26 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kWholeEta);
           nBins = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetNbinsY();
           fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->ProjectionX(histogramName,1,nBins)->Clone();  // Exclude underflow and overflow bins by specifying range
+
           fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta]->Scale(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetYaxis()->GetBinWidth(1));  // For correct normalization, need to divide out deltaEta bin width of the two-dimensional histogram
           
-          // Do a fourier fit for the background deltaPhi distribution
+          /*
+           * Do error scaling and fourier fit for the background deltaPhi distribution
+           *
+           * Error scaling is needed because information only from 1.5 < |deltaEta| < 2.5 is used to determine the background.
+           * When doing projection, root by default scaled the histogram with square root of bins projected over
+           * The whole range of the analysis is |deltaEta| < 4, which means that four times the bins used to determine
+           * the background are used in normalixing the error. We can fix this be scaling the error up by sqrt(4) = 2.
+           * This number is provided by the DijetMethods, since if we change the limits described above, the number is
+           * automatically adjusted for the new limits inside DijetMethods.
+           */
           if(iCorrelationType == kBackground){
+            
+            for(int iBin = 1; iBin < fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta]->GetNbinsX(); iBin++){
+              binError = fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta]->GetBinError(iBin);
+              errorScale = fMethods->GetBackgroundErrorScalingFactor();
+              fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta]->SetBinError(iBin,binError*errorScale);
+            }
             fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin][kWholeEta],knFittedFlowComponents);
           }
           
@@ -2109,7 +2127,12 @@ double DijetHistogramManager::GetAnyLeadingJetPtIntegral(const int iCentrality) 
   return fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->FindBin(120),fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
 }
 
-// Getter for integral over inclusive jet pT over 120 GeV. Include the overflow bin in the integral
-double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality) const{
-  return fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->FindBin(120),fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
+/*
+ * Getter for integral over inclusive jet pT over 120 GeV. Include the overflow bin in the integral
+ *
+ *  const int iCentrality = Centrality bin
+ *  const double minPt = Jet pT above which the integral is calculated
+ */
+double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality, const double minPt) const{
+  return fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->FindBin(minPt),fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
 }

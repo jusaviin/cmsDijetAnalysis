@@ -52,6 +52,9 @@ public:
   TF1* GetSpilloverDeltaEtaFit() const;  // Getter for fit to projected eta distribution for spillover calculation
   TF1* GetSpilloverDeltaPhiFit() const;  // Getter for fit to projected phi distribution for spillover calculation
   
+  // Getter for background error scaling factor
+  double GetBackgroundErrorScalingFactor() const; // Getter for background error scaling factor
+  
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
   void SetMixedEventNormalization(const int normalizationType, const bool smoothenMixing); // Setter for normalization method used for mixed event distributions
@@ -88,12 +91,13 @@ private:
   // =========== Background subtraction ==========
   // =============================================
   
-  TH2D *fBackgroundDistribution;  // Remember the background distribution from the most recent background subtraction
-  TH2D *fBackgroundOverlap;       // Fill a few points over the gluing point to see how well the gluing works
-  double fMinBackgroundDeltaEta;  // Minimum deltaEta for background subtraction region
-  double fMaxBackgroundDeltaEta;  // Maximum deltaEta for background subtraction region
-  bool fAdjustBackground;         // Adjust the level of background based on the ratio of leading and subleading sides in overlapping bins
-  int fnOverlapBins;              // Number of overlapping bins to be used in background adjustment and overlap
+  TH2D *fBackgroundDistribution;        // Remember the background distribution from the most recent background subtraction
+  TH2D *fBackgroundOverlap;             // Fill a few points over the gluing point to see how well the gluing works
+  double fMinBackgroundDeltaEta;        // Minimum deltaEta for background subtraction region
+  double fMaxBackgroundDeltaEta;        // Maximum deltaEta for background subtraction region
+  bool fAdjustBackground;               // Adjust the level of background based on the ratio of leading and subleading sides in overlapping bins
+  int fnOverlapBins;                    // Number of overlapping bins to be used in background adjustment and overlap
+  double fBackgroundErrorScalingFactor; // Scaling factor to be used for errors when projecting deltaPhi out of whole distribution
   
   // =============================================
   // ============ Seagull correction =============

@@ -225,7 +225,7 @@ public:
   int GetNDijets() const;                      // Getter for the number of dijets
   double GetPtIntegral(const int iCentrality, const int iAsymmetry = knAsymmetryBins) const; // Getter for integral over leading jet pT in a given centrality and dijet asymmetry bin
   double GetAnyLeadingJetPtIntegral(int iCentrality) const; // Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
-  double GetInclusiveJetPtIntegral(int iCentrality) const; // Getter for integral over inclusive jet pT above 120 GeV in a given centrality bin
+  double GetInclusiveJetPtIntegral(int iCentrality, const double minPt = 120) const; // Getter for integral over inclusive jet pT above minPt in a given centrality bin
   
 private:
   

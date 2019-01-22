@@ -26,6 +26,7 @@ DijetMethods::DijetMethods() :
   fMaxBackgroundDeltaEta(2.5),
   fAdjustBackground(false),
   fnOverlapBins(3),
+  fBackgroundErrorScalingFactor(1),
   fMinBackgroundDeltaPhi(1.4),
   fMaxBackgroundDeltaPhi(1.7),
   fSeagullRebin(4),
@@ -72,6 +73,7 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta),
   fAdjustBackground(in.fAdjustBackground),
   fnOverlapBins(in.fnOverlapBins),
+  fBackgroundErrorScalingFactor(in.fBackgroundErrorScalingFactor),
   fBackgroundEtaProjection(in.fBackgroundEtaProjection),
   fSeagullFit(in.fSeagullFit),
   fMinBackgroundDeltaPhi(in.fMinBackgroundDeltaPhi),
@@ -112,6 +114,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
   fAdjustBackground = in.fAdjustBackground;
   fnOverlapBins = in.fnOverlapBins;
+  fBackgroundErrorScalingFactor = in.fBackgroundErrorScalingFactor;
   fBackgroundEtaProjection = in.fBackgroundEtaProjection;
   fSeagullFit = in.fSeagullFit;
   fMinBackgroundDeltaPhi = in.fMinBackgroundDeltaPhi;
@@ -520,6 +523,16 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   TH2D *backgroundSubtractedHistogram = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
   backgroundSubtractedHistogram->Add(fBackgroundDistribution,-1);
   
+  // Define a scaling factor for the errors of the background distribution, if it is projected for the full deltaEta.
+  // The scaling factor for the errors is needed, because when taking a projection, root will treat the error as
+  // error = sum(Errors) / sqrt(nBins). This is the correct treatment for the error if the errors on the bins do not
+  // depend on the errors of other bins. In this function the background is projected from the region
+  // fMinBackgroundDeltaEta < |deltaEta| < fMaxBackgroundDeltaEta. Thus the errors should be scaled with the square
+  // root of the number of bins in this area, not in the whole distribution. Thus without scaling the errors will
+  // be underestimated. The scaling factor is the square root of the times there are more bins in the distribution
+  // than what is used for the background estimation.
+  fBackgroundErrorScalingFactor = TMath::Sqrt(maxDeltaEta/(fMaxBackgroundDeltaEta-fMinBackgroundDeltaEta));
+  
   // Set all the negative bins to zero.
   // Note: This seems to be cause bias due to fluctuations arising from small bin size. Thus the part is commented out.
   /*for(int iDeltaPhi = 1; iDeltaPhi <= backgroundSubtractedHistogram->GetNbinsX(); iDeltaPhi++){
@@ -629,12 +642,12 @@ TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange){
 }
 
 /*
- * Project the deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+ * Project the deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution
  *
  *  Arguments:
  *   TH2D* deltaPhiDeltaEtaHistogram = two-dimensional deltaPhi-deltaEta distribution
- *   const double minDeltaEta = Minimum deltaEta value for the projected region
- *   const double maxDeltaEta = Maximum deltaEta value for the projected region
+ *   const double minDeltaPhi = Minimum deltaPhi value for the projected region
+ *   const double maxDeltaPhi = Maximum deltaPhi value for the projected region
  *   const char* newName = Name that is added to the projected histogram
  *
  *   return: DeltaPhi distribution projected from the input deltaEta region
@@ -688,7 +701,7 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram,
   
   // Calculate the number of deltaEta bins in the projected region
   fnBinsProjectedOver = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
-  if(oneRegion) fnBinsProjectedOver =fnBinsProjectedOver-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
+  if(oneRegion) fnBinsProjectedOver = fnBinsProjectedOver-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
   
   // Project out the deltaPhi distribution in the defined region
   char histogramName[200];
@@ -1058,6 +1071,11 @@ TF1* DijetMethods::GetSpilloverDeltaEtaFit() const{
 // Getter for the most recent fit to spillover deltaPhi distribution
 TF1* DijetMethods::GetSpilloverDeltaPhiFit() const{
   return fSpilloverFitDeltaPhi;
+}
+
+// Getter for background error scaling factor
+double DijetMethods::GetBackgroundErrorScalingFactor() const{
+  return fBackgroundErrorScalingFactor;
 }
 
 // Setter for deltaEta range used for normalizing the mixed event
