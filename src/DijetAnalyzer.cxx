@@ -576,7 +576,7 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t nTracks;                      // Number of tracks in an event
   
   // Variables for particle flow candidates
-  Int_t nParticleFlowCandidatesInThisJet;  // Number of particle flow candidates in the current jet
+  Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
   
   // File name helper variables
   TString currentFile;
@@ -850,9 +850,15 @@ void DijetAnalyzer::RunAnalysis(){
           // Only fill the any jet histogram if selected
           if(fFillJetHistograms){
             
+            // Apply JFF correction for jet pT only if we are using calorimeter jets
+            if(fJetType == 0){
+              std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
+              jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
+            } else {
+              jetPtCorrected = jetPt;
+            }
+            
             // Fill the axes in correct order
-            std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);       // Apply JFF correction for jet pT
-            jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
             fillerJet[0] = jetPtCorrected;          // Axis 0 = any jet pT
             fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
@@ -875,9 +881,17 @@ void DijetAnalyzer::RunAnalysis(){
           // If we are filling the correlation histograms and jets pass the pT cuts, do inclusive jet-track correlations
           if(fFillInclusiveJetTrackCorrelation){
             
-            // Apply the JFF correction for inclusive jet pT
+            // Apply the JFF correction for inclusive jet pT only if we are using calorimeter jets
+            // If we are using leading particle flow candidate axis, we need to determine the direction
+            // of the leading particle flow candidate whether we do the correction or not.
+            if(fJetType == 0 || fJetAxis == 1){
             std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
-            jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
+            }
+            if(fJetType == 0){
+              jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
+            } else {
+              jetPtCorrected = jetPt;
+            }
             
             // Check that the inclusive jet passes the pT cuts for the jet
             if((jetPtCorrected > fLeadingJetMinPtCut) && (jetPtCorrected < fJetMaximumPtCut)){
@@ -963,11 +977,15 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetPhi = fJetReader->GetJetPhi(secondHighestIndex);
         subleadingJetEta = fJetReader->GetJetEta(secondHighestIndex);
         
-        // Apply the JFF correction for leading and subleading jet pT
-        std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(leadingJetPhi,leadingJetEta);
-        leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
-        std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(subleadingJetPhi,subleadingJetEta);
-        subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
+        // Apply the JFF correction for leading and subleading jet pT only if we are using calo jets
+        // Determine the directions of the leading particle flow candidates for the leading and subleading
+        // jets also if leading particle flow candidate is used to estimate the jet axis
+        if(fJetType == 0 || fJetAxis == 1){
+          std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(leadingJetPhi,leadingJetEta);
+          if(fJetType == 0) leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
+          std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(subleadingJetPhi,subleadingJetEta);
+          if(fJetType == 0) subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
+        }
         
         // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info
         if(subleadingJetPt > leadingJetPt){
@@ -1224,15 +1242,6 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
       if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
       if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
       if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
-      
-      // Mixing debug. See if the peak in low pT central collisions is here also.
-      if(correlationType == DijetHistograms::kMixedEvent){
-        if(trackPt > 0.7 && trackPt < 1.0){
-          if(centrality < 10){
-            fHistograms->fhMixingDebug->Fill(deltaEtaTrackLeadingJet,deltaPhiTrackLeadingJet,trackEfficiencyCorrection*fTotalEventWeight);
-          }
-        }
-      }
       
       // Fill the track-subleading jet correlation histograms
       fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
