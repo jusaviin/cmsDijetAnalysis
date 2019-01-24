@@ -907,11 +907,11 @@ void DijetAnalyzer::RunAnalysis(){
                 inclusiveJetInfo[nJetsInThisEvent][2] = leadingParticleFlowCandidateEta;
               }
               
-              // Increase the number of jets we have found in the event
-              nJetsInThisEvent++;
-              
               // Correlate inclusive jets with tracks
               if(!onlyMix) CorrelateTracksAndJets(inclusiveJetInfo[nJetsInThisEvent],inclusiveJetInfo[nJetsInThisEvent],DijetHistograms::kSameEvent,true);
+              
+              // Increase the number of jets we have found in the event
+              nJetsInThisEvent++;
               
             } // Jet passes the pT cuts
           } // Check if we fill inclusive jet-track correlation histograms
