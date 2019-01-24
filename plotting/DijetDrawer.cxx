@@ -269,14 +269,17 @@ void DijetDrawer::DrawDijetHistograms(){
   // Helper variables for histogram drawing
   TH1D *drawnHistogram;
   TH2D *drawnHistogram2D;
+  TH1D *asymmetryIntegral;
   TLegend *legend;
   
   // Helper variables for centrality naming in figures
   TString centralityString;
   TString compactCentralityString;
 
-  // Helper variable for histogram notmalization
+  // Helper variable for histogram normalization and integral calculation
   double nDijets;
+  double integralValue;
+  double integralError;
   
   // Loop over centrality
   for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
@@ -298,6 +301,7 @@ void DijetDrawer::DrawDijetHistograms(){
     
     // === Dijet asymmetry ===
     drawnHistogram = fHistograms->GetHistogramDijetAsymmetry(iCentrality);
+    drawnHistogram->SetMarkerStyle(34);
     drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
     fDrawer->DrawHistogram(drawnHistogram,"A_{J}","#frac{1}{N_{dijet}} #frac{dN}{dA_{J}}"," ");
     legend = new TLegend(0.62,0.75,0.82,0.9);
@@ -306,6 +310,22 @@ void DijetDrawer::DrawDijetHistograms(){
     
     // Save the figure to a file
     SaveFigure("asymmetry",compactCentralityString);
+    
+    // === Integral of the dijet asymmetry ===
+    asymmetryIntegral = (TH1D*) drawnHistogram->Clone(Form("asymmetryIntagral%d",iCentrality));
+    for(int iBin = 1; iBin <= asymmetryIntegral->GetNbinsX(); iBin++){
+      integralValue = drawnHistogram->IntegralAndError(1,iBin,integralError,"width");
+      asymmetryIntegral->SetBinContent(iBin,integralValue);
+      asymmetryIntegral->SetBinError(iBin,integralError);
+    }
+    
+    fDrawer->DrawHistogram(asymmetryIntegral,"A_{J}","Fraction of integral", " ");
+    legend = new TLegend(0.62,0.2,0.82,0.45);
+    SetupLegend(legend,centralityString,Form("N_{jets} = %.0f",nDijets));
+    legend->Draw();
+    
+    // Save the figure to a file
+    SaveFigure("asymmetryIntegral",compactCentralityString);
     
     // Change the right margin better suited for 2D-drawing
     fDrawer->SetRightMargin(0.1);
@@ -532,7 +552,11 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
             if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
               if(iCorrelationType == DijetHistogramManager::kBackground) { // Move legend to top left corner for leading jet-track background figures
-                legendX1 = 0.33; legendY1 = 0.75; legendX2 = 0.53; legendY2 = 0.9;  // -> x1 = 0.17, x2 = 0.37
+                if(fCompactSystemAndEnergy.Contains("PbPb")){
+                  legendX1 = 0.33; legendY1 = 0.75; legendX2 = 0.53; legendY2 = 0.9;
+                } else {
+                  legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
+                }
               } else if (iCorrelationType == DijetHistogramManager::kCorrected || iCorrelationType == DijetHistogramManager::kBackgroundSubtracted){ // Move legend away from peaks
                 if(iTrackPt == 2 || iTrackPt == 3){
                   legendX1 = 0.31; legendY1 = 0.75; legendX2 = 0.61; legendY2 = 0.9;
@@ -1149,15 +1173,21 @@ void DijetDrawer::SetDrawMixedEvent(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kMixedEvent] = drawOrNot;
 }
 
+// Setter for drawing normalized mixed event correlation distributions
+void DijetDrawer::SetDrawNormalizedMixedEvent(const bool drawOrNot){
+  fDrawCorrelationType[DijetHistogramManager::kMixedEventNormalized] = drawOrNot;
+}
+
 // Setter for drawing corrected correlation distributions
 void DijetDrawer::SetDrawCorrectedCorrelations(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kCorrected] = drawOrNot;
 }
 
 // Setter for drawing different correlation types
-void DijetDrawer::SetDrawCorrelationTypes(const bool sameEvent, const bool mixedEvent, const bool corrected){
+void DijetDrawer::SetDrawCorrelationTypes(const bool sameEvent, const bool mixedEvent, const bool normalizedMixedEvent, const bool corrected){
   SetDrawSameEvent(sameEvent);
   SetDrawMixedEvent(mixedEvent);
+  SetDrawNormalizedMixedEvent(normalizedMixedEvent);
   SetDrawCorrectedCorrelations(corrected);
 }
 

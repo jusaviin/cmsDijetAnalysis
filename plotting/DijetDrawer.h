@@ -78,8 +78,9 @@ public:
   // Setters for drawing different correlation types (same event, mixed event, corrected)
   void SetDrawSameEvent(const bool drawOrNot);              // Setter for drawing same event correlation distributions
   void SetDrawMixedEvent(const bool drawOrNot);             // Setter for drawing mixed event correlation distributions
+  void SetDrawNormalizedMixedEvent(const bool drawOrNot);   // Setter for drawing normalized mixed event correlation distributions
   void SetDrawCorrectedCorrelations(const bool drawOrNot);  // Setter for drawing corrected correlation distributions
-  void SetDrawCorrelationTypes(const bool sameEvent, const bool mixedEvent, const bool corrected); // Setter for drawing different correlation types
+  void SetDrawCorrelationTypes(const bool sameEvent, const bool mixedEvent, const bool normalizedMixedEvent, const bool corrected); // Setter for drawing different correlation types
   void SetDrawBackgroundSubtracted(const bool drawOrNot);   // Setter for drawing background subtracted jet-track correlation histograms
   void SetDrawBackground(const bool drawOrNot);             // Setter for drawing the generated background distributions
   void SetDrawSameMixedDeltaEtaRatio(const bool drawOrNot); // Setter for drawing same and mixed event ratio for deltaEta plots in the UE region

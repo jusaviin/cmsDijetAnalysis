@@ -139,6 +139,9 @@ void DijetComparingDrawer::DrawHistograms(){
 
 /*
  * Draw dijet histograms
+ *
+ *  For dijet asymmetry comparison, two files are required. The first file must have the dijet asymmetry for pp
+ *  and the second file the dijet asymmetries in different centrality bins for PbPb.
  */
 void DijetComparingDrawer::DrawDijetHistograms(){
   
@@ -165,10 +168,12 @@ void DijetComparingDrawer::DrawDijetHistograms(){
     
     centralityString = Form("PbPb Cent: %.0f-%.0f%%",fAddedHistograms[0]->GetCentralityBinBorder(iCentrality),fAddedHistograms[0]->GetCentralityBinBorder(iCentrality+1));
     
+    // Comparison histograms are the dijet asymmetries in different centrality bins from the PbPb file
     fComparisonHistogram[iCentrality] = (TH1D*)fAddedHistograms[0]->GetOneDimensionalHistogram("dijetAsymmetry",iCentrality)->Clone();
     fComparisonHistogram[iCentrality]->Scale(1.0/fAddedHistograms[0]->GetPtIntegral(iCentrality));
     legend->AddEntry(fComparisonHistogram[iCentrality],centralityString.Data(),"l");
     
+    // Ratio is taken with respect to the pp reference
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iCentrality);
     fRatioHistogram[iCentrality] = (TH1D*)fMainHistogram->Clone(namer);
     fRatioHistogram[iCentrality]->Divide(fComparisonHistogram[iCentrality]);
@@ -449,6 +454,13 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   // Rebinning
   int nRebin = 5;
   
+  // Manual zooming options for deltaEta and deltaPhi
+  double deltaPhiZoomAdder = 0.2;
+  double deltaEtaZoomAdder[6] = {0.2,0.2,0.3,0.4,0.5,0.7};
+  double deltaEtaZoomAdderSubleadingJet[6] = {0.2,0.3,0.5,0.8,1,1.5};
+  //double deltaEtaZoomAdderPtwSubleadingJet[6] = {0.2,0.3,0.5,0.8,1,1.5};
+  double zoomMin, zoomMax;
+  
   // For the event mixing check, there will be one added histogram
   fnAddedHistograms = 1;
   
@@ -470,6 +482,11 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
         compactTrackPtString.ReplaceAll(".","v");
         
+        // Change the zoom value for subleading jets
+        if(iJetTrack == DijetHistogramManager::kTrackSubleadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet){
+          deltaEtaZoomAdder[iTrackPt] = deltaEtaZoomAdderSubleadingJet[iTrackPt];
+        }
+        
         /////////////////////////////////////////////
         //   Step one, deltaPhi in deltaEta bins   //
         /////////////////////////////////////////////
@@ -477,26 +494,14 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
         //fMainHistogram->Rebin(nRebin);                                  // Possibility to de rebinning
-
         fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
-        if(fEventMixingZoom){
-          zoomRegion = 0.05;
-          if(iTrackPt > 2){
-            if(iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet){
-              zoomRegion = 0.02;
-            } else if (iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet) {
-              zoomRegion = 0.05;
-            } else {
-              zoomRegion = 0.006;
-            }
-          }
-          fMainHistogram->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
-        }
 
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
         //fComparisonHistogram[0]->Rebin(nRebin);                             // Possibility to de rebinning
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
-        if(fEventMixingZoom) fComparisonHistogram[0]->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
+        
+        // If specified, zoom to the tails of the histogram to see the most interesting region in detail
+        if(fEventMixingZoom) ZoomToRegion(TMath::Pi()/2.0,10,4,true,true);
 
         sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
         DrawToUpperPad(namerX,"#frac{1}{N_{jets}}  #frac{dN}{d#Delta#varphi}");
@@ -517,7 +522,15 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         // Prepare the ratio and draw it to the lower pad
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaPhiCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
         fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
-        DrawToLowerPad(namerX,"#frac{#||{#Delta#eta} < 1.0}{1.5 < #||{#Delta#eta} < 2.5}",fRatioZoomMin,fRatioZoomMax);
+        if(fEventMixingZoom){
+          zoomMin = 1 - deltaPhiZoomAdder;
+          zoomMax = 1 + deltaPhiZoomAdder;
+          if(zoomMin < 0) zoomMin = 0;
+        } else {
+          zoomMin = fRatioZoomMin;
+          zoomMax = fRatioZoomMax;
+        }
+        DrawToLowerPad(namerX,"#frac{#||{#Delta#eta} < 1.0}{1.5 < #||{#Delta#eta} < 2.5}",zoomMin,zoomMax);
         
         // Save the figure to a file
         sprintf(namerX,"%sMixedEventPhiCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
@@ -530,26 +543,29 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
-        fMainHistogram->Rebin(nRebin);                                  // Possibility to de rebinning
-        fMainHistogram->Scale(1.0/nRebin);
-        fMainHistogram->GetXaxis()->SetRangeUser(-4,4);                 // Zoom the interesting region
-        if(fEventMixingZoom){
-          zoomRegion = 0.05;
-          if(iTrackPt > 2){
-            if (iJetTrack == DijetHistogramManager::kTrackSubleadingJet) {
-              zoomRegion = 0.01;
-            } else if (iJetTrack == DijetHistogramManager::kTrackLeadingJet) {
-              zoomRegion = 0.006;
-            }
-          }
-          fMainHistogram->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
+        
+        // Possibility to do rebinning
+        if(nRebin > 1){
+          fMainHistogram->Rebin(nRebin);
+          fMainHistogram->Scale(1.0/nRebin);
         }
         
+        // Zoom the interesting region
+        fMainHistogram->GetXaxis()->SetRangeUser(-4,4);
+        
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
-        fComparisonHistogram[0]->Rebin(nRebin);                             // Possibility to de rebinning
-        fComparisonHistogram[0]->Scale(1.0/nRebin);
-        fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-4,4);            // Zoom the interesting region
-        if(fEventMixingZoom) fComparisonHistogram[0]->GetYaxis()->SetRangeUser(0,zoomRegion); // Zoom in to see background better
+        
+        // Possibility to do rebinning
+        if(nRebin > 1){
+          fComparisonHistogram[0]->Rebin(nRebin);
+          fComparisonHistogram[0]->Scale(1.0/nRebin);
+        }
+        
+        // Zoom the interesting region
+        fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-4,4);
+        
+        // If specified, zoom to the tails of the distribution to see the interesting region better
+        if(fEventMixingZoom) ZoomToRegion(3,10,3,true,false);
         
         sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
         DrawToUpperPad(namerX,"#frac{1}{N_{jets}}  #frac{dN}{d#Delta#eta}");
@@ -577,7 +593,15 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaEtaCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
         fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
-        DrawToLowerPad(namerX,namerY,fRatioZoomMin,fRatioZoomMax);
+        if(fEventMixingZoom){
+          zoomMin = 1 - deltaEtaZoomAdder[iTrackPt];
+          zoomMax = 1 + deltaEtaZoomAdder[iTrackPt];
+          if(zoomMin < 0) zoomMin = 0;
+        } else {
+          zoomMin = fRatioZoomMin;
+          zoomMax = fRatioZoomMax;
+        }
+        DrawToLowerPad(namerX,namerY,zoomMin,zoomMax);
         
         // Save the figure to a file
         sprintf(namerX,"%sMixedEventEtaCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
@@ -1071,6 +1095,7 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   
   // Read the histograms, scale them to one and take the ratio
   fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
+  //fMainHistogram->GetXaxis()->SetRangeUser(50,300); // Manual range setting  XXXX
   if(rebin > 1) fMainHistogram->Rebin(rebin);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
@@ -1096,9 +1121,11 @@ void DijetComparingDrawer::FindScalingFactors(int iJetCategory, int iCentrality,
   TH1D *scaleReader;
   scaleReader = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
   fScalingFactors[0] = scaleReader->Integral("width");
+  //fScalingFactors[0] = scaleReader->Integral(scaleReader->FindBin(50),scaleReader->GetNbinsX(),"width"); // XXXXX
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     scaleReader = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
     fScalingFactors[1+iAdditional] = scaleReader->Integral("width");
+    //fScalingFactors[1+iAdditional] = scaleReader->Integral(scaleReader->FindBin(50),scaleReader->GetNbinsX(),"width"); // XXXXX
   }
   
 }
@@ -1149,6 +1176,100 @@ void DijetComparingDrawer::DrawToLowerPad(const char* xTitle, const char* yTitle
     fRatioHistogram[iAdditional]->SetLineColor(fColors[iAdditional]);
     fRatioHistogram[iAdditional]->Draw("same");
   }
+}
+
+/*
+ * Zoom the y-axis scale to the specified region of the distribution
+ *
+ *  const double maxZoomValue = Maximum value in the distribution used to calculate the zoom
+ *  const int nZoomBins = Number of bins around the maxZoomValue used to calculate the scale
+ *  const double scaleFactor = How many times the variance is shown around the average value of the bin contents
+ *  const bool bothSides = True: Use bins above -maxZoomValue together with bins below maxZoomValue, False = Use only bins below maxZoomValue
+ *  const bool asymmetricZoom = Zoom more to the upper side than the lower. Good for zooming to tail below peak.
+ */
+void DijetComparingDrawer::ZoomToRegion(const double maxZoomValue, const int nZoomBins, const double scaleFactor, const bool bothSides, const bool asymmetricZoom){
+  
+  // Create array for average values in the main histogram and added histograms
+  double averageValues[fnAddedHistograms+1];
+  double differences[fnAddedHistograms+1];
+  
+  // Fill the array with average values from the main histogram and added histograms
+  std::tie(averageValues[0],differences[0]) = GetHistogramAverageAndDifferenceInRegion(fMainHistogram,maxZoomValue,nZoomBins,bothSides);
+  for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+    std::tie(averageValues[iAdditional+1],differences[iAdditional+1]) = GetHistogramAverageAndDifferenceInRegion(fComparisonHistogram[iAdditional],maxZoomValue,nZoomBins,bothSides);
+  }
+  
+  // Find the maximum and minimum value from the array
+  double maxAverage = -1e12;
+  double minAverage = 1e12;
+  double maxDifference = -1;
+  for(int iBin = 0; iBin < fnAddedHistograms+1; iBin++){
+    if(averageValues[iBin] < minAverage) minAverage = averageValues[iBin];
+    if(averageValues[iBin] > maxAverage) maxAverage = averageValues[iBin];
+    if(differences[iBin] > maxDifference) maxDifference = differences[iBin];
+  }
+  
+  // Calculate the maximum and minimum scale for the histogram
+  double asymmetryUp = asymmetricZoom ? 1.5 : 1;
+  double asymmetryDown = asymmetricZoom ? 0.5 : 1;
+  double maxScale = maxAverage + maxDifference*scaleFactor*asymmetryUp;
+  double minScale = minAverage - maxDifference*scaleFactor*asymmetryDown;
+  if(minScale < 0 || maxScale/minScale > 4) minScale = 0;
+  
+  // Set the new y-axis ranges for the histogram according to obtained values
+  fMainHistogram->GetYaxis()->SetRangeUser(minScale,maxScale);
+  for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+    fComparisonHistogram[iAdditional]->GetYaxis()->SetRangeUser(minScale,maxScale);
+  }
+  
+}
+
+/*
+ * Get the average and maximum difference in bin values from a histogram in the specific area
+ *
+ *  const double maxZoomValue = Maximum value in the distribution used to calculate the zoom
+ *  const int nZoomBins = Number of bins around the maxZoomValue used to calculate the scale
+ *  const double scaleFactor = How much around the average scale in the region is shown as a fraction of the average scale
+ *  const bool bothSides = True: Use bins above -maxZoomValue together with bins below maxZoomValue, False = Use only bins below maxZoomValue
+ *
+ *  return: Average and difference of the bin contents in the given region
+ */
+std::tuple<double,double> DijetComparingDrawer::GetHistogramAverageAndDifferenceInRegion(TH1D *histogram, const double maxZoomValue, const int nZoomBins, const bool bothSides){
+  
+  // Calculate the sum of bin contents from the positive side
+  double binSum = 0;
+  int nBinsSummedOver = 0;
+  double maxBinValue = -1e12;
+  double minBinValue = 1e12;
+  double binContent = 0;
+  int maxBin = histogram->FindBin(maxZoomValue-1e-4);
+  for(int iBin = maxBin-nZoomBins+1; iBin <= maxBin; iBin++){
+    binContent = histogram->GetBinContent(iBin);
+    binSum += binContent;
+    if(binContent < minBinValue) minBinValue = binContent;
+    if(binContent > maxBinValue) maxBinValue = binContent;
+    nBinsSummedOver++;
+  }
+  
+  // If required, add the bin content also from the negative side
+  if(bothSides){
+    maxBin = histogram->FindBin(-maxZoomValue+1e-4);
+    for(int iBin = maxBin; iBin < maxBin+nZoomBins; iBin++){
+      binContent = histogram->GetBinContent(iBin);
+      binSum += binContent;
+      if(binContent < minBinValue) minBinValue = binContent;
+      if(binContent > maxBinValue) maxBinValue = binContent;
+      nBinsSummedOver++;
+    }
+  }
+  
+  // Calculate the average and max difference of the bin contents
+  double binAverage = binSum/nBinsSummedOver;
+  double binDifference = maxBinValue-minBinValue;
+  
+  // Return the average value and the difference in bin values of the considered region of the histogram
+  return std::make_tuple(binAverage,binDifference);
+  
 }
 
 /*

@@ -3,6 +3,7 @@
 
 // C++ includes
 #include <iostream>
+#include <tuple>      // For returning several arguments in a transparent manner
 
 // Root includes
 #include <TFile.h>
@@ -207,6 +208,8 @@ private:
   void PrepareRatio(TString name, int rebin, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0); // Prepare the ratio histograms out of input histograms
   void DrawToUpperPad(const char* xTitle, const char* yTitle, bool logAxis = false); // Draw the histograms to the same figure in the upper pad of JDrawer
   void DrawToLowerPad(const char* xTitle, const char* yTitle, const double zoomMin, const double zoomMax); // Draw the ratios to the lower pad of the JDrawer
+  void ZoomToRegion(const double maxZoomValue, const int nZoomBins, const double scaleFactor, const bool bothSides, const bool asymmetricZoom);  // Zoom the y-axis scale to the specified region of the distribution
+  std::tuple<double,double> GetHistogramAverageAndDifferenceInRegion(TH1D *histogram, const double maxZoomValue, const int nZoomBins, const bool bothSides); // Get the average and absolute difference from a histogram in the specific area
   
   // Find the per jet scaling factor
   void FindScalingFactors(int iJetCategory, int iCentrality, int iAsymmetry);
