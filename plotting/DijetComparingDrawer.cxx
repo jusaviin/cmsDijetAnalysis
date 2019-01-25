@@ -434,13 +434,8 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   // Only draw is selected to do so
   if(!fDrawEventMixingCheck) return;
   
-  // Legend helper variable
+  // Legend helper variables
   TLegend *legend;
-  
-  // Zooming scale
-  double zoomRegion;
-  double ratioZoomLow;
-  double ratioZoomHigh;
   double legendX1, legendX2, legendY1, legendY2;
   
   // Helper variables for centrality naming in figures
@@ -452,13 +447,12 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   char namerY[150];
   
   // Rebinning
-  int nRebin = 5;
+  int nRebinDeltaEta = 5;
   
   // Manual zooming options for deltaEta and deltaPhi
   double deltaPhiZoomAdder = 0.2;
   double deltaEtaZoomAdder[6] = {0.2,0.2,0.3,0.4,0.5,0.7};
   double deltaEtaZoomAdderSubleadingJet[6] = {0.2,0.3,0.5,0.8,1,1.5};
-  //double deltaEtaZoomAdderPtwSubleadingJet[6] = {0.2,0.3,0.5,0.8,1,1.5};
   double zoomMin, zoomMax;
   
   // For the event mixing check, there will be one added histogram
@@ -493,11 +487,9 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         
         // Set up the histograms and draw them to the upper pad of a split canvas
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
-        //fMainHistogram->Rebin(nRebin);                                  // Possibility to de rebinning
         fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
 
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
-        //fComparisonHistogram[0]->Rebin(nRebin);                             // Possibility to de rebinning
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         
         // If specified, zoom to the tails of the histogram to see the most interesting region in detail
@@ -545,9 +537,9 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
         
         // Possibility to do rebinning
-        if(nRebin > 1){
-          fMainHistogram->Rebin(nRebin);
-          fMainHistogram->Scale(1.0/nRebin);
+        if(nRebinDeltaEta > 1){
+          fMainHistogram->Rebin(nRebinDeltaEta);
+          fMainHistogram->Scale(1.0/nRebinDeltaEta);
         }
         
         // Zoom the interesting region
@@ -556,9 +548,9 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
         
         // Possibility to do rebinning
-        if(nRebin > 1){
-          fComparisonHistogram[0]->Rebin(nRebin);
-          fComparisonHistogram[0]->Scale(1.0/nRebin);
+        if(nRebinDeltaEta > 1){
+          fComparisonHistogram[0]->Rebin(nRebinDeltaEta);
+          fComparisonHistogram[0]->Scale(1.0/nRebinDeltaEta);
         }
         
         // Zoom the interesting region
@@ -582,13 +574,6 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         legend->Draw();
         
         // Prepare the ratio and draw it to the lower pad
-        ratioZoomLow = 0.6;
-        if(iJetTrack == DijetHistogramManager::kTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet) ratioZoomLow = 0.4;
-        ratioZoomHigh = 1.6;
-        if(iJetTrack == DijetHistogramManager::kTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet) ratioZoomHigh = 1.4;
-        if(iTrackPt > 2 && (iJetTrack == DijetHistogramManager::kTrackSubleadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet)) ratioZoomHigh = 2.5;
-        if(iTrackPt > 2 && (iJetTrack == DijetHistogramManager::kTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet)) ratioZoomLow = 0.2;
-        
         sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
         sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaEtaCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
@@ -968,12 +953,6 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   TString trackPtString;
   TString compactTrackPtString;
   char namerX[100];
-  
-  // Scaling for histograms
-  double comparisonScale[knMaxRatios] = {0};
-  for(int i = 0; i < knMaxRatios; i++){
-    comparisonScale[i] = 1;
-  }
   
   // Helper histograms for summing over pT
   TH1D *mainSum;
