@@ -2,9 +2,7 @@
 #include "DijetMethods.h"
 
 /*
- * Macro for configuring the DijetDrawer and defining which histograms are drawn
- *
- *  TODO: Implementation, that can be maintained easily. Rebinning for deltaEta and deltaPhi (in histogram manager level)
+ * Macro for producing spillover correction for the analysis
  */
 void produceSpilloverCorrection(){
   
@@ -14,9 +12,9 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_processed_2018-11-05.root";  // File from which the RecoGen histograms are read for the correction
-  TString outputFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-12-05.root";   // File name for the output file
-  TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19.root"; // Data file to compare yields with spillover file
+  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root";  // File from which the RecoGen histograms are read for the correction
+  TString outputFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27.root";   // File name for the output file
+  TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations

@@ -18,7 +18,7 @@ void produceJffCorrection(){
   // data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root // File for pp
   // data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root // File for PbPb
   // data/PbPbMC_GenGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString outputFileName = "data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_rebin2_2018-11-27.root";   // File name for the output file
+  TString outputFileName = "data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root";   // File name for the output file
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC2_smoothedMixing_adjustedBackground_2019-01-15.root"
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
@@ -27,7 +27,7 @@ void produceJffCorrection(){
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   // If 2D MC distribution give too much fluctuations to the results, can try to rebin to suppress fluctuations
-  int nRebin = 2;
+  int nRebin = 1;
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   

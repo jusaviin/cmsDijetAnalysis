@@ -159,15 +159,15 @@ void qaPlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = false;          // Save the figures to a file
+  bool saveFigures = true;          // Save the figures to a file
   
-  bool drawSpillover = false;              // Draw the QA plots for spillover correction
+  bool drawSpillover = true;              // Draw the QA plots for spillover correction
   bool drawSeagull = false;                // Draw the QA plots for seagull correction
-  bool calculateBackgroundOverlap = true; // Check difference in background overlap region of leading and subleading jets
+  bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,(regularJetTrack && !calculateBackgroundOverlap),uncorrectedJetTrack,(ptWeightedJetTrack && !calculateBackgroundOverlap),inclusiveJetTrack,inclusiveJetTrack};
@@ -178,7 +178,7 @@ void qaPlotter(){
   /////////////////
   
   // Open files containing the QA histograms
-  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_pfCandAxis_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-12-05_QA.root");
+  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27_QA.root");
   TFile *seagullFile = TFile::Open("data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19_QA.root");
   TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root");
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14.root"
@@ -286,7 +286,7 @@ void qaPlotter(){
           titleString = Form("Cent: %.0f-%.0f%% - Track pT: %.1f-%.1f GeV",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1],trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
           
           // Find the correct pad inside the canvas
-          deltaEtaCanvas[iJetTrack]->cd(iCentrality+nCentralityBins*iTrackPt+1);
+          deltaEtaCanvas[iJetTrack]->cd(nCentralityBins-1-iCentrality+nCentralityBins*iTrackPt+1);
           gPad->SetTopMargin(0.1);
           gPad->SetBottomMargin(0.2);
           
@@ -302,7 +302,7 @@ void qaPlotter(){
           legend->Draw();
           
           // Change to comparison canvas
-          deltaEtaComparisonCanvas[iJetTrack]->cd(iCentrality+nCentralityBins*iTrackPt+1);
+          deltaEtaComparisonCanvas[iJetTrack]->cd(nCentralityBins-1-iCentrality+nCentralityBins*iTrackPt+1);
           gPad->SetTopMargin(0.1);
           gPad->SetBottomMargin(0.2);
           
@@ -333,7 +333,7 @@ void qaPlotter(){
           legend->Draw();
           
           // Change to comparison canvas
-          deltaPhiComparisonCanvas[iJetTrack]->cd(iCentrality+nCentralityBins*iTrackPt+1);
+          deltaPhiComparisonCanvas[iJetTrack]->cd(nCentralityBins-1-iCentrality+nCentralityBins*iTrackPt+1);
           gPad->SetTopMargin(0.1);
           gPad->SetBottomMargin(0.2);
           
