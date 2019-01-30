@@ -159,10 +159,10 @@ void qaPlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = true;          // Save the figures to a file
+  bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = true;              // Draw the QA plots for spillover correction
-  bool drawSeagull = false;                // Draw the QA plots for seagull correction
+  bool drawSpillover = false;              // Draw the QA plots for spillover correction
+  bool drawSeagull = true;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
@@ -179,7 +179,8 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
   TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27_QA.root");
-  TFile *seagullFile = TFile::Open("data/dijetPbPb_skims_pfJets_pfCandAxis_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2018-11-19_QA.root");
+  TFile *seagullFile = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09_QA.root");
+  TFile *seagullPpFile = TFile::Open("data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14_QA.root");
   TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root");
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14.root"
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
@@ -199,7 +200,7 @@ void qaPlotter(){
   // Define needed histograms
   TH1D *spilloverDeltaEtaProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *spilloverDeltaPhiProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH1D *seagullDeltaEtaWings[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *seagullDeltaEtaWings[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins+1][nTrackPtBins];
   TH1D *backgroundDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *backgroundDeltaPhiOverlap[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   
@@ -213,8 +214,15 @@ void qaPlotter(){
       if(iCentrality > lastCentralityBin) continue; // No centrality selection for pp
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
+        // Seagull histograms for PbPb
         sprintf(histogramNamer,"seagullDeltaEta_%s/seagullDeltaEta_%s_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         seagullDeltaEtaWings[iJetTrack][iCentrality][iTrackPt] = (TH1D*) seagullFile->Get(histogramNamer);
+        
+        // Seagull histograms for pp
+        if(iCentrality == 0){
+          sprintf(histogramNamer,"seagullDeltaEta_%s/seagullDeltaEta_%s_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+          seagullDeltaEtaWings[iJetTrack][nCentralityBins][iTrackPt] = (TH1D*) seagullPpFile->Get(histogramNamer);
+        }
         
         sprintf(histogramNamer,"%s/%sDeltaPhi_Background_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt] = (TH1D*) backgroundFile->Get(histogramNamer);
@@ -388,16 +396,20 @@ void qaPlotter(){
       // Create one big canvas with a pad for each centrality and track pT bin
       sprintf(histogramNamer,"seagullDeltaEta%d",iJetTrack);
       sprintf(padNamer,"Seagull deltaEta %s",dummyManager->GetJetTrackHistogramName(iJetTrack));
-      seagullCanvas[iJetTrack] = new TCanvas(histogramNamer,padNamer,1000,1800);
-      seagullCanvas[iJetTrack]->Divide(nCentralityBins,nTrackPtBins);
+      seagullCanvas[iJetTrack] = new TCanvas(histogramNamer,padNamer,1250,1800);
+      seagullCanvas[iJetTrack]->Divide(nCentralityBins+1,nTrackPtBins);
       
-      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
-          titleString = Form("Cent: %.0f-%.0f%% - Track pT: %.1f-%.1f GeV",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1],trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+          if(iCentrality == nCentralityBins){
+            titleString = Form("pp - Track pT: %.1f-%.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+          } else {
+            titleString = Form("Cent: %.0f-%.0f%% - Track pT: %.1f-%.1f GeV",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1],trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+          }
           
           // Find the correct pad inside the canvas
-          seagullCanvas[iJetTrack]->cd(nCentralityBins-1-iCentrality+nCentralityBins*iTrackPt+1);
+          seagullCanvas[iJetTrack]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
           gPad->SetTopMargin(0.1);
           gPad->SetBottomMargin(0.2);
           
