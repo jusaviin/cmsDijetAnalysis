@@ -89,6 +89,7 @@ private:
   Int_t fForestType;                 // Analyzed forest type
   Int_t fReadMode;                   // Read mode. 0 = Regular forest, 1 = PYTHIA8 forest
   Int_t fJetType;                    // Type of jets used for analysis. 0 = Calo jets, 1 = PF jets
+  Bool_t fMatchJets;                 // Match generator and reconstruction level jets
   Int_t fDebugLevel;                 // Amoun of debug messages printed to console
   
   // Weights for filling the MC histograms

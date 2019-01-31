@@ -20,7 +20,7 @@ public:
   
   // Constructors and destructors
   GeneratorLevelSkimForestReader();                                                     // Default constructor
-  GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType);        // Custom constructor
+  GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets); // Custom constructor
   GeneratorLevelSkimForestReader(const GeneratorLevelSkimForestReader& in);             // Copy constructor
   virtual ~GeneratorLevelSkimForestReader();                                            // Destructor
   GeneratorLevelSkimForestReader& operator=(const GeneratorLevelSkimForestReader& obj); // Equal sign operator
@@ -53,6 +53,9 @@ public:
   Float_t GetParticleFlowCandidatePhi(Int_t iCandidate) const;   // Getter for particle flow candidate phi
   Float_t GetParticleFlowCandidateEta(Int_t iCandidate) const;   // Getter for particle flow candidate eta
   Int_t GetNParticleFlowCandidates() const;                      // Getter for number of particle flow candidates in an event
+  
+  // Check if generator level jet has a matching reconstructed jet
+  Bool_t HasMatchingJet(Int_t iJet) const;   // Check if generator level jet has a matching reconstructed jet
   
 private:
   

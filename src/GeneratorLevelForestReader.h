@@ -23,7 +23,7 @@ public:
   
   // Constructors and destructors
   GeneratorLevelForestReader();                                                 // Default constructor
-  GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType);    // Custom constructor
+  GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets);    // Custom constructor
   GeneratorLevelForestReader(const GeneratorLevelForestReader& in);             // Copy constructor
   virtual ~GeneratorLevelForestReader();                                        // Destructor
   GeneratorLevelForestReader& operator=(const GeneratorLevelForestReader& obj); // Equal sign operator
@@ -69,6 +69,9 @@ public:
   Float_t GetParticleFlowCandidateEta(Int_t iCandidate) const;   // Getter for particle flow candidate eta
   Int_t GetNParticleFlowCandidates() const;                      // Getter for number of particle flow candidates in an event
   
+  // Check if generator level jet has a matching reconstructed jet
+  Bool_t HasMatchingJet(Int_t iJet) const;   // Check if generator level jet has a matching reconstructed jet
+  
 private:
   
   // Methods
@@ -85,6 +88,7 @@ private:
   Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
   Float_t fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
   Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
+  Float_t fJetRefPtArray[fnMaxJet] = {0};      // reference generator level pT for a reconstructed jet
   
   // Leaves for the track tree
   vector<float> *fTrackPtArray;       // Array for track pT:s

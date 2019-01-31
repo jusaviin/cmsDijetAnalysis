@@ -21,9 +21,10 @@ GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader() :
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
+ *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  */
-GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
-  SkimForestReader(dataType,readMode,jetType),
+GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets) :
+  SkimForestReader(dataType,readMode,jetType,matchJets),
   fTrackChargeArray(0),
   fTrackSubeventArray(0)
 {
@@ -93,6 +94,14 @@ void GeneratorLevelSkimForestReader::Initialize(){
   fEventTree->SetBranchAddress("genphi",&fJetPhiArray,&fJetPhiBranch);
   fEventTree->SetBranchStatus("geneta",1);
   fEventTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
+  
+  if(fMatchJets){
+    const char * jetType[2] = {"calo","pf"};
+    char branchName[20];
+    sprintf(branchName,"%s_refpt",jetType[fJetType]);
+    fEventTree->SetBranchStatus(branchName,1);
+    fEventTree->SetBranchAddress(branchName,&fJetRefPtArray,&fJetRefPtBranch);
+  }
   
   // Connect the branches to the HLT tree
   fCaloJetFilterBit = 1;         // No calorimeter filter bit is present in the skims
@@ -249,4 +258,20 @@ Float_t GeneratorLevelSkimForestReader::GetParticleFlowCandidateEta(Int_t iCandi
 // Getter number of particle flow candidates in an event (just regular tracks in generator level)
 Int_t GeneratorLevelSkimForestReader::GetNParticleFlowCandidates() const{
   return fnTracks; // Use regular tracks in generator level
+}
+
+// Check if generator level jet has a matching reconstructed jet
+Bool_t GeneratorLevelSkimForestReader::HasMatchingJet(Int_t iJet) const{
+  
+  // If not matching jets, just tell that everything is fine
+  if(!fMatchJets) return true;
+  
+  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
+  // If our generator level pT is found from this array, it has a matching reconstructed jet
+  Double_t jetPt = GetJetPt(iJet);
+  for(auto iRef = 0; iRef < fJetRefPtArray->size(); iRef++){
+    if(TMath::Abs(jetPt - fJetRefPtArray->at(iRef)) < 0.001) return true;
+  }
+  
+  return false;
 }

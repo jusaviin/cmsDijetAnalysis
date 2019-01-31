@@ -40,9 +40,10 @@ SkimForestReader::SkimForestReader() :
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
+ *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  */
-SkimForestReader::SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
-  ForestReader(dataType,readMode,jetType),
+SkimForestReader::SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets) :
+  ForestReader(dataType,readMode,jetType,matchJets),
   fEventTree(0),
   fJetPtArray(0),
   fJetPhiArray(0),
@@ -185,6 +186,13 @@ void SkimForestReader::Initialize(){
   sprintf(branchName,"%s_trackMax",jetType[fJetType]);
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
+  
+  // If we match jets and are looking at Monte Carlo, enable reference pT array
+  if(fMatchJets && fDataType > kPbPb){
+    sprintf(branchName,"%s_refpt",jetType[fJetType]);
+    fEventTree->SetBranchStatus(branchName,1);
+    fEventTree->SetBranchAddress(branchName,&fJetRefPtArray,&fJetRefPtBranch);
+  }
   
   // Connect the branches to the HLT tree
   if(fDataType == kPp){ // pp data
@@ -430,4 +438,16 @@ Int_t SkimForestReader::GetTrackSubevent(Int_t iTrack) const{
 // Getter for track MC status. Relevant only for generator level tracks.
 Int_t SkimForestReader::GetTrackMCStatus(Int_t iTrack) const{
   return 1;
+}
+
+// Check if generator level jet has a matching reconstructed jet
+Bool_t SkimForestReader::HasMatchingJet(Int_t iJet) const{
+  
+  // If we are not matching jets or are considering real data, everything is fine
+  if(!fMatchJets || fDataType <= kPbPb) return true;
+  
+  // For each reconstructed jet there is a reference pT, which tells the the pT of a matched generator level jet
+  // If this number is -999, it means that there are no generator level jets matching the reconstructed jet
+  if(fJetRefPtArray->at(iJet) < 0) return false;
+  return true;
 }

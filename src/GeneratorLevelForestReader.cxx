@@ -33,9 +33,10 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
+ *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  */
-GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
-  ForestReader(dataType,readMode,jetType),
+GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets) :
+  ForestReader(dataType,readMode,jetType,matchJets),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -145,6 +146,12 @@ void GeneratorLevelForestReader::Initialize(){
   fJetTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
   fJetTree->SetBranchStatus("ngen",1);
   fJetTree->SetBranchAddress("ngen",&fnJets,&fJetRawPtBranch); // Reuse a branch from ForestReader that is not otherwise needed here
+  
+  // If we are matching jets, connect the ref pT array
+  if(fMatchJets){
+    fJetTree->SetBranchStatus("refpt",1);
+    fJetTree->SetBranchAddress("refpt",&fJetRefPtArray,&fJetRefPtBranch);
+  }
   
   // Connect the branches to the HLT tree
   fHltTree->SetBranchStatus("*",0);
@@ -422,4 +429,20 @@ Float_t GeneratorLevelForestReader::GetParticleFlowCandidateEta(Int_t iCandidate
 // Getter number of particle flow candidates in an event (just regular tracks in generator level)
 Int_t GeneratorLevelForestReader::GetNParticleFlowCandidates() const{
   return fnTracks; // Use regular tracks in generator level
+}
+
+// Check if generator level jet has a matching reconstructed jet
+Bool_t GeneratorLevelForestReader::HasMatchingJet(Int_t iJet) const{
+  
+  // If not matching jets, just tell that everything is fine
+  if(!fMatchJets) return true;
+  
+  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
+  // If our generator level pT is found from this array, it has a matching reconstructed jet
+  Double_t jetPt = GetJetPt(iJet);
+  for(Int_t iRef = 0; iRef < fnJets; iRef++){
+    if(TMath::Abs(jetPt - fJetRefPtArray[iRef]) < 0.001) return true;
+  }
+  
+  return false;
 }

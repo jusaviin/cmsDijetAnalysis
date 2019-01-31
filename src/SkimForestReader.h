@@ -20,7 +20,7 @@ public:
   
   // Constructors and destructors
   SkimForestReader();                                              // Default constructor
-  SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType); // Custom constructor
+  SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets); // Custom constructor
   SkimForestReader(const SkimForestReader& in);                    // Copy constructor
   virtual ~SkimForestReader();                                     // Destructor
   SkimForestReader& operator=(const SkimForestReader& obj);        // Equal sign operator
@@ -57,6 +57,9 @@ public:
   virtual Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
   Int_t GetTrackMCStatus(Int_t iTrack) const;                        // Getter for track MC status (only for generator level tracks)
   
+  // Check if generator level jet has a matching reconstructed jet
+  Bool_t HasMatchingJet(Int_t iJet) const;   // Check if generator level jet has a matching reconstructed jet
+  
 protected:
   
   // Methods
@@ -66,11 +69,12 @@ protected:
   TTree *fEventTree;    // Tree for heavy ion event information
   
   // Leaves for jet tree
-  vector<float> *fJetPtArray;        // pT:s of all the jets in an event
+  vector<float> *fJetPtArray;         // pT:s of all the jets in an event
   vector<float> *fJetPhiArray;        // phis of all the jets in an event
   vector<float> *fJetEtaArray;        // etas of all the jets in an event
   vector<float> *fJetRawPtArray;      // raw jet pT for all the jets in an event
   vector<float> *fJetMaxTrackPtArray; // maximum track pT inside a jet for all the jets in an event
+  vector<float> *fJetRefPtArray;      // reference generator level pT for a reconstructed jet
   
   // Leaves for the track tree
   vector<float> *fTrackPtArray;                    // vector for track pT:s

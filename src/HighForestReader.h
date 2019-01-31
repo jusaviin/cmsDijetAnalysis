@@ -24,7 +24,7 @@ public:
   
   // Constructors and destructors
   HighForestReader();                                              // Default constructor
-  HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType); // Custom constructor
+  HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets); // Custom constructor
   HighForestReader(const HighForestReader& in);                    // Copy constructor
   virtual ~HighForestReader();                                     // Destructor
   HighForestReader& operator=(const HighForestReader& obj);        // Equal sign operator
@@ -61,6 +61,9 @@ public:
   Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
   Int_t GetTrackMCStatus(Int_t iTrack) const;                // Getter for track MC status (only for generator level tracks)
   
+  // Check if generator level jet has a matching reconstructed jet
+  Bool_t HasMatchingJet(Int_t iJet) const;   // Check if generator level jet has a matching reconstructed jet
+  
 private:
   
   // Methods
@@ -84,6 +87,7 @@ private:
   Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
   Float_t fJetRawPtArray[fnMaxJet] = {0};      // raw jet pT for all the jets in an event
   Float_t fJetMaxTrackPtArray[fnMaxJet] = {0}; // maximum track pT inside a jet for all the jets in an event
+  Float_t fJetRefPtArray[fnMaxJet] = {0};      // reference generator level pT for a reconstructed jet
   
   // Leaves for the track tree
   Float_t fTrackPtArray[fnMaxTrack] = {0};                    // Array for track pT:s

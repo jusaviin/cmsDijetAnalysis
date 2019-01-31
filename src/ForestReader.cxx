@@ -10,6 +10,7 @@ ForestReader::ForestReader() :
   fDataType(0),
   fReadMode(0),
   fJetType(0),
+  fMatchJets(false),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fPtHatBranch(0),
@@ -80,10 +81,11 @@ ForestReader::ForestReader() :
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
  */
-ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
+ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets) :
   fDataType(0),
   fReadMode(readMode),
   fJetType(jetType),
+  fMatchJets(matchJets),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fPtHatBranch(0),
@@ -155,6 +157,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fDataType(in.fDataType),
   fReadMode(in.fReadMode),
   fJetType(in.fJetType),
+  fMatchJets(in.fMatchJets),
   fHiVzBranch(in.fHiVzBranch),
   fHiBinBranch(in.fHiBinBranch),
   fPtHatBranch(in.fPtHatBranch),
@@ -230,6 +233,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fDataType = in.fDataType;
   fReadMode = in.fReadMode;
   fJetType = in.fJetType;
+  fMatchJets = in.fMatchJets;
   fHiVzBranch = in.fHiVzBranch;
   fHiBinBranch = in.fHiBinBranch;
   fPtHatBranch = in.fPtHatBranch;

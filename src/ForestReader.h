@@ -33,11 +33,11 @@ public:
   enum enumDataTypes{kPp, kPbPb, kPpMC, kPbPbMC, kLocalTest, knDataTypes};
   
   // Constructors and destructors
-  ForestReader();                                              // Default constructor
-  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType); // Custom constructor
-  ForestReader(const ForestReader& in);                        // Copy constructor
-  virtual ~ForestReader();                                     // Destructor
-  ForestReader& operator=(const ForestReader& obj);            // Equal sign operator
+  ForestReader();                                                                // Default constructor
+  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets); // Custom constructor
+  ForestReader(const ForestReader& in);                                          // Copy constructor
+  virtual ~ForestReader();                                                       // Destructor
+  ForestReader& operator=(const ForestReader& obj);                              // Equal sign operator
   
   // Methods
   virtual void GetEvent(Int_t nEvent) = 0;                 // Get the nth event in tree
@@ -70,6 +70,9 @@ public:
   Int_t GetCollisionEventSelectionFilterBit() const; // Getter for collision event selection filter bit
   Int_t GetHfCoincidenceFilterBit() const;           // Getter for hadronic forward coincidence filter bit
   Int_t GetClusterCompatibilityFilterBit() const;    // Getter for cluster compatibility filter bit
+  
+  // Check if generator level jet has a matching reconstructed jet
+  virtual Bool_t HasMatchingJet(Int_t iJet) const = 0;  // Check if generator level jet has a matching reconstructed jet
   
   // Getters for leaves in the track tree
   virtual Float_t GetTrackPt(Int_t iTrack) const = 0;                    // Getter for track pT
@@ -107,9 +110,10 @@ protected:
   // Methods
   virtual void Initialize() = 0;  // Connect the branches to the tree
   
-  Int_t fDataType;  // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
-  Int_t fReadMode;  // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
-  Int_t fJetType;   // Choose the type of jets usedfor analysis. 0 = Calo jets, 1 = PF jets/
+  Int_t fDataType;    // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
+  Int_t fReadMode;    // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
+  Int_t fJetType;     // Choose the type of jets usedfor analysis. 0 = Calo jets, 1 = PF jets
+  Bool_t fMatchJets;  // Match generator and reconstructed level jets
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;            // Branch for vertex z-position
@@ -122,6 +126,7 @@ protected:
   TBranch *fJetEtaBranch;        // Branch for jet eta
   TBranch *fJetRawPtBranch;      // Branch for raw jet pT
   TBranch *fJetMaxTrackPtBranch; // Maximum pT for a track inside a jet
+  TBranch *fJetRefPtBranch;      // Branch for reference generator level pT for a reconstructed jet
   
   // Branches for HLT tree
   TBranch *fCaloJetFilterBranch;         // Branch for calo jet filter bit

@@ -47,9 +47,10 @@ HighForestReader::HighForestReader() :
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
+ *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  */
-HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType) :
-  ForestReader(dataType,readMode,jetType),
+HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets) :
+  ForestReader(dataType,readMode,jetType,matchJets),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -213,6 +214,12 @@ void HighForestReader::Initialize(){
   fJetTree->SetBranchAddress("rawpt",&fJetRawPtArray,&fJetRawPtBranch);
   fJetTree->SetBranchStatus("trackMax",1);
   fJetTree->SetBranchAddress("trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
+  
+  // If we are matching jets and looking at Monte Carlo, connect the ref pT array
+  if(fMatchJets && fDataType > kPbPb){
+    fJetTree->SetBranchStatus("refpt",1);
+    fJetTree->SetBranchAddress("refpt",&fJetRefPtArray,&fJetRefPtBranch);
+  }
   
   // Event selection summary
   //
@@ -522,4 +529,16 @@ Int_t HighForestReader::GetTrackSubevent(Int_t iTrack) const{
 // Getter for track MC status. Relevant only for generator level tracks.
 Int_t HighForestReader::GetTrackMCStatus(Int_t iTrack) const{
   return 1;
+}
+
+// Check if generator level jet has a matching reconstructed jet
+Bool_t HighForestReader::HasMatchingJet(Int_t iJet) const{
+  
+  // If we are not matching jets or are considering real data, everything is fine
+  if(!fMatchJets || fDataType <= kPbPb) return true;
+  
+  // For each reconstructed jet there is a reference pT, which tells the the pT of a matched generator level jet
+  // If this number is -999, it means that there are no generator level jets matching the reconstructed jet
+  if(fJetRefPtArray[iJet] < 0) return false;
+  return true;
 }
