@@ -1321,7 +1321,7 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   if(referencePartonFlavor >= -6 && referencePartonFlavor <= 6) referencePartonIndex = DijetHistograms::kQuark;
   if(referencePartonFlavor == 21) referencePartonIndex = DijetHistograms::kGluon;
   
-  if(referencePartonFlavor = -999){
+  if(referencePartonFlavor == -999){
     cout << "Error! Reference parton has flavor -999!!!" << endl;
   }
   
