@@ -58,7 +58,9 @@ public:
   Int_t GetTrackMCStatus(Int_t iTrack) const;                        // Getter for track MC status (only for generator level tracks)
   
   // Check if generator level jet has a matching reconstructed jet
-  Bool_t HasMatchingJet(Int_t iJet) const;   // Check if generator level jet has a matching reconstructed jet
+  virtual Bool_t HasMatchingJet(Int_t iJet) const; // Check if generator level jet has a matching reconstructed jet
+  Float_t GetMatchedGenPt(Int_t iJet) const;       // Getter for matched generator level jet pT
+  Int_t GetPartonFlavor(Int_t iJet) const;         // Parton flavor for the parton initiating the jet
   
 protected:
   
@@ -75,6 +77,7 @@ protected:
   vector<float> *fJetRawPtArray;      // raw jet pT for all the jets in an event
   vector<float> *fJetMaxTrackPtArray; // maximum track pT inside a jet for all the jets in an event
   vector<float> *fJetRefPtArray;      // reference generator level pT for a reconstructed jet
+  vector<int> *fJetRefFlavorArray;    // flavor for initiating parton for the reference gen jet
   
   // Leaves for the track tree
   vector<float> *fTrackPtArray;                    // vector for track pT:s

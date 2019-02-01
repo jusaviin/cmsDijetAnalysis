@@ -187,11 +187,15 @@ void SkimForestReader::Initialize(){
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
-  // If we match jets and are looking at Monte Carlo, enable reference pT array
+  // If we match jets and are looking at Monte Carlo, enable reference pT and parton arrays
   if(fMatchJets && fDataType > kPbPb){
     sprintf(branchName,"%s_refpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fJetRefPtArray,&fJetRefPtBranch);
+    sprintf(branchName,"%s_refparton_flavor",jetType[fJetType]);
+    fEventTree->SetBranchStatus(branchName,1);
+    fEventTree->SetBranchAddress(branchName,&fJetRefFlavorArray,&fJetRefFlavorBranch);
+    
   }
   
   // Connect the branches to the HLT tree
@@ -450,4 +454,24 @@ Bool_t SkimForestReader::HasMatchingJet(Int_t iJet) const{
   // If this number is -999, it means that there are no generator level jets matching the reconstructed jet
   if(fJetRefPtArray->at(iJet) < 0) return false;
   return true;
+}
+
+// Getter for matched generator level jet pT
+Float_t SkimForestReader::GetMatchedGenPt(Int_t iJet) const{
+  
+  // If we are not matching jets or are considering real data, this value has no meaning
+  if(!fMatchJets || fDataType <= kPbPb) return 0;
+  
+  // Return the matched generator level pT
+  return fJetRefPtArray->at(iJet);
+}
+
+// Parton flavor for the parton initiating the jet
+Int_t SkimForestReader::GetPartonFlavor(Int_t iJet) const{
+  
+  // If we are not matching jets or are considering real data, this value has no meaning
+  if(!fMatchJets || fDataType <= kPbPb) return 0;
+  
+  // Return the matching parton flavor
+  return fJetRefFlavorArray->at(iJet);
 }

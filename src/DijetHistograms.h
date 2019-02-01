@@ -19,6 +19,8 @@ public:
   enum enumEventTypes {kAll, kPrimaryVertex, kHBHENoise, kCollisionEventSelection, kBeamScraping, kHfCoincidence, kClusterCompatibility, kCaloJet, kVzCut, kDijet, knEventTypes};
   enum enumTrackCuts {kAllTracks, kPtCuts, kEtaCut, kHighPurity, kPtError, kVertexDistance, kCaloSignal, kReconstructionQuality, knTrackCuts};
   enum enumCorrelationType {kSameEvent, kMixedEvent, knCorrelationTypes};
+  enum enumClosureType {kLeadingClosure, kSubleadingClosure, kInclusiveClosure, knClosureTypes};
+  enum enumClosureParticleType {kQuark,kGluon,knClosureParticleTypes};
   
   // Constructors and destructor
   DijetHistograms(); // Default constructor
@@ -63,6 +65,7 @@ public:
   THnSparseF *fhTrackSubleadingJetPtWeighted;  // pT weighted track correlation with subleading jet [pT track][ptw s-dphi][ptw s-deta][Ajj][cent][same/mixed]
   THnSparseF *fhTrackJetInclusive;             // Track correlation with inclusive jets [pT track][inc-dphi][inc-deta][cent][same/mixed]
   THnSparseF *fhTrackJetInclusivePtWeighted;   // pT weighted track correlation with inclusive jets [pT track][ptw inc-dphi][ptw inc-deta][cent][same/mixed]
+  THnSparseF *fhJetPtClosure; // Jet pT closure histograms [inclusive/leading/subleading][gen pT][centrality][q/g][reco/gen]
   
 private:
   

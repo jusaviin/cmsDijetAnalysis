@@ -215,10 +215,12 @@ void HighForestReader::Initialize(){
   fJetTree->SetBranchStatus("trackMax",1);
   fJetTree->SetBranchAddress("trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
-  // If we are matching jets and looking at Monte Carlo, connect the ref pT array
+  // If we are matching jets and looking at Monte Carlo, connect the reference pT and parton arrays
   if(fMatchJets && fDataType > kPbPb){
     fJetTree->SetBranchStatus("refpt",1);
     fJetTree->SetBranchAddress("refpt",&fJetRefPtArray,&fJetRefPtBranch);
+    fJetTree->SetBranchStatus("refparton_flavor",1);
+    fJetTree->SetBranchAddress("refparton_flavor",&fJetRefFlavorArray,&fJetRefFlavorBranch);
   }
   
   // Event selection summary
@@ -385,7 +387,11 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzer/pfTree");
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
     fTrackTree = (TTree*)inputFile->Get("anaTrack/trackTree");
-    fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzerCS/pfTree");
+    if(fReadMode == 1){
+      fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzer/pfTree"); // PYTHIA8+Hydjet
+    } else {
+      fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzerCS/pfTree"); // PYTHIA6+Hydjet
+    }
   }
   
   
@@ -541,4 +547,24 @@ Bool_t HighForestReader::HasMatchingJet(Int_t iJet) const{
   // If this number is -999, it means that there are no generator level jets matching the reconstructed jet
   if(fJetRefPtArray[iJet] < 0) return false;
   return true;
+}
+
+// Getter for matched generator level jet pT
+Float_t HighForestReader::GetMatchedGenPt(Int_t iJet) const{
+  
+  // If we are not matching jets or are considering real data, this value has no meaning
+  if(!fMatchJets || fDataType <= kPbPb) return 0;
+  
+  // Return matched gen pT
+  return fJetRefPtArray[iJet];
+}
+
+// Parton flavor for the parton initiating the jet
+Int_t HighForestReader::GetPartonFlavor(Int_t iJet) const{
+  
+  // If we are not matching jets or are considering real data, this value has no meaning
+  if(!fMatchJets || fDataType <= kPbPb) return 0;
+  
+  // Return the matching parton flavor
+  return fJetRefFlavorArray[iJet];
 }

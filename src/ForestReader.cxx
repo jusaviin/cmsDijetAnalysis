@@ -19,6 +19,8 @@ ForestReader::ForestReader() :
   fJetEtaBranch(0),
   fJetRawPtBranch(0),
   fJetMaxTrackPtBranch(0),
+  fJetRefPtBranch(0),
+  fJetRefFlavorBranch(0),
   fCaloJetFilterBranch(0),
   fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
@@ -94,6 +96,8 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t
   fJetEtaBranch(0),
   fJetRawPtBranch(0),
   fJetMaxTrackPtBranch(0),
+  fJetRefPtBranch(0),
+  fJetRefFlavorBranch(0),
   fCaloJetFilterBranch(0),
   fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
@@ -166,6 +170,8 @@ ForestReader::ForestReader(const ForestReader& in) :
   fJetEtaBranch(in.fJetEtaBranch),
   fJetRawPtBranch(in.fJetRawPtBranch),
   fJetMaxTrackPtBranch(in.fJetMaxTrackPtBranch),
+  fJetRefPtBranch(in.fJetRefPtBranch),
+  fJetRefFlavorBranch(in.fJetRefFlavorBranch),
   fCaloJetFilterBranch(in.fCaloJetFilterBranch),
   fCaloJetFilterPrescaleBranch(in.fCaloJetFilterPrescaleBranch),
   fPrimaryVertexBranch(in.fPrimaryVertexBranch),
@@ -242,6 +248,8 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fJetEtaBranch = in.fJetEtaBranch;
   fJetRawPtBranch = in.fJetRawPtBranch;
   fJetMaxTrackPtBranch = in.fJetMaxTrackPtBranch;
+  fJetRefPtBranch = in.fJetRefPtBranch;
+  fJetRefFlavorBranch = in.fJetRefFlavorBranch;
   fCaloJetFilterBranch = in.fCaloJetFilterBranch;
   fCaloJetFilterPrescaleBranch = in.fCaloJetFilterPrescaleBranch;
   fPrimaryVertexBranch = in.fPrimaryVertexBranch;
@@ -401,30 +409,40 @@ Int_t ForestReader::GetNTracks() const{
 
 // Getter for particle flow candidate ID
 Int_t ForestReader::GetParticleFlowCandidateId(Int_t iCandidate) const{
-  if(fReadMode == 0) return fParticleFlowCandidateIdVector->at(iCandidate);  // Regular
-  return fParticleFlowCandidateIdArray[iCandidate];                         // For PYTHIA8 forest
+  if(fReadMode == 1 && fDataType == kPpMC) return fParticleFlowCandidateIdArray[iCandidate];   // For PYTHIA8 forest
+  return fParticleFlowCandidateIdVector->at(iCandidate);                                       // Regular
 }
 
 // Getter for particle flow candidate pT
 Float_t ForestReader::GetParticleFlowCandidatePt(Int_t iCandidate) const{
-  if(fReadMode == 0) return fParticleFlowCandidatePtVector->at(iCandidate);  // Regular
-  return fParticleFlowCandidatePtArray[iCandidate];                         // For PYTHIA8 forest
+  if(fReadMode == 1 && fDataType == kPpMC) return fParticleFlowCandidatePtArray[iCandidate];  // For PYTHIA8 forest
+  return fParticleFlowCandidatePtVector->at(iCandidate);                                      // Regular
 }
 
 // Getter for particle flow candidate phi
 Float_t ForestReader::GetParticleFlowCandidatePhi(Int_t iCandidate) const{
-  if(fReadMode == 0) return fParticleFlowCandidatePhiVector->at(iCandidate);  // Regular
-  return fParticleFlowCandidatePhiArray[iCandidate];                         // For PYTHIA8 forest
+  if(fReadMode == 1 && fDataType == kPpMC) return fParticleFlowCandidatePhiArray[iCandidate];  // For PYTHIA8 forest
+  return fParticleFlowCandidatePhiVector->at(iCandidate);                                      // Regular
 }
 
 // Getter for particle flow candidate eta
 Float_t ForestReader::GetParticleFlowCandidateEta(Int_t iCandidate) const{
-  if(fReadMode == 0) return fParticleFlowCandidateEtaVector->at(iCandidate);  // Regular
-  return fParticleFlowCandidateEtaArray[iCandidate];                         // For PYTHIA8 forest
+  if(fReadMode == 1 && fDataType == kPpMC)  return fParticleFlowCandidateEtaArray[iCandidate];  // For PYTHIA8 forest
+  return fParticleFlowCandidateEtaVector->at(iCandidate);                                       // Regular
 }
 
 // Getter number of particle flow candidates in an event
 Int_t ForestReader::GetNParticleFlowCandidates() const{
-  if(fReadMode == 0) return fParticleFlowCandidateIdVector->size();   // Regular
-  return fnParticleFlowCandidates;                                   // For PYTHIA8 forest
+  if(fReadMode == 1 && fDataType == kPpMC) return fnParticleFlowCandidates; // For PYTHIA8 forest
+  return fParticleFlowCandidateIdVector->size();                            // Regular
+}
+
+// Getter for matched generator level jet pT (reimplemented for reco jet readers)
+Float_t ForestReader::GetMatchedGenPt(Int_t iJet) const{
+  return 0;
+}
+
+// Parton flavor for the parton initiating the jet (reimplemented for reco jet readers)
+Int_t ForestReader::GetPartonFlavor(Int_t iJet) const{
+  return 0;
 }

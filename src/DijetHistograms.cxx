@@ -42,6 +42,7 @@ DijetHistograms::DijetHistograms() :
   fhTrackSubleadingJetPtWeighted(0),
   fhTrackJetInclusive(0),
   fhTrackJetInclusivePtWeighted(0),
+  fhJetPtClosure(0),
   fCard(0)
 {
   // Default constructor
@@ -79,6 +80,7 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhTrackSubleadingJetPtWeighted(0),
   fhTrackJetInclusive(0),
   fhTrackJetInclusivePtWeighted(0),
+  fhJetPtClosure(0),
   fCard(newCard)
 {
   // Custom constructor
@@ -116,6 +118,7 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhTrackSubleadingJetPtWeighted(in.fhTrackSubleadingJetPtWeighted),
   fhTrackJetInclusive(in.fhTrackJetInclusive),
   fhTrackJetInclusivePtWeighted(in.fhTrackJetInclusivePtWeighted),
+  fhJetPtClosure(in.fhJetPtClosure),
   fCard(in.fCard)
 {
   // Copy constructor
@@ -157,6 +160,7 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhTrackSubleadingJetPtWeighted = in.fhTrackSubleadingJetPtWeighted;
   fhTrackJetInclusive = in.fhTrackJetInclusive;
   fhTrackJetInclusivePtWeighted = in.fhTrackJetInclusivePtWeighted;
+  fhJetPtClosure = in.fhJetPtClosure;
   fCard = in.fCard;
   
   return *this;
@@ -195,6 +199,7 @@ DijetHistograms::~DijetHistograms(){
   delete fhTrackSubleadingJetPtWeighted;
   delete fhTrackJetInclusive;
   delete fhTrackJetInclusivePtWeighted;
+  delete fhJetPtClosure;
 }
 
 /*
@@ -270,6 +275,26 @@ void DijetHistograms::CreateHistograms(){
   const Double_t minCorrelationType = -0.5;                   // Correlation type indexing starts from zero
   const Double_t maxCorrelationType = knCorrelationTypes-0.5; // Maximum correlation type index
   const Int_t nCorrelationTypeBins = knCorrelationTypes;      // Make a bin with width of 1 for each correlation type
+  
+  // Closure type (0 = leading, 1 = subleading, 2 = inclusive)
+  const Double_t minClosureType = -0.5;                // Closure type indexing starts from zero
+  const Double_t maxClosureType = knClosureTypes-0.5;  // Maximum closure type index
+  const Int_t nClosureTypeBins = knClosureTypes;       // Make a bin width of 1 for each closure type
+  
+  // Generator level pT binning for closure histograms
+  const Double_t minClosurePt = 50;                             // Minimum gen jet pT for closure plots
+  const Double_t maxClosurePt = 500;                            // Maximum gen jet pT for closure plots
+  const Int_t nClosurePtBins = (maxClosurePt-minClosurePt)/10;  // Bin width of 10 for the Gen pT in closure plots
+  
+  // Particle type for closure plots (0 = quark, 1 = gluon)
+  const Double_t minClosureParticleType = -0.5;                        // Closure particle type indexing starts from zero
+  const Double_t maxClosureParticleType = knClosureParticleTypes-0.5;  // Maximum closure particle type index
+  const Int_t nClosureParticleTypeBins = knClosureParticleTypes;       // Bin width for particle type is 1
+  
+  // Binning for reco/gen ratio for closure histograms
+  const Double_t minClosureRatio = 0;    // Minimum ratio for the closure plots
+  const Double_t maxClosureRatio = 2;    // Maximum ratio for the closure plots
+  const Int_t nClosureRatioBins = 40;    // Number of closure ratio bins
   
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
@@ -584,6 +609,38 @@ void DijetHistograms::CreateHistograms(){
   fhTrackJetInclusive->SetBinEdges(3,wideCentralityBins);
   fhTrackJetInclusivePtWeighted->SetBinEdges(3,wideCentralityBins);
   
+  // ======== THnSparses for jet pT closures ========
+  
+  // Axis 0 for the track-inclusive jet correlation histogram: closure type (leading/subleading/inclusive)
+  nBins5D[0] = nClosureTypeBins;         // nBins for closure types
+  lowBinBorder5D[0] = minClosureType;    // low bin border for closure types
+  highBinBorder5D[0] = maxClosureType;   // high bin border for closure types
+  
+  // Axis 1 for the track-inclusive jet correlation histogram: generator level jet pT
+  nBins5D[1] = nClosurePtBins;       // nBins for generator level pT bins in closure plots
+  lowBinBorder5D[1] = minClosurePt;  // low bin border generator level pT in closure plots
+  highBinBorder5D[1] = maxClosurePt; // high bin border generator level pT in closure plots
+  
+  // Axis 2 for the track-inclusive jet correlation histogram: centrality
+  nBins5D[2] = nWideCentralityBins;     // nBins for centrality
+  lowBinBorder5D[2] = minCentrality;    // low bin border for centrality
+  highBinBorder5D[2] = maxCentrality;   // high bin border for centrality
+  
+  // Axis 3 for the track-inclusive jet correlation histogram: ref parton = quark/gluon
+  nBins5D[3] = nClosureParticleTypeBins;         // nBins for reference parton
+  lowBinBorder5D[3] = minClosureParticleType;    // low bin border for reference parton
+  highBinBorder5D[3] = maxClosureParticleType;   // high bin border for reference parton
+  
+  // Axis 4 for the track-inclusive jet correlation histogram: reco/gen ratio for closure
+  nBins5D[4] = nClosureRatioBins;        // nBins for closure ratio
+  lowBinBorder5D[4] = minClosureRatio;   // low bin border for closure ratio
+  highBinBorder5D[4] = maxClosureRatio;  // high bin border for closure ratio
+  
+  // Create histograms for jet pT closure
+  fhJetPtClosure = new THnSparseF("jetPtClosure","jetPtClosure",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhJetPtClosure->Sumw2();
+  
+  // Set custom centrality bins for histograms
+  fhJetPtClosure->SetBinEdges(2,wideCentralityBins);
 }
 
 /*
@@ -620,6 +677,7 @@ void DijetHistograms::Write() const{
   fhTrackSubleadingJetPtWeighted->Write();
   fhTrackJetInclusive->Write();
   fhTrackJetInclusivePtWeighted->Write();
+  fhJetPtClosure->Write();
   
 }
 

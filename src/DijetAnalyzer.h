@@ -29,7 +29,7 @@ class DijetAnalyzer{
   
 private:
   
-  enum enumFilledHistograms{kFillEventInformation,kFillJets,kFillTracks,kFillRegularJetTrackCorrelation,kFillUncorrectedJetTrackCorrelation,kFillPtWeightedJetTrackCorrelation,kFillInclusiveJetTrackCorrelation,knFillTypes}; // Histograms to fill
+  enum enumFilledHistograms{kFillEventInformation,kFillJets,kFillTracks,kFillRegularJetTrackCorrelation,kFillUncorrectedJetTrackCorrelation,kFillPtWeightedJetTrackCorrelation,kFillInclusiveJetTrackCorrelation,kFillJetPtClosure,knFillTypes}; // Histograms to fill
   enum enumSubeventCuts{kSubeventZero,kSubeventNonZero,kSubeventAny,knSubeventCuts}; // Cuts for subevent index
   enum enumMcCorrelationType{kRecoReco,kRecoGen,kGenReco,kGenGen,knMcCorrelationTypes}; // How to correlate jets and tracks in MC
   enum enumForestType{kHighForest,kSkimForest,knForestTypes}; // What type of forest is used for reader
@@ -59,7 +59,8 @@ private:
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
-  std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(const Double_t jetPhi, const Double_t jetEta);
+  std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(const Double_t jetPhi, const Double_t jetEta); // Find the number of particle flow cnadidates in a jet and the direction of leading particle flow candidate
+  void FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType); // Fill jet pT closure histograms
   
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
@@ -147,6 +148,7 @@ private:
   Bool_t fFillUncorrectedJetTrackCorrelation; // Fill uncorrected jet-track correlation histograms
   Bool_t fFillPtWeightedJetTrackCorrelation;  // Fill pT weighted jet-track correlation histograms
   Bool_t fFillInclusiveJetTrackCorrelation;   // Fill inclusive jet-track correlation histograms
+  Bool_t fFillJetPtClosure;                   // Fill jet pT closure histograms
   Bool_t fFillDijetJetTrackCorrelation;       // Fill dijet jet-track correlation histograms
 
 };

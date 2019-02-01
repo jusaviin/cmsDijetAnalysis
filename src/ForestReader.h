@@ -71,8 +71,10 @@ public:
   Int_t GetHfCoincidenceFilterBit() const;           // Getter for hadronic forward coincidence filter bit
   Int_t GetClusterCompatibilityFilterBit() const;    // Getter for cluster compatibility filter bit
   
-  // Check if generator level jet has a matching reconstructed jet
-  virtual Bool_t HasMatchingJet(Int_t iJet) const = 0;  // Check if generator level jet has a matching reconstructed jet
+  // Specific functions for jet closure plots
+  virtual Bool_t HasMatchingJet(Int_t iJet) const = 0; // Check if generator level jet has a matching reconstructed jet
+  virtual Float_t GetMatchedGenPt(Int_t iJet) const;   // Getter for matched generator level jet pT
+  virtual Int_t GetPartonFlavor(Int_t iJet) const;     // Parton flavor for the parton initiating the jet
   
   // Getters for leaves in the track tree
   virtual Float_t GetTrackPt(Int_t iTrack) const = 0;                    // Getter for track pT
@@ -127,6 +129,7 @@ protected:
   TBranch *fJetRawPtBranch;      // Branch for raw jet pT
   TBranch *fJetMaxTrackPtBranch; // Maximum pT for a track inside a jet
   TBranch *fJetRefPtBranch;      // Branch for reference generator level pT for a reconstructed jet
+  TBranch *fJetRefFlavorBranch;  // Branch for flavor for the parton initiating the jet
   
   // Branches for HLT tree
   TBranch *fCaloJetFilterBranch;         // Branch for calo jet filter bit

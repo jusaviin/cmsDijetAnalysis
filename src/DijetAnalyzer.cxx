@@ -72,6 +72,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fFillUncorrectedJetTrackCorrelation(false),
   fFillPtWeightedJetTrackCorrelation(false),
   fFillInclusiveJetTrackCorrelation(false),
+  fFillJetPtClosure(false),
   fFillDijetJetTrackCorrelation(false)
 {
   // Default constructor
@@ -220,6 +221,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFillUncorrectedJetTrackCorrelation = bitChecker.test(kFillUncorrectedJetTrackCorrelation);
   fFillPtWeightedJetTrackCorrelation = bitChecker.test(kFillPtWeightedJetTrackCorrelation);
   fFillInclusiveJetTrackCorrelation = bitChecker.test(kFillInclusiveJetTrackCorrelation);
+  fFillJetPtClosure = bitChecker.test(kFillJetPtClosure);
   fFillDijetJetTrackCorrelation = (fFillRegularJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation || fFillTrackHistograms);
   
   // Do a sanity check for given bin widths for mixing pool
@@ -574,6 +576,9 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t inclusiveJetInfo[60][3] = {{0}}; // Array for jet pT, phi and eta for all the jets in the event
   Int_t nJetsInThisEvent = 0;             // Number of jets in the event
   
+  // Variables for jet matching and closure
+  Int_t unmatchedCounter = 0;       // Number of jets that fail the matching
+  
   // Variables for tracks
   Double_t fillerTrack[4];            // Track histogram filler
   Double_t trackEfficiencyCorrection; // Track efficiency correction
@@ -836,7 +841,13 @@ void DijetAnalyzer::RunAnalysis(){
         if(fMaximumMaxTrackPtFraction <= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
         
         // Jet matching between reconstructed and generator level jets
-        if(fMatchJets && !fJetReader->HasMatchingJet(jetIndex)) continue;
+        if(fMatchJets && !fJetReader->HasMatchingJet(jetIndex)) {
+          unmatchedCounter++;
+          continue;
+        }
+        
+        // refpartonflavor -6 - 6 -> quark, 21 -> gluon, -999 = unmatched
+        // reco/gen in gen bins (10 GeV bin)
         
         //  ========================================
         //  ======= Jet quality cuts applied =======
@@ -850,6 +861,13 @@ void DijetAnalyzer::RunAnalysis(){
         
         // For jets within the specified eta range, collect any jet histograms and inclusive jet-track correlations
         if(TMath::Abs(jetEta) < fJetEtaCut){
+          
+          //************************************************
+          //       Fill histograms for jet pT closure
+          //************************************************
+          
+          // Only fill is matching is enabled and histograms are selected for filling
+          if(fFillJetPtClosure && fMatchJets) FillJetPtClosureHistograms(jetIndex, DijetHistograms::kInclusiveClosure);
           
           //************************************************
           //         Fill histograms for all jets
@@ -1063,6 +1081,12 @@ void DijetAnalyzer::RunAnalysis(){
       // If a dijet is found, fill some information to fHistograms
       if(dijetFound){
         
+        // Histograms for jet pT closure
+        if(fFillJetPtClosure && fMatchJets){
+          FillJetPtClosureHistograms(highestIndex, DijetHistograms::kLeadingClosure);
+          FillJetPtClosureHistograms(secondHighestIndex, DijetHistograms::kSubleadingClosure);
+        }
+        
         // Dijet event information
         if(fFillEventInformation){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
@@ -1151,6 +1175,10 @@ void DijetAnalyzer::RunAnalysis(){
     if(mixEvents) mixedEventFile->Close();
     
   } // File loop
+  
+  if(fMatchJets && fDebugLevel > 1){
+    cout << "A total of " << unmatchedCounter << " jets were not matched!" << endl;
+  }
   
 }
 
@@ -1267,6 +1295,46 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
     }
     
   } // Loop over tracks
+}
+
+/*
+ * Fill the jet pT closure histograms
+ *
+ *  const Int_t jetIndex = Index of a jet for which the closure is filled
+ *  const Int_t closureType = Leading/subleading/inclusive
+ */
+void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType){
+
+  // Define a filler for the closure histogram
+  Double_t fillerClosure[5];
+  
+  // Find the pT of the matched gen jet and flavor of reference parton
+  Float_t matchedGenPt = fJetReader->GetMatchedGenPt(jetIndex);
+  Int_t referencePartonFlavor = fJetReader->GetPartonFlavor(jetIndex);
+  
+  // Find the centrality of the event and the pT of the reconstructed jet
+  Double_t recoPt = fJetReader->GetJetPt(jetIndex);
+  Double_t centrality = fJetReader->GetCentrality();
+  
+  // Define index for parton floavor using algoritm: [-6,6] -> kQuark, 21 -> kGluon, anything else -> -1
+  Int_t referencePartonIndex = -1;
+  if(referencePartonFlavor >= -6 && referencePartonFlavor <= 6) referencePartonIndex = DijetHistograms::kQuark;
+  if(referencePartonFlavor == 21) referencePartonIndex = DijetHistograms::kGluon;
+  
+  if(referencePartonFlavor = -999){
+    cout << "Error! Reference parton has flavor -999!!!" << endl;
+  }
+  
+  // Fill the different axes for the filler
+  fillerClosure[0] = closureType;          // Axis 0: Type of closure (leading/subleading/inclusive)
+  fillerClosure[1] = matchedGenPt;         // Axis 1: pT of the matched generator level jet
+  fillerClosure[2] = centrality;           // Axis 2: Centrality of the event
+  fillerClosure[3] = referencePartonIndex; // Axis 3: Reference parton type (quark/gluon)
+  fillerClosure[4] = recoPt/matchedGenPt;  // Axis 4: Reconstructed level jet to generator level jet pT ratio
+  
+  // Fill the closure histogram
+  fHistograms->fhJetPtClosure->Fill(fillerClosure,fTotalEventWeight);
+  
 }
 
 /*
