@@ -74,7 +74,7 @@ public:
   // Specific functions for jet closure plots
   virtual Bool_t HasMatchingJet(Int_t iJet) const = 0; // Check if generator level jet has a matching reconstructed jet
   virtual Float_t GetMatchedGenPt(Int_t iJet) const;   // Getter for matched generator level jet pT
-  virtual Int_t GetPartonFlavor(Int_t iJet) const;     // Parton flavor for the parton initiating the jet
+  virtual Int_t GetPartonFlavor(Int_t iJet) const = 0; // Parton flavor for the parton initiating the jet
   
   // Getters for leaves in the track tree
   virtual Float_t GetTrackPt(Int_t iTrack) const = 0;                    // Getter for track pT

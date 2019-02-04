@@ -441,8 +441,3 @@ Int_t ForestReader::GetNParticleFlowCandidates() const{
 Float_t ForestReader::GetMatchedGenPt(Int_t iJet) const{
   return 0;
 }
-
-// Parton flavor for the parton initiating the jet (reimplemented for reco jet readers)
-Int_t ForestReader::GetPartonFlavor(Int_t iJet) const{
-  return 0;
-}

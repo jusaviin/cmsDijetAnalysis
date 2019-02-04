@@ -578,6 +578,9 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Variables for jet matching and closure
   Int_t unmatchedCounter = 0;       // Number of jets that fail the matching
+  Int_t matchedCounter = 0;         // Number of jets that are matched
+  Int_t nonSensicalPartonIndex = 0; // Parton index is -999 even though jets are matched
+  Int_t partonFlavor = -999;        // Code for parton flavor in Monte Carlo
   
   // Variables for tracks
   Double_t fillerTrack[4];            // Track histogram filler
@@ -846,8 +849,15 @@ void DijetAnalyzer::RunAnalysis(){
           continue;
         }
         
-        // refpartonflavor -6 - 6 -> quark, 21 -> gluon, -999 = unmatched
-        // reco/gen in gen bins (10 GeV bin)
+        // For debugging purposes, count the number of matched jets
+        if(fMatchJets) matchedCounter++;
+        
+        // Require also reference parton flavor to be quark [-6,6] or gluon (21)
+        if(fMatchJets){
+          partonFlavor = fJetReader->GetPartonFlavor(jetIndex);
+          if(partonFlavor == -999) nonSensicalPartonIndex++;
+          if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21)) continue;
+        }
         
         //  ========================================
         //  ======= Jet quality cuts applied =======
@@ -1178,6 +1188,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   if(fMatchJets && fDebugLevel > 1){
     cout << "A total of " << unmatchedCounter << " jets were not matched!" << endl;
+    cout << "A total of " << nonSensicalPartonIndex << " out of " << matchedCounter <<  " matched jets had reference parton flavor -999!" << endl;
   }
   
 }
@@ -1320,10 +1331,6 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   Int_t referencePartonIndex = -1;
   if(referencePartonFlavor >= -6 && referencePartonFlavor <= 6) referencePartonIndex = DijetHistograms::kQuark;
   if(referencePartonFlavor == 21) referencePartonIndex = DijetHistograms::kGluon;
-  
-  if(referencePartonFlavor == -999){
-    cout << "Error! Reference parton has flavor -999!!!" << endl;
-  }
   
   // Fill the different axes for the filler
   fillerClosure[0] = closureType;          // Axis 0: Type of closure (leading/subleading/inclusive)

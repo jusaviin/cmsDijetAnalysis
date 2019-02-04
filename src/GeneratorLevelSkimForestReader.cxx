@@ -101,6 +101,9 @@ void GeneratorLevelSkimForestReader::Initialize(){
     sprintf(branchName,"%s_refpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fJetRefPtArray,&fJetRefPtBranch);
+    sprintf(branchName,"%s_refparton_flavor",jetType[fJetType]);
+    fEventTree->SetBranchStatus(branchName,1);
+    fEventTree->SetBranchAddress(branchName,&fJetRefFlavorArray,&fJetRefFlavorBranch);
   }
   
   // Connect the branches to the HLT tree
@@ -269,9 +272,34 @@ Bool_t GeneratorLevelSkimForestReader::HasMatchingJet(Int_t iJet) const{
   // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
   // If our generator level pT is found from this array, it has a matching reconstructed jet
   Double_t jetPt = GetJetPt(iJet);
-  for(auto iRef = 0; iRef < fJetRefPtArray->size(); iRef++){
+  for(Int_t iRef = 0; iRef < fJetRefPtArray->size(); iRef++){
     if(TMath::Abs(jetPt - fJetRefPtArray->at(iRef)) < 0.001) return true;
   }
   
   return false;
+}
+
+// Get the flavor of the matched jet
+Int_t GeneratorLevelSkimForestReader::GetPartonFlavor(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
+  // If our generator level pT is found from this array, it has a matching reconstructed jet
+  Double_t jetPt = GetJetPt(iJet);
+  Int_t matchedIndex = -1;
+  for(Int_t iRef = 0; iRef < fJetRefPtArray->size(); iRef++){
+    if(TMath::Abs(jetPt - fJetRefPtArray->at(iRef)) < 0.001){
+      matchedIndex = iRef;
+      break;
+    }
+  }
+
+  // If we did not find macth, something went wrong. Return -999
+  if(matchedIndex == -1) return -999;
+  
+  // Return the matching parton flavor
+  return fJetRefFlavorArray->at(matchedIndex);
+
 }

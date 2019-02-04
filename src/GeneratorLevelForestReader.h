@@ -71,6 +71,7 @@ public:
   
   // Check if generator level jet has a matching reconstructed jet
   Bool_t HasMatchingJet(Int_t iJet) const;   // Check if generator level jet has a matching reconstructed jet
+  Int_t GetPartonFlavor(Int_t iJet) const;   // Get the flavor of the parton initiating the jet
   
 private:
   
@@ -89,6 +90,7 @@ private:
   Float_t fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
   Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
   Float_t fJetRefPtArray[fnMaxJet] = {0};      // reference generator level pT for a reconstructed jet
+  Float_t fJetRefFlavorArray[fnMaxJet] = {0};  // flavor for initiating parton for the reference gen jet
   
   // Leaves for the track tree
   vector<float> *fTrackPtArray;       // Array for track pT:s
