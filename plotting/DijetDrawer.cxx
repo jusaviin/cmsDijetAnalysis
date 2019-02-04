@@ -271,6 +271,7 @@ void DijetDrawer::DrawDijetHistograms(){
   TH2D *drawnHistogram2D;
   TH1D *asymmetryIntegral;
   TLegend *legend;
+  TF1 *fitFunction;
   
   // Helper variables for centrality naming in figures
   TString centralityString;
@@ -318,6 +319,19 @@ void DijetDrawer::DrawDijetHistograms(){
       asymmetryIntegral->SetBinContent(iBin,integralValue);
       asymmetryIntegral->SetBinError(iBin,integralError);
     }
+    
+    // Determine the AJ where 50 % of the events are lower and 50 % higher
+    asymmetryIntegral->Fit("pol2","","",0.05,0.35);
+    fitFunction = asymmetryIntegral->GetFunction("pol2");
+    double a = fitFunction->GetParameter(2);
+    double b = fitFunction->GetParameter(1);
+    double c = fitFunction->GetParameter(0);
+    double root1 = (-1.0*b+TMath::Sqrt(b*b-4*a*(c-0.5)))/(2*a);
+    double root2 = (-1.0*b-TMath::Sqrt(b*b-4*a*(c-0.5)))/(2*a);
+    cout << "Asymmetry for centrality " << centralityString.Data() << endl;
+    cout << "First root: " << root1 << endl;
+    cout << "Second root: " << root2 << endl;
+    cout << endl;
     
     fDrawer->DrawHistogram(asymmetryIntegral,"A_{J}","Fraction of integral", " ");
     legend = new TLegend(0.62,0.2,0.82,0.45);
@@ -547,6 +561,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
             drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
+            //drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
             
             // Move legend to different place for leading jet background figures
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;

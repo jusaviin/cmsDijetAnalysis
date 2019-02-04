@@ -1074,11 +1074,11 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   
   // Read the histograms, scale them to one and take the ratio
   fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
-  //fMainHistogram->GetXaxis()->SetRangeUser(50,300); // Manual range setting  XXXX
+  //fMainHistogram->GetXaxis()->SetRangeUser(50,500); // Manual range setting  XXXX
   if(rebin > 1) fMainHistogram->Rebin(rebin);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,0,bin5)->Clone();
+    fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5)->Clone();
     if(rebin > 1) fComparisonHistogram[iAdditional]->Rebin(rebin);
     if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);

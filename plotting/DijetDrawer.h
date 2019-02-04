@@ -3,10 +3,12 @@
 
 // C++ includes
 #include <bitset>
+#include <vector>
 
 // Root includes
 #include <TH1.h>
 #include <TH2.h>
+#include <TF1.h>
 #include <TString.h>
 #include <TLegend.h>
 #include <TStyle.h>

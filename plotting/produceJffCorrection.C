@@ -57,9 +57,6 @@ void produceJffCorrection(){
   if(ppData) recoGenHistograms->SetCentralityBinRange(0,0);  // Disable centrality binning for pp data
   genGenHistograms->LoadProcessedHistograms();
   
-  // Create DijetMethods in which the correction procedure is implemented
-  DijetMethods *corrector = new DijetMethods();
-  
   // Find the correct number of centrality and track pT bins
   const int nCentralityBins = ppData ? 1 : recoGenHistograms->GetNCentralityBins();
   const int nTrackPtBins = recoGenHistograms->GetNTrackPtBins();

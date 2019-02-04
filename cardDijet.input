@@ -5,20 +5,22 @@ DataType 4  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
 McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
+MatchJets 1 # 1 = Match generator level jets with reconstructed jets, 0 = Do not do that
 
 # Specify the forest type in the selected data files and choose forest readers based on this
 ForestType 0 # 0 = High Forest, 1 = Skim Forest
 ReadMode 0   # 0 = Regular forest, 1 = PYTHIA8 forest
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
-FilledHistograms 127 # Bit 0 = Event information histograms      (to set: 1)
+FilledHistograms 135 # Bit 0 = Event information histograms      (to set: 1)
                     # Bit 1 = Jet histograms                    (to set: 2)
                     # Bit 2 = Track histograms                  (to set: 4)
                     # Bit 3 = Regular jet-track correlation     (to set: 8)
                     # Bit 4 = Uncorrected jet-track correlation (to set: 16)
                     # Bit 5 = pT weighted jet track correlation (to set: 32)
                     # Bit 6 = Inclusive jet-track correlation   (to set: 64)
-                    # Examples: All = 127, All but inclusive jet-track = 63 
+                    # Bit 7 = Inclusive jet-track correlation   (to set: 128)
+                    # Examples: All = 255, All but closure = 127 
                     # Event info and pT weighted correlation = 39
                     # Regular and uncorrected correlation = 24
 
