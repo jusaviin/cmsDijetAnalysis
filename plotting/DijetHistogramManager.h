@@ -51,6 +51,7 @@ public:
   static const int knTrackPtBins = 6;          // Number of track pT bins
   static const int knFittedFlowComponents = 4; // Number of fitted flow components
   static const int knAsymmetryBins = 4;        // Number of dijet asymmetry bins
+  static const int knGenJetPtBins = 45;        // Number of generator level jet pT bins for jet pT closures
   
 private:
   
@@ -76,7 +77,10 @@ private:
   
   // Naming for deltaEta bins
   const char* fDeltaEtaString[knDeltaEtaBins] = {"","Signal #Delta#eta","Background #Delta#eta"};
-  const char *fCompactDeltaEtaString[knDeltaEtaBins] = {"","_SignalDeltaEta","_BackgroundDeltaEta"};
+  const char* fCompactDeltaEtaString[knDeltaEtaBins] = {"","_SignalDeltaEta","_BackgroundDeltaEta"};
+  
+  // Naming for closure particle
+  const char* fClosureParticleName[DijetHistograms::knClosureParticleTypes+1] = {"_quark","_qluon",""};
   
 public:
   
@@ -133,8 +137,9 @@ public:
   void SetLoadTrackInclusiveJetCorrelationsPtWeighted(const bool loadOrNot); // Setter for leading pT weighted inclusive jet-track correlations
   void SetLoadAllTrackInclusiveJetCorrelations(const bool loadInclusive, const bool loadPtWeighted);        // Setter for loading all correlations related to tracks and inclusive jets
   
-  // Setter for loading two-dimensional histograms
-  void SetLoad2DHistograms(const bool loadOrNot); // Setter for loading two-dimensional histograms
+  // Setter for loading additional histograms
+  void SetLoad2DHistograms(const bool loadOrNot);           // Setter for loading two-dimensional histograms
+  void SetLoadJetPtClosureHistograms(const bool loadOrNot); // Setter for loading jet pT closure histograms
   
   // Setters for ranges for different bins
   void SetCentralityBinRange(const int first, const int last); // Setter for centrality bin range
@@ -211,6 +216,9 @@ public:
   // Getters for jet shape histograms
   TH1D* GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const;  // Jet shape histograms
   
+  // Getter for jet pT closure histograms
+  TH1D* GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iCentrality, const int iClosureParticle) const; // Jet pT closure
+  
   TH1D* GetOneDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0) const; // Getter for any one-dimensional histogram based on input string
   TH2D* GetTwoDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0) const; // Getter for any two-dimensional histogram based on input string
   
@@ -248,12 +256,13 @@ private:
   // ======== Flags for histograms to load ========
   // ==============================================
   
-  bool fLoadEventInformation;                              // Draw the event information histograms
-  bool fLoadDijetHistograms;                               // Draw the dijet histograms
-  bool fLoadSingleJets[knSingleJetCategories];             // Draw the single jet histograms
-  bool fLoadTracks[knTrackCategories];                     // Draw the track histograms
-  bool fLoadJetTrackCorrelations[knJetTrackCorrelations];  // Draw the jet-track correlation histograms
+  bool fLoadEventInformation;                              // Load the event information histograms
+  bool fLoadDijetHistograms;                               // Load the dijet histograms
+  bool fLoadSingleJets[knSingleJetCategories];             // Load the single jet histograms
+  bool fLoadTracks[knTrackCategories];                     // Load the track histograms
+  bool fLoadJetTrackCorrelations[knJetTrackCorrelations];  // Load the jet-track correlation histograms
   bool fLoad2DHistograms;                                  // Load also two-dimensional (eta,phi) and (deltaEta,deltaPhi) histograms
+  bool fLoadJetPtClosureHistograms;                        // Load the jet pT closure histograms
   
   // ==============================================
   // ======== Ranges of histograms to load ========
@@ -322,6 +331,9 @@ private:
   // Jet shape histograms
   TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][knCentralityBins][knTrackPtBins];  // Jet shape histograms
   
+  // Histograms for jet pT closure
+  TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins][knCentralityBins][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
+  
   // QA histograms for seagull correction
   TH1D *fhSeagullDeltaEta[knJetTrackCorrelations][knCentralityBins][knTrackPtBins]; // Background eta projection for seagull fit
   TF1 *fSeagullFit[knJetTrackCorrelations][knCentralityBins][knTrackPtBins];        // The seagull fit to background eta projection
@@ -344,6 +356,7 @@ private:
   void LoadDijetHistograms(); // Loader for dijet histograms
   void LoadTrackHistograms(); // Loader for track histograms
   void LoadJetTrackCorrelationHistograms(); // Loader for jet-track correlation histograms
+  void LoadJetPtClosureHistograms(); // Loader for jet pT closure histograms
   
   // Methods for binning
   void BinSanityCheck(const int nBins, int first, int last) const; // Sanity check for given binning

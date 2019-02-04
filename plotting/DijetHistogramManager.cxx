@@ -24,6 +24,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
   fLoad2DHistograms(false),
+  fLoadJetPtClosureHistograms(false),
   fFirstLoadedCentralityBin(0),
   fLastLoadedCentralityBin(knCentralityBins-1),
   fFirstLoadedTrackPtBin(0),
@@ -146,6 +147,15 @@ DijetHistogramManager::DijetHistogramManager() :
         
       } // Track pT loop
     } // Jet-track correlation type loop
+    
+    // Jet pT closure histograms
+    for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+      for(int iGenJetPt = 0; iGenJetPt < knGenJetPtBins; iGenJetPt++){
+        for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+          fhJetPtClosure[iClosureType][iGenJetPt][iCentrality][iClosureParticle] = NULL;
+        } // Closure particle loop
+      } // Gen jet pT loop
+    } // Closure type loop
   } // Centrality loop
 }
 
@@ -185,6 +195,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fLoadEventInformation(in.fLoadEventInformation),
   fLoadDijetHistograms(in.fLoadDijetHistograms),
   fLoad2DHistograms(in.fLoad2DHistograms),
+  fLoadJetPtClosureHistograms(in.fLoadJetPtClosureHistograms),
   fFirstLoadedCentralityBin(in.fFirstLoadedCentralityBin),
   fLastLoadedCentralityBin(in.fLastLoadedCentralityBin),
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
@@ -299,6 +310,16 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
         
       } // Track pT loop
     } // Jet-track correlation type loop
+    
+    // Jet pT closure histograms
+    for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+      for(int iGenJetPt = 0; iGenJetPt < knGenJetPtBins; iGenJetPt++){
+        for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+          fhJetPtClosure[iClosureType][iGenJetPt][iCentrality][iClosureParticle] = in.fhJetPtClosure[iClosureType][iGenJetPt][iCentrality][iClosureParticle];
+        } // Closure particle loop
+      } // Gen jet pT loop
+    } // Closure type loop
+    
   } // Centrality loop
 }
 
@@ -583,6 +604,9 @@ void DijetHistogramManager::LoadHistograms(){
   // Load all track jet correlation histograms
   LoadJetTrackCorrelationHistograms();
   
+  // Load jet pT closure histograms
+  LoadJetPtClosureHistograms();
+  
 }
 
 /*
@@ -786,9 +810,9 @@ void DijetHistogramManager::LoadTrackHistograms(){
 }
 
 /*
- * Loader for track jet correlation histograms
+ * Loader for jet-track correlation histograms
  *
- * THnSparse for tracks:
+ * THnSparses for jet-track correlations:
  *
  *   Histogram name: trackLeadingJet/trackLeadingJetUncorrected/trackLeadingJetPtWeighted
                      trackSubleadingJet/trackSubleadingJetUncorrected/trackSubleadingJetPtWeighted
@@ -817,7 +841,7 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
   int lowerTrackPtBin = 0;
   int higherTrackPtBin = 0;
   
-  // Load all the histograms from the files
+  // Load all the histograms from the file
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
     for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){ // Data file contains only same and mixed event distributions
@@ -861,6 +885,69 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
       } // Centrality loop
     } // Correlation type loop
   } // Jet-track correlation category loop
+}
+
+/*
+ * Loader for jet pT closure histograms
+ *
+ * THnSparse for closure histograms:
+ *
+ *   Histogram name: jetPtClosure
+ *
+ *     Axis index                  Content of axis
+ * -----------------------------------------------------------
+ *       Axis 0             Leading / subleading / inclusive
+ *       Axis 1              Matched generator level jet pT
+ *       Axis 2                       Centrality
+ *       Axis 3                      Quark / gluon
+ *       Axis 4             Matched reco to gen jet pT ratio
+ */
+void DijetHistogramManager::LoadJetPtClosureHistograms(){
+  
+  if(!fLoadJetPtClosureHistograms) return; // Do not load the histograms if they are not selected for loading
+  
+  // Define arrays to help find the histograms
+  int axisIndices[4] = {0};
+  int lowLimits[4] = {0};
+  int highLimits[4] = {0};
+  int nRestrictionAxes = 4;
+  
+  // Define helper variables
+  int duplicateRemoverCentrality = -1;
+  int lowerCentralityBin = 0;
+  int higherCentralityBin = 0;
+  
+  // Load all the histograms from the file
+  for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+    for(int iGenJetPt = 0; iGenJetPt < knGenJetPtBins; iGenJetPt++){
+      for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+        for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+          
+          // Select the bin indices
+          if(iCentralityBin == fLastLoadedCentralityBin) {
+            duplicateRemoverCentrality = 0;
+          } else {
+            duplicateRemoverCentrality = -1;
+          }
+          lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
+          higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
+          
+          // Setup the axes with restrictions
+          nRestrictionAxes = 4;
+          axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
+          axisIndices[1] = 1; lowLimits[1] = iGenJetPt+1;    highLimits[1] = iGenJetPt+1;      // Gen jet pT
+          axisIndices[2] = 2; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
+          axisIndices[3] = 3; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Qoark/gluon
+          
+          // For the last closure particle bin no restrictions for quark/gluon jets
+          if(iClosureParticle == DijetHistograms::knClosureParticleTypes) nRestrictionAxes = 3;
+          
+        fhJetPtClosure[iClosureType][iGenJetPt][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",4,nRestrictionAxes,axisIndices,lowLimits,highLimits);
+          
+        } // Centrality loop
+      } // Closure particle loop
+    } // Gen jet pT loop
+  } // Closure type loop
 }
 
 /*
@@ -933,7 +1020,7 @@ TH2D* DijetHistogramManager::FindHistogram2D(TFile *inputFile, const char *name,
 }
 
 /*
- * Extract a 2D histogram from a given centrality bin from THnSparseD
+ * Extract a histogram with given restrictions on other axes in THnSparse
  *
  *  Arguments:
  *   TFile *inputFile = Inputfile containing the THnSparse to be read
@@ -1236,6 +1323,38 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     
   } // Jet shape type loop
   
+  // Write the jet pT closure histograms to a file
+  if(fLoadJetPtClosureHistograms){
+    
+    // Loop over closure types (leading/subleading/inclusive)
+    for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+      
+      // Create a directory for the histograms if it does not already exist
+      sprintf(histogramNamer,"jetPtClosure_%s",fSingleJetHistogramName[iClosureType]);
+      if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+      gDirectory->cd(histogramNamer);
+      
+      // Centrality loop
+      for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+        
+        // Loop over closure particles (quark/gluon/no selection)
+        for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+          
+          // Loop over generator level jet pT bins
+          for(int iGenJetPt = 0; iGenJetPt < knGenJetPtBins; iGenJetPt++){
+            sprintf(histogramNamer,"jetPtClosure_%s%s_C%dT%d",fSingleJetHistogramName[iClosureType],fClosureParticleName[iClosureParticle],iCentrality,iGenJetPt);
+            fhJetPtClosure[iClosureType][iGenJetPt][iCentrality][iClosureParticle]->Write(histogramNamer);
+            
+          } // Generator level jet pT loop
+        } // Closure particle type (quark/gluon) loop
+      } // Centrality loop
+      
+      // Return back to main directory
+      gDirectory->cd("../");
+    } // Closure type (leading/subleading/inclusive) loop
+    
+  } // Writing jet pT closure histograms
+  
   // Write the card to the output file if it is not already written
   if(!gDirectory->GetDirectory("JCard")) fCard->Write(outputFile);
   
@@ -1474,7 +1593,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     } // Correlation type loop
   } // Jet-track correlation category loop
   
-  // Loas the jet shape histograms from the input file
+  // Load the jet shape histograms from the input file
   for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
     
     // Loop over jet-track correlation categories
@@ -1493,6 +1612,33 @@ void DijetHistogramManager::LoadProcessedHistograms(){
       } // Centrality loop
     } // Jet-track correlation category loop
   } // Jet shape type loop
+  
+  // Load the jet pT closure histograms from a processed file
+  if(fLoadJetPtClosureHistograms){
+    
+    // Loop over closure types (leading/subleading/inclusive)
+    for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+      
+      // Centrality loop
+      for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+        
+        // Loop over closure particles (quark/gluon/no selection)
+        for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+          
+          // Loop over generator level jet pT bins
+          for(int iGenJetPt = 0; iGenJetPt < knGenJetPtBins; iGenJetPt++){
+            sprintf(histogramNamer,"jetPtClosure_%s/jetPtClosure_%s%s_C%dT%d",fSingleJetHistogramName[iClosureType],fSingleJetHistogramName[iClosureType],fClosureParticleName[iClosureParticle],iCentrality,iGenJetPt);
+            fhJetPtClosure[iClosureType][iGenJetPt][iCentrality][iClosureParticle] = (TH1D*) fInputFile->Get(histogramNamer);
+            
+          } // Generator level jet pT loop
+        } // Closure particle type (quark/gluon) loop
+      } // Centrality loop
+      
+      // Return back to main directory
+      gDirectory->cd("../");
+    } // Closure type (leading/subleading/inclusive) loop
+    
+  } // Writing jet pT closure histograms
 
 }
 
@@ -1745,6 +1891,11 @@ void DijetHistogramManager::SetLoadAllTrackInclusiveJetCorrelations(const bool l
  // Setter for loading two-dimensional histograms
 void DijetHistogramManager::SetLoad2DHistograms(const bool loadOrNot){
   fLoad2DHistograms = loadOrNot;
+}
+
+// Setter for loading jet pT closure histograms
+void DijetHistogramManager::SetLoadJetPtClosureHistograms(const bool loadOrNot){
+  fLoadJetPtClosureHistograms = loadOrNot;
 }
 
 // Setter for drawn centrality bins
@@ -2030,6 +2181,11 @@ TH2D* DijetHistogramManager::GetHistogramJetTrackDeltaEtaDeltaPhi(const int iJet
 // Getters for jet shape histograms
 TH1D* DijetHistogramManager::GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const{
   return fhJetShape[iJetShapeType][iJetTrackCorrelation][iCentrality][iTrackPt];
+}
+
+// Getter for jet pT closure histograms
+TH1D* DijetHistogramManager::GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iCentrality, const int iClosureParticle) const{
+  return fhJetPtClosure[iClosureType][iGenPtBin][iCentrality][iClosureParticle];
 }
 
 /*
