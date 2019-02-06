@@ -16,8 +16,8 @@ void compareDijetHistograms(){
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;  // Note: Dijet asymmetry drawing requires two files, first for pp and second for PbPb
   bool drawLeadingJetHistograms = false;
-  bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = true;
+  bool drawSubleadingJetHistograms = true;
+  bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
@@ -121,7 +121,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/PbPbMC_RecoReco_skims_pfJets_noUncorr_noMixing_jetMatching_noJetLimit_noCorrelations_processed_2019-01-31.root","data/PbPbMC_GenGen_skims_pfJets_noUncorr_noMixing_jetMatching_noJetLimit_noCorrelations_processed_2019-01-31.root"};
+  TString inputFileName[nDatasets] = {"data/PbPbMC_RecoReco_skims_pfJets_noCorrelations_matchedJetsWithFlavor_processed_2019-02-04.root","data/PbPbMC_GenGen_skims_pfJets_noCorrelations_matchedJetsWithFlavor_processed_2019-02-04.root"};
   //TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_jffRebin2_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"

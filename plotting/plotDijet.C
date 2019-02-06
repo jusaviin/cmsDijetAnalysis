@@ -41,7 +41,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = true;
+  bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
@@ -50,7 +50,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -94,9 +94,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
-  bool drawMixedEvent = true;
+  bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
@@ -148,7 +148,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -167,6 +167,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
+  const bool avoidPeaks = true; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution
   
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
@@ -261,6 +262,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetJffCorrection(jffCorrectionFile,applyJffCorrection);
   histograms->SetSpilloverCorrection(spilloverFile,applySpilloverCorrection);
   histograms->SetSeagullCorrection(applySeagullCorrection);
+  histograms->SetAvoidMixingPeak(avoidPeaks);
   
   // With execution mode 0, only process the histograms and write them to file
   if(executionMode == 0){

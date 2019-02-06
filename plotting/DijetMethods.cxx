@@ -164,7 +164,7 @@ DijetMethods::~DijetMethods()
  *
  *  return: Corrected same event histogram
  */
-TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D *leadingMixedEventHistogram, const TH2D *subleadingMixedEventHistogram){
+TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D *leadingMixedEventHistogram, const TH2D *subleadingMixedEventHistogram, const bool avoidPeaks){
 
   // Clone the same event histogram for correction
   char newName[100];
@@ -186,9 +186,9 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
   }
   
   // Calculate the average scale from leading and subleading event scales
-  double leadingScale = GetMixedEventScale(leadingMixedEventHistogram);
+  double leadingScale = GetMixedEventScale(leadingMixedEventHistogram,avoidPeaks);
   double subleadingScale = 0;
-  if(fMixedEventNormalizationMethod == kAverage) subleadingScale = GetMixedEventScale(subleadingMixedEventHistogram);
+  if(fMixedEventNormalizationMethod == kAverage) subleadingScale = GetMixedEventScale(subleadingMixedEventHistogram,avoidPeaks);
   double averageScale = (leadingScale+subleadingScale)/2.0;
   double normalizationScale = leadingScale;
   if(fMixedEventNormalizationMethod == kAverage) normalizationScale = averageScale;
@@ -199,7 +199,8 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
   fNormalizedMixedEventHistogram->Scale(1.0/normalizationScale);
   
   // If configured to smoothen the mixing distribution, take an average in each phi slice
-  if(fSmoothMixing){
+  // Do not do this if there is chance to expand peak to flat region
+  if(fSmoothMixing && !avoidPeaks){
     
     // First project out phi and normalize the projection to one in the central region
     TH1D *etaProjection = leadingMixedEventHistogram->ProjectionY("_eta");
@@ -226,9 +227,6 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
   
   correctedHistogram->Divide(fNormalizedMixedEventHistogram);
   
-  // We need to rescale the mixed event histogram in the end, because it might later be used for another correction
-  //leadingMixedEventHistogram->Scale(normalizationScale);
-  
   // Return the corrected histogram
   return correctedHistogram;
 }
@@ -237,20 +235,34 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
  * Find the scale to normalize a mixed event histogram
  *
  *  Arguments:
- *   TH2D* mixedEventHistogram = Mixed event histogram from which the scale is seeked
+ *   const TH2D* mixedEventHistogram = Mixed event histogram from which the scale is seeked
+ *   const bool avoidCenter = Avoid central deltaPhi region if there can be a peak
  *
  *   return: Scale to be used for normalization
  */
-double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram){
+double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const bool avoidCenter){
   
   // In the 2D histograms deltaPhi is x-axis and deltaEta y-axis. We need deltaEta for the correction
-  TH1D *hDeltaEtaMixed = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjection",1,mixedEventHistogram->GetNbinsX());
+  TH1D *hDeltaEtaMixed;
+  int nBinsProjectedOver;
+  if(avoidCenter){
+    double maxPeakDeltaPhi = 0.6;
+    int belowPeakBin = mixedEventHistogram->GetXaxis()->FindBin(-maxPeakDeltaPhi);
+    int abovePeakBin = mixedEventHistogram->GetXaxis()->FindBin(maxPeakDeltaPhi);
+    hDeltaEtaMixed = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjection",1,belowPeakBin);
+    TH1D *addedDeltaEta = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjectionAdder",abovePeakBin,mixedEventHistogram->GetNbinsX());
+    hDeltaEtaMixed->Add(addedDeltaEta,1);
+    nBinsProjectedOver = mixedEventHistogram->GetNbinsX() - abovePeakBin + belowPeakBin + 1;
+  } else {
+    hDeltaEtaMixed = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjection",1,mixedEventHistogram->GetNbinsX());
+    nBinsProjectedOver = mixedEventHistogram->GetNbinsX();
+  }
   
   // Use a constant fit function to fit the projected histogram
   hDeltaEtaMixed->Fit("pol0","0Q","",-fMixedEventFitRegion,fMixedEventFitRegion);
   
   // The normalization scale is the fit result divided by the number of deltaPhi bins integrated for one deltaEta bin
-  return (hDeltaEtaMixed->GetFunction("pol0")->GetParameter(0) / mixedEventHistogram->GetNbinsX());
+  return (hDeltaEtaMixed->GetFunction("pol0")->GetParameter(0) / nBinsProjectedOver);
 }
 
 /*

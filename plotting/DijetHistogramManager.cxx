@@ -28,7 +28,8 @@ DijetHistogramManager::DijetHistogramManager() :
   fFirstLoadedCentralityBin(0),
   fLastLoadedCentralityBin(knCentralityBins-1),
   fFirstLoadedTrackPtBin(0),
-  fLastLoadedTrackPtBin(knTrackPtBins-1)
+  fLastLoadedTrackPtBin(knTrackPtBins-1),
+  fAvoidMixingPeak(false)
 {
   
   // Create a new DijetMethods and JffCorrector
@@ -200,6 +201,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fLastLoadedCentralityBin(in.fLastLoadedCentralityBin),
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
   fLastLoadedTrackPtBin(in.fLastLoadedTrackPtBin),
+  fAvoidMixingPeak(in.fAvoidMixingPeak),
   fhVertexZ(in.fhVertexZ),
   fhVertexZWeighted(in.fhVertexZWeighted),
   fhVertexZDijet(in.fhVertexZDijet),
@@ -349,6 +351,8 @@ void DijetHistogramManager::DoMixedEventCorrection(){
   // Helper variables
   int connectedIndex;
   double scalingFactor;
+  bool mixingPeakVisible;  // Some bins have a peak around xero in the mixed event distribution due to holes in acceptance
+                           // In these cases we should not smoothen the mixing to avoid having peak contribution in flat areas
   
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -366,8 +370,13 @@ void DijetHistogramManager::DoMixedEventCorrection(){
 
         connectedIndex = GetConnectedIndex(iJetTrack);
         
+        // The peak in the mixed event distribution can be seen in all centralities in the lowest track pT bins
+        // Detector efficiency improves for higher pT bins and the peak disappears
+        mixingPeakVisible = false;
+        if(iTrackPtBin < 2 && fAvoidMixingPeak) mixingPeakVisible = true;
+        
         // Do the mixed event correction for the current jet-track correlation histogram
-        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iCentralityBin][iTrackPtBin]);
+        fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iCentralityBin][iTrackPtBin],mixingPeakVisible);
         
         // Remember the normalized mixed events distribution
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEventNormalized][iCentralityBin][iTrackPtBin] = fMethods->GetNormalizedMixedEvent();

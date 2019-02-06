@@ -29,7 +29,7 @@ public:
   ~DijetMethods();  // Destructor
   DijetMethods& operator=(const DijetMethods& in); // Equal sign operator
   
-  TH2D* MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D *leadingMixedEventHistogram, const TH2D *subleadingMixedEventHistogram); // Mixed event correction for a two-dimensional histogram
+  TH2D* MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D *leadingMixedEventHistogram, const TH2D *subleadingMixedEventHistogram, const bool avoidPeaks); // Mixed event correction for a two-dimensional histogram
   TH2D* DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram);  // Apply a seagull correction to the histogram
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, double maxDeltaEta, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
   TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram);  // Get the spillover correction from only hydjet histogram
@@ -142,7 +142,7 @@ private:
   double* fRebinDeltaPhi; // Bin boundaries for the new deltaPhi bins
   
   // Private methods
-  double GetMixedEventScale(const TH2D* mixedEventHistogram); // Find the normalization scale for the mixed event histogram
+  double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool avoidCenter); // Find the normalization scale for the mixed event histogram
   TF1* FitGauss(TH1D* fittedHistogram, double fitRange);  // Fit a Gaussian function to a histogram and return the fit function
   TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution

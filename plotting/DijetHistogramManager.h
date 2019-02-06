@@ -235,6 +235,9 @@ public:
   double GetAnyLeadingJetPtIntegral(int iCentrality) const; // Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
   double GetInclusiveJetPtIntegral(int iCentrality, const double minPt = 120) const; // Getter for integral over inclusive jet pT above minPt in a given centrality bin
   
+  // Setter for avoiding possible peaks in mixed event distribution
+  void SetAvoidMixingPeak(bool avoid);  // Avoid peak region in mixed event distribution
+  
 private:
   
   // Data members
@@ -288,6 +291,11 @@ private:
   double fHighDeltaPhiBinBorders[knDeltaPhiBins];    // High bin borders in deltaPhi binned histograms
   TString fDeltaPhiString[knDeltaPhiBins];           // Names for different deltaPhi bins
   TString fCompactDeltaPhiString[knDeltaPhiBins];    // Names added to figure names for deltaPhi bins
+  
+  // =============================================
+  // ============== Event mixing =================
+  // =============================================
+  bool fAvoidMixingPeak;  // Avoid region around (0,0) in the mixed event distribution to stay clear of possible peaks
   
   // =============================================
   // ===== Histograms for the dijet analysis =====

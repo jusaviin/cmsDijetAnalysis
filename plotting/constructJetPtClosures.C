@@ -12,13 +12,20 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC_RecoReco_skims_pfJets_noUncorr_noCorrelations_jetPtClosure_noJetLimit_processed_2019-02-02.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC_RecoReco_skims_pfJets_noCorrelations_jetPtClosure_matchedJetsWithFlavor_processed_2019-02-02.root";  // File from which the RecoGen histograms are read for the correction
+  // "data/PbPbMC_RecoReco_skims_pfJets_noUncorr_noCorrelations_jetPtClosure_noJetLimit_processed_2019-02-02.root"
   
   bool drawLeadingClosure = false;       // Produce the closure plots for leading jet pT
-  bool drawSubleadingClosure = false;  // Produce the closure plots for subleading jet pT
-  bool drawInclusiveClosure = true;     // Produce the closure plots for inclusive jet pT
+  bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
+  bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
+  
+  bool saveFigures = false;  // Save the figures to file
+  
+  // ==================================================================
+  // =================== Configuration ready ==========================
+  // ==================================================================
   
   // Open the input files
   TFile *closureFile = TFile::Open(closureFileName);
@@ -37,6 +44,7 @@ void constructJetPtClosures(){
   // Find the correct number of centrality and track pT bins
   const int nCentralityBins = ppData ? 1 : closureHistograms->GetNCentralityBins();
   const int nTrackPtBins = closureHistograms->GetNTrackPtBins();
+  double centralityBinBorders[5] = {0,10,30,50,100};  // Bin borders for centrality
   
   // Initialize reco/gen ratio and closure histograms
   TH1D *hRecoGenRatio[DijetHistograms::knClosureTypes][DijetHistogramManager::knGenJetPtBins][nCentralityBins][DijetHistograms::knClosureParticleTypes+1];
@@ -64,6 +72,7 @@ void constructJetPtClosures(){
   double gaussSigma = 0;
   double gaussMeanError = 0;
   double gaussSigmaError = 0;
+  char namer[100];
   
   // Read the reco/gen histograms from the file and fit them to construct the closure plots
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
@@ -79,7 +88,10 @@ void constructJetPtClosures(){
           hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle]->Fit("gaus","","",0.5,1.5);
           
           // Draw the function with the fit for debunking purposes
-          //drawer->DrawHistogram(hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle],"Reco/Gen","N");
+          if(iCentrality == 0 && iClosureParticle == DijetHistograms::knClosureParticleTypes){
+            //sprintf(namer,"Reco/Gen GenPt%d",iGenJetPt);
+            //drawer->DrawHistogram(hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle],namer,"N");
+          }
           
           // Read the fit parameters from the function
           gaussFit = hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle]->GetFunction("gaus");
@@ -101,17 +113,49 @@ void constructJetPtClosures(){
  
   // Draw the closure plots
   int lineColors[2] = {kBlue,kRed};
+  const char* particleNames[2] = {"Quark","Gluon"};
+  const char* closureTypeName[3] = {"Leading","Subleading","Inclusive"};
+  double adders[3] = {0,0.05,0};
+  TLegend *legend;
+  char centralityString[100];
+  char centralitySaveName[100];
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       hJetPtClosure[iClosureType][iCentrality][DijetHistograms::knClosureParticleTypes]->SetLineColor(kBlack);
-      drawer->DrawHistogram(hJetPtClosure[iClosureType][iCentrality][DijetHistograms::knClosureParticleTypes],"Gen p_{T} (GeV)","#mu(reco p_{T} / gen p_{T})");
+      hJetPtClosure[iClosureType][iCentrality][DijetHistograms::knClosureParticleTypes]->GetYaxis()->SetRangeUser(0.9,1.1);
+      drawer->DrawHistogram(hJetPtClosure[iClosureType][iCentrality][DijetHistograms::knClosureParticleTypes],"Gen p_{T} (GeV)","#mu(reco p_{T} / gen p_{T})"," ");
+      
+      legend = new TLegend(0.54-adders[iClosureType],0.63,0.91,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      
+      if(ppData){
+        sprintf(centralityString,"");
+        sprintf(centralitySaveName,"");
+      } else {
+        sprintf(centralityString,", Cent:%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+        sprintf(centralitySaveName,"_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+      }
+      
+      sprintf(namer,"%s jet%s",closureTypeName[iClosureType],centralityString);
+      legend->SetHeader(namer);
+      legend->AddEntry(hJetPtClosure[iClosureType][iCentrality][DijetHistograms::knClosureParticleTypes],"Inclusive","l");
       
       for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes; iClosureParticle++){
         hJetPtClosure[iClosureType][iCentrality][iClosureParticle]->SetLineColor(lineColors[iClosureParticle]);
         hJetPtClosure[iClosureType][iCentrality][iClosureParticle]->Draw("same");
-      } // Closure particle loop (quark/gluon
+        legend->AddEntry(hJetPtClosure[iClosureType][iCentrality][iClosureParticle],particleNames[iClosureParticle],"l");
+      } // Closure particle loop (quark/gluon)
+      
+      legend->Draw();
+      
+      // Save the figures if selected to do so
+      if(saveFigures){
+        sprintf(namer,"figures/jetPtClosure%sJet%s.pdf",closureTypeName[iClosureType],centralitySaveName);
+        gPad->GetCanvas()->SaveAs(namer);
+      }
+      
     } // Centrality loop
   } // Closure type loop (leading/subleading/inclusive)
   
