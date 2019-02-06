@@ -2301,3 +2301,8 @@ double DijetHistogramManager::GetAnyLeadingJetPtIntegral(const int iCentrality) 
 double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality, const double minPt) const{
   return fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->FindBin(minPt),fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
 }
+
+// Setter for avoiding possible peaks in mixed event distribution
+void DijetHistogramManager::SetAvoidMixingPeak(bool avoid){
+  fAvoidMixingPeak = avoid;
+}
