@@ -56,6 +56,7 @@ public:
   
   // Check if generator level jet has a matching reconstructed jet
   Bool_t HasMatchingJet(Int_t iJet) const;  // Check if generator level jet has a matching reconstructed jet
+  Float_t GetMatchedPt(Int_t iJet) const;   // Getter for matched reconstructed jet pT
   Int_t GetPartonFlavor(Int_t iJet) const;  // Get the flavor of the parton initiating the jet
   
 private:
@@ -66,6 +67,7 @@ private:
   // Additional leaves for the track tree
   vector<int> *fTrackChargeArray;     // Array for track charges
   vector<int> *fTrackSubeventArray;   // Array for track subevent indices (0 = PYTHIA, (>0) = HYDJET)
+  vector<float> *fRecoJetPtArray;     // Array for matched reconstructed jet pT
   
 };
 

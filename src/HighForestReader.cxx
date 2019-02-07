@@ -550,7 +550,7 @@ Bool_t HighForestReader::HasMatchingJet(Int_t iJet) const{
 }
 
 // Getter for matched generator level jet pT
-Float_t HighForestReader::GetMatchedGenPt(Int_t iJet) const{
+Float_t HighForestReader::GetMatchedPt(Int_t iJet) const{
   
   // If we are not matching jets or are considering real data, this value has no meaning
   if(!fMatchJets || fDataType <= kPbPb) return 0;

@@ -59,7 +59,7 @@ public:
   
   // Check if generator level jet has a matching reconstructed jet
   virtual Bool_t HasMatchingJet(Int_t iJet) const; // Check if generator level jet has a matching reconstructed jet
-  Float_t GetMatchedGenPt(Int_t iJet) const;       // Getter for matched generator level jet pT
+  virtual Float_t GetMatchedPt(Int_t iJet) const;  // Getter for matched generator level jet pT
   Int_t GetPartonFlavor(Int_t iJet) const;         // Parton flavor for the parton initiating the jet
   
 protected:

@@ -1320,12 +1320,19 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   Double_t fillerClosure[5];
   
   // Find the pT of the matched gen jet and flavor of reference parton
-  Float_t matchedGenPt = fJetReader->GetMatchedGenPt(jetIndex);
+  Float_t matchedGenPt = fJetReader->GetMatchedPt(jetIndex);
   Int_t referencePartonFlavor = fJetReader->GetPartonFlavor(jetIndex);
   
   // Find the centrality of the event and the pT of the reconstructed jet
   Double_t recoPt = fJetReader->GetJetPt(jetIndex);
   Double_t centrality = fJetReader->GetCentrality();
+  
+  // If we are using generator level jets, swap recoPt and genPt
+  if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
+    Double_t swapPt = matchedGenPt;
+    matchedGenPt = recoPt;
+    recoPt = swapPt;
+  }
   
   // Define index for parton floavor using algoritm: [-6,6] -> kQuark, 21 -> kGluon, anything else -> -1
   Int_t referencePartonIndex = -1;

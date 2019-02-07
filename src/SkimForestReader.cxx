@@ -457,7 +457,7 @@ Bool_t SkimForestReader::HasMatchingJet(Int_t iJet) const{
 }
 
 // Getter for matched generator level jet pT
-Float_t SkimForestReader::GetMatchedGenPt(Int_t iJet) const{
+Float_t SkimForestReader::GetMatchedPt(Int_t iJet) const{
   
   // If we are not matching jets or are considering real data, this value has no meaning
   if(!fMatchJets || fDataType <= kPbPb) return 0;

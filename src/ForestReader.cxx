@@ -436,8 +436,3 @@ Int_t ForestReader::GetNParticleFlowCandidates() const{
   if(fReadMode == 1 && fDataType == kPpMC) return fnParticleFlowCandidates; // For PYTHIA8 forest
   return fParticleFlowCandidateIdVector->size();                            // Regular
 }
-
-// Getter for matched generator level jet pT (reimplemented for reco jet readers)
-Float_t ForestReader::GetMatchedGenPt(Int_t iJet) const{
-  return 0;
-}
