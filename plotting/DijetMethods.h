@@ -56,7 +56,7 @@ public:
   double GetBackgroundErrorScalingFactor() const; // Getter for background error scaling factor
   
   // Setters for mixed event configuration
-  void SetMixedEventFitRegion(const double etaRange);  // Setter for deltaEta range used for normalizing the mixed event
+  void SetMixedEventFitRegion(const double etaRangeLow, const double etaRangeHigh = 0);  // Setter for deltaEta range used for normalizing the mixed event
   void SetMixedEventNormalization(const int normalizationType, const bool smoothenMixing); // Setter for normalization method used for mixed event distributions
   
   // Setters for background subtraction configuration
@@ -82,7 +82,8 @@ private:
   // =============================================
   
   TH2D *fNormalizedMixedEventHistogram; // Mixed event histogram after normalization
-  double fMixedEventFitRegion;  // Region in deltaEta in which a constant fit is done to normalize mixed event distributions
+  double fMixedEventFitRegionLow;  // Low bound of the region in deltaEta in which a constant fit is done to normalize mixed event distributions
+  double fMixedEventFitRegionHigh;  // High bound of the region in deltaEta in which a constant fit is done to normalize mixed event distributions
   int fMixedEventNormalizationMethod; // Normalization method used for mixed event distributions
   bool fSmoothMixing; // Smoothen the mixing distribution in phi
   double fMaximumDeltaEta;  // Maximum allowed deltaEta in the corrected distribution
@@ -142,7 +143,7 @@ private:
   double* fRebinDeltaPhi; // Bin boundaries for the new deltaPhi bins
   
   // Private methods
-  double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool avoidCenter); // Find the normalization scale for the mixed event histogram
+  double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter); // Find the normalization scale for the mixed event histogram
   TF1* FitGauss(TH1D* fittedHistogram, double fitRange);  // Fit a Gaussian function to a histogram and return the fit function
   TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution

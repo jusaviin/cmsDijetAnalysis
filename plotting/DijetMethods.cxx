@@ -18,7 +18,8 @@ double seagullPoly2(double *x, double *par){
  *  Constructor
  */
 DijetMethods::DijetMethods() :
-  fMixedEventFitRegion(0.2),
+  fMixedEventFitRegionLow(-0.2),
+  fMixedEventFitRegionHigh(0.2),
   fMixedEventNormalizationMethod(kSingle),
   fSmoothMixing(false),
   fMaximumDeltaEta(4),
@@ -63,7 +64,8 @@ DijetMethods::DijetMethods() :
  */
 DijetMethods::DijetMethods(const DijetMethods& in) :
   fNormalizedMixedEventHistogram(in.fNormalizedMixedEventHistogram),
-  fMixedEventFitRegion(in.fMixedEventFitRegion),
+  fMixedEventFitRegionLow(in.fMixedEventFitRegionLow),
+  fMixedEventFitRegionHigh(in.fMixedEventFitRegionHigh),
   fMixedEventNormalizationMethod(in.fMixedEventNormalizationMethod),
   fSmoothMixing(in.fSmoothMixing),
   fMaximumDeltaEta(in.fMaximumDeltaEta),
@@ -104,7 +106,8 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   if (&in==this) return *this;
   
   fNormalizedMixedEventHistogram = in.fNormalizedMixedEventHistogram;
-  fMixedEventFitRegion = in.fMixedEventFitRegion;
+  fMixedEventFitRegionLow = in.fMixedEventFitRegionLow;
+  fMixedEventFitRegionHigh = in.fMixedEventFitRegionHigh;
   fMixedEventNormalizationMethod = in.fMixedEventNormalizationMethod;
   fSmoothMixing = in.fSmoothMixing;
   fMaximumDeltaEta = in.fMaximumDeltaEta;
@@ -204,8 +207,8 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
     
     // First project out phi and normalize the projection to one in the central region
     TH1D *etaProjection = leadingMixedEventHistogram->ProjectionY("_eta");
-    int lowFitBin = etaProjection->FindBin(-fMixedEventFitRegion);
-    int highFitBin = etaProjection->FindBin(fMixedEventFitRegion);
+    int lowFitBin = etaProjection->FindBin(fMixedEventFitRegionLow);
+    int highFitBin = etaProjection->FindBin(fMixedEventFitRegionHigh);
     double mean = 0;
     for(int i = lowFitBin; i <= highFitBin; i++) mean += etaProjection->GetBinContent(i);
     mean /= ((highFitBin-lowFitBin+1)*leadingMixedEventHistogram->GetNbinsX());
@@ -236,33 +239,41 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
  *
  *  Arguments:
  *   const TH2D* mixedEventHistogram = Mixed event histogram from which the scale is seeked
- *   const bool avoidCenter = Avoid central deltaPhi region if there can be a peak
+ *   const bool onlyCenter = Normalize to the top of a possible peak in the center of the distribution
  *
  *   return: Scale to be used for normalization
  */
-double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const bool avoidCenter){
+double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter){
   
   // In the 2D histograms deltaPhi is x-axis and deltaEta y-axis. We need deltaEta for the correction
   TH1D *hDeltaEtaMixed;
   int nBinsProjectedOver;
-  if(avoidCenter){
-    double maxPeakDeltaPhi = 0.6;
-    int belowPeakBin = mixedEventHistogram->GetXaxis()->FindBin(-maxPeakDeltaPhi);
-    int abovePeakBin = mixedEventHistogram->GetXaxis()->FindBin(maxPeakDeltaPhi);
-    hDeltaEtaMixed = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjection",1,belowPeakBin);
-    TH1D *addedDeltaEta = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjectionAdder",abovePeakBin,mixedEventHistogram->GetNbinsX());
-    hDeltaEtaMixed->Add(addedDeltaEta,1);
-    nBinsProjectedOver = mixedEventHistogram->GetNbinsX() - abovePeakBin + belowPeakBin + 1;
+  double binSum;
+  
+  if(onlyCenter){
+    
+    // Use four bins around (0,0) to normalize the mixed event histogram
+    int referencePhiBin = mixedEventHistogram->GetXaxis()->FindBin(0.05);
+    int referenceEtaBin = mixedEventHistogram->GetYaxis()->FindBin(0.05);
+    binSum = mixedEventHistogram->GetBinContent(referencePhiBin,referenceEtaBin);
+    binSum += mixedEventHistogram->GetBinContent(referencePhiBin-1,referenceEtaBin);
+    binSum += mixedEventHistogram->GetBinContent(referencePhiBin,referenceEtaBin-1);
+    binSum += mixedEventHistogram->GetBinContent(referencePhiBin-1,referenceEtaBin-1);
+    nBinsProjectedOver = 4;
+    
   } else {
+    
+    // Use the whole DeltaPhi and central region in DeltaEta to get the normalization for mixed event
     hDeltaEtaMixed = mixedEventHistogram->ProjectionY("MixedDeltaEtaProjection",1,mixedEventHistogram->GetNbinsX());
     nBinsProjectedOver = mixedEventHistogram->GetNbinsX();
+    
+    // Use a constant fit function to fit the projected histogram
+    hDeltaEtaMixed->Fit("pol0","0Q","",fMixedEventFitRegionLow,fMixedEventFitRegionHigh);
+    binSum = hDeltaEtaMixed->GetFunction("pol0")->GetParameter(0);
   }
   
-  // Use a constant fit function to fit the projected histogram
-  hDeltaEtaMixed->Fit("pol0","0Q","",-fMixedEventFitRegion,fMixedEventFitRegion);
-  
   // The normalization scale is the fit result divided by the number of deltaPhi bins integrated for one deltaEta bin
-  return (hDeltaEtaMixed->GetFunction("pol0")->GetParameter(0) / nBinsProjectedOver);
+  return (binSum / nBinsProjectedOver);
 }
 
 /*
@@ -1091,8 +1102,15 @@ double DijetMethods::GetBackgroundErrorScalingFactor() const{
 }
 
 // Setter for deltaEta range used for normalizing the mixed event
-void DijetMethods::SetMixedEventFitRegion(const double etaRange){
-  fMixedEventFitRegion = etaRange;
+void DijetMethods::SetMixedEventFitRegion(const double etaRangeLow, const double etaRangeHigh){
+  
+  if(etaRangeLow > etaRangeHigh){
+    fMixedEventFitRegionLow = -etaRangeLow;
+    fMixedEventFitRegionHigh = etaRangeLow;
+  } else {
+    fMixedEventFitRegionLow = etaRangeLow;
+    fMixedEventFitRegionHigh = etaRangeHigh;
+  }
 }
 
 // Setter for background deltaEta region

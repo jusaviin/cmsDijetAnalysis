@@ -237,6 +237,7 @@ public:
   
   // Setter for avoiding possible peaks in mixed event distribution
   void SetAvoidMixingPeak(bool avoid);  // Avoid peak region in mixed event distribution
+  void SetDefaultMixingDeltaEtaFitRange(double fitRange);  // Default fit range used to normalize the mixed event
   
 private:
   
@@ -295,7 +296,8 @@ private:
   // =============================================
   // ============== Event mixing =================
   // =============================================
-  bool fAvoidMixingPeak;  // Avoid region around (0,0) in the mixed event distribution to stay clear of possible peaks
+  bool fAvoidMixingPeak;      // Avoid region around (0,0) in the mixed event distribution to stay clear of possible peaks
+  double fDefaultMixingDeltaEtaFitRange; // Default deltaEta fit range in mixed event normalization
   
   // =============================================
   // ===== Histograms for the dijet analysis =====

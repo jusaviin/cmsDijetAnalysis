@@ -29,7 +29,8 @@ DijetHistogramManager::DijetHistogramManager() :
   fLastLoadedCentralityBin(knCentralityBins-1),
   fFirstLoadedTrackPtBin(0),
   fLastLoadedTrackPtBin(knTrackPtBins-1),
-  fAvoidMixingPeak(false)
+  fAvoidMixingPeak(false),
+  fDefaultMixingDeltaEtaFitRange(0.2)
 {
   
   // Create a new DijetMethods and JffCorrector
@@ -202,6 +203,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
   fLastLoadedTrackPtBin(in.fLastLoadedTrackPtBin),
   fAvoidMixingPeak(in.fAvoidMixingPeak),
+  fDefaultMixingDeltaEtaFitRange(in.fDefaultMixingDeltaEtaFitRange),
   fhVertexZ(in.fhVertexZ),
   fhVertexZWeighted(in.fhVertexZWeighted),
   fhVertexZDijet(in.fhVertexZDijet),
@@ -370,13 +372,23 @@ void DijetHistogramManager::DoMixedEventCorrection(){
 
         connectedIndex = GetConnectedIndex(iJetTrack);
         
-        // The peak in the mixed event distribution can be seen in all centralities in the lowest track pT bins
-        // Detector efficiency improves for higher pT bins and the peak disappears
+        // The peak in the mixed event distribution can be seen the low pT bins ,especially in the central PbPb events
+        // The detector efficiency improves for higher pT tracks and the peak in event mixing disappers
         mixingPeakVisible = false;
-        if(iTrackPtBin < 2 && fAvoidMixingPeak) mixingPeakVisible = true;
+        if(((iTrackPtBin < 4 && iCentralityBin < 2) || (iTrackPtBin == 0 && iCentralityBin < 3)) && fAvoidMixingPeak) mixingPeakVisible = true;
+        
+        // For the peripheral bin, the maximum of the distribution due to hole in acceptance is in slightly negative deltaEta
+        if(iTrackPtBin == 0 && iCentralityBin == 3 && fAvoidMixingPeak){
+          fMethods->SetMixedEventFitRegion(-0.7,-0.35);
+        }
         
         // Do the mixed event correction for the current jet-track correlation histogram
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iCentralityBin][iTrackPtBin],mixingPeakVisible);
+        
+        // Reset the fit region for event mixing to default
+        if(iTrackPtBin == 0 && iCentralityBin == 3 && fAvoidMixingPeak){
+          fMethods->SetMixedEventFitRegion(fDefaultMixingDeltaEtaFitRange);
+        }
         
         // Remember the normalized mixed events distribution
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEventNormalized][iCentralityBin][iTrackPtBin] = fMethods->GetNormalizedMixedEvent();
@@ -2305,4 +2317,9 @@ double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality, c
 // Setter for avoiding possible peaks in mixed event distribution
 void DijetHistogramManager::SetAvoidMixingPeak(bool avoid){
   fAvoidMixingPeak = avoid;
+}
+
+// Default fit range used to normalize the mixed event
+void DijetHistogramManager::SetDefaultMixingDeltaEtaFitRange(double fitRange){
+  fDefaultMixingDeltaEtaFitRange = fitRange;
 }
