@@ -28,6 +28,8 @@ private:
   static const int knMaxRatios = 10;  // Maximum number or ratio plots per one canvas
   int fColors[knMaxRatios] = {kRed,kBlue,kMagenta,kCyan,kGreen+4,kOrange,kViolet+3,kPink-7,kSpring+3,kAzure-7};
   
+  void SetHistogramStyle(TH1 *histogram, double rangeX, const char* xTitle); // Style setting for histograms in big canvas
+  
 public:
   
   DijetComparingDrawer(DijetHistogramManager *baseHistograms);  // Constructor

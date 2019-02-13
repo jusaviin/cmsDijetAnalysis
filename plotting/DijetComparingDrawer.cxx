@@ -959,6 +959,13 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   TH1D *comparisonSum[knMaxRatios];
   TH1D *comparisonSumRatio[knMaxRatios];
   
+  // Canvas for the big closure plot
+  TCanvas *closureCanvas = new TCanvas("jetShapeClosureCanvas","jetShapeClosureCanvas",1000,1800);
+  double nCentralityBins = fLastDrawnCentralityBin-fFirstDrawnCentralityBin+1;
+  double nTrackPtBins = fLastDrawnTrackPtBin-fFirstDrawnTrackPtBin+1;
+  closureCanvas->Divide(nCentralityBins,nTrackPtBins);
+  TH1D *closureHistogram;
+  
   // Loop over jet-track correlation categories
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
@@ -981,6 +988,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         
         // Prepare the track phi histograms to be drawn
         PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, iCentrality, iTrackPt);
+        closureHistogram = (TH1D*) fRatioHistogram[0]->Clone(Form("closureHistogram%d%d%d",iJetTrack,iCentrality,iTrackPt));
         
         // Calculate the pT sum
         if(iTrackPt == fFirstDrawnTrackPtBin){
@@ -1012,6 +1020,25 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         // Save the figure to a file
         sprintf(namerX,"%sJetShapeComparison",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
         SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+        
+        // Draw the ratio also to the closure canvas
+        
+        // Find the correct pad inside the canvas
+        closureCanvas->cd(nCentralityBins-1-iCentrality+nCentralityBins*iTrackPt+1);
+        gPad->SetTopMargin(0.1);
+        gPad->SetBottomMargin(0.2);
+        
+        // Style the histogram to nicely fit the big canvas
+        SetHistogramStyle(closureHistogram,1,"#DeltaR");
+        
+        // Draw the ratio histogram to canvas
+        closureHistogram->Draw();
+        
+        // Draw a legend to the canvas
+        legend = new TLegend(0.2,0.9,0.8,0.98);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.08);legend->SetTextFont(62);
+        legend->SetHeader(Form("%s - %s",centralityString.Data(),trackPtString.Data()));
+        legend->Draw();
         
       } // Track pT loop
       
@@ -1290,6 +1317,22 @@ void DijetComparingDrawer::SaveFigure(TString figureName, TString centralityStri
   figName.Append(deltaPhiString);
   gPad->GetCanvas()->SaveAs(Form("%s.%s",figName.Data(),fFigureFormat));
   
+}
+
+/*
+ * Set a nice drawing style for histograms drawn to big pad
+ *
+ *  TH1 * histogram = Histogram needing a nice style
+ *  double rangeX = Maximum drawing range for x-axis.
+ *  const char* xTitle = Title for the x-axis
+ */
+void DijetComparingDrawer::SetHistogramStyle(TH1 *histogram, double rangeX, const char* xTitle){
+  histogram->GetXaxis()->SetRangeUser(0,rangeX);
+  histogram->GetYaxis()->SetRangeUser(fRatioZoomMin,fRatioZoomMax);
+  histogram->SetStats(kFALSE);
+  histogram->GetXaxis()->SetTitle(xTitle);
+  histogram->SetLabelSize(0.09,"xy");
+  histogram->SetTitleSize(0.09,"x");
 }
 
 // Setter for drawing dijet histograms
