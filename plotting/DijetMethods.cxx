@@ -582,10 +582,12 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
  *
  * Arguments:
  *  TH2D *onlyHydjetHistogram = Two-dimensional deltaEta-deltaPhi histogram from soft HYDJET event
+ *  double spilloverEtaFitRange = Range in deltaEta that is used to fit the spillover deltaEta distribution
+ *  double spilloverPhiFitRange = Range in deltaPhi that is used to fit the spillover deltaPhi distribution
  *
  *  return: Two-dimensional histogram with the estimation of the spillover effect
  */
-TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
+TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange, double spilloverPhiFitRange){
   
   // Define the range over which the spillover correction is calculated
   double spilloverEtaRange = 1.5;
@@ -593,11 +595,13 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
   
   // First get the projections for the deltaEta and deltaPhi distributions
   fSpilloverDeltaEta = ProjectRegionDeltaEta(onlyHydjetHistogram,-spilloverPhiRange,spilloverPhiRange,"spilloverDeltaEta");
+  fSpilloverDeltaEta->Scale(fnBinsProjectedOver);
   fSpilloverDeltaPhi = ProjectRegionDeltaPhi(onlyHydjetHistogram,0,spilloverEtaRange,"spilloverDeltaPhi");
+  fSpilloverDeltaPhi->Scale(fnBinsProjectedOver);
   
   // Do some rebin
-  int etaRebin = 4;
-  int phiRebin = 2;
+  int etaRebin = 1; // Old: 4
+  int phiRebin = 1; // Old: 2
   if(etaRebin > 1){
     fSpilloverDeltaEta->Rebin(etaRebin);
     fSpilloverDeltaEta->Scale(1.0/etaRebin);
@@ -608,8 +612,8 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
   }
   
   // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
-  fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta,spilloverEtaRange);
-  fSpilloverFitDeltaPhi = FitGauss(fSpilloverDeltaPhi,spilloverPhiRange);
+  fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta,spilloverEtaFitRange);
+  fSpilloverFitDeltaPhi = FitGauss(fSpilloverDeltaPhi,spilloverPhiFitRange);
   
   // Combine the one-dimensional fits to a two-dimensional Gaussian distribution
   TF2 *gauss2D = new TF2("gauss2D", "[0]/(2*TMath::Pi()*[1]*[2])*TMath::Exp(-0.5*TMath::Power(x/[1],2))*TMath::Exp(-0.5*TMath::Power(y/[2],2))",-TMath::Pi()/2,3*TMath::Pi()/2,-5,5);
@@ -629,6 +633,7 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram){
       spilloverCorrection->SetBinError(iPhiBin,iEtaBin,0);
     }
   }
+  
   spilloverCorrection->Eval(gauss2D,"A");
     
   // Return the spillover correction
@@ -872,6 +877,7 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
       totalBinArea = fhJetShapeCounts->GetBinContent(iRBin)*oneBinArea;
       ringArea = TMath::Pi()*fRBins[iRBin]*fRBins[iRBin] - TMath::Pi()*fRBins[iRBin-1]*fRBins[iRBin-1];
       jetShapeHistogram->SetBinContent(iRBin,jetShapeHistogram->GetBinContent(iRBin)*(ringArea/totalBinArea));
+      jetShapeHistogram->SetBinError(iRBin,jetShapeHistogram->GetBinError(iRBin)*(ringArea/totalBinArea));
     }
     
   } else if (fJetShapeNormalizationMethod == kBinArea){
