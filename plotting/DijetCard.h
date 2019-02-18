@@ -32,6 +32,7 @@ private:
   // Vectors for all the lines inside the card
   TVectorT<float> *fDataTypeVector;                 // Vector for data type
   TVectorT<float> *fMcCorrelationTypeVector;        // Vector for Monte Carlo correlation type
+  TVectorT<float> *fMatchJetsVector;                // Vector for jet matching information
   TVectorT<float> *fForestTypeVector;               // Vector for the used forest type
   TVectorT<float> *fReadModeVector;                 // Vector telling if the used file was skim of high forest
   TVectorT<float> *fJetTypeVector;                  // Vector telling if we used particle flow or calorimeter jets

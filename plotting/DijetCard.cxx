@@ -40,6 +40,7 @@ DijetCard::~DijetCard(){
 void DijetCard::ReadVectors(){
   fDataTypeVector = (TVectorT<float>*) gDirectory->Get("DataType");
   fMcCorrelationTypeVector = (TVectorT<float>*) gDirectory->Get("McCorrelationType");
+  fMatchJetsVector = (TVectorT<float>*) gDirectory->Get("MatchJets");
   fForestTypeVector = (TVectorT<float>*) gDirectory->Get("ForestType");
   fReadModeVector = (TVectorT<float>*) gDirectory->Get("ReadMode");
   fJetTypeVector = (TVectorT<float>*) gDirectory->Get("JetType");
@@ -130,6 +131,7 @@ void DijetCard::Write(TDirectory *file){
   // Write all the vectors to the file. Not all of these exist in older versions of cards, thus check if exists before writing.
   if(fDataTypeVector) fDataTypeVector->Write("DataType");
   if(fMcCorrelationTypeVector) fMcCorrelationTypeVector->Write("McCorrelationType");
+  if(fMatchJetsVector) fMatchJetsVector->Write("MatchJets");
   if(fForestTypeVector) fForestTypeVector->Write("ForestType");
   if(fReadModeVector) fReadModeVector->Write("ReadMode");
   if(fJetTypeVector) fJetTypeVector->Write("JetType");
