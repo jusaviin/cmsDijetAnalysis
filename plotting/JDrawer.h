@@ -198,6 +198,27 @@ public:
    *  char *title = title of the histogram
    *  char *drawOption = options for drawing given in root documentation
    */
+  void DrawHistogramToCurrentCanvas(TH1 *histo, const char *xTitle, const char *yTitle, const char *title = "", const char *drawOption = ""){
+    // If no titles are given, keep the original ones
+    if(strcmp(xTitle, "") == 0) xTitle = histo->GetXaxis()->GetTitle(); // To compare char*:s we need to use strcmp function provided by <cstring> library
+    if(strcmp(yTitle, "") == 0) yTitle = histo->GetYaxis()->GetTitle();
+    if(strcmp(title, "") == 0) title = histo->GetTitle();
+    
+    // Set up the histogram and draw it to current canvas
+    histo->SetTitle(title);
+    SetHistogramStyle(histo, xTitle, yTitle);
+    histo->Draw(drawOption);
+  }
+  
+  /*
+   *  Draw a histogram to a canvas
+   *
+   *  TH1 *histo = histogram to be drawn
+   *  char *xTitle = title for the x-axis
+   *  char *yTitle = title for the y-axis
+   *  char *title = title of the histogram
+   *  char *drawOption = options for drawing given in root documentation
+   */
   void DrawHistogram(TH1 *histo, const char *xTitle, const char *yTitle, const char *title = "", const char *drawOption = ""){
     // If no titles are given, keep the original ones
     if(strcmp(xTitle, "") == 0) xTitle = histo->GetXaxis()->GetTitle(); // To compare char*:s we need to use strcmp function provided by <cstring> library
