@@ -13,7 +13,7 @@ void produceSpilloverCorrection(){
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
   TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root";  // File from which the RecoGen histograms are read for the correction
-  TString outputFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";   // File name for the output file
+  TString outputFileName = "spilloverTesting.root";//data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";   // File name for the output file
   TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
   // data/PbPbMC_RecoGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_noCorrections_processed_2019-02-09.root
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
@@ -72,6 +72,10 @@ void produceSpilloverCorrection(){
   
   // Variable definitions for yield QA
   double spilloverYield[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  double spilloverYieldDeltaEta[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  double spilloverYieldDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  double spilloverYieldDeltaEtaFit[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  double spilloverYieldDeltaPhiFit[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   double dataYield[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   double yieldRatio[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   int lowXbin, lowYbin, highXbin, highYbin;
@@ -97,10 +101,15 @@ void produceSpilloverCorrection(){
           spilloverPhiFitRange = 0.5;
         }
         
+        //spilloverEtaFitRange = 2.0; // XXXX Alternative fit method
+        //spilloverPhiFitRange = 2.0;
+        
         for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
           // Get the signal histogram and extract the correction from it
           spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
           spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],spilloverEtaFitRange,spilloverPhiFitRange);
+          //spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt);
+          //spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],spilloverEtaFitRange,spilloverPhiFitRange,true);
           
           // Get the QA histograms and functions
           // Need to change name, because corrector gives the same name in both loops, which causes problems with root
@@ -118,15 +127,27 @@ void produceSpilloverCorrection(){
         if(yieldQA){
           
           // Find the bins for signal region
-          lowXbin = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(-1.5); // helper to spillover
-          highXbin = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(1.5); // helper to spillover
-          lowYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(-1.5);
-          highYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(1.5);
+          lowXbin = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(-1.5+0.001);
+          highXbin = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(1.5-0.001);
+          lowYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(-1.5+0.001);
+          highYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(1.5-0.001);
           
           // Get the yields by integration and calculate ratio
-          spilloverYield[iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin);
-          dataYield[iJetTrack][iCentrality][iTrackPt] = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin); // Changed 1 to 0 in first index for checking purposes
+          spilloverYield[iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin,"width");
+          dataYield[iJetTrack][iCentrality][iTrackPt] = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin,"width"); // Changed 1 to 0 in first index for checking purposes
           yieldRatio[iJetTrack][iCentrality][iTrackPt] = spilloverYield[iJetTrack][iCentrality][iTrackPt]/dataYield[iJetTrack][iCentrality][iTrackPt];
+          
+          // Find the bins for signal region in the projected histograms (might be some rebinning happening)
+          lowXbin = spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(-1.5+0.001);
+          highXbin = spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(1.5-0.001);
+          lowYbin = spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(-1.5+0.001);
+          highYbin = spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(1.5-0.001);
+          
+          // For consistency, check also the integrals over deltaEta and deltaPhi projections
+          spilloverYieldDeltaPhi[iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,"width");
+          spilloverYieldDeltaEta[iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowYbin,highYbin,"width");
+          spilloverYieldDeltaPhiFit[iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+          spilloverYieldDeltaEtaFit[iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
 
         }
         
@@ -141,6 +162,8 @@ void produceSpilloverCorrection(){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           cout << "Type: " << histograms[1]->GetJetTrackHistogramName(iJetTrack) << " Centrality: " << iCentrality << " pT " << iTrackPt <<" Spillover yield: " << spilloverYield[iJetTrack][iCentrality][iTrackPt] << " Yield without fit: " << dataYield[iJetTrack][iCentrality][iTrackPt] << " Ratio: " << yieldRatio[iJetTrack][iCentrality][iTrackPt] << endl;
+          cout << "Yield from deltaPhi: " << spilloverYieldDeltaPhi[iJetTrack][iCentrality][iTrackPt] << "  Yield from deltaEta: " << spilloverYieldDeltaEta[iJetTrack][iCentrality][iTrackPt] << endl;
+          cout << "Yield from deltaPhi fit: " << spilloverYieldDeltaPhiFit[iJetTrack][iCentrality][iTrackPt] << "  Yield from deltaEta fit: " << spilloverYieldDeltaEtaFit[iJetTrack][iCentrality][iTrackPt] << endl;
         }
       }
     }

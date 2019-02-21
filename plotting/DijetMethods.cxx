@@ -587,7 +587,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
  *
  *  return: Two-dimensional histogram with the estimation of the spillover effect
  */
-TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange, double spilloverPhiFitRange){
+TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange, double spilloverPhiFitRange, bool fitWithConstant){
   
   // Define the range over which the spillover correction is calculated
   double spilloverEtaRange = 1.5;
@@ -612,8 +612,13 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spi
   }
   
   // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
-  fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta,spilloverEtaFitRange);
-  fSpilloverFitDeltaPhi = FitGauss(fSpilloverDeltaPhi,spilloverPhiFitRange);
+  if(fitWithConstant){
+    fSpilloverFitDeltaEta = FitGaussAndConstant(fSpilloverDeltaEta,spilloverEtaFitRange);
+    fSpilloverFitDeltaPhi = FitGaussAndConstant(fSpilloverDeltaPhi,spilloverPhiFitRange);
+  } else {
+    fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta,spilloverEtaFitRange);
+    fSpilloverFitDeltaPhi = FitGauss(fSpilloverDeltaPhi,spilloverPhiFitRange);
+  }
   
   // Combine the one-dimensional fits to a two-dimensional Gaussian distribution
   TF2 *gauss2D = new TF2("gauss2D", "[0]/(2*TMath::Pi()*[1]*[2])*TMath::Exp(-0.5*TMath::Power(x/[1],2))*TMath::Exp(-0.5*TMath::Power(y/[2],2))",-TMath::Pi()/2,3*TMath::Pi()/2,-5,5);
@@ -660,6 +665,36 @@ TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange){
   // Fix the yield of the Gaussian function to the integral and give some rought estimate for the width
   gaussFit->FixParameter(0,fitYield);
   gaussFit->SetParameter(1,0.3);
+  
+  // Fit the histogram over the defined range
+  fittedHistogram->Fit("gaussFit","","",-fitRange,fitRange);
+  
+  // Return the fit function
+  return gaussFit;
+  
+}
+
+/*
+ * Fit a Gaussian function together with a constant to a histogram and return the fit function
+ *
+ * Arguments:
+ *  TH1D *fittedHistogram = Histogram to be fitted with the Gaussian
+ *  double fitRange = Range for the fit
+ *
+ *  return: Gaussian function fitted to the histogram
+ */
+TF1* DijetMethods::FitGaussAndConstant(TH1D *fittedHistogram, double fitRange){
+  
+  // Create a Gaussian function for the fit
+  TF1 *gaussFit = new TF1("gaussFit","[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))+[2]",-fitRange,fitRange);
+  
+  // Calculate the integral of the fitted histogram over the fit range
+  double fitYield = fittedHistogram->Integral(fittedHistogram->FindBin(-fitRange+0.001),fittedHistogram->FindBin(fitRange-0.001),"width");
+  
+  // Give initial estimates for the parameters
+  gaussFit->SetParameter(0,fitYield/50);
+  gaussFit->SetParameter(1,0.3);
+  gaussFit->SetParameter(2,fitYield/(2*fitRange));
   
   // Fit the histogram over the defined range
   fittedHistogram->Fit("gaussFit","","",-fitRange,fitRange);
