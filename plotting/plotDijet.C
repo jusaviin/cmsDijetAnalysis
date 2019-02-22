@@ -83,9 +83,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = true;
-  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
   bool drawJetShape = false;
@@ -96,13 +96,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = true;
+  bool drawBackgroundSubtracted = false;
   bool drawBackground = false;
-  int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
+  int backgroundStyle = 8; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
                            // Bit 2 = Draw background fit (int = 4)
@@ -171,6 +171,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
+  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
@@ -235,6 +236,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   methods->SetMixedEventFitRegion(mixedEventFitDeltaEtaRegion);
   methods->SetMixedEventNormalization(mixedEventNormalizationType,smoothenMixing);
   methods->SetBackgroundDeltaEtaRegion(minBackgroundDeltaEta,maxBackgroundDeltaEta);
+  methods->SetBackgroundDeltaPhiRegion(lowDeltaPhiBinBorders[3],highDeltaPhiBinBorders[3]);
   methods->SetBackgroundAdjustment(adjustBackground,backgroundOverlapBins);
   methods->SetJetShapeBinEdges(nRBins,rBins);
   methods->SetRebinBoundaries(nRebinDeltaEta,rebinDeltaEta,nRebinDeltaPhi,rebinDeltaPhi);
@@ -272,6 +274,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetSpilloverCorrection(spilloverFile,applySpilloverCorrection);
   histograms->SetSeagullCorrection(applySeagullCorrection);
   histograms->SetAvoidMixingPeak(avoidPeaks);
+  histograms->SetImproviseMixing(improviseMixing);
   histograms->SetDefaultMixingDeltaEtaFitRange(mixedEventFitDeltaEtaRegion);
   
   // With execution mode 0, only process the histograms and write them to file

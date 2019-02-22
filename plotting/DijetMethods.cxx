@@ -152,6 +152,50 @@ DijetMethods::~DijetMethods()
 }
 
 /*
+ * Improvise a mixed event distribution by looking at the same event distribution between the deltaPhi peaks and
+ * expanding the distribution in this region over the whole deltaPhi space.
+ *
+ * Arguments:
+ *  const TH2D *sameEventHistogram = Histogram with correlation from the same event
+ *
+ *  return: Improvised mixed event distribution
+ */
+TH2D* DijetMethods::ImproviseMixedEvent(const TH2D *sameEventHistogram){
+  
+  // First, project the deltaEta from the background deltaPhi region
+  fBackgroundEtaProjection = ProjectRegionDeltaEta(sameEventHistogram,fMinBackgroundDeltaPhi,fMaxBackgroundDeltaPhi,"improvisedMixingDeltaEta");
+  
+  // After the projection is done, propagate the eta values back to the length of whole two-dimensional distribution
+  char histogramName[200];     // Helper variable for histogram naming
+  sprintf(histogramName,"%sImprovisedBackground",sameEventHistogram->GetName());
+  TH2D *improvisedMixedEventHistogram = (TH2D*)sameEventHistogram->Clone(histogramName);
+  int nDeltaPhiBins = sameEventHistogram->GetNbinsX(); // Number of deltaPhi bins
+  int nDeltaEtaBins = sameEventHistogram->GetNbinsY(); // Number of deltaEta bins
+  double binWidthDeltaPhi = sameEventHistogram->GetXaxis()->GetBinWidth(1); // Bin width of a deltaPhi bin
+  
+  double deltaEtaValue, deltaEtaError;
+  
+  for(int iDeltaEta = 1; iDeltaEta <= nDeltaEtaBins; iDeltaEta++){
+    
+    // Read the values from the deltaEta background histogram
+    deltaEtaValue = fBackgroundEtaProjection->GetBinContent(iDeltaEta);
+    deltaEtaError = fBackgroundEtaProjection->GetBinError(iDeltaEta);
+    
+    // Repopulate the deltaPhi axis
+    for(int iDeltaPhi = 1; iDeltaPhi <= nDeltaPhiBins; iDeltaPhi++){
+      
+      // Insert the values to the two-dimensional improvised mixed event histogram
+      improvisedMixedEventHistogram->SetBinContent(iDeltaPhi,iDeltaEta,deltaEtaValue/binWidthDeltaPhi);
+      improvisedMixedEventHistogram->SetBinError(iDeltaPhi,iDeltaEta,deltaEtaError*TMath::Sqrt(fnBinsProjectedOver)/binWidthDeltaPhi);
+      
+    } // deltaPhi loop
+  } // deltaEta loop
+  
+  return improvisedMixedEventHistogram;
+  
+}
+
+/*
  * Do the mixed event correction and return corrected TH2D.
  * The idea here is, that we divide the same event histogram with a normalized mixed event histogram.
  * The normalization is obtained by first projecting the deltaEta distribution out of the
@@ -1228,8 +1272,8 @@ void DijetMethods::SetMixedEventNormalization(const int normalizationType, const
   fSmoothMixing = smoothenMixing;
 }
 
-// Setter for deltaPhi region considered as background in seagull correction
-void DijetMethods::SetBackgroundDeltaPhiRegionSeagull(const double minDeltaPhi, const double maxDeltaPhi){
+// Setter for deltaPhi region considered as background in seagull correction and mixed event improvising
+void DijetMethods::SetBackgroundDeltaPhiRegion(const double minDeltaPhi, const double maxDeltaPhi){
   fMinBackgroundDeltaPhi = minDeltaPhi;
   fMaxBackgroundDeltaPhi = maxDeltaPhi;
 }

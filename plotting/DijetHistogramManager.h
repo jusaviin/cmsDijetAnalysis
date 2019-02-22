@@ -236,8 +236,9 @@ public:
   double GetInclusiveJetPtIntegral(int iCentrality, const double minPt = 120) const; // Getter for integral over inclusive jet pT above minPt in a given centrality bin
   
   // Setter for avoiding possible peaks in mixed event distribution
-  void SetAvoidMixingPeak(bool avoid);  // Avoid peak region in mixed event distribution
-  void SetDefaultMixingDeltaEtaFitRange(double fitRange);  // Default fit range used to normalize the mixed event
+  void SetAvoidMixingPeak(const bool avoid);     // Avoid peak region in mixed event distribution
+  void SetImproviseMixing(const bool improvise); // Create mixed event distributions from deltaPhi sideband region
+  void SetDefaultMixingDeltaEtaFitRange(const double fitRange);  // Default fit range used to normalize the mixed event
   
 private:
   
@@ -297,6 +298,7 @@ private:
   // ============== Event mixing =================
   // =============================================
   bool fAvoidMixingPeak;      // Avoid region around (0,0) in the mixed event distribution to stay clear of possible peaks
+  bool fImproviseMixing;      // Create mixed event distributions from same event deltaPhi side band region
   double fDefaultMixingDeltaEtaFitRange; // Default deltaEta fit range in mixed event normalization
   
   // =============================================

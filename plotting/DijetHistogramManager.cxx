@@ -30,6 +30,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fFirstLoadedTrackPtBin(0),
   fLastLoadedTrackPtBin(knTrackPtBins-1),
   fAvoidMixingPeak(false),
+  fImproviseMixing(false),
   fDefaultMixingDeltaEtaFitRange(0.2)
 {
   
@@ -203,6 +204,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
   fLastLoadedTrackPtBin(in.fLastLoadedTrackPtBin),
   fAvoidMixingPeak(in.fAvoidMixingPeak),
+  fImproviseMixing(in.fImproviseMixing),
   fDefaultMixingDeltaEtaFitRange(in.fDefaultMixingDeltaEtaFitRange),
   fhVertexZ(in.fhVertexZ),
   fhVertexZWeighted(in.fhVertexZWeighted),
@@ -463,7 +465,10 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
         fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kJetShapeBinMap][iCentralityBin][iTrackPtBin] = fMethods->GetJetShapeBinMap();
         
         // Project the deltaPhi and deltaEta histograms from the processed two-dimensional histograms
-        for(int iCorrelationType = kMixedEventNormalized; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+        for(int iCorrelationType = kMixedEvent; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+          
+          // Only do the projections if mixed event distribution is improvised. Otherwise the projections are done already.
+          if(iCorrelationType == kMixedEvent && !fImproviseMixing) continue;
           
           // DeltaPhi histogram over whole eta
           sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iCentralityBin][iTrackPtBin]->GetName(),kWholeEta);
@@ -878,6 +883,13 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
         higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+          
+          // If specified, improvise mixed event distributions from deltaPhi side band region instead of reading them from file
+          // Mixing can only be improvised if the two-dimensional same event distribution is previously loaded
+          if(fImproviseMixing && iCorrelationType == kMixedEvent && fLoad2DHistograms){
+            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iCentralityBin][iTrackPtBin] = fMethods->ImproviseMixedEvent(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iCentralityBin][iTrackPtBin]);
+            continue;
+          }
           
           // Select the bin indices for track pT
           lowerTrackPtBin = fTrackPtBinIndices[iTrackPtBin];
@@ -2315,11 +2327,16 @@ double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality, c
 }
 
 // Setter for avoiding possible peaks in mixed event distribution
-void DijetHistogramManager::SetAvoidMixingPeak(bool avoid){
+void DijetHistogramManager::SetAvoidMixingPeak(const bool avoid){
   fAvoidMixingPeak = avoid;
 }
 
+// Setter for avoiding possible peaks in mixed event distribution
+void DijetHistogramManager::SetImproviseMixing(const bool improvise){
+  fImproviseMixing = improvise;
+}
+
 // Default fit range used to normalize the mixed event
-void DijetHistogramManager::SetDefaultMixingDeltaEtaFitRange(double fitRange){
+void DijetHistogramManager::SetDefaultMixingDeltaEtaFitRange(const double fitRange){
   fDefaultMixingDeltaEtaFitRange = fitRange;
 }
