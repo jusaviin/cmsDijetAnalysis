@@ -26,6 +26,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fReadMode(0),
   fJetType(0),
   fMatchJets(false),
+  fMatchDijet(false),
   fDebugLevel(0),
   fVzWeight(1),
   fCentralityWeight(1),
@@ -103,6 +104,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fReadMode(0),
   fJetType(0),
   fMatchJets(false),
+  fMatchDijet(false),
   fVzWeight(1),
   fCentralityWeight(1),
   fPtHatWeight(1),
@@ -254,6 +256,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fReadMode(in.fReadMode),
   fJetType(in.fJetType),
   fMatchJets(in.fMatchJets),
+  fMatchDijet(in.fMatchDijet),
   fDebugLevel(in.fDebugLevel),
   fVzWeight(in.fVzWeight),
   fCentralityWeight(in.fCentralityWeight),
@@ -327,6 +330,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fReadMode = in.fReadMode;
   fJetType = in.fJetType;
   fMatchJets = in.fMatchJets;
+  fMatchDijet = in.fMatchDijet;
   fDebugLevel = in.fDebugLevel;
   fVzWeight = in.fVzWeight;
   fCentralityWeight = in.fCentralityWeight;
@@ -575,10 +579,20 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t subleadingJetInfo[3] = {0};    // Array for subleading jet pT, phi and eta
   Double_t inclusiveJetInfo[60][3] = {{0}}; // Array for jet pT, phi and eta for all the jets in the event
   Int_t nJetsInThisEvent = 0;             // Number of jets in the event
+  Double_t matchedLeadingJetPt = 0;       // Leading matched jet pT
+  Double_t matchedLeadingJetPhi = 0;      // Leading matched jet phi
+  Double_t matchedLeadingJetEta = 0;      // Leading matched jet eta
+  Double_t matchedSubleadingJetPt = 0;    // Subleading matched jet pT
+  Double_t matchedSubleadingJetPhi = 0;   // Subleading matched jet phi
+  Double_t matchedSubleadingJetEta = 0;   // Subleading matched jet eta
+  Double_t matchedDeltaPhi = 0;           // DeltaPhi between matched leading and subleading jets
   
   // Variables for jet matching and closure
   Int_t unmatchedCounter = 0;       // Number of jets that fail the matching
   Int_t matchedCounter = 0;         // Number of jets that are matched
+  Int_t dijetCounter = 0;           // Counter for dijets before matching
+  Int_t matchedDijetCounter = 0;    // Counter for dijets after matching
+  Int_t jetSwapCounter = 0;         // Counter for leading and subleading jets that are swapped between reco and gen
   Int_t nonSensicalPartonIndex = 0; // Parton index is -999 even though jets are matched
   Int_t partonFlavor = -999;        // Code for parton flavor in Monte Carlo
   
@@ -606,7 +620,8 @@ void DijetAnalyzer::RunAnalysis(){
   fForestType = fCard->Get("ForestType");
   fReadMode = fCard->Get("ReadMode");
   fJetType = fCard->Get("JetType");
-  fMatchJets = (fCard->Get("MatchJets") == 1);
+  fMatchJets = (fCard->Get("MatchJets") >= 1);
+  fMatchDijet = (fCard->Get("MatchJets") == 2);
   
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
@@ -1054,6 +1069,8 @@ void DijetAnalyzer::RunAnalysis(){
            (TMath::Abs(dphi) <= fDeltaPhiCut)){               // DeltaPhi cut
           dijetFound = false;
         }
+        
+        if(dijetFound) dijetCounter++;
       } // End of dijet cuts
       
       //************************************************
@@ -1088,8 +1105,41 @@ void DijetAnalyzer::RunAnalysis(){
       //       Fill histograms for dijet events
       //************************************************
       
+      // If we require to match the dijet, check that the matching jet pairs also fulfill the dijet definition
+      if(dijetFound && fMatchDijet){
+        matchedLeadingJetPt = fJetReader->GetMatchedPt(highestIndex);
+        matchedLeadingJetPhi = fJetReader->GetMatchedPhi(highestIndex);
+        matchedLeadingJetEta = fJetReader->GetMatchedEta(highestIndex);
+        matchedSubleadingJetPt = fJetReader->GetMatchedPt(secondHighestIndex);
+        matchedSubleadingJetPhi = fJetReader->GetMatchedPhi(secondHighestIndex);
+        matchedSubleadingJetEta = fJetReader->GetMatchedEta(secondHighestIndex);
+        
+        // Check for leading-subleading swapping
+        if(matchedLeadingJetPt < matchedSubleadingJetPt) {
+          dijetFound = false;
+          jetSwapCounter++;
+        }
+        
+        // Calculate the deltaPhi between mathed jets
+        matchedDeltaPhi =  matchedLeadingJetPhi - matchedSubleadingJetPhi;
+        if(matchedDeltaPhi < 0) matchedDeltaPhi = -matchedDeltaPhi;
+        if(matchedDeltaPhi > TMath::Pi()) matchedDeltaPhi = 2*TMath::Pi() - matchedDeltaPhi;
+        
+        // Apply dijet cuts for matched jets
+        if((matchedLeadingJetPt >= fJetMaximumPtCut) ||              // Maximum leading jet pT cut
+           (matchedLeadingJetPt <= fLeadingJetMinPtCut) ||           // Leading jet minimum pT cut
+           (matchedSubleadingJetPt <= fSubleadingJetMinPtCut) ||     // Subleading jet minimum pT cut
+           (TMath::Abs(matchedLeadingJetEta) >= fJetEtaCut) ||       // Leading jet eta cut
+           (TMath::Abs(matchedSubleadingJetEta) >= fJetEtaCut)||     // Subleading jet eta cut
+           (TMath::Abs(matchedDeltaPhi) <= fDeltaPhiCut)){           // DeltaPhi cut
+          dijetFound = false;
+        }
+      }
+      
       // If a dijet is found, fill some information to fHistograms
       if(dijetFound){
+        
+        matchedDijetCounter++;
         
         // Histograms for jet pT closure
         if(fFillJetPtClosure && fMatchJets){
@@ -1189,6 +1239,7 @@ void DijetAnalyzer::RunAnalysis(){
   if(fMatchJets && fDebugLevel > 1){
     cout << "A total of " << unmatchedCounter << " jets were not matched!" << endl;
     cout << "A total of " << nonSensicalPartonIndex << " out of " << matchedCounter <<  " matched jets had reference parton flavor -999!" << endl;
+    cout << "All dijets: " << dijetCounter << ". Matched dijets: " << matchedDijetCounter << ". Not matched due to leading/subleading swap: " << jetSwapCounter << endl;
   }
   
 }

@@ -21,6 +21,9 @@ ForestReader::ForestReader() :
   fJetMaxTrackPtBranch(0),
   fJetRefPtBranch(0),
   fJetRefFlavorBranch(0),
+  fJetMatchedPtBranch(0),
+  fJetMatchedEtaBranch(0),
+  fJetMatchedPhiBranch(0),
   fCaloJetFilterBranch(0),
   fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
@@ -98,6 +101,9 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t
   fJetMaxTrackPtBranch(0),
   fJetRefPtBranch(0),
   fJetRefFlavorBranch(0),
+  fJetMatchedPtBranch(0),
+  fJetMatchedEtaBranch(0),
+  fJetMatchedPhiBranch(0),
   fCaloJetFilterBranch(0),
   fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
@@ -172,6 +178,9 @@ ForestReader::ForestReader(const ForestReader& in) :
   fJetMaxTrackPtBranch(in.fJetMaxTrackPtBranch),
   fJetRefPtBranch(in.fJetRefPtBranch),
   fJetRefFlavorBranch(in.fJetRefFlavorBranch),
+  fJetMatchedPtBranch(in.fJetMatchedPtBranch),
+  fJetMatchedEtaBranch(in.fJetMatchedEtaBranch),
+  fJetMatchedPhiBranch(in.fJetMatchedPhiBranch),
   fCaloJetFilterBranch(in.fCaloJetFilterBranch),
   fCaloJetFilterPrescaleBranch(in.fCaloJetFilterPrescaleBranch),
   fPrimaryVertexBranch(in.fPrimaryVertexBranch),
@@ -250,6 +259,9 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fJetMaxTrackPtBranch = in.fJetMaxTrackPtBranch;
   fJetRefPtBranch = in.fJetRefPtBranch;
   fJetRefFlavorBranch = in.fJetRefFlavorBranch;
+  fJetMatchedPtBranch = in.fJetMatchedPtBranch;
+  fJetMatchedEtaBranch = in.fJetMatchedEtaBranch;
+  fJetMatchedPhiBranch = in.fJetMatchedPhiBranch;
   fCaloJetFilterBranch = in.fCaloJetFilterBranch;
   fCaloJetFilterPrescaleBranch = in.fCaloJetFilterPrescaleBranch;
   fPrimaryVertexBranch = in.fPrimaryVertexBranch;

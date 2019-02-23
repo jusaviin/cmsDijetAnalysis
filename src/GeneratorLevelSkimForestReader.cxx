@@ -106,7 +106,13 @@ void GeneratorLevelSkimForestReader::Initialize(){
     fEventTree->SetBranchAddress(branchName,&fJetRefFlavorArray,&fJetRefFlavorBranch);
     sprintf(branchName,"%s_jtpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
-    fEventTree->SetBranchAddress(branchName,&fRecoJetPtArray,&fnTrackDegreesOfFreedomBranch); // Reuse a branch from ForestReader that is not otherwise needed here
+    fEventTree->SetBranchAddress(branchName,&fMatchedJetPtArray,&fJetMatchedPtBranch);
+    sprintf(branchName,"%s_jteta",jetType[fJetType]);
+    fEventTree->SetBranchStatus(branchName,1);
+    fEventTree->SetBranchAddress(branchName,&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
+    sprintf(branchName,"%s_jtphi",jetType[fJetType]);
+    fEventTree->SetBranchStatus(branchName,1);
+    fEventTree->SetBranchAddress(branchName,&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
   }
   
   // Connect the branches to the HLT tree
@@ -282,11 +288,8 @@ Bool_t GeneratorLevelSkimForestReader::HasMatchingJet(Int_t iJet) const{
   return false;
 }
 
-// Get the pT of the matched reconstructed jet
-Float_t GeneratorLevelSkimForestReader::GetMatchedPt(Int_t iJet) const{
-  
-  // If not matching jets, just return something because this has no meaning
-  if(!fMatchJets) return 0;
+// Get the matching reconstructed jet index for the given generator level jet
+Int_t GeneratorLevelSkimForestReader::GetMatchingIndex(Int_t iJet) const{
   
   // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
   // If our generator level pT is found from this array, it has a matching reconstructed jet
@@ -299,11 +302,58 @@ Float_t GeneratorLevelSkimForestReader::GetMatchedPt(Int_t iJet) const{
     }
   }
   
+  return matchedIndex;
+  
+}
+
+// Get the pT of the matched reconstructed jet
+Float_t GeneratorLevelSkimForestReader::GetMatchedPt(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
+  
   // If we did not find macth, something went wrong. Return -999
   if(matchedIndex == -1) return -999;
   
   // Return the pT of the matching reconstructed jet
-  return fRecoJetPtArray->at(matchedIndex);
+  return fMatchedJetPtArray->at(matchedIndex);
+  
+}
+
+// Get the eta of the matched reconstructed jet
+Float_t GeneratorLevelSkimForestReader::GetMatchedEta(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchedIndex == -1) return -999;
+  
+  // Return the pT of the matching reconstructed jet
+  return fMatchedJetEtaArray->at(matchedIndex);
+  
+}
+
+// Get the pT of the matched reconstructed jet
+Float_t GeneratorLevelSkimForestReader::GetMatchedPhi(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchedIndex == -1) return -999;
+  
+  // Return the pT of the matching reconstructed jet
+  return fMatchedJetPhiArray->at(matchedIndex);
   
 }
 
@@ -313,16 +363,8 @@ Int_t GeneratorLevelSkimForestReader::GetPartonFlavor(Int_t iJet) const{
   // If not matching jets, just return something because this has no meaning
   if(!fMatchJets) return 0;
   
-  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
-  // If our generator level pT is found from this array, it has a matching reconstructed jet
-  Double_t jetPt = GetJetPt(iJet);
-  Int_t matchedIndex = -1;
-  for(Int_t iRef = 0; iRef < fJetRefPtArray->size(); iRef++){
-    if(TMath::Abs(jetPt - fJetRefPtArray->at(iRef)) < 0.001){
-      matchedIndex = iRef;
-      break;
-    }
-  }
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
 
   // If we did not find macth, something went wrong. Return -999
   if(matchedIndex == -1) return -999;

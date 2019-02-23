@@ -221,6 +221,14 @@ void HighForestReader::Initialize(){
     fJetTree->SetBranchAddress("refpt",&fJetRefPtArray,&fJetRefPtBranch);
     fJetTree->SetBranchStatus("refparton_flavor",1);
     fJetTree->SetBranchAddress("refparton_flavor",&fJetRefFlavorArray,&fJetRefFlavorBranch);
+    fJetTree->SetBranchStatus("genpt",1);
+    fJetTree->SetBranchAddress("genpt",&fMatchedJetPtArray,&fJetMatchedPtBranch);
+    fJetTree->SetBranchStatus("genphi",1);
+    fJetTree->SetBranchAddress("genphi",&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
+    fJetTree->SetBranchStatus("geneta",1);
+    fJetTree->SetBranchAddress("geneta",&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
+    fJetTree->SetBranchStatus("ngen",1);
+    fJetTree->SetBranchAddress("ngen",&fnMatchedJets,&fnMatchedJetsBranch);
   }
   
   // Event selection summary
@@ -567,4 +575,56 @@ Int_t HighForestReader::GetPartonFlavor(Int_t iJet) const{
   
   // Return the matching parton flavor
   return fJetRefFlavorArray[iJet];
+}
+
+// Get the matching generator level jet index for the given reconstructed jet
+Int_t HighForestReader::GetMatchingIndex(Int_t iJet) const{
+  
+  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
+  // If our generator level pT is found from this array, it has a matching reconstructed jet
+  Double_t jetPt = GetMatchedPt(iJet);
+  Int_t matchedIndex = -1;
+  for(Int_t iRef = 0; iRef < fnMatchedJets; iRef++){
+    if(TMath::Abs(jetPt - fMatchedJetPtArray[iRef]) < 0.001){
+      matchedIndex = iRef;
+      break;
+    }
+  }
+  
+  return matchedIndex;
+  
+}
+
+// Get the eta of the matched generator level jet
+Float_t HighForestReader::GetMatchedEta(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchedIndex == -1) return -999;
+  
+  // Return the pT of the matching reconstructed jet
+  return fMatchedJetEtaArray[matchedIndex];
+  
+}
+
+// Get the pT of the matched reconstructed jet
+Float_t HighForestReader::GetMatchedPhi(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchedIndex == -1) return -999;
+  
+  // Return the pT of the matching reconstructed jet
+  return fMatchedJetPhiArray[matchedIndex];
+  
 }

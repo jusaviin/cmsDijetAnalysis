@@ -154,7 +154,13 @@ void GeneratorLevelForestReader::Initialize(){
     fJetTree->SetBranchStatus("refparton_flavor",1);
     fJetTree->SetBranchAddress("refparton_flavor",&fJetRefFlavorArray,&fJetRefFlavorBranch);
     fJetTree->SetBranchStatus("jtpt",1);
-    fJetTree->SetBranchAddress("jtpt",&fJetPtArray,&fnTrackDegreesOfFreedomBranch); // Reuse a branch from ForestReader that is not otherwise needed here
+    fJetTree->SetBranchAddress("jtpt",&fRecoJetPtArray,&fJetMatchedPtBranch);
+    fJetTree->SetBranchStatus("jtphi",1);
+    fJetTree->SetBranchAddress("jtphi",&fRecoJetPhiArray,&fJetMatchedPhiBranch);
+    fJetTree->SetBranchStatus("jteta",1);
+    fJetTree->SetBranchAddress("jteta",&fRecoJetEtaArray,&fJetMatchedEtaBranch);
+    fJetTree->SetBranchStatus("nref",1);
+    fJetTree->SetBranchAddress("nref",&fnMatchedJets,&fnTrackDegreesOfFreedomBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   }
   
   // Connect the branches to the HLT tree
@@ -444,11 +450,29 @@ Bool_t GeneratorLevelForestReader::HasMatchingJet(Int_t iJet) const{
   // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
   // If our generator level pT is found from this array, it has a matching reconstructed jet
   Double_t jetPt = GetJetPt(iJet);
-  for(Int_t iRef = 0; iRef < fnJets; iRef++){
+  for(Int_t iRef = 0; iRef < fnMatchedJets; iRef++){
     if(TMath::Abs(jetPt - fJetRefPtArray[iRef]) < 0.001) return true;
   }
   
   return false;
+}
+
+// Get the pT of the matched reconstructed jet
+Int_t GeneratorLevelForestReader::GetMatchingIndex(Int_t iJet) const{
+  
+  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
+  // If our generator level pT is found from this array, it has a matching reconstructed jet
+  Double_t jetPt = GetJetPt(iJet);
+  Int_t matchingIndex = -1;
+  for(Int_t iRef = 0; iRef < fnMatchedJets; iRef++){
+    if(TMath::Abs(jetPt - fJetRefPtArray[iRef]) < 0.001){
+      matchingIndex = iRef;
+      break;
+    }
+  }
+  
+  // Return the matching index
+  return matchingIndex;
 }
 
 // Get the pT of the matched reconstructed jet
@@ -457,22 +481,46 @@ Float_t GeneratorLevelForestReader::GetMatchedPt(Int_t iJet) const{
   // If not matching jets, just return 0 as this value has no meaning
   if(!fMatchJets) return 0;
   
-  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
-  // If our generator level pT is found from this array, it has a matching reconstructed jet
-  Double_t jetPt = GetJetPt(iJet);
-  Int_t matchingIndex = -1;
-  for(Int_t iRef = 0; iRef < fnJets; iRef++){
-    if(TMath::Abs(jetPt - fJetRefPtArray[iRef]) < 0.001){
-      matchingIndex = iRef;
-      break;
-    }
-  }
+  // Find the index of the matching reconstructed jet
+  Int_t matchingIndex = GetMatchingIndex(iJet);
   
   // If we did not find macth, something went wrong. Return -999
   if(matchingIndex == -1) return -999;
   
-  // Return the matching parton flavor
+  // Return the matching jet pT
   return fRecoJetPtArray[matchingIndex];
+}
+
+// Get the phi of the matched reconstructed jet
+Float_t GeneratorLevelForestReader::GetMatchedPhi(Int_t iJet) const{
+  
+  // If not matching jets, just return 0 as this value has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchingIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchingIndex == -1) return -999;
+  
+  // Return the matching jet pT
+  return fRecoJetPhiArray[matchingIndex];
+}
+
+// Get the eta of the matched reconstructed jet
+Float_t GeneratorLevelForestReader::GetMatchedEta(Int_t iJet) const{
+  
+  // If not matching jets, just return 0 as this value has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchingIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchingIndex == -1) return -999;
+  
+  // Return the matching jet pT
+  return fRecoJetEtaArray[matchingIndex];
 }
 
 // Check if generator level jet has a matching reconstructed jet
@@ -481,16 +529,8 @@ Int_t GeneratorLevelForestReader::GetPartonFlavor(Int_t iJet) const{
   // If not matching jets, just return 0 as this value has no meaning
   if(!fMatchJets) return 0;
   
-  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
-  // If our generator level pT is found from this array, it has a matching reconstructed jet
-  Double_t jetPt = GetJetPt(iJet);
-  Int_t matchingIndex = -1;
-  for(Int_t iRef = 0; iRef < fnJets; iRef++){
-    if(TMath::Abs(jetPt - fJetRefPtArray[iRef]) < 0.001){
-      matchingIndex = iRef;
-      break;
-    }
-  }
+  // Find the index of the matching reconstructed jet
+  Int_t matchingIndex = GetMatchingIndex(iJet);
   
   // If we did not find macth, something went wrong. Return -999
   if(matchingIndex == -1) return -999;

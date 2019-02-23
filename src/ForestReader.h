@@ -74,6 +74,8 @@ public:
   // Specific functions for jet closure plots
   virtual Bool_t HasMatchingJet(Int_t iJet) const = 0; // Check if generator level jet has a matching reconstructed jet
   virtual Float_t GetMatchedPt(Int_t iJet) const = 0;  // Getter for matched jet pT (reco for gen and vice versa)
+  virtual Float_t GetMatchedEta(Int_t iJet) const = 0; // Getter for matched jet eta (reco for gen and vice versa)
+  virtual Float_t GetMatchedPhi(Int_t iJet) const = 0; // Getter for matched jet phi (reco for gen and vice versa)
   virtual Int_t GetPartonFlavor(Int_t iJet) const = 0; // Parton flavor for the parton initiating the jet
   
   // Getters for leaves in the track tree
@@ -130,6 +132,9 @@ protected:
   TBranch *fJetMaxTrackPtBranch; // Maximum pT for a track inside a jet
   TBranch *fJetRefPtBranch;      // Branch for reference generator level pT for a reconstructed jet
   TBranch *fJetRefFlavorBranch;  // Branch for flavor for the parton initiating the jet
+  TBranch *fJetMatchedPtBranch;  // Branch for the matched jet pT (reco to gen or vice versa)
+  TBranch *fJetMatchedEtaBranch; // Branch for the matched jet eta (reco to gen or vice versa)
+  TBranch *fJetMatchedPhiBranch; // Branch for the matched jet phi (reco to gen or vice versa)
   
   // Branches for HLT tree
   TBranch *fCaloJetFilterBranch;         // Branch for calo jet filter bit
@@ -173,7 +178,8 @@ protected:
   Float_t fPtHat;      // pT hat
   
   // Leaves for jet tree
-  Int_t fnJets;                                // number of jets in an event
+  Int_t fnJets;          // number of jets in an event
+  Int_t fnMatchedJets;   // number of matched jets in an event
   
   // Leaves for the HLT tree
   Int_t fCaloJetFilterBit;         // Filter bit for calorimeter jets

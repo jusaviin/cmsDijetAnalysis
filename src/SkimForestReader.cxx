@@ -195,7 +195,12 @@ void SkimForestReader::Initialize(){
     sprintf(branchName,"%s_refparton_flavor",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fJetRefFlavorArray,&fJetRefFlavorBranch);
-    
+    fEventTree->SetBranchStatus("genpt",1);
+    fEventTree->SetBranchAddress("genpt",&fMatchedJetPtArray,&fJetMatchedPtBranch);
+    fEventTree->SetBranchStatus("genphi",1);
+    fEventTree->SetBranchAddress("genphi",&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
+    fEventTree->SetBranchStatus("geneta",1);
+    fEventTree->SetBranchAddress("geneta",&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
   }
   
   // Connect the branches to the HLT tree
@@ -474,4 +479,56 @@ Int_t SkimForestReader::GetPartonFlavor(Int_t iJet) const{
   
   // Return the matching parton flavor
   return fJetRefFlavorArray->at(iJet);
+}
+
+// Get the matching generator level jet index for the given reconstructed jet
+Int_t SkimForestReader::GetMatchingIndex(Int_t iJet) const{
+  
+  // Ref pT array has pT for all the generator level jets that are matched with reconstructed jets
+  // If our generator level pT is found from this array, it has a matching reconstructed jet
+  Double_t jetPt = GetMatchedPt(iJet);
+  Int_t matchedIndex = -1;
+  for(Int_t iRef = 0; iRef < fMatchedJetPtArray->size(); iRef++){
+    if(TMath::Abs(jetPt - fMatchedJetPtArray->at(iRef)) < 0.001){
+      matchedIndex = iRef;
+      break;
+    }
+  }
+  
+  return matchedIndex;
+  
+}
+
+// Get the eta of the matched generator level jet
+Float_t SkimForestReader::GetMatchedEta(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchedIndex == -1) return -999;
+  
+  // Return the pT of the matching reconstructed jet
+  return fMatchedJetEtaArray->at(matchedIndex);
+  
+}
+
+// Get the pT of the matched reconstructed jet
+Float_t SkimForestReader::GetMatchedPhi(Int_t iJet) const{
+  
+  // If not matching jets, just return something because this has no meaning
+  if(!fMatchJets) return 0;
+  
+  // Find the index of the matching reconstructed jet
+  Int_t matchedIndex = GetMatchingIndex(iJet);
+  
+  // If we did not find macth, something went wrong. Return -999
+  if(matchedIndex == -1) return -999;
+  
+  // Return the pT of the matching reconstructed jet
+  return fMatchedJetPhiArray->at(matchedIndex);
+  
 }

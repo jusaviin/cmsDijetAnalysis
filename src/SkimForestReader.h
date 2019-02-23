@@ -60,12 +60,15 @@ public:
   // Check if generator level jet has a matching reconstructed jet
   virtual Bool_t HasMatchingJet(Int_t iJet) const; // Check if generator level jet has a matching reconstructed jet
   virtual Float_t GetMatchedPt(Int_t iJet) const;  // Getter for matched generator level jet pT
+  virtual Float_t GetMatchedEta(Int_t iJet) const; // Getter for matched generator level jet eta
+  virtual Float_t GetMatchedPhi(Int_t iJet) const; // Getter for matched generator level jet phi
   Int_t GetPartonFlavor(Int_t iJet) const;         // Parton flavor for the parton initiating the jet
   
 protected:
   
   // Methods
   virtual void Initialize();  // Connect the branches to the tree
+  virtual Int_t GetMatchingIndex(Int_t iJet) const; // Get the mathing generator level jet index for the given reconstructed jet
   
   // Trees in the forest
   TTree *fEventTree;    // Tree for heavy ion event information
@@ -78,6 +81,9 @@ protected:
   vector<float> *fJetMaxTrackPtArray; // maximum track pT inside a jet for all the jets in an event
   vector<float> *fJetRefPtArray;      // reference generator level pT for a reconstructed jet
   vector<int> *fJetRefFlavorArray;    // flavor for initiating parton for the reference gen jet
+  vector<float> *fMatchedJetPtArray;  // Array for matched generator level jet pT
+  vector<float> *fMatchedJetEtaArray; // Array for matched generator level jet eta
+  vector<float> *fMatchedJetPhiArray; // Array for matched generator level jet phi
   
   // Leaves for the track tree
   vector<float> *fTrackPtArray;                    // vector for track pT:s
