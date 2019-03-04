@@ -256,10 +256,15 @@ void DijetHistograms::CreateHistograms(){
   const Double_t maxDeltaEtaJetTrack = 5.0;    // Maximum deltaEta for jet-track correlations
   const Int_t nDeltaEtaBinsJetTrack = 500;     // Number of deltaEta bins for jet-track correlations (match the common number in UIC group)
   
-  // Dijet asymmetry
+  // Dijet asymmetry AJ
   const Double_t minAsymmetry = 0;     // Minimum asymmetry
   const Double_t maxAsymmetry = 0.75;  // Maximum asymmetry
   const Int_t nAsymmetryBins = 25;     // Number of asymmetry bins
+  
+  // Dijet asymmetry xJ
+  const Double_t minXj = 0;  // Minimum xJ asymmetry
+  const Double_t maxXj = 1;  // Maximum xJ asymmetry
+  const Int_t nXjBins = 40;
   
   // Vertex z-position
   const Double_t minVz = -20;   // Minimum vz
@@ -405,32 +410,37 @@ void DijetHistograms::CreateHistograms(){
   // ========= THnSparse for dijets =========
   
   // Axis 0 for the dijet histogram: leading jet pT
-  nBins5D[0] = nPtBinsJet;         // nBins for leading jet pT
-  lowBinBorder5D[0] = minPtJet;    // low bin border for leading jet pT
-  highBinBorder5D[0] = maxPtJet;   // high bin border for leading jet pT
+  nBins6D[0] = nPtBinsJet;         // nBins for leading jet pT
+  lowBinBorder6D[0] = minPtJet;    // low bin border for leading jet pT
+  highBinBorder6D[0] = maxPtJet;   // high bin border for leading jet pT
   
   // Axis 1 for the dijet histogram: subleading jet pT
-  nBins5D[1] = nPtBinsJet;         // nBins for subleading jet pT
-  lowBinBorder5D[1] = minPtJet;    // low bin border for subleading jet pT
-  highBinBorder5D[1] = maxPtJet;   // high bin border for subleading jet pT
+  nBins6D[1] = nPtBinsJet;         // nBins for subleading jet pT
+  lowBinBorder6D[1] = minPtJet;    // low bin border for subleading jet pT
+  highBinBorder6D[1] = maxPtJet;   // high bin border for subleading jet pT
   
   // Axis 2 for the dijet histogram: deltaPhi
-  nBins5D[2] = nDeltaPhiBins;       // nBins for deltaPhi
-  lowBinBorder5D[2] = minDeltaPhi;  // low bin border for deltaPhi
-  highBinBorder5D[2] = maxDeltaPhi; // high bin border for deltaPhi
+  nBins6D[2] = nDeltaPhiBins;       // nBins for deltaPhi
+  lowBinBorder6D[2] = minDeltaPhi;  // low bin border for deltaPhi
+  highBinBorder6D[2] = maxDeltaPhi; // high bin border for deltaPhi
   
-  // Axis 3 for the dijet histogram: asymmetry
-  nBins5D[3] = nAsymmetryBins;         // nBins for asymmetry
-  lowBinBorder5D[3] = minAsymmetry;    // low bin border for asymmetry
-  highBinBorder5D[3] = maxAsymmetry;   // high bin border for asymmetry
+  // Axis 3 for the dijet histogram: asymmetry AJ
+  nBins6D[3] = nAsymmetryBins;         // nBins for asymmetry
+  lowBinBorder6D[3] = minAsymmetry;    // low bin border for asymmetry
+  highBinBorder6D[3] = maxAsymmetry;   // high bin border for asymmetry
   
   // Axis 4 for the dijet histogram: centrality
-  nBins5D[4] = nWideCentralityBins;   // nBins for wide centrality bins
-  lowBinBorder5D[4] = minCentrality;  // low bin border for centrality
-  highBinBorder5D[4] = maxCentrality; // high bin border for centrality
+  nBins6D[4] = nWideCentralityBins;   // nBins for wide centrality bins
+  lowBinBorder6D[4] = minCentrality;  // low bin border for centrality
+  highBinBorder6D[4] = maxCentrality; // high bin border for centrality
+  
+  // Axis 5 for the dijet histogram: asymmetry xJ
+  nBins6D[5] = nXjBins;         // nBins for xJ asymmetry
+  lowBinBorder6D[5] = minXj;    // low bin border for xJ asymmetry
+  highBinBorder6D[5] = maxXj;   // high bin border for xJ asymmetry
   
   // Create the dijet histogram using the above binning information
-  fhDijet = new THnSparseF("dijet","dijet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhDijet->Sumw2();
+  fhDijet = new THnSparseF("dijet","dijet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhDijet->Sumw2();
   
   // Set custom centrality bins for histograms
   fhDijet->SetBinEdges(4,wideCentralityBins);

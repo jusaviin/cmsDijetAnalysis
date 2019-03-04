@@ -550,7 +550,8 @@ void DijetAnalyzer::RunAnalysis(){
 
   
   // Variables for jets
-  Double_t dijetAsymmetry = -99;   // Dijet asymmetry
+  Double_t dijetAsymmetry = -99;   // Dijet asymmetry AJ
+  Double_t dijetXj = -99;          // Dijet asymmetry xJ
   Double_t leadingJetPt = 0;       // Leading jet pT
   Double_t leadingJetPhi = 0;      // Leading jet phi
   Double_t leadingJetEta = 0;      // Leading jet eta
@@ -611,6 +612,7 @@ void DijetAnalyzer::RunAnalysis(){
   // Fillers for THnSparses
   Double_t fillerJet[4];
   Double_t fillerDijet[5];
+  Double_t fillerExtendedDijet[6];
   
   //************************************************
   //      Find forest readers for data files
@@ -844,7 +846,7 @@ void DijetAnalyzer::RunAnalysis(){
       //    Loop over all jets and find leading jet
       //************************************************
       
-      // Search for leading jet and fill histograms for all jets within the eta vut
+      // Search for leading jet and fill histograms for all jets within the eta range
       for(Int_t jetIndex = 0; jetIndex < fJetReader->GetNJets(); jetIndex++) {
         jetPt = fJetReader->GetJetPt(jetIndex);
         jetPhi = fJetReader->GetJetPhi(jetIndex);
@@ -867,11 +869,11 @@ void DijetAnalyzer::RunAnalysis(){
         // For debugging purposes, count the number of matched jets
         if(fMatchJets) matchedCounter++;
         
-        // Require also reference parton flavor to be quark [-6,6] or gluon (21)
+        // Require also reference parton flavor to be quark [-6,-1] U [1,6] or gluon (21)
         if(fMatchJets){
           partonFlavor = fJetReader->GetPartonFlavor(jetIndex);
           if(partonFlavor == -999) nonSensicalPartonIndex++;
-          if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21)) continue;
+          if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21) || partonFlavor == 0) continue;
         }
         
         //  ========================================
@@ -1071,7 +1073,7 @@ void DijetAnalyzer::RunAnalysis(){
         }
         
         if(dijetFound) dijetCounter++;
-      } // End of dijet cuts
+      } // End of dijet cuts (two jets found if)
       
       //************************************************
       //       Fill histograms for inclusive tracks
@@ -1158,6 +1160,7 @@ void DijetAnalyzer::RunAnalysis(){
         if(fFillJetHistograms){
           // Calculate the asymmetry
           dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
+          dijetXj = subleadingJetPt/leadingJetPt;
           
           // Fill the leading jet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
@@ -1176,12 +1179,13 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhSubleadingDijet->Fill(fillerDijet,fTotalEventWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
-          fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
-          fillerDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
-          fillerDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
-          fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
-          fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight);         // Fill the data point to dijet histogram
+          fillerExtendedDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
+          fillerExtendedDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
+          fillerExtendedDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
+          fillerExtendedDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry AJ
+          fillerExtendedDijet[4] = centrality;                     // Axis 4: Centrality
+          fillerExtendedDijet[5] = dijetXj;                        // Axis 5: Asymmetry xJ
+          fHistograms->fhDijet->Fill(fillerExtendedDijet,fTotalEventWeight);         // Fill the data point to dijet histogram
           
         }
         
@@ -1385,9 +1389,9 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
     recoPt = swapPt;
   }
   
-  // Define index for parton floavor using algoritm: [-6,6] -> kQuark, 21 -> kGluon, anything else -> -1
+  // Define index for parton flavor using algoritm: [-6,-1] U [1,6] -> kQuark, 21 -> kGluon, anything else -> -1
   Int_t referencePartonIndex = -1;
-  if(referencePartonFlavor >= -6 && referencePartonFlavor <= 6) referencePartonIndex = DijetHistograms::kQuark;
+  if(referencePartonFlavor >= -6 && referencePartonFlavor <= 6 && referencePartonFlavor != 0) referencePartonIndex = DijetHistograms::kQuark;
   if(referencePartonFlavor == 21) referencePartonIndex = DijetHistograms::kGluon;
   
   // Fill the different axes for the filler
