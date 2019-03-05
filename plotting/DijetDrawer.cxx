@@ -300,7 +300,7 @@ void DijetDrawer::DrawDijetHistograms(){
     // Save the figure to a file
     SaveFigure("deltaPhi",compactCentralityString);
     
-    // === Dijet asymmetry ===
+    // === Dijet asymmetry AJ ===
     drawnHistogram = fHistograms->GetHistogramDijetAsymmetry(iCentrality);
     drawnHistogram->SetMarkerStyle(34);
     drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
@@ -313,7 +313,7 @@ void DijetDrawer::DrawDijetHistograms(){
     SaveFigure("asymmetry",compactCentralityString);
     
     // === Integral of the dijet asymmetry ===
-    asymmetryIntegral = (TH1D*) drawnHistogram->Clone(Form("asymmetryIntagral%d",iCentrality));
+    asymmetryIntegral = (TH1D*) drawnHistogram->Clone(Form("asymmetryIntegral%d",iCentrality));
     for(int iBin = 1; iBin <= asymmetryIntegral->GetNbinsX(); iBin++){
       integralValue = drawnHistogram->IntegralAndError(1,iBin,integralError,"width");
       asymmetryIntegral->SetBinContent(iBin,integralValue);
@@ -321,7 +321,9 @@ void DijetDrawer::DrawDijetHistograms(){
     }
     
     // Determine the AJ where 50 % of the events are lower and 50 % higher
-    asymmetryIntegral->Fit("pol2","","",0.05,0.35);
+    // Notice option "0" for the fit. This will not draw the fit results to canvas. This is important
+    // because the results are otherwise drawn to the current canvas overriding the AJ distribution plot!
+    asymmetryIntegral->Fit("pol2","0","",0.05,0.35);
     fitFunction = asymmetryIntegral->GetFunction("pol2");
     double a = fitFunction->GetParameter(2);
     double b = fitFunction->GetParameter(1);
@@ -334,12 +336,29 @@ void DijetDrawer::DrawDijetHistograms(){
     cout << endl;
     
     fDrawer->DrawHistogram(asymmetryIntegral,"A_{J}","Fraction of integral", " ");
+    fitFunction->Draw("same");
     legend = new TLegend(0.62,0.2,0.82,0.45);
     SetupLegend(legend,centralityString,Form("N_{jets} = %.0f",nDijets));
     legend->Draw();
     
     // Save the figure to a file
     SaveFigure("asymmetryIntegral",compactCentralityString);
+    
+    // === Dijet asymmetry xJ ===
+    drawnHistogram = fHistograms->GetHistogramDijetXj(iCentrality);
+    
+    // xJ histogram are newer addition, do not crash the code if they are not there
+    if(drawnHistogram != NULL){
+      drawnHistogram->SetMarkerStyle(34);
+      drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
+      fDrawer->DrawHistogram(drawnHistogram,"x_{J}","#frac{1}{N_{dijet}} #frac{dN}{dx_{J}}"," ");
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      SetupLegend(legend,centralityString);
+      legend->Draw();
+      
+      // Save the figure to a file
+      SaveFigure("asymmetryXj",compactCentralityString);
+    }
     
     // Change the right margin better suited for 2D-drawing
     fDrawer->SetRightMargin(0.1);
@@ -700,6 +719,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
               drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,iCorrelationType,iCentrality,iTrackPt,iDeltaPhi);
               
+              drawnHistogram->GetXaxis()->SetRangeUser(-3.5,3.5); // XXXXXX TODO: Good zooming possibilities
+
               // Do not draw the deltaEta histograms for background because they are flat by construction
               if(iCorrelationType == DijetHistogramManager::kBackground) continue;
               

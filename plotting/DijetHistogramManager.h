@@ -199,7 +199,8 @@ public:
   
   // Getters for dijet histograms
   TH1D* GetHistogramDijetDeltaPhi(const int iCentrality) const;              // Dijet deltaPhi histograms
-  TH1D* GetHistogramDijetAsymmetry(const int iCentrality) const;             // Dijet asymmetry histograms
+  TH1D* GetHistogramDijetAsymmetry(const int iCentrality) const;             // Dijet asymmetry AJ histograms
+  TH1D* GetHistogramDijetXj(const int iCentrality) const;                    // Dijet asymmetry xJ histograms
   TH2D* GetHistogramDijetLeadingVsSubleadingPt(const int iCentrality) const; // Leading versus subleading jet pT 2D histograms
   
   // Getters for histograms for tracks in dijet events
@@ -326,7 +327,8 @@ private:
   
   // Histograms for dijets
   TH1D *fhDijetDphi[knCentralityBins];                  // Dijet deltaPhi histograms
-  TH1D *fhDijetAsymmetry[knCentralityBins];             // Dijet asymmetry histograms
+  TH1D *fhDijetAsymmetry[knCentralityBins];             // Dijet asymmetry AJ histograms
+  TH1D *fhDijetXj[knCentralityBins];                    // Dijet asymmetry xJ histograms
   TH2D *fhDijetLeadingVsSubleadingPt[knCentralityBins]; // Leading versus subleading jet pT 2D histograms
   
   // Histograms for tracks in dijet events
