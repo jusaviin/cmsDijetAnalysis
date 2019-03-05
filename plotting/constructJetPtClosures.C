@@ -12,12 +12,16 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC_RecoReco_skims_pfJets_noCorrelations_jetPtClosure_matchedJetsWithFlavor_processed_2019-02-02.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC_RecoReco_skims_pfJets_noUncorr_noCorrelations_jetPtClosure_noJetLimit_processed_2019-02-02.root";  // File from which the RecoGen histograms are read for the correction
   // "data/PbPbMC_RecoReco_skims_pfJets_noUncorr_noCorrelations_jetPtClosure_noJetLimit_processed_2019-02-02.root"
+  // "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_noCorrelations_jetPtClosure_processed_2019-02-06.root"
+  // "data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root"
   
   bool drawLeadingClosure = false;       // Produce the closure plots for leading jet pT
   bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
-  bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
+  bool drawInclusiveClosure = true;     // Produce the closure plots for inclusive jet pT
+  
+  // TODO: If leading jet closure, min GenPtBin should be 7
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
@@ -131,7 +135,7 @@ void constructJetPtClosures(){
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       
       if(ppData){
-        sprintf(centralityString,"");
+        sprintf(centralityString,", pp");
         sprintf(centralitySaveName,"");
       } else {
         sprintf(centralityString,", Cent:%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);

@@ -1133,6 +1133,7 @@ void DijetComparingDrawer::FindScalingFactors(int iJetCategory, int iCentrality,
     fScalingFactors[1+iAdditional] = scaleReader->Integral("width");
     //fScalingFactors[1+iAdditional] = scaleReader->Integral(scaleReader->FindBin(50),scaleReader->GetNbinsX(),"width"); // XXXXX
   }
+  //cout << "For iCentrality = " << iCentrality << " Reco / Gen = " << fScalingFactors[0]/fScalingFactors[1] << endl;
   
 }
 

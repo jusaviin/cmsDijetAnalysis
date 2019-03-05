@@ -15,7 +15,7 @@ void compareDijetHistograms(){
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;  // Note: Dijet asymmetry drawing requires two files, first for pp and second for PbPb
-  bool drawLeadingJetHistograms = false;
+  bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = true;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
@@ -41,7 +41,7 @@ void compareDijetHistograms(){
   
   // Draw jet shape histograms
   bool drawJetShape = false;
-  bool drawJetShapeMCComparison = true;
+  bool drawJetShapeMCComparison = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
@@ -56,7 +56,7 @@ void compareDijetHistograms(){
   
   // Draw histograms to make a check on the validity of the event mixing method
   bool drawEventMixingCheck = false;
-  bool eventMixingZoom = true;
+  bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = true;
@@ -73,12 +73,12 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.0;
-  double maxZoom = 2.5;
-  TString ratioLabel = "PbPb / MC";
+  double minZoom = 0.5;
+  double maxZoom = 1.5;
+  TString ratioLabel = "Reco / Gen";
   
   // Scaling for histograms
-  bool scaleHistograms = true; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
+  bool scaleHistograms = false; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
   
   // Bin borders
   const int nCentralityBins = 4;
@@ -135,7 +135,7 @@ void compareDijetHistograms(){
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   
   //TString legendComment[nDatasets] = {"P+H GenMatched","P+H GenUnmatched"};
-  TString legendComment[nDatasets] = {"P+H RecoMatched","P+H GenMatched"};
+  TString legendComment[nDatasets] = {"P+H Reco jet from reco dijet","P+H Gen jet from gen dijet"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   

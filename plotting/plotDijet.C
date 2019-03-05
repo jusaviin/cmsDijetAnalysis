@@ -41,7 +41,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = false;
+  bool drawDijetHistograms = true;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
@@ -50,7 +50,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -100,9 +100,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = false;
+  bool drawBackgroundSubtracted = true;
   bool drawBackground = false;
-  int backgroundStyle = 8; // Drawing style for background deltaPhi. The following options are currently implemented:
+  int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
                            // Bit 2 = Draw background fit (int = 4)
@@ -154,7 +154,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int lastDrawnTrackPtBin = 1;
   
   if(selectedCentralityBin >= 0){
     firstDrawnCentralityBin = selectedCentralityBin;
@@ -176,7 +176,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
   double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
-  bool adjustBackground = true;        // Adjust background level based on differences on leading an subleading sides
+  bool adjustBackground = false;        // Adjust background level based on differences on leading an subleading sides
   int backgroundOverlapBins = 3;       // Number of bins around deltaPhi = Pi/2 used to calculate background adjustment
   
   // Jet shape
