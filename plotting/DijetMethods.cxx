@@ -657,11 +657,11 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spi
   
   // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
   if(fitWithConstant){
-    fSpilloverFitDeltaEta = FitGaussAndConstant(fSpilloverDeltaEta,spilloverEtaFitRange);
-    fSpilloverFitDeltaPhi = FitGaussAndConstant(fSpilloverDeltaPhi,spilloverPhiFitRange);
+    fSpilloverFitDeltaEta = FitGaussAndConstant(fSpilloverDeltaEta,spilloverEtaFitRange,spilloverPhiRange);
+    fSpilloverFitDeltaPhi = FitGaussAndConstant(fSpilloverDeltaPhi,spilloverPhiFitRange,spilloverEtaRange);
   } else {
-    fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta,spilloverEtaFitRange);
-    fSpilloverFitDeltaPhi = FitGauss(fSpilloverDeltaPhi,spilloverPhiFitRange);
+    fSpilloverFitDeltaEta = FitGaussAndConstant(fSpilloverDeltaEta,spilloverEtaFitRange,spilloverPhiRange);
+    fSpilloverFitDeltaPhi = FitGaussAndConstant(fSpilloverDeltaPhi,spilloverPhiFitRange,spilloverEtaRange);
   }
   
   // Combine the one-dimensional fits to a two-dimensional Gaussian distribution
@@ -695,16 +695,17 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spi
  * Arguments:
  *  TH1D *fittedHistogram = Histogram to be fitted with the Gaussian
  *  double fitRange = Range for the fit
+ *  double normalizationRange = Range for yield normalization
  *
  *  return: Gaussian function fitted to the histogram
  */
-TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange){
+TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange, double normalizationRange){
   
   // Create a Gaussian function for the fit
   TF1 *gaussFit = new TF1("gaussFit","[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))",-fitRange,fitRange);
   
-  // Calculate the integral of the fitted histogram over the fit range
-  double fitYield = fittedHistogram->Integral(fittedHistogram->FindBin(-fitRange+0.001),fittedHistogram->FindBin(fitRange-0.001),"width");
+  // Calculate the integral of the fitted histogram over the normalization range
+  double fitYield = fittedHistogram->Integral(fittedHistogram->FindBin(-normalizationRange+0.001),fittedHistogram->FindBin(normalizationRange-0.001),"width");
   
   // Fix the yield of the Gaussian function to the integral and give some rought estimate for the width
   gaussFit->FixParameter(0,fitYield);
@@ -724,21 +725,29 @@ TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange){
  * Arguments:
  *  TH1D *fittedHistogram = Histogram to be fitted with the Gaussian
  *  double fitRange = Range for the fit
+ *  double normalizationRange = Range for yield normalization
  *
  *  return: Gaussian function fitted to the histogram
  */
-TF1* DijetMethods::FitGaussAndConstant(TH1D *fittedHistogram, double fitRange){
+TF1* DijetMethods::FitGaussAndConstant(TH1D *fittedHistogram, double fitRange, double normalizationRange){
   
   // Create a Gaussian function for the fit
   TF1 *gaussFit = new TF1("gaussFit","[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))+[2]",-fitRange,fitRange);
   
-  // Calculate the integral of the fitted histogram over the fit range
-  double fitYield = fittedHistogram->Integral(fittedHistogram->FindBin(-fitRange+0.001),fittedHistogram->FindBin(fitRange-0.001),"width");
+  // Calculate the integral of the fitted histogram over the normalization range
+  double fitYield = fittedHistogram->Integral(fittedHistogram->FindBin(-normalizationRange+0.001),fittedHistogram->FindBin(normalizationRange-0.001),"width");
+  
+  // First fit the constant to the range 1-2
+  fittedHistogram->Fit("pol0","","",-2,-1);
+  double negativeLevel = fittedHistogram->GetFunction("pol0")->GetParameter(0);
+  fittedHistogram->Fit("pol0","","",1,2);
+  double positiveLevel = fittedHistogram->GetFunction("pol0")->GetParameter(0);
+  double averageLevel = (negativeLevel+positiveLevel)/2;
   
   // Give initial estimates for the parameters
-  gaussFit->SetParameter(0,fitYield/50);
+  gaussFit->SetParameter(0,fitYield-(averageLevel*3));
   gaussFit->SetParameter(1,0.3);
-  gaussFit->SetParameter(2,fitYield/(2*fitRange));
+  gaussFit->FixParameter(2,averageLevel);
   
   // Fit the histogram over the defined range
   fittedHistogram->Fit("gaussFit","","",-fitRange,fitRange);

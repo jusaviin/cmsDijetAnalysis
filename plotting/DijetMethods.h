@@ -145,8 +145,8 @@ private:
   
   // Private methods
   double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter); // Find the normalization scale for the mixed event histogram
-  TF1* FitGauss(TH1D* fittedHistogram, double fitRange);  // Fit a Gaussian function to a histogram and return the fit function
-  TF1* FitGaussAndConstant(TH1D* fittedHistogram, double fitRange);  // Fit a Gaussian function together with a constant to a histogram and return the fit function
+  TF1* FitGauss(TH1D* fittedHistogram, double fitRange, double normalizationRange);  // Fit a Gaussian function to a histogram and return the fit function
+  TF1* FitGaussAndConstant(TH1D* fittedHistogram, double fitRange, double normalizationRange);  // Fit a Gaussian function together with a constant to a histogram and return the fit function
   TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution
   void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
