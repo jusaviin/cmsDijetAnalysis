@@ -20,7 +20,7 @@ public:
   
   // Constructors and destructors
   GeneratorLevelSkimForestReader();                                                     // Default constructor
-  GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets); // Custom constructor
+  GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets); // Custom constructor
   GeneratorLevelSkimForestReader(const GeneratorLevelSkimForestReader& in);             // Copy constructor
   virtual ~GeneratorLevelSkimForestReader();                                            // Destructor
   GeneratorLevelSkimForestReader& operator=(const GeneratorLevelSkimForestReader& obj); // Equal sign operator
@@ -32,6 +32,7 @@ public:
   // Getters for leaves in the track tree relevant for generator level tracks
   Int_t GetTrackCharge(Int_t iTrack) const;                  // Getter for track charge (relevant only for generator level tracks)
   Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
+  Int_t GetTrackMCStatus(Int_t iTrack) const;                // Getter for track MC status
   
   // Getters for leaves in the track tree that are just there to provide values that pass cuts
   Float_t GetTrackPtError(Int_t iTrack) const;               // Getter for track pT error
@@ -70,6 +71,7 @@ private:
   // Additional leaves for the track tree
   vector<int> *fTrackChargeArray;     // Array for track charges
   vector<int> *fTrackSubeventArray;   // Array for track subevent indices (0 = PYTHIA, (>0) = HYDJET)
+  vector<int> *fTrackStatusArray;     // Array for track subevent indices (0 = PYTHIA, (>0) = HYDJET)
   
 };
 

@@ -20,7 +20,7 @@ public:
   
   // Constructors and destructors
   SkimForestReader();                                              // Default constructor
-  SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets); // Custom constructor
+  SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets); // Custom constructor
   SkimForestReader(const SkimForestReader& in);                    // Copy constructor
   virtual ~SkimForestReader();                                     // Destructor
   SkimForestReader& operator=(const SkimForestReader& obj);        // Equal sign operator
@@ -55,7 +55,7 @@ public:
   virtual Float_t GetTrackEnergyHcal(Int_t iTrack) const;            // Getter for track energy in HCal
   virtual Int_t GetTrackCharge(Int_t iTrack) const;                  // Getter for track charge (relevant only for generator level tracks)
   virtual Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
-  Int_t GetTrackMCStatus(Int_t iTrack) const;                        // Getter for track MC status (only for generator level tracks)
+  virtual Int_t GetTrackMCStatus(Int_t iTrack) const;                // Getter for track MC status (only for generator level tracks)
   
   // Check if generator level jet has a matching reconstructed jet
   virtual Bool_t HasMatchingJet(Int_t iJet) const; // Check if generator level jet has a matching reconstructed jet

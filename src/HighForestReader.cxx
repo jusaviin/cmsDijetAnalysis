@@ -47,10 +47,11 @@ HighForestReader::HighForestReader() :
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
+ *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  */
-HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets) :
-  ForestReader(dataType,readMode,jetType,matchJets),
+HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets) :
+  ForestReader(dataType,readMode,jetType,jetAxis,matchJets),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),

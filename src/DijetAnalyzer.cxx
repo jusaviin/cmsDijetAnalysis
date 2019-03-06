@@ -627,27 +627,27 @@ void DijetAnalyzer::RunAnalysis(){
   
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
-      fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+      fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
     } else {
-      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
     }
   } else {
     if(fForestType == kSkimForest) {
-      fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+      fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
     } else {
-      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
     }
   }
   
   // Select the reader for tracks based on forest and MC correlation type
   if(fMcCorrelationType == kRecoGen && fForestType == kSkimForest){
-    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
   } else if(fMcCorrelationType == kRecoGen){
-    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
   } else if (fMcCorrelationType == kGenReco && fForestType == kSkimForest){
-    fTrackReader[DijetHistograms::kSameEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
   } else if (fMcCorrelationType == kGenReco){
-    fTrackReader[DijetHistograms::kSameEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
   } else {
     fTrackReader[DijetHistograms::kSameEvent] = fJetReader;
   }
@@ -655,18 +655,18 @@ void DijetAnalyzer::RunAnalysis(){
   // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
   if(mixEvents){
     if(fDataType == ForestReader::kPbPb){
-      fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+      fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
       if(fForestType == kSkimForest) {
-        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
       } else {
-        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
       }
     } else {
       if(fForestType == kSkimForest) {
-        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
       } else {
-        fTrackReader[DijetHistograms::kMixedEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
       }
     }
   }

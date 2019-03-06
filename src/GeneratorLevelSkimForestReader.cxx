@@ -21,10 +21,11 @@ GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader() :
  *   Int_t dataType: 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = Local Test
  *   Int_t readMode: 0 = Regular forests, 1 = Official PYTHIA8 forest
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
+ *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  */
-GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Bool_t matchJets) :
-  SkimForestReader(dataType,readMode,jetType,matchJets),
+GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets) :
+  SkimForestReader(dataType,readMode,jetType,jetAxis,matchJets),
   fTrackChargeArray(0),
   fTrackSubeventArray(0)
 {
@@ -88,16 +89,20 @@ void GeneratorLevelSkimForestReader::Initialize(){
   fEventTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   
   // Connect the branches to jet properties
+  const char *jetAxis[3] = {"","","_wta_"};
+  char branchName[30];
   fEventTree->SetBranchStatus("genpt",1);
   fEventTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
-  fEventTree->SetBranchStatus("genphi",1);
-  fEventTree->SetBranchAddress("genphi",&fJetPhiArray,&fJetPhiBranch);
-  fEventTree->SetBranchStatus("geneta",1);
-  fEventTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
+  sprintf(branchName,"gen%sphi",jetAxis[fJetAxis]);
+  fEventTree->SetBranchStatus(branchName,1);
+  fEventTree->SetBranchAddress(branchName,&fJetPhiArray,&fJetPhiBranch);
+  sprintf(branchName,"gen%seta",jetAxis[fJetAxis]);
+  fEventTree->SetBranchStatus(branchName,1);
+  fEventTree->SetBranchAddress(branchName,&fJetEtaArray,&fJetEtaBranch);
   
   if(fMatchJets){
     const char * jetType[2] = {"calo","pf"};
-    char branchName[20];
+    jetAxis[2] = "_wta";
     sprintf(branchName,"%s_refpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fJetRefPtArray,&fJetRefPtBranch);
@@ -107,10 +112,10 @@ void GeneratorLevelSkimForestReader::Initialize(){
     sprintf(branchName,"%s_jtpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetPtArray,&fJetMatchedPtBranch);
-    sprintf(branchName,"%s_jteta",jetType[fJetType]);
+    sprintf(branchName,"%s%s_jteta",jetAxis[fJetAxis],jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
-    sprintf(branchName,"%s_jtphi",jetType[fJetType]);
+    sprintf(branchName,"%s%s_jtphi",jetAxis[fJetAxis],jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
   }
@@ -164,6 +169,12 @@ void GeneratorLevelSkimForestReader::Initialize(){
   fEventTree->SetBranchStatus("sube",1);
   fEventTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch); // Reuse a branch from ForestReader that is not otherwise needed here
   
+  // Need to check track status for Xiao's skims
+  if(fJetAxis == 2){
+    fEventTree->SetBranchStatus("status",1);
+    fEventTree->SetBranchAddress("status",&fTrackSubeventArray,&fnHitsTrackerLayerBranch); // Reuse a branch from ForestReader that is not otherwise needed here
+  }
+  
 }
 
 // Getter for jet raw pT (not relevant for generator jets, just return value that passes cuts)
@@ -185,6 +196,12 @@ Int_t GeneratorLevelSkimForestReader::GetTrackCharge(Int_t iTrack) const{
 // Getter for track subevent index.
 Int_t GeneratorLevelSkimForestReader::GetTrackSubevent(Int_t iTrack) const{
   return fTrackSubeventArray->at(iTrack);
+}
+
+// Getter for track MC status.
+Int_t GeneratorLevelSkimForestReader::GetTrackMCStatus(Int_t iTrack) const{
+  if(fJetAxis != 2) return 1;  // Need to check this for Xiao's skims, not for Kurt's skims
+  return fTrackStatusArray->at(iTrack);
 }
 
 // Getter for track pT error (not relevant for generator tracks)
