@@ -102,7 +102,7 @@ void GeneratorLevelSkimForestReader::Initialize(){
   
   if(fMatchJets){
     const char * jetType[2] = {"calo","pf"};
-    jetAxis[2] = "_wta";
+    jetAxis[0] = "jt"; jetAxis[1] = "jt"; jetAxis[2] = "wta_";
     sprintf(branchName,"%s_refpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fJetRefPtArray,&fJetRefPtBranch);
@@ -112,10 +112,10 @@ void GeneratorLevelSkimForestReader::Initialize(){
     sprintf(branchName,"%s_jtpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetPtArray,&fJetMatchedPtBranch);
-    sprintf(branchName,"%s%s_jteta",jetType[fJetType],jetAxis[fJetAxis]);
+    sprintf(branchName,"%s_%seta",jetType[fJetType],jetAxis[fJetAxis]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
-    sprintf(branchName,"%s%s_jtphi",jetType[fJetType],jetAxis[fJetAxis]);
+    sprintf(branchName,"%s_%sphi",jetType[fJetType],jetAxis[fJetAxis]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
   }

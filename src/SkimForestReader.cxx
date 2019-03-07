@@ -171,15 +171,15 @@ void SkimForestReader::Initialize(){
   
   // Connect the branches to jet properties
   const char *jetType[2] = {"calo","pf"};
-  const char *jetAxis[3] = {"","","_wta"};
+  const char *jetAxis[3] = {"jt","jt","wta_"};
   char branchName[30];
   sprintf(branchName,"%s_jtpt",jetType[fJetType]);
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetPtArray,&fJetPtBranch);
-  sprintf(branchName,"%s%s_jtphi",jetType[fJetType],jetAxis[fJetAxis]);
+  sprintf(branchName,"%s_%sphi",jetType[fJetType],jetAxis[fJetAxis]);
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetPhiArray,&fJetPhiBranch);
-  sprintf(branchName,"%s%s_jteta",jetType[fJetType],jetAxis[fJetAxis]);
+  sprintf(branchName,"%s_%seta",jetType[fJetType],jetAxis[fJetAxis]);
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetEtaArray,&fJetEtaBranch);
   sprintf(branchName,"%s_rawpt",jetType[fJetType]);
@@ -191,7 +191,7 @@ void SkimForestReader::Initialize(){
   
   // If we match jets and are looking at Monte Carlo, enable reference pT and parton arrays
   if(fMatchJets && fDataType > kPbPb){
-    jetAxis[2] = "_wta_";
+    jetAxis[0] = ""; jetAxis[1] = ""; jetAxis[2] = "_wta_";
     sprintf(branchName,"%s_refpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fJetRefPtArray,&fJetRefPtBranch);
