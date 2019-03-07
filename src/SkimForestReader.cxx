@@ -176,10 +176,10 @@ void SkimForestReader::Initialize(){
   sprintf(branchName,"%s_jtpt",jetType[fJetType]);
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetPtArray,&fJetPtBranch);
-  sprintf(branchName,"%s%s_jtphi",jetAxis[fJetAxis],jetType[fJetType]);
+  sprintf(branchName,"%s%s_jtphi",jetType[fJetType],jetAxis[fJetAxis]);
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetPhiArray,&fJetPhiBranch);
-  sprintf(branchName,"%s%s_jteta",jetAxis[fJetAxis],jetType[fJetType]);
+  sprintf(branchName,"%s%s_jteta",jetType[fJetType],jetAxis[fJetAxis]);
   fEventTree->SetBranchStatus(branchName,1);
   fEventTree->SetBranchAddress(branchName,&fJetEtaArray,&fJetEtaBranch);
   sprintf(branchName,"%s_rawpt",jetType[fJetType]);

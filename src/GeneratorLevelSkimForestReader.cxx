@@ -112,10 +112,10 @@ void GeneratorLevelSkimForestReader::Initialize(){
     sprintf(branchName,"%s_jtpt",jetType[fJetType]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetPtArray,&fJetMatchedPtBranch);
-    sprintf(branchName,"%s%s_jteta",jetAxis[fJetAxis],jetType[fJetType]);
+    sprintf(branchName,"%s%s_jteta",jetType[fJetType],jetAxis[fJetAxis]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
-    sprintf(branchName,"%s%s_jtphi",jetAxis[fJetAxis],jetType[fJetType]);
+    sprintf(branchName,"%s%s_jtphi",jetType[fJetType],jetAxis[fJetAxis]);
     fEventTree->SetBranchStatus(branchName,1);
     fEventTree->SetBranchAddress(branchName,&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
   }
