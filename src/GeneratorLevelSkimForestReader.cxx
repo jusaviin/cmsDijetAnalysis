@@ -126,10 +126,13 @@ void GeneratorLevelSkimForestReader::Initialize(){
   
   // Connect the branches containing event selection filter bits
   if (fDataType == kPpMC){
-    fEventTree->SetBranchStatus("pprimaryVertexFilter",1);
-    fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Dhanush's skim
-    //fEventTree->SetBranchStatus("pPAprimaryVertexFilter",1);
-    //fEventTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Kurt's skim
+    if(fJetAxis == 2){
+      fEventTree->SetBranchStatus("pPAprimaryVertexFilter",1);
+      fEventTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Xiao's skim
+    } else {
+      fEventTree->SetBranchStatus("pprimaryVertexFilter",1);
+      fEventTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in regular skim
+    }
     fBeamScrapingFilterBit = 1; // No beam scraping filter for MC
     fEventTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
     fEventTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
