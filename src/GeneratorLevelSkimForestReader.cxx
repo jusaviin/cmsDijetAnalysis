@@ -175,7 +175,7 @@ void GeneratorLevelSkimForestReader::Initialize(){
   // Need to check track status for Xiao's skims
   if(fJetAxis == 2){
     fEventTree->SetBranchStatus("status",1);
-    fEventTree->SetBranchAddress("status",&fTrackSubeventArray,&fnHitsTrackerLayerBranch); // Reuse a branch from ForestReader that is not otherwise needed here
+    fEventTree->SetBranchAddress("status",&fTrackStatusArray,&fnHitsTrackerLayerBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   }
   
 }
