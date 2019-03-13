@@ -15,7 +15,7 @@ void produceSpilloverCorrection(){
   TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_notAdjustedBackground_processed_2019-02-15.root";  // File from which the RecoGen histograms are read for the correction
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "fittedSpilloverTestingRestricted.root";
+  TString outputFileName = "fittedSpilloverTestingFixed.root";
   //data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";   // File name for the output file
   TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
   // data/PbPbMC_RecoGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_noCorrections_processed_2019-02-09.root
@@ -28,7 +28,7 @@ void produceSpilloverCorrection(){
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
-  bool doNotSubtractBackground = false;  // Do not subtract background but include constant component to fit
+  bool fixGaussYield = true;  // Fix the gaussian fit yield to result from bin counting
   
   // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
@@ -85,10 +85,10 @@ void produceSpilloverCorrection(){
   double yieldRatio[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   int lowXbin, lowYbin, highXbin, highYbin;
   double spilloverEtaFitRange, spilloverPhiFitRange;
+  double fixedSpilloverYield = 0;
   
   // Create DijetMethods in which the correction procedure is implemented
   DijetMethods *corrector = new DijetMethods();
-  int distributionType = doNotSubtractBackground ? DijetHistogramManager::kCorrected : DijetHistogramManager::kBackgroundSubtracted;
   
   // Calculate the correction
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -108,15 +108,20 @@ void produceSpilloverCorrection(){
         }
         
         // If background is not subtracted, use a bit larger region to fit to get the constant background level
-        if(doNotSubtractBackground){
-          spilloverEtaFitRange = 2.0;
-          spilloverPhiFitRange = 2.0;
-        }
+        spilloverEtaFitRange = 2.0;
+        spilloverPhiFitRange = 2.0;
         
         for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
+          
+          // If we are fixing the yield, find the number for that
+          if(fixGaussYield){
+            spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt);
+            fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],1,2);
+          }
+          
           // Get the signal histogram and extract the correction from it
-          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,distributionType,iCentrality,iTrackPt);
-          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],spilloverEtaFitRange,spilloverPhiFitRange,doNotSubtractBackground);
+          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iCentrality,iTrackPt);
+          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],spilloverEtaFitRange,spilloverPhiFitRange,fixedSpilloverYield);
           
           // Get the QA histograms and functions
           // Need to change name, because corrector gives the same name in both loops, which causes problems with root

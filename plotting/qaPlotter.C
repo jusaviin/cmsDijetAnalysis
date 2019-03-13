@@ -202,8 +202,9 @@ void printBackgroundOverlapSlide(bool subleadingOverlap, double binValues[6][6],
  *  bool logY = Flag for logarithmic y-axis
  *  bool saveFigures = Flag for saving the figures to a file
  *  const char* saveName = Name given to the figure saved to the file
+ *  const char* fitFunction = Name of the fit function
  */
-void drawSpilloverGraph(JDrawer *drawer, TGraphErrors *spilloverGraph[4], int iJetTrack, double yZoom, const char* yTitle, bool logY, bool saveFigures, const char* saveName){
+void drawSpilloverGraph(JDrawer *drawer, TGraphErrors *spilloverGraph[4], int iJetTrack, double yZoom, const char* yTitle, bool logY, bool saveFigures, const char* saveName, const char* fitFunction){
   
   // Create a histogram manager for naming purposes
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
@@ -223,6 +224,7 @@ void drawSpilloverGraph(JDrawer *drawer, TGraphErrors *spilloverGraph[4], int iJ
   
   // Helper variables
   TString titleString;
+  TF1* thisFit;
   
   // Draw the for graphs for delta eta width
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -232,6 +234,11 @@ void drawSpilloverGraph(JDrawer *drawer, TGraphErrors *spilloverGraph[4], int iJ
     // Set a nice style for the graph
     spilloverGraph[iCentrality]->SetMarkerStyle(graphMarkerStyle[iCentrality]);
     spilloverGraph[iCentrality]->SetMarkerColor(graphMarkerColor[iCentrality]);
+    
+    // XXXXXXXX Fit Fit Fit XXXXXXXXX
+    thisFit = spilloverGraph[iCentrality]->GetFunction(fitFunction);
+    thisFit->SetLineColor(graphMarkerColor[iCentrality]);
+    thisFit->SetRange(0.5,8);
     
     drawer->SetLogY(logY);
     // Draw the graph with a new canvas for the first centrality bin and the other centralities to the same figure
@@ -271,10 +278,11 @@ void drawSpilloverGraph(JDrawer *drawer, TGraphErrors *spilloverGraph[4], int iJ
  *  bool saveFigures = Flag for saving the figures to a file
  *  const char* saveName = Name given to the figure saved to the file
  */
-void drawSpilloverGraphComparison(JDrawer *drawer, TGraphErrors *etaGraph, TGraphErrors *phiGraph, int iJetTrack, int iCentrality, double yZoom, const char* yTitle, bool logY, bool saveFigures, const char* saveName, TGraphErrors *extraGraph = NULL){
+void drawSpilloverGraphComparison(JDrawer *drawer, TGraphErrors *etaGraph, TGraphErrors *phiGraph, int iJetTrack, int iCentrality, double yZoom, const char* yTitle, bool logY, bool saveFigures, const char* saveName, TGraphErrors *extraGraph = NULL, const char* fitFunction = "expo"){
   
   // Create a histogram manager for naming purposes
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
+  TF1* thisFit;
   
   // Binning information for centrality
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
@@ -295,6 +303,11 @@ void drawSpilloverGraphComparison(JDrawer *drawer, TGraphErrors *etaGraph, TGrap
   drawer->DrawGraph(etaGraph,0,8,0.001,yZoom,"Track p_{T} (GeV)",yTitle,"","psame");
   legend->AddEntry(etaGraph,"#Delta#eta fit","p");
   
+  // XXXXXXXX Fit Fit Fit XXXXXXXXX
+  thisFit = etaGraph->GetFunction(fitFunction);
+  thisFit->SetLineColor(graphMarkerColor[0]);
+  thisFit->SetRange(0.5,8);
+  
   // Draw extra graph if it is provided
   if(extraGraph != NULL){
     extraGraph->SetMarkerStyle(graphMarkerStyle[2]);
@@ -308,6 +321,10 @@ void drawSpilloverGraphComparison(JDrawer *drawer, TGraphErrors *etaGraph, TGrap
   phiGraph->SetMarkerColor(graphMarkerColor[1]);
   phiGraph->Draw("psame");
   legend->AddEntry(phiGraph,"#Delta#phi fit","p");
+  
+  // XXXXXXXX Fit Fit Fit XXXXXXXXX
+  thisFit = phiGraph->GetFunction(fitFunction);
+  thisFit->SetLineColor(graphMarkerColor[1]);
   
   // Draw the legend to the figure
   legend->Draw();
@@ -338,20 +355,20 @@ void qaPlotter(){
   
   bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = false;              // Draw the QA plots for spillover correction
+  bool drawSpillover = true;              // Draw the QA plots for spillover correction
   bool drawSeagull = false;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
-  bool drawJetShapeCorrections = true;    // Draw the jet shape corrections as a function or R
+  bool drawJetShapeCorrections = false;    // Draw the jet shape corrections as a function or R
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
   bool constantBigCanvasScale = true;        // Use same scale for all bins in big canvas
-  bool extraSpilloverComparison = false;      // Add constant fit deltaEta to spillover fit parameter comparison plots
+  bool extraSpilloverComparison = true;      // Add constant fit deltaEta to spillover fit parameter comparison plots
   bool constantSpilloverScale = false;        // True = Draw spillover plots of one type all in the same scale, False = Zoom to fits
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,(regularJetTrack && !calculateBackgroundOverlap),uncorrectedJetTrack,(ptWeightedJetTrack && !calculateBackgroundOverlap),inclusiveJetTrack,inclusiveJetTrack};
@@ -363,8 +380,8 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
   TFile *spilloverQaFile[2];
-  spilloverQaFile[0] = TFile::Open("fittedSpilloverTesting_QA.root");
-  spilloverQaFile[1] = TFile::Open("fittedSpilloverTestingRestricted_QA.root"); // For fit to mixed event corrected HYDJET distribution
+  spilloverQaFile[0] = TFile::Open("fittedSpilloverTestingFixed_QA.root");
+  spilloverQaFile[1] = TFile::Open("fittedSpilloverTesting_QA.root"); // For fit to mixed event corrected HYDJET distribution
   // "spilloverTesting_QA.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18_QA.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2019-02-14_QA.root"
@@ -510,6 +527,8 @@ void qaPlotter(){
     double deltaPhiFitYield[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins]; // First bin: 0 = data 1 =error
     double deltaEtaConstantFitWidth[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
     double deltaEtaConstantFitYield[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+    double deltaPhiConstantFitWidth[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+    double deltaPhiConstantFitYield[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
     
     // Create graphs to draw the fit parameters
     TGraphErrors *graphDeltaEtaWidth[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
@@ -518,12 +537,15 @@ void qaPlotter(){
     TGraphErrors *graphDeltaPhiYield[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
     TGraphErrors *graphDeltaConstantEtaWidth[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
     TGraphErrors *graphDeltaConstantEtaYield[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
+    TGraphErrors *graphDeltaConstantPhiWidth[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
+    TGraphErrors *graphDeltaConstantPhiYield[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
     
     // x-axis information for the graphs
     double graphPointsX[] = {0.85,1.5,2.5,3.5,6,10};    // x-axis points in flow graphs
     double graphErrorsX[] = {0,0,0,0,0,0};              // No errors for x-axis
     double yZoom = 2;
     int lowPtBin, highPtBin;
+    double lowFitPt;
     char saveName[100];
     
     // Scales for different types of spillover plots
@@ -643,12 +665,19 @@ void qaPlotter(){
           // Read yields and widths from the fits
           deltaEtaFitWidth[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(1);
           deltaEtaFitWidth[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(1);
-          deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
+          deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+          //deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] =  spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Integral(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(-1.5+0.001),spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(1.5-0.001),"width")-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
           deltaEtaFitYield[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0);
           deltaPhiFitWidth[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(1);
           deltaPhiFitWidth[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(1);
-          deltaPhiFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
+          deltaPhiFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+          //deltaPhiFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
           deltaPhiFitYield[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0);
+          
+          // XXXXX Some debuggery about the eta yield
+          //cout << "JetTrack: " << iJetTrack << " Centrality: " << iCentrality << " TrackpT: " << iTrackPt << endl;
+          //cout << "Delta eta yield from fit: " << deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] << endl;
+          //cout << "Delta eta yield from bin counting: " << spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Integral(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(-1.5+0.001),spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(1.5-0.001),"width")-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2) << endl;
           
           // Normalize the yields to pT bin width
           deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] = deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt]/(trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);
@@ -659,12 +688,18 @@ void qaPlotter(){
           if(extraSpilloverComparison){
             deltaEtaConstantFitWidth[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->GetParameter(1);
             deltaEtaConstantFitWidth[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->GetParError(1);
-            deltaEtaConstantFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+            deltaEtaConstantFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
             deltaEtaConstantFitYield[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->GetParError(0);
+            deltaPhiConstantFitWidth[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->GetParameter(1);
+            deltaPhiConstantFitWidth[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->GetParError(1);
+            deltaPhiConstantFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
+            deltaPhiConstantFitYield[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->GetParError(0);
             
             // Normalize the yields to the pT bin width
             deltaEtaConstantFitYield[0][iJetTrack][iCentrality][iTrackPt] = deltaEtaConstantFitYield[0][iJetTrack][iCentrality][iTrackPt]/(trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);
             deltaEtaConstantFitYield[1][iJetTrack][iCentrality][iTrackPt] = deltaEtaConstantFitYield[1][iJetTrack][iCentrality][iTrackPt]/(trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);
+            deltaPhiConstantFitYield[0][iJetTrack][iCentrality][iTrackPt] = deltaPhiConstantFitYield[0][iJetTrack][iCentrality][iTrackPt]/(trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);
+            deltaPhiConstantFitYield[1][iJetTrack][iCentrality][iTrackPt] = deltaPhiConstantFitYield[1][iJetTrack][iCentrality][iTrackPt]/(trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);
             
           }
           
@@ -679,18 +714,30 @@ void qaPlotter(){
         // Do not do the spillover graphs for subleading jets, as there is no peak on the subleading side in Hydjet
         if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet || iJetTrack > DijetHistogramManager::kPtWeightedTrackSubleadingJet){
           
+          // Exclude some bins from the fit
+          lowFitPt = 0.5;
+          if(iCentrality > 0) lowFitPt = 1;
+          
           // Put the obtained fit parameters to graphs
           graphDeltaEtaWidth[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaEtaFitWidth[0][iJetTrack][iCentrality],graphErrorsX,deltaEtaFitWidth[1][iJetTrack][iCentrality]);
+          graphDeltaEtaWidth[iJetTrack][iCentrality]->Fit("pol1","","",lowFitPt,8);
           graphDeltaEtaYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaEtaFitYield[0][iJetTrack][iCentrality],graphErrorsX,deltaEtaFitYield[1][iJetTrack][iCentrality]);
+          graphDeltaEtaYield[iJetTrack][iCentrality]->Fit("expo","","",lowFitPt,8);
           graphDeltaPhiWidth[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaPhiFitWidth[0][iJetTrack][iCentrality],graphErrorsX,deltaPhiFitWidth[1][iJetTrack][iCentrality]);
+          graphDeltaPhiWidth[iJetTrack][iCentrality]->Fit("pol1","","",lowFitPt,8);
           graphDeltaPhiYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaPhiFitYield[0][iJetTrack][iCentrality],graphErrorsX,deltaPhiFitYield[1][iJetTrack][iCentrality]);
+          graphDeltaPhiYield[iJetTrack][iCentrality]->Fit("expo","","",lowFitPt,8);
           
           graphDeltaConstantEtaWidth[iJetTrack][iCentrality] = NULL;
           graphDeltaConstantEtaYield[iJetTrack][iCentrality] = NULL;
+          graphDeltaConstantPhiWidth[iJetTrack][iCentrality] = NULL;
+          graphDeltaConstantPhiYield[iJetTrack][iCentrality] = NULL;
           
           if(extraSpilloverComparison){
             graphDeltaConstantEtaWidth[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaEtaConstantFitWidth[0][iJetTrack][iCentrality],graphErrorsX,deltaEtaConstantFitWidth[1][iJetTrack][iCentrality]);
             graphDeltaConstantEtaYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaEtaConstantFitYield[0][iJetTrack][iCentrality],graphErrorsX,deltaEtaConstantFitYield[1][iJetTrack][iCentrality]);
+            graphDeltaConstantPhiWidth[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaPhiConstantFitWidth[0][iJetTrack][iCentrality],graphErrorsX,deltaPhiConstantFitWidth[1][iJetTrack][iCentrality]);
+            graphDeltaConstantPhiYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaPhiConstantFitYield[0][iJetTrack][iCentrality],graphErrorsX,deltaPhiConstantFitYield[1][iJetTrack][iCentrality]);
           }
           
         } // Not a subleading jet if
@@ -721,19 +768,19 @@ void qaPlotter(){
         if(iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackInclusiveJet) yZoom = 2;
         
         sprintf(saveName,"spilloverEtaFitWidthCentralityComparison%s",saveNameComment);
-        drawSpilloverGraph(drawer,graphDeltaEtaWidth[iJetTrack],iJetTrack,yZoom,"Spillover #Delta#eta width",false,saveFigures,saveName);
+        drawSpilloverGraph(drawer,graphDeltaEtaWidth[iJetTrack],iJetTrack,yZoom,"Spillover #Delta#eta width",false,saveFigures,saveName,"pol1");
         sprintf(saveName,"spilloverEtaFitYieldCentralityComparison%s",saveNameComment);
-        drawSpilloverGraph(drawer,graphDeltaEtaYield[iJetTrack],iJetTrack,yZoom+1,"Spillover #Delta#eta yield",true,saveFigures,saveName);
+        drawSpilloverGraph(drawer,graphDeltaEtaYield[iJetTrack],iJetTrack,yZoom+1,"Spillover #Delta#eta yield",true,saveFigures,saveName,"expo");
         sprintf(saveName,"spilloverPhiFitWidthCentralityComparison%s",saveNameComment);
-        drawSpilloverGraph(drawer,graphDeltaPhiWidth[iJetTrack],iJetTrack,yZoom,"Spillover #Delta#phi width",false,saveFigures,saveName);
+        drawSpilloverGraph(drawer,graphDeltaPhiWidth[iJetTrack],iJetTrack,yZoom,"Spillover #Delta#phi width",false,saveFigures,saveName,"pol1");
         sprintf(saveName,"spilloverPhiFitYieldCentralityComparison%s",saveNameComment);
-        drawSpilloverGraph(drawer,graphDeltaPhiYield[iJetTrack],iJetTrack,yZoom+1,"Spillover #Delta#phi yield",true,saveFigures,saveName);
+        drawSpilloverGraph(drawer,graphDeltaPhiYield[iJetTrack],iJetTrack,yZoom+1,"Spillover #Delta#phi yield",true,saveFigures,saveName,"expo");
         
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           sprintf(saveName,"spilloverFitWidthEtaPhiComparison%s",saveNameComment);
-          drawSpilloverGraphComparison(drawer,graphDeltaEtaWidth[iJetTrack][iCentrality],graphDeltaPhiWidth[iJetTrack][iCentrality],iJetTrack,iCentrality,yZoom,"Spillover fit width",false,saveFigures,saveName,graphDeltaConstantEtaWidth[iJetTrack][iCentrality]);
+          drawSpilloverGraphComparison(drawer,graphDeltaEtaWidth[iJetTrack][iCentrality],graphDeltaPhiWidth[iJetTrack][iCentrality],iJetTrack,iCentrality,yZoom,"Spillover fit width",false,saveFigures,saveName,graphDeltaConstantEtaWidth[iJetTrack][iCentrality],"pol1");
           sprintf(saveName,"spilloverFitYieldEtaPhiComparison%s",saveNameComment);
-          drawSpilloverGraphComparison(drawer,graphDeltaEtaYield[iJetTrack][iCentrality],graphDeltaPhiYield[iJetTrack][iCentrality],iJetTrack,iCentrality,yZoom+1,"Spillover fit yield",true,saveFigures,saveName,graphDeltaConstantEtaYield[iJetTrack][iCentrality]);
+          drawSpilloverGraphComparison(drawer,graphDeltaEtaYield[iJetTrack][iCentrality],graphDeltaPhiYield[iJetTrack][iCentrality],iJetTrack,iCentrality,yZoom+1,"Spillover fit yield",true,saveFigures,saveName,graphDeltaConstantEtaYield[iJetTrack][iCentrality],"expo");
         } // centrality loop
         
       } // not subleading jet if
