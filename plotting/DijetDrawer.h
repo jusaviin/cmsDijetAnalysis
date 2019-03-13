@@ -165,7 +165,7 @@ private:
   void DrawTrackHistograms();     // Draw track histograms
   void DrawJetTrackCorrelationHistograms(); // Draw jet-track correlation histograms
   void DrawJetShapeHistograms();  // Draw jet shape histograms
-  void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
+  void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = "", TString extraString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
   
 };

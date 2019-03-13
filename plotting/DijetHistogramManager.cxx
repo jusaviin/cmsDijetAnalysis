@@ -29,6 +29,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fLastLoadedCentralityBin(knCentralityBins-1),
   fFirstLoadedTrackPtBin(0),
   fLastLoadedTrackPtBin(knTrackPtBins-1),
+  fnAsymmetryBins(kMaxAsymmetryBins),
   fAvoidMixingPeak(false),
   fImproviseMixing(false),
   fDefaultMixingDeltaEtaFitRange(0.2)
@@ -105,7 +106,7 @@ DijetHistogramManager::DijetHistogramManager() :
     
     // Single jet category loop
     for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
-      for(int iAsymmetry = 0; iAsymmetry < knAsymmetryBins+1; iAsymmetry++){
+      for(int iAsymmetry = 0; iAsymmetry < kMaxAsymmetryBins+1; iAsymmetry++){
         fhJetPt[iJetCategory][iCentrality][iAsymmetry] = NULL;      // Jet pT histograms
         fhJetPhi[iJetCategory][iCentrality][iAsymmetry] = NULL;     // Jet phi histograms
         fhJetEta[iJetCategory][iCentrality][iAsymmetry] = NULL;     // Jet eta histograms
@@ -192,6 +193,8 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
   fCompactSystemAndEnergy.ReplaceAll(" ","");
   fCompactSystemAndEnergy.ReplaceAll(".","v");
   
+  // Read the number of asymmetry bins from the card
+  fnAsymmetryBins = fCard->GetNAsymmetryBins();
 }
 
 /*
@@ -215,6 +218,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fLastLoadedCentralityBin(in.fLastLoadedCentralityBin),
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
   fLastLoadedTrackPtBin(in.fLastLoadedTrackPtBin),
+  fnAsymmetryBins(in.fnAsymmetryBins),
   fAvoidMixingPeak(in.fAvoidMixingPeak),
   fImproviseMixing(in.fImproviseMixing),
   fDefaultMixingDeltaEtaFitRange(in.fDefaultMixingDeltaEtaFitRange),
@@ -282,7 +286,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
     
     // Single jet category loop
     for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
-      for(int iAsymmetry = 0; iAsymmetry < knAsymmetryBins+1; iAsymmetry++){
+      for(int iAsymmetry = 0; iAsymmetry < kMaxAsymmetryBins+1; iAsymmetry++){
         fhJetPt[iJetCategory][iCentrality][iAsymmetry] = in.fhJetPt[iJetCategory][iCentrality][iAsymmetry];         // Jet pT histograms
         fhJetPhi[iJetCategory][iCentrality][iAsymmetry] = in.fhJetPhi[iJetCategory][iCentrality][iAsymmetry];       // Jet phi histograms
         fhJetEta[iJetCategory][iCentrality][iAsymmetry] = in.fhJetEta[iJetCategory][iCentrality][iAsymmetry];       // Jet eta histograms
@@ -693,7 +697,7 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
   int lowPtBinIndex[1];
   int highPtBinIndex[1];
   double lowPtBinLimit[1] = {120};
-  double highPtBinLimit[1] = {300};
+  double highPtBinLimit[1] = {5020};
   
   for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
     
@@ -708,9 +712,9 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
       lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
       higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
       
-      for(int iAsymmetry = 0; iAsymmetry < knAsymmetryBins+1; iAsymmetry++){
+      for(int iAsymmetry = 0; iAsymmetry < fnAsymmetryBins+1; iAsymmetry++){
         
-        if(nAxesArray[iJetCategory] == 1 && (iAsymmetry > 0 && iAsymmetry < knAsymmetryBins)) continue; // Only fill histograms without asymmetry selection for inclusive jet histograms. Fill pT > 120 for asymmetry bin 0.
+        if(nAxesArray[iJetCategory] == 1 && (iAsymmetry > 0 && iAsymmetry < fnAsymmetryBins)) continue; // Only fill histograms without asymmetry selection for inclusive jet histograms. Fill pT > 120 for asymmetry bin 0.
         
         axisIndices[0] = centralityIndex[iJetCategory]; axisIndices[1] = 3;
         lowLimits[0] = lowerCentralityBin; lowLimits[1] = iAsymmetry+1;
@@ -718,7 +722,7 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
         
         // For the last index of array, disable asymmetry contraint
         nAxes = nAxesArray[iJetCategory];
-        if(iAsymmetry == knAsymmetryBins) nAxes = 1;
+        if(iAsymmetry == fnAsymmetryBins) nAxes = 1;
         
         // Fill histograms without dijet asymmetry information with pT cut 120 to asymmetry bin 0
         if(nAxes == 1 && iAsymmetry == 0){
@@ -782,10 +786,10 @@ void DijetHistogramManager::LoadDijetHistograms(){
     fhDijetAsymmetry[iCentralityBin][knJetPtBins] = FindHistogram(fInputFile,"dijet",3,4,lowerCentralityBin,higherCentralityBin);
     fhDijetXj[iCentralityBin][knJetPtBins] = FindHistogram(fInputFile,"dijet",5,4,lowerCentralityBin,higherCentralityBin);
     if(fLoad2DHistograms) fhDijetLeadingVsSubleadingPt[iCentralityBin] = FindHistogram2D(fInputFile,"dijet",0,1,4,lowerCentralityBin,higherCentralityBin);
-    
+
     // Load the asymmetry histograms in jet pT bins
     for(int iJetPt = 0; iJetPt < knJetPtBins; iJetPt++){
-      
+
       // Select the jet pT bin indices
       duplicateRemoverJetPt = (iJetPt == knJetPtBins - 1) ? 0 : -1;  // Set duplicate remover to 0 for the last jet pT bin
       lowerJetPtBin = fJetPtBinIndices[iJetPt];
@@ -1134,13 +1138,18 @@ TH1D* DijetHistogramManager::FindHistogram(TFile *inputFile, const char *name, i
   for(int iBinIndex = 0; iBinIndex < nAxes; iBinIndex++){
     sprintf(newName,"%s_%d=%d-%d",newName,axisNumber[iBinIndex],lowBinIndex[iBinIndex],highBinIndex[iBinIndex]);
   }
-  
+
   // Project out the histogram and give it the created unique name
-  TH1D *projectedHistogram = (TH1D*) histogramArray->Projection(xAxis);
-  projectedHistogram->SetName(newName);
+  TH1D *projectedHistogram = NULL;
   
-  // Apply bin width normalization to the projected histogram
-  projectedHistogram->Scale(1.0,"width");
+  // Check that we are not trying to project a non-existing axis
+  if(xAxis < histogramArray->GetNdimensions()){
+    projectedHistogram =(TH1D*) histogramArray->Projection(xAxis);
+    projectedHistogram->SetName(newName);
+  
+    // Apply bin width normalization to the projected histogram
+    projectedHistogram->Scale(1.0,"width");
+  }
   
   // Return the projected histogram
   return projectedHistogram;
@@ -1209,15 +1218,15 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
       // Check that the histograms are actually there before trying to save them.
-      if(fhJetPt[iJetCategory][iCentralityBin][knAsymmetryBins] == NULL) {
+      if(fhJetPt[iJetCategory][iCentralityBin][fnAsymmetryBins] == NULL) {
         cout << "Could not find histograms of type " << fSingleJetHistogramName[iJetCategory] << " to write. Will skip writing these." << endl;
         continue;
       }
       
-      for(int iAsymmetry = 0; iAsymmetry < knAsymmetryBins+1; iAsymmetry++){
+      for(int iAsymmetry = 0; iAsymmetry < fnAsymmetryBins+1; iAsymmetry++){
         
         // Single jet pT
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%sPt_C%d",fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%sPt_C%dA%d",fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1225,7 +1234,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         if(fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
         
         // Single jet phi
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%sPhi_C%d",fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%sPhi_C%dA%d",fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1233,7 +1242,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         if(fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
         
         // Single jet eta
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%sEta_C%d",fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%sEta_C%dA%d",fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1241,7 +1250,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         if(fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
         
         //Single jet eta-phi
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%sEtaPhi_C%d",fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%sEtaPhi_C%dA%d",fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1555,10 +1564,10 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
-      for(int iAsymmetry = 0; iAsymmetry < knAsymmetryBins+1; iAsymmetry++){
+      for(int iAsymmetry = 0; iAsymmetry < fnAsymmetryBins+1; iAsymmetry++){
         
         // Always load single jet pT histograms
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%s/%sPt_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%s/%sPt_C%dA%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1568,7 +1577,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
         if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the loaded the selected histograms
         
         // Single jet phi
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%s/%sPhi_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%s/%sPhi_C%dA%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1576,7 +1585,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
         fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry] = (TH1D*) fInputFile->Get(histogramNamer);
         
         // Single jet eta
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%s/%sEta_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%s/%sEta_C%dA%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1584,7 +1593,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
         fhJetEta[iJetCategory][iCentralityBin][iAsymmetry] = (TH1D*) fInputFile->Get(histogramNamer);
         
         //Single jet eta-phi
-        if(iAsymmetry == knAsymmetryBins){
+        if(iAsymmetry == fnAsymmetryBins){
           sprintf(histogramNamer,"%s/%sEtaPhi_C%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin);
         } else {
           sprintf(histogramNamer,"%s/%sEtaPhi_C%dA%d",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory],iCentralityBin,iAsymmetry);
@@ -1616,11 +1625,11 @@ void DijetHistogramManager::LoadProcessedHistograms(){
       for(int iJetPt = 0; iJetPt < knJetPtBins; iJetPt++){
         
         // Dijet asymmetry AJ in jet pT bins
-        sprintf(histogramNamer,"dijetAsymmetry_C%dT%d",iCentralityBin,iJetPt);
+        sprintf(histogramNamer,"dijet/dijetAsymmetry_C%dT%d",iCentralityBin,iJetPt);
         fhDijetAsymmetry[iCentralityBin][iJetPt] = (TH1D*) fInputFile->Get(histogramNamer);
         
         // Dijet asymmetry xJ in jet pT bins
-        sprintf(histogramNamer,"dijetXj_C%dT%d",iCentralityBin,iJetPt);
+        sprintf(histogramNamer,"dijet/dijetXj_C%dT%d",iCentralityBin,iJetPt);
         fhDijetXj[iCentralityBin][iJetPt] = (TH1D*) fInputFile->Get(histogramNamer);
         
       }
@@ -2090,6 +2099,11 @@ int DijetHistogramManager::GetNJetPtBins() const{
   return knJetPtBins;
 }
 
+// Getter for the number of dijet asymmetry AJ bins
+int DijetHistogramManager::GetNAsymmetryBins() const{
+  return fnAsymmetryBins;
+}
+
 // Getter for correlation type string
 TString DijetHistogramManager::GetCorrelationTypeString(int iCorrelationType) const{
   iCorrelationType = BinIndexCheck(knCorrelationTypes,iCorrelationType);
@@ -2232,22 +2246,26 @@ TH1D* DijetHistogramManager::GetHistogramCentralityDijet() const{
 // Getters for single jet histograms
 
 // Getter for jet pT histograms
-TH1D* DijetHistogramManager::GetHistogramJetPt(const int iJetType, const int iCentrality, const int iAsymmetry) const{
+TH1D* DijetHistogramManager::GetHistogramJetPt(const int iJetType, const int iCentrality, int iAsymmetry) const{
+  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetPt[iJetType][iCentrality][iAsymmetry];
 }
 
 // Getter for jet phi histograms
-TH1D* DijetHistogramManager::GetHistogramJetPhi(const int iJetType, const int iCentrality, const int iAsymmetry) const{
+TH1D* DijetHistogramManager::GetHistogramJetPhi(const int iJetType, const int iCentrality, int iAsymmetry) const{
+  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetPhi[iJetType][iCentrality][iAsymmetry];
 }
 
 // Getter for jet eta histograms
-TH1D* DijetHistogramManager::GetHistogramJetEta(const int iJetType, const int iCentrality, const int iAsymmetry) const{
+TH1D* DijetHistogramManager::GetHistogramJetEta(const int iJetType, const int iCentrality, int iAsymmetry) const{
+  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetEta[iJetType][iCentrality][iAsymmetry];
 }
 
 // Getter for 2D eta-phi histogram for jets
-TH2D* DijetHistogramManager::GetHistogramJetEtaPhi(const int iJetType, const int iCentrality, const int iAsymmetry) const{
+TH2D* DijetHistogramManager::GetHistogramJetEtaPhi(const int iJetType, const int iCentrality, int iAsymmetry) const{
+  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetEtaPhi[iJetType][iCentrality][iAsymmetry];
 }
 
@@ -2409,13 +2427,14 @@ int DijetHistogramManager::GetNDijets() const{
 // Getter for integral over leading jet pT. Include the overflow bin in the integral. There is no jet pT limit
 // in for the correlation but the histogram has limited range, so to get all the jets into normalization we
 // need to include the overflow bin in the intagral.
-double DijetHistogramManager::GetPtIntegral(const int iCentrality, const int iAsymmetry) const{
+double DijetHistogramManager::GetPtIntegral(const int iCentrality, int iAsymmetry) const{
+  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetPt[kLeadingJet][iCentrality][iAsymmetry]->Integral(1,fhJetPt[kLeadingJet][iCentrality][iAsymmetry]->GetNbinsX()+1,"width");
 }
 
 // Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin. Include the overflow bin in the integral
 double DijetHistogramManager::GetAnyLeadingJetPtIntegral(const int iCentrality) const{
-  return fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->FindBin(120),fhJetPt[kAnyLeadingJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
+  return fhJetPt[kAnyLeadingJet][iCentrality][fnAsymmetryBins]->Integral(fhJetPt[kAnyLeadingJet][iCentrality][fnAsymmetryBins]->FindBin(120),fhJetPt[kAnyLeadingJet][iCentrality][fnAsymmetryBins]->GetNbinsX()+1,"width");
 }
 
 /*
@@ -2425,7 +2444,7 @@ double DijetHistogramManager::GetAnyLeadingJetPtIntegral(const int iCentrality) 
  *  const double minPt = Jet pT above which the integral is calculated
  */
 double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality, const double minPt) const{
-  return fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->FindBin(minPt),fhJetPt[kAnyJet][iCentrality][knAsymmetryBins]->GetNbinsX()+1,"width");
+  return fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->FindBin(minPt),fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->GetNbinsX()+1,"width");
 }
 
 // Setter for avoiding possible peaks in mixed event distribution

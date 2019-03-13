@@ -50,7 +50,7 @@ public:
   static const int knCentralityBins = 4;       // Number of centrality bins
   static const int knTrackPtBins = 6;          // Number of track pT bins
   static const int knFittedFlowComponents = 4; // Number of fitted flow components
-  static const int knAsymmetryBins = 4;        // Number of dijet asymmetry bins
+  static const int kMaxAsymmetryBins = 5;      // Maximum allowed number of dijet asymmetry bins
   static const int knGenJetPtBins = 45;        // Number of generator level jet pT bins for jet pT closures
   static const int knJetPtBins = 3;            // Number of leading jet pT bins for asymmetry histograms
   
@@ -158,6 +158,7 @@ public:
   int GetNCentralityBins() const; // Getter for the number of centrality bins
   int GetNTrackPtBins() const;    // Getter for the number of track pT bins
   int GetNJetPtBins() const;      // Getter for the number of jet pT bins
+  int GetNAsymmetryBins() const;  // Getter for the number of dijet asymmetry AJ bins
   double GetCentralityBinBorder(const int iCentrality) const;  // Getter for i:th centrality bin border
   double GetTrackPtBinBorder(const int iTrackPt) const;        // Getter for i:th track pT bin border
   double GetJetPtBinBorder(const int iJetPt) const;            // Getter for i:th jet pT bin border
@@ -195,10 +196,10 @@ public:
   TH1D* GetHistogramCentralityDijet() const; // Getter for centrality histogram in dijet events
   
   // Getters for single jet histograms
-  TH1D* GetHistogramJetPt(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const;     // Jet pT histograms
-  TH1D* GetHistogramJetPhi(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const;    // Jet phi histograms
-  TH1D* GetHistogramJetEta(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const;    // Jet eta histograms
-  TH2D* GetHistogramJetEtaPhi(const int iJetType, const int iCentrality, const int iAsymmetry = knAsymmetryBins) const; // 2D eta-phi histogram for jets
+  TH1D* GetHistogramJetPt(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;     // Jet pT histograms
+  TH1D* GetHistogramJetPhi(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;    // Jet phi histograms
+  TH1D* GetHistogramJetEta(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;    // Jet eta histograms
+  TH2D* GetHistogramJetEtaPhi(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const; // 2D eta-phi histogram for jets
   
   // Getters for dijet histograms
   TH1D* GetHistogramDijetDeltaPhi(const int iCentrality) const;                                  // Dijet deltaPhi histograms
@@ -235,7 +236,7 @@ public:
   // Getters for normalization information
   int GetNEvents() const;                      // Getter for the number of events passing the cuts
   int GetNDijets() const;                      // Getter for the number of dijets
-  double GetPtIntegral(const int iCentrality, const int iAsymmetry = knAsymmetryBins) const; // Getter for integral over leading jet pT in a given centrality and dijet asymmetry bin
+  double GetPtIntegral(const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const; // Getter for integral over leading jet pT in a given centrality and dijet asymmetry bin
   double GetAnyLeadingJetPtIntegral(int iCentrality) const; // Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
   double GetInclusiveJetPtIntegral(int iCentrality, const double minPt = 120) const; // Getter for integral over inclusive jet pT above minPt in a given centrality bin
   
@@ -299,6 +300,7 @@ private:
   TString fCompactDeltaPhiString[knDeltaPhiBins];    // Names added to figure names for deltaPhi bins
   int fJetPtBinIndices[knJetPtBins+1];               // Indices for leading jet pT bins for asymmetry histograms
   double fJetPtBinBorders[knJetPtBins+1];            // Bin borders for the leading jet pT bins from which the indices are obtained
+  int fnAsymmetryBins;                               // Number of asymmetry bins in the JCard of the data file
   
   // =============================================
   // ============== Event mixing =================
@@ -325,10 +327,10 @@ private:
   TH1D *fhPtHatWeighted;      // Weighted pT hat distribution (only meaningful for MC)
   
   // Histograms for single jets
-  TH1D *fhJetPt[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];      // Jet pT histograms
-  TH1D *fhJetPhi[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];     // Jet phi histograms
-  TH1D *fhJetEta[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];     // Jet eta histograms
-  TH2D *fhJetEtaPhi[knSingleJetCategories][knCentralityBins][knAsymmetryBins+1];  // 2D eta-phi histogram for jets
+  TH1D *fhJetPt[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];      // Jet pT histograms
+  TH1D *fhJetPhi[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];     // Jet phi histograms
+  TH1D *fhJetEta[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];     // Jet eta histograms
+  TH2D *fhJetEtaPhi[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];  // 2D eta-phi histogram for jets
   
   // Histograms for dijets
   TH1D *fhDijetDphi[knCentralityBins];                    // Dijet deltaPhi histograms

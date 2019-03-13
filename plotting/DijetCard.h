@@ -78,6 +78,10 @@ public:
   void Write(TDirectory *file);  // Write the contents of the card to a file
   double GetMaxDeltaEta() const; // Get maximum deltaEta possible using jet and track cuts in the card
   
+  int GetNAsymmetryBins() const; // Get the number of asymmetry bins
+  double GetLowBinBorderAsymmetry(const int iBin) const;  // Get the low border of i:th asymmetry bin
+  double GetHighBinBorderAsymmetry(const int iBin) const; // Get the high border of i:th asymmetry bin
+  
 };
 
 #endif

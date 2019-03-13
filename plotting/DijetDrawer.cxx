@@ -270,17 +270,23 @@ void DijetDrawer::DrawDijetHistograms(){
   TH1D *drawnHistogram;
   TH2D *drawnHistogram2D;
   TH1D *asymmetryIntegral;
+  TH1D *jetPtHistogram;
   TLegend *legend;
   TF1 *fitFunction;
   
   // Helper variables for centrality naming in figures
   TString centralityString;
   TString compactCentralityString;
+  TString jetPtString;
+  TString compactJetPtString;
+  TString dijetString;
 
-  // Helper variable for histogram normalization and integral calculation
+  // Helper variables for histogram normalization and integral calculation
   double nDijets;
   double integralValue;
   double integralError;
+  const int nJetPtBins = fHistograms->GetNJetPtBins();
+  const int nAsymmetryBins = fHistograms->GetNAsymmetryBins();
   
   // Loop over centrality
   for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
@@ -303,10 +309,11 @@ void DijetDrawer::DrawDijetHistograms(){
     // === Dijet asymmetry AJ ===
     drawnHistogram = fHistograms->GetHistogramDijetAsymmetry(iCentrality);
     drawnHistogram->SetMarkerStyle(34);
-    drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
-    fDrawer->DrawHistogram(drawnHistogram,"A_{J}","#frac{1}{N_{dijet}} #frac{dN}{dA_{J}}"," ");
-    legend = new TLegend(0.62,0.75,0.82,0.9);
-    SetupLegend(legend,centralityString);
+    //drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
+    drawnHistogram->Scale(drawnHistogram->GetBinWidth(0)); // Show the absolute number of hits in each bin
+    fDrawer->DrawHistogram(drawnHistogram,"A_{J}",/*"#frac{1}{N_{dijet}}*/" #frac{dN}{dA_{J}}"," ");
+    legend = new TLegend(0.62,0.65,0.82,0.9);
+    SetupLegend(legend,centralityString,Form("N_{dijet} = %.0f",nDijets));
     legend->Draw();
     
     // Save the figure to a file
@@ -338,11 +345,17 @@ void DijetDrawer::DrawDijetHistograms(){
     fDrawer->DrawHistogram(asymmetryIntegral,"A_{J}","Fraction of integral", " ");
     fitFunction->Draw("same");
     legend = new TLegend(0.62,0.2,0.82,0.45);
-    SetupLegend(legend,centralityString,Form("N_{jets} = %.0f",nDijets));
+    SetupLegend(legend,centralityString,Form("N_{dijet} = %.0f",nDijets));
     legend->Draw();
     
     // Save the figure to a file
     SaveFigure("asymmetryIntegral",compactCentralityString);
+
+    // Print the number of dijets in each asymmetry bin
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      integralValue = fHistograms->GetPtIntegral(iCentrality,iAsymmetry);
+      cout << "Total number of jets for asymmetry bin " << iAsymmetry << ": " << integralValue << endl;
+    }
     
     // === Dijet asymmetry xJ ===
     drawnHistogram = fHistograms->GetHistogramDijetXj(iCentrality);
@@ -350,10 +363,11 @@ void DijetDrawer::DrawDijetHistograms(){
     // xJ histogram are newer addition, do not crash the code if they are not there
     if(drawnHistogram != NULL){
       drawnHistogram->SetMarkerStyle(34);
-      drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
-      fDrawer->DrawHistogram(drawnHistogram,"x_{J}","#frac{1}{N_{dijet}} #frac{dN}{dx_{J}}"," ");
-      legend = new TLegend(0.17,0.75,0.37,0.9);
-      SetupLegend(legend,centralityString);
+      //drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
+      drawnHistogram->Scale(drawnHistogram->GetBinWidth(0)); // Show the absolute number of hits in each bin
+      fDrawer->DrawHistogram(drawnHistogram,"x_{J}",/*"#frac{1}{N_{dijet}}*/ "#frac{dN}{dx_{J}}"," ");
+      legend = new TLegend(0.17,0.65,0.37,0.9);
+      SetupLegend(legend,centralityString,Form("N_{dijet} = %.0f",nDijets));
       legend->Draw();
       
       // Save the figure to a file
@@ -376,6 +390,63 @@ void DijetDrawer::DrawDijetHistograms(){
     
     // Change right margin back to 1D-drawing
     fDrawer->SetRightMargin(0.06);
+    
+    // Asymmetries in jet pT bins
+    for(int iJetPt = 0; iJetPt < nJetPtBins; iJetPt++){
+      
+      // Prepare jet pT strings
+      jetPtString = Form("%.0f < Jet p_{T} < %.0f",fHistograms->GetJetPtBinBorder(iJetPt),fHistograms->GetJetPtBinBorder(iJetPt+1));
+      compactJetPtString =Form("_T=%.0f-%.0f",fHistograms->GetJetPtBinBorder(iJetPt),fHistograms->GetJetPtBinBorder(iJetPt+1));
+      
+      // Draw the asymmetry AJ
+      drawnHistogram = fHistograms->GetHistogramDijetAsymmetry(iCentrality,iJetPt);
+      if(drawnHistogram != NULL){ // No jet pT binning in older files, do not crash the code for them
+        drawnHistogram->SetMarkerStyle(34);
+        nDijets = drawnHistogram->Integral("width");
+        drawnHistogram->Scale(drawnHistogram->GetBinWidth(0));
+        fDrawer->DrawHistogram(drawnHistogram,"A_{J}",/*"#frac{1}{N_{dijet}}*/" #frac{dN}{dA_{J}}"," ");
+        
+        // Put the centrality, jetPt and number of dijets to the legend
+        dijetString = Form("N_{dijet}: %.0f",nDijets);
+        legend = new TLegend(0.59,0.65,0.79,0.9);
+        SetupLegend(legend,centralityString,jetPtString,dijetString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        SaveFigure("asymmetry",compactCentralityString,compactJetPtString);
+        
+        // Print the number of dijets in each asymmetry bin for this jet pT bin
+        for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+          jetPtHistogram = fHistograms->GetHistogramJetPt(DijetHistogramManager::kLeadingJet,iCentrality,iAsymmetry);
+          int firstBin = jetPtHistogram->FindBin(fHistograms->GetJetPtBinBorder(iJetPt)+0.01);
+          int lastBin = jetPtHistogram->FindBin(fHistograms->GetJetPtBinBorder(iJetPt+1)-0.01);
+          integralValue = jetPtHistogram->Integral(firstBin,lastBin,"width");
+          cout << "Total number of jets for jet pT bin " << iJetPt << " and asymmetry bin " << iAsymmetry << ": " << integralValue << endl;
+        }
+      }
+      
+      // Draw the asymmetry xJ
+      drawnHistogram = fHistograms->GetHistogramDijetXj(iCentrality,iJetPt);
+      if(drawnHistogram != NULL){ // No jet pT binning in older files, do not crash the code for them
+        drawnHistogram->SetMarkerStyle(34);
+        nDijets = drawnHistogram->Integral("width");
+        drawnHistogram->Scale(drawnHistogram->GetBinWidth(0));
+        fDrawer->DrawHistogram(drawnHistogram,"x_{J}",/*"#frac{1}{N_{dijet}}*/" #frac{dN}{dx_{J}}"," ");
+        
+        // Put the centrality, jetPt and number of dijets to the legend
+        jetPtString = Form("%.0f < Jet p_{T} < %.0f",fHistograms->GetJetPtBinBorder(iJetPt),fHistograms->GetJetPtBinBorder(iJetPt+1));
+        dijetString = Form("N_{dijet}: %.0f",nDijets);
+        legend = new TLegend(0.14,0.65,0.34,0.9);
+        SetupLegend(legend,centralityString,jetPtString,dijetString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        SaveFigure("asymmetryXj",compactCentralityString,compactJetPtString);
+      }
+      
+    } // jet pT loop
+    
+    
   } // Centrality loop
 }
 
@@ -1008,12 +1079,14 @@ void DijetDrawer::DrawJetShapeStack(){
  *  TLegend *legend = Pointer to legend that needs setup
  *  TString centralityString = Collision centrality
  *  TString trackString = Track pT information
+ *  TString extraString = Additional line to be put into the legend
  */
-void DijetDrawer::SetupLegend(TLegend *legend, TString centralityString, TString trackString){
+void DijetDrawer::SetupLegend(TLegend *legend, TString centralityString, TString trackString, TString extraString){
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   legend->AddEntry((TObject*) 0, fSystemAndEnergy.Data(), "");
   if(fSystemAndEnergy.Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
+  if(extraString != "") legend->AddEntry((TObject*) 0,extraString.Data(),"");
 }
 
 /*

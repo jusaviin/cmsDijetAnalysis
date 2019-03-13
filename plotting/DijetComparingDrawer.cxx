@@ -39,7 +39,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fLastDrawnCentralityBin(0),
   fFirstDrawnTrackPtBin(0),
   fLastDrawnTrackPtBin(0),
-  fAsymmetryBin(DijetHistogramManager::knAsymmetryBins)
+  fAsymmetryBin(DijetHistogramManager::kMaxAsymmetryBins)
 {
   
   // Create a new drawer
@@ -1640,10 +1640,10 @@ void DijetComparingDrawer::SetTrackPtBinRange(const int first, const int last){
 
 // Setter for the selected asymmetry bin
 void DijetComparingDrawer::SetAsymmetryBin(const int asymmetry){
-  if(asymmetry >= 0 && asymmetry < DijetHistogramManager::knAsymmetryBins){
+  if(asymmetry >= 0 && asymmetry < DijetHistogramManager::kMaxAsymmetryBins){
     fAsymmetryBin = asymmetry;
   } else {
-    fAsymmetryBin = DijetHistogramManager::knAsymmetryBins;
+    fAsymmetryBin = DijetHistogramManager::kMaxAsymmetryBins;
   }
 }
 

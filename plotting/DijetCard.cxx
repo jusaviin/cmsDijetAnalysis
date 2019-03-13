@@ -119,6 +119,33 @@ double DijetCard::GetMaxDeltaEta() const{
   return (*fJetEtaCutVector)[1] + (*fTrackEtaCutVector)[1];
 }
 
+// Get the number of asymmetry bins
+int DijetCard::GetNAsymmetryBins() const{
+  return fAsymmetryBinEdgesVector->GetNoElements()-1;
+}
+
+// Get the low border of i:th asymmetry bin
+double DijetCard::GetLowBinBorderAsymmetry(const int iBin) const{
+  
+  // Sanity check for the input
+  if(iBin < 0) return -1;
+  if(iBin >= GetNAsymmetryBins()) return -1;
+  
+  // Return the asked bin index
+  return (*fAsymmetryBinEdgesVector)[iBin+1];
+}
+
+// Get the high border of i:th asymmetry bin
+double DijetCard::GetHighBinBorderAsymmetry(const int iBin) const{
+  
+  // Sanity check for the input
+  if(iBin < 0) return -1;
+  if(iBin >= GetNAsymmetryBins()) return -1;
+  
+  // Return the asked bin index
+  return (*fAsymmetryBinEdgesVector)[iBin+2];
+}
+
 /*
  * Reader for all the vectors from the input file
  */
