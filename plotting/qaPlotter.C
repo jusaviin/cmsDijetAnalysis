@@ -362,13 +362,13 @@ void qaPlotter(){
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
+  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
+  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
   bool constantBigCanvasScale = true;        // Use same scale for all bins in big canvas
-  bool extraSpilloverComparison = true;      // Add constant fit deltaEta to spillover fit parameter comparison plots
+  bool extraSpilloverComparison = false;      // Add constant fit deltaEta to spillover fit parameter comparison plots
   bool constantSpilloverScale = false;        // True = Draw spillover plots of one type all in the same scale, False = Zoom to fits
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,(regularJetTrack && !calculateBackgroundOverlap),uncorrectedJetTrack,(ptWeightedJetTrack && !calculateBackgroundOverlap),inclusiveJetTrack,inclusiveJetTrack};
@@ -380,8 +380,8 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
   TFile *spilloverQaFile[2];
-  spilloverQaFile[0] = TFile::Open("fittedSpilloverTestingFixed_QA.root");
-  spilloverQaFile[1] = TFile::Open("fittedSpilloverTesting_QA.root"); // For fit to mixed event corrected HYDJET distribution
+  spilloverQaFile[0] = TFile::Open("fixedCentralitySpillover_QA.root");
+  spilloverQaFile[1] = TFile::Open("fixedCentralitySpilloverFixYield_QA.root"); // For fit to mixed event corrected HYDJET distribution
   // "spilloverTesting_QA.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18_QA.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2019-02-14_QA.root"
@@ -665,13 +665,14 @@ void qaPlotter(){
           // Read yields and widths from the fits
           deltaEtaFitWidth[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(1);
           deltaEtaFitWidth[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(1);
-          deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
-          //deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] =  spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Integral(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(-1.5+0.001),spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(1.5-0.001),"width")-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
+          //deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0); // Directly the Gauss yield parameter
+          //deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] =  spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Integral(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(-1.5+0.001),spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->FindBin(1.5-0.001),"width")-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);  // Integral of the distribution - constant background
+          deltaEtaFitYield[0][iJetTrack][iCentrality][iTrackPt] =  spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2); // Integral of the fit - constant background
           deltaEtaFitYield[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0);
           deltaPhiFitWidth[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(1);
           deltaPhiFitWidth[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(1);
-          deltaPhiFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
-          //deltaPhiFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2);
+          //deltaPhiFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+          deltaPhiFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2); // Integral of the fit - constant background
           deltaPhiFitYield[1][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0);
           
           // XXXXX Some debuggery about the eta yield
@@ -714,6 +715,7 @@ void qaPlotter(){
         // Do not do the spillover graphs for subleading jets, as there is no peak on the subleading side in Hydjet
         if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet || iJetTrack > DijetHistogramManager::kPtWeightedTrackSubleadingJet){
           
+          double originalValueX, originalValueY, originalErrorX, originalErrorY;
           // Exclude some bins from the fit
           lowFitPt = 0.5;
           if(iCentrality > 0) lowFitPt = 1;
@@ -722,11 +724,42 @@ void qaPlotter(){
           graphDeltaEtaWidth[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaEtaFitWidth[0][iJetTrack][iCentrality],graphErrorsX,deltaEtaFitWidth[1][iJetTrack][iCentrality]);
           graphDeltaEtaWidth[iJetTrack][iCentrality]->Fit("pol1","","",lowFitPt,8);
           graphDeltaEtaYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaEtaFitYield[0][iJetTrack][iCentrality],graphErrorsX,deltaEtaFitYield[1][iJetTrack][iCentrality]);
+          
+          // Remove one point from fit for 0-10 centrality bin
+          if(iCentrality == 0){
+            graphDeltaEtaYield[iJetTrack][iCentrality]->GetPoint(3,originalValueX,originalValueY);
+            originalErrorY = graphDeltaEtaYield[iJetTrack][iCentrality]->GetErrorY(3);
+            originalErrorX = graphDeltaEtaYield[iJetTrack][iCentrality]->GetErrorX(3);
+            graphDeltaEtaYield[iJetTrack][iCentrality]->RemovePoint(3);
+          }
+          
           graphDeltaEtaYield[iJetTrack][iCentrality]->Fit("expo","","",lowFitPt,8);
+          
+          // Return the point to the graph after fit
+          if(iCentrality == 0) {
+            graphDeltaEtaYield[iJetTrack][iCentrality]->SetPoint(5,originalValueX,originalValueY);
+            graphDeltaEtaYield[iJetTrack][iCentrality]->SetPointError(5,originalErrorX,originalErrorY);
+          }
+          
           graphDeltaPhiWidth[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaPhiFitWidth[0][iJetTrack][iCentrality],graphErrorsX,deltaPhiFitWidth[1][iJetTrack][iCentrality]);
           graphDeltaPhiWidth[iJetTrack][iCentrality]->Fit("pol1","","",lowFitPt,8);
           graphDeltaPhiYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX,deltaPhiFitYield[0][iJetTrack][iCentrality],graphErrorsX,deltaPhiFitYield[1][iJetTrack][iCentrality]);
+          
+          // Remove one point from fit for 0-10 centrality bin
+          if(iCentrality == 0){
+            graphDeltaPhiYield[iJetTrack][iCentrality]->GetPoint(3,originalValueX,originalValueY);
+            originalErrorY = graphDeltaPhiYield[iJetTrack][iCentrality]->GetErrorY(3);
+            originalErrorX = graphDeltaPhiYield[iJetTrack][iCentrality]->GetErrorX(3);
+            graphDeltaPhiYield[iJetTrack][iCentrality]->RemovePoint(3);
+          }
+          
           graphDeltaPhiYield[iJetTrack][iCentrality]->Fit("expo","","",lowFitPt,8);
+          
+          // Return the point to the graph after fit
+          if(iCentrality == 0) {
+            graphDeltaPhiYield[iJetTrack][iCentrality]->SetPoint(5,originalValueX,originalValueY);
+            graphDeltaPhiYield[iJetTrack][iCentrality]->SetPointError(5,originalErrorX,originalErrorY);
+          }
           
           graphDeltaConstantEtaWidth[iJetTrack][iCentrality] = NULL;
           graphDeltaConstantEtaYield[iJetTrack][iCentrality] = NULL;
