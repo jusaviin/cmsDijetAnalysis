@@ -66,6 +66,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fMinimumTrackHits(0),
   fSubeventCut(0),
   fMcCorrelationType(0),
+  fAsymmetryBinType(0),
   fFillEventInformation(false),
   fFillJetHistograms(false),
   fFillTrackHistograms(false),
@@ -168,6 +169,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fMixingVzTolerance = fCard->Get("VzTolerance");
   fMaximumMixingVz = FindMixingVzBin(fVzCut);
   fMaximumMixingHiBin = 0;  // This will be changed for heavy ions in the code below
+  
+  // Asymmetry binning
+  fAsymmetryBinType = fCard->Get("AsymmetryBinType");   // 0 = AJ, 1 = xJ
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
@@ -293,7 +297,8 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fChi2QualityCut(in.fChi2QualityCut),
   fMinimumTrackHits(in.fMinimumTrackHits),
   fSubeventCut(in.fSubeventCut),
-  fMcCorrelationType(in.fMcCorrelationType)
+  fMcCorrelationType(in.fMcCorrelationType),
+  fAsymmetryBinType(in.fAsymmetryBinType)
 {
   // Copy constructor
   fTrackReader[DijetHistograms::kSameEvent] = in.fTrackReader[DijetHistograms::kSameEvent];
@@ -368,6 +373,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fMinimumTrackHits = in.fMinimumTrackHits;
   fSubeventCut = in.fSubeventCut;
   fMcCorrelationType = in.fMcCorrelationType;
+  fAsymmetryBinType = in.fAsymmetryBinType;
   
   // Copy the mixing pool
   for(Int_t iVz = 0; iVz < kMaxMixingVzBins; iVz++){
@@ -550,7 +556,8 @@ void DijetAnalyzer::RunAnalysis(){
 
   
   // Variables for jets
-  Double_t dijetAsymmetry = -99;   // Dijet asymmetry AJ
+  Double_t dijetAsymmetry = -99;   // Dijet asymmetry used for binning
+  Double_t dijetAJ = -99;          // Dijet asymmetry AJ
   Double_t dijetXj = -99;          // Dijet asymmetry xJ
   Double_t leadingJetPt = 0;       // Leading jet pT
   Double_t leadingJetPhi = 0;      // Leading jet phi
@@ -1158,9 +1165,11 @@ void DijetAnalyzer::RunAnalysis(){
         
         // Single jet and dijet histograms in dijet events
         if(fFillJetHistograms){
+          
           // Calculate the asymmetry
-          dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
+          dijetAJ = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
           dijetXj = subleadingJetPt/leadingJetPt;
+          dijetAsymmetry = (fAsymmetryBinType == 0) ? dijetAJ : dijetXj;
           
           // Fill the leading jet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
@@ -1182,7 +1191,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerExtendedDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
           fillerExtendedDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
           fillerExtendedDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
-          fillerExtendedDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry AJ
+          fillerExtendedDijet[3] = dijetAJ;                        // Axis 3: Asymmetry AJ
           fillerExtendedDijet[4] = centrality;                     // Axis 4: Centrality
           fillerExtendedDijet[5] = dijetXj;                        // Axis 5: Asymmetry xJ
           fHistograms->fhDijet->Fill(fillerExtendedDijet,fTotalEventWeight);         // Fill the data point to dijet histogram
@@ -1283,8 +1292,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
   Double_t subleadingJetPhi = subleadingJetInfo[1];
   Double_t subleadingJetEta = subleadingJetInfo[2];
   
-  // Calculate the dijet asymmetry
-  Double_t dijetAsymmetry = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
+  // Calculate the dijet asymmetry. Choose AJ or xJ based on selection from JCard.
+  Double_t dijetAsymmetry = (fAsymmetryBinType == 0) ? (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt) : subleadingJetPt/leadingJetPt;
   
   // Loop over all track in the event
   Int_t nTracks = fTrackReader[correlationType]->GetNTracks();

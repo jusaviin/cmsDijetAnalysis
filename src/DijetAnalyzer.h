@@ -141,6 +141,9 @@ private:
   // Correlation type for Monte Carlo
   Int_t fMcCorrelationType;            // Correlation type for Monte Carlo. See enumeration enumMcCorrelationType
   
+  // Asymmetry binnin type
+  Int_t fAsymmetryBinType;             // How to fill asymmetry bins. 0 = Use AJ bins, 1 = Use xJ bins
+  
   // Which histograms are filled. Do not fill all in order to save memory and not to crash jobs.
   Bool_t fFillEventInformation;               // Fill event information histograms
   Bool_t fFillJetHistograms;                  // Fill single and dijet histograms
