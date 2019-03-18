@@ -17,7 +17,7 @@ void produceSpilloverCorrection(){
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "fixedCentralityTest.root";
+  TString outputFileName = "fixedCentralityTest2.root";
   //data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";   // File name for the output file
   TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
   // data/PbPbMC_RecoGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_noCorrections_processed_2019-02-09.root
@@ -391,6 +391,15 @@ void produceSpilloverCorrection(){
         
         // Fill the spillover correction histogram using the two dimensional function
         spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Eval(spilloverCorrectionFiller,"A");
+        
+        // Set the errors to zero after filling the histogram from the two-dimensional function
+        // The systematic error estimation should be done separately, errors would be overestimated otherwise
+        // By default, root just assigns the square root of the bin content as an error for each bin
+        for(int iPhiBin = 0; iPhiBin < spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetNbinsX(); iPhiBin++){
+          for(int iEtaBin = 0; iEtaBin < spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetNbinsY(); iEtaBin++){
+            spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->SetBinError(iPhiBin,iEtaBin,0);
+          }
+        }
         
       } // Track pT loop
     } // Centrality loop

@@ -1230,6 +1230,11 @@ double DijetMethods::GetBackgroundErrorScalingFactor() const{
   return fBackgroundErrorScalingFactor;
 }
 
+// Get the number of bins projected over in the previously done projection
+int DijetMethods::GetNBinsProjectedOver() const{
+  return fnBinsProjectedOver;
+}
+
 // Setter for deltaEta range used for normalizing the mixed event
 void DijetMethods::SetMixedEventFitRegion(const double etaRangeLow, const double etaRangeHigh){
   

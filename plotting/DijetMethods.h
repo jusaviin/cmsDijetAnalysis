@@ -41,6 +41,11 @@ public:
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   TF1* FourierFit(TH1D* backgroundDeltaPhi, const int maxVn); // Do a Fourier fit for the background deltaPhi distribution
   
+  // Project a region in one direction from a two-dimensional histogram
+  TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+  TH1D* ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution
+  int GetNBinsProjectedOver() const; // Get the number of bins projected over in the previously done projection
+  
   // Getters for produced distributions
   TH2D* GetNormalizedMixedEvent() const; // Getter for the most recent normalized mixed event histogram
   TH2D* GetBackground() const;           // Getter for the most recent background distribution used to subtract the background
@@ -148,8 +153,6 @@ private:
   double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter); // Find the normalization scale for the mixed event histogram
   TF1* FitGauss(TH1D* fittedHistogram, double fitRange, double normalizationRange);  // Fit a Gaussian function to a histogram and return the fit function
   TF1* FitGaussAndConstant(TH1D* fittedHistogram, double fitRange, double normalizationRange, double fixedYield);  // Fit a Gaussian function together with a constant to a histogram and return the fit function
-  TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
-  TH1D* ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution
   void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
   bool CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis); // Checker that new bin boundaries correspond to old ones
   int CheckNormalizationSanity(const int normalizationType, const int maxIndex); // Sanity check for input normalizations
