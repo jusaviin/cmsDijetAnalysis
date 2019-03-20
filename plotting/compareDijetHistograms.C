@@ -15,15 +15,15 @@ void compareDijetHistograms(){
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;  // Note: Dijet asymmetry drawing requires two files, first for pp and second for PbPb
-  bool drawLeadingJetHistograms = true;
-  bool drawSubleadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
+  bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -41,7 +41,7 @@ void compareDijetHistograms(){
   
   // Draw jet shape histograms
   bool drawJetShape = false;
-  bool drawJetShapeMCComparison = false;
+  bool drawJetShapeMCComparison = true;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
@@ -59,7 +59,7 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   
   // Logarithmic scales for figures
@@ -121,7 +121,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/PbPbMC_RecoReco_skims_pfJets_noCorrelations_matchedJetsWithFlavor_processed_2019-02-04.root","data/PbPbMC_GenGen_skims_pfJets_noCorrelations_matchedJetsWithFlavor_processed_2019-02-04.root"};
+  TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_jffRebin2_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"

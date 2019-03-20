@@ -398,7 +398,7 @@ void qaPlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = false;          // Save the figures to a file
+  bool saveFigures = true;          // Save the figures to a file
   
   bool drawSpillover = true;              // Draw the QA plots for spillover correction
   bool drawSeagull = false;                // Draw the QA plots for seagull correction
@@ -408,7 +408,7 @@ void qaPlotter(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
@@ -425,11 +425,7 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
   TFile *spilloverQaFile;
-  spilloverQaFile = TFile::Open("fixedCentralityTest2_QA.root");
-  // "spilloverTesting_QA.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18_QA.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2019-02-14_QA.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27_QA.root"
+  spilloverQaFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18_QA.root");
   TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_notAdjustedBackground_processed_2019-02-15_QA.root");
   // "data/dijetPbPb_skims_pfJets_noUncorr_smoothedMixingAvoidPeakLowPt_noCorrections_2019-02-06_QA.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09_QA.root"
@@ -443,9 +439,7 @@ void qaPlotter(){
   // "data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root"
   TFile *jffPpFile = TFile::Open("newPpTest2.root");
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root"
-  TFile *spilloverFile = TFile::Open("fixedCentralityTest2.root");
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2019-02-14.root"
+  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root");
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
@@ -707,6 +701,7 @@ void qaPlotter(){
           // Draw the hydjet and correction histograms to the same figure
           spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Draw();
           deltaEtaProjectionFromCorrection->SetLineColor(kRed);
+          deltaEtaProjectionFromCorrection->SetLineWidth(3);
           deltaEtaProjectionFromCorrection->Draw("same");
           
           // Find the correct pad inside the canvas
@@ -759,6 +754,7 @@ void qaPlotter(){
           // Draw the hydjet and correction histograms to the same figure
           spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt]->Draw();
           deltaPhiProjectionFromCorrection->SetLineColor(kRed);
+          deltaPhiProjectionFromCorrection->SetLineWidth(3);
           deltaPhiProjectionFromCorrection->Draw("same");
           
           // Read yields and widths from the fits

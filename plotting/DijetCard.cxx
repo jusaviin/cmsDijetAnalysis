@@ -19,12 +19,23 @@ DijetCard::DijetCard(TFile *inFile):
   fInputFile->cd(fCardDirectory.Data());
   ReadVectors();
   fDataType = (*fDataTypeVector)[1];
+  
+  // Read the Monte Carlo type from the vector: 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
   if(fMcCorrelationTypeVector) {
     fMonteCarloType = (*fMcCorrelationTypeVector)[1];
   } else {
     fMonteCarloType = 0;
   }
+  
   FindDataTypeString();
+  
+  // Read the asymmetry bin type from the vector: 0 = AJ, 1 = xJ
+  if(fAsymmetryBinTypeVector){
+    fAsymmetryBinType = (*fAsymmetryBinTypeVector)[1];
+  } else {
+    fAsymmetryBinType = 0;
+  }
+  
 }
 
 /*
@@ -65,6 +76,7 @@ void DijetCard::ReadVectors(){
   fZVertexCutVector = (TVectorT<float>*) gDirectory->Get("ZVertexCut");
   fLowPtHatCutVector = (TVectorT<float>*) gDirectory->Get("LowPtHatCut");
   fHighPtHatCutVector = (TVectorT<float>*) gDirectory->Get("HighPtHatCut");
+  fAsymmetryBinTypeVector = (TVectorT<float>*) gDirectory->Get("AsymmetryBinType");
   fCentralityBinEdgesVector = (TVectorT<float>*) gDirectory->Get("CentralityBinEdges");
   fTrackPtBinEdgesVector = (TVectorT<float>*) gDirectory->Get("TrackPtBinEdges");
   fAsymmetryBinEdgesVector = (TVectorT<float>*) gDirectory->Get("AsymmetryBinEdges");
@@ -146,6 +158,14 @@ double DijetCard::GetHighBinBorderAsymmetry(const int iBin) const{
   return (*fAsymmetryBinEdgesVector)[iBin+2];
 }
 
+ // Get a description of the used asymmetry bin type
+const char* DijetCard::GetAsymmetryBinType(TString latexIt) const{
+  const char *asymmetryNames[] = {"Aj","Xj"};
+  const char *asymmetryLatex[] = {"A_{J}","x_{J}"};
+  if(latexIt.Contains("tex"),TString::kIgnoreCase) return asymmetryLatex[fAsymmetryBinType];
+  return asymmetryNames[fAsymmetryBinType];
+}
+
 /*
  * Reader for all the vectors from the input file
  */
@@ -183,6 +203,7 @@ void DijetCard::Write(TDirectory *file){
   if(fZVertexCutVector) fZVertexCutVector->Write("ZVertexCut");
   if(fLowPtHatCutVector) fLowPtHatCutVector->Write("LowPtHatCut");
   if(fHighPtHatCutVector) fHighPtHatCutVector->Write("HighPtHatCut");
+  if(fAsymmetryBinTypeVector) fAsymmetryBinTypeVector->Write("AsymmetryBinType");
   if(fCentralityBinEdgesVector) fCentralityBinEdgesVector->Write("CentralityBinEdges");
   if(fTrackPtBinEdgesVector) fTrackPtBinEdgesVector->Write("TrackPtBinEdges");
   if(fAsymmetryBinEdgesVector) fAsymmetryBinEdgesVector->Write("AsymmetryBinEdges");

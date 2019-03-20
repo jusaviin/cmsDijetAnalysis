@@ -650,7 +650,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
-            drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
+            drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
             //drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
             
             // Move legend to different place for leading jet background figures
@@ -696,7 +696,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               // Draw a few overlapping bins from near and away side background estimates
               if(fBackgroundDrawStyle[kDrawOverlap]){
-                additionalHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundOverlap,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
+                additionalHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundOverlap,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
                 additionalHistogram->SetLineColor(kRed);
                 additionalHistogram->Draw("same");
               }
@@ -739,7 +739,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           
           // ===== Jet-track deltaPhi-deltaEta =====
           if(fDrawJetTrackDeltaEtaDeltaPhi){
-            drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,iCorrelationType,iCentrality,iTrackPt);
+            drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,iCorrelationType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
             drawnHistogram2D->Rebin2D(5,5);
             drawnHistogram2D->Scale(1.0/(5.0*5.0));
             drawnHistogram2D->GetYaxis()->SetRangeUser(-4,4);
@@ -788,7 +788,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaEta =====
           if(fDrawJetTrackDeltaEta){
             for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
-              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,iCorrelationType,iCentrality,iTrackPt,iDeltaPhi);
+              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,iCorrelationType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,iDeltaPhi);
               
               drawnHistogram->GetXaxis()->SetRangeUser(-3.5,3.5); // XXXXXX TODO: Good zooming possibilities
 
@@ -833,9 +833,9 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           
           // Read the same event histogram between the peaks and mixed event histogram from the whole phi region
           sprintf(namerX,"%sSameScaled%d%d",fHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-          hSameScaled = (TH1D*)fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kSameEvent,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone(namerX);
+          hSameScaled = (TH1D*)fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kSameEvent,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone(namerX);
           sprintf(namerX,"%sMixedScaled%d%d",fHistograms->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-          hMixedScaled = (TH1D*)fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kMixedEvent,iCentrality,iTrackPt,DijetHistogramManager::kWholePhi)->Clone(namerX);
+          hMixedScaled = (TH1D*)fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kMixedEvent,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kWholePhi)->Clone(namerX);
           
           // Scale both to 1 and then divide to get the normalized ratio
           hSameScaled->Scale(1.0/hSameScaled->Integral());
@@ -917,7 +917,7 @@ void DijetDrawer::DrawJetShapeHistograms(){
         
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
-          drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,iCentrality,iTrackPt);
+          drawnHistogram = fHistograms->GetHistogramJetShape(iJetShape,iJetTrack,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
           drawnHistogram->GetXaxis()->SetRangeUser(0,1);
           
           // Set the correct track pT bins
@@ -998,9 +998,9 @@ void DijetDrawer::DrawJetShapeStack(){
       // Loop over centrality
       for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
         // Loop over track pT bins
-        sumHistogram = (TH1D*) fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,fFirstDrawnTrackPtBin)->Clone();
+        sumHistogram = (TH1D*) fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,DijetHistogramManager::kMaxAsymmetryBins, iCentrality,fFirstDrawnTrackPtBin)->Clone();
         for(int iTrackPt = fFirstDrawnTrackPtBin+1; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
-          helperHistogram = (TH1D*)fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
+          helperHistogram = (TH1D*)fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt)->Clone();
           sumHistogram->Add(helperHistogram);
         } // track pT
         shapeIntegral[iJetTrack][iCentrality] = sumHistogram->Integral(1,sumHistogram->FindBin(0.29),"width");
@@ -1026,7 +1026,7 @@ void DijetDrawer::DrawJetShapeStack(){
         // Set the correct track pT bins for the legend
         legendString[iTrackPt] = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
         
-        addedHistogram = fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt);
+        addedHistogram = fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,DijetHistogramManager::kMaxAsymmetryBins, iCentrality,iTrackPt);
         if(fNormalizeJetShape) addedHistogram->Scale(1.0/shapeIntegral[iJetTrack][iCentrality]);
         
         jetShapeStack[iJetTrack][iCentrality]->addHist(addedHistogram);

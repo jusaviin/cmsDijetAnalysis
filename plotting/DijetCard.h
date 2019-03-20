@@ -24,6 +24,7 @@ private:
   TString fCardDirectory;    // Path to the ConfigurationCard directory
   int fDataType;             // Total number of centrality bins in the analysis
   int fMonteCarloType;       // Type of Monte Carlo used for jet-track correlations
+  int fAsymmetryBinType;     // Used asymmetry binning (0 = AJ, 1 = xJ)
   TString fDataTypeString;   // Total number of eta gaps in the analysis
   
   void FindDataTypeString(); // Construct a data type string based on information on the card
@@ -57,6 +58,7 @@ private:
   TVectorT<float> *fZVertexCutVector;               // Vector for maximum accepted vz in the event
   TVectorT<float> *fLowPtHatCutVector;              // Vector for the minimum accepted pT hat
   TVectorT<float> *fHighPtHatCutVector;             // Vector for the maximum accepted pT hat
+  TVectorT<float> *fAsymmetryBinTypeVector;         // Vector for the used asymmetry binning type (AJ or xJ)
   TVectorT<float> *fCentralityBinEdgesVector;       // Vector for the used centrality bin edges
   TVectorT<float> *fTrackPtBinEdgesVector;          // Vector for the used track pT bin edges
   TVectorT<float> *fAsymmetryBinEdgesVector;        // Vector for the used dijet asymmetry bin edges
@@ -81,6 +83,7 @@ public:
   int GetNAsymmetryBins() const; // Get the number of asymmetry bins
   double GetLowBinBorderAsymmetry(const int iBin) const;  // Get the low border of i:th asymmetry bin
   double GetHighBinBorderAsymmetry(const int iBin) const; // Get the high border of i:th asymmetry bin
+  const char *GetAsymmetryBinType(TString latexIt = "") const; // Get a description of the used asymmetry bin type
   
 };
 

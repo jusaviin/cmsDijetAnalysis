@@ -486,10 +486,10 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         /////////////////////////////////////////////
         
         // Set up the histograms and draw them to the upper pad of a split canvas
-        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
         fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
 
-        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         
         // If specified, zoom to the tails of the histogram to see the most interesting region in detail
@@ -534,7 +534,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         /////////////////////////////////////////////
         
         // Set up the histograms and draw them to the upper pad of a split canvas
-        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins, iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
         
         // Possibility to do rebinning
         if(nRebinDeltaEta > 1){
@@ -545,7 +545,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         // Zoom the interesting region
         fMainHistogram->GetXaxis()->SetRangeUser(-4,4);
         
-        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
         
         // Possibility to do rebinning
         if(nRebinDeltaEta > 1){
@@ -854,7 +854,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         // Prepare the histograms and draw then to the upper pad
         fComparisonHistogram[0] = comparisonHistograms[iCentrality][iTrackPt];
         fMainHistogram = (TH1D*) fComparisonHistogram[0]->Clone(Form("Klooni%d%d%d",iJetTrack,iCentrality,iTrackPt));
-        helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iCentrality,iTrackPt)->Clone();
+        helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt)->Clone();
         
         // A couple of last bins are missing from the comparison histogram, so drop them also from main histogram
         for(int iBin = 1; iBin <= fMainHistogram->GetNbinsX(); iBin++){
@@ -987,7 +987,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         legendX1 = 0.45; legendY1 = 0.58; legendX2 = 0.77; legendY2 = 0.83;
         
         // Prepare the track phi histograms to be drawn
-        PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, iCentrality, iTrackPt);
+        PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt);
         closureHistogram = (TH1D*) fRatioHistogram[0]->Clone(Form("closureHistogram%d%d%d",iJetTrack,iCentrality,iTrackPt));
         
         // Calculate the pT sum
