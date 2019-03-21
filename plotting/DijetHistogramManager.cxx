@@ -1283,19 +1283,19 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
       for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
         
         // Single jet pT
-        sprintf(histogramNamer,"%sPt_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%sPt_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         if(fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
         
         // Single jet phi
-        sprintf(histogramNamer,"%sPhi_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%sPhi_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         if(fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
         
         // Single jet eta
-        sprintf(histogramNamer,"%sEta_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%sEta_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         if(fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
         
         //Single jet eta-phi
-        sprintf(histogramNamer,"%sEtaPhi_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%sEtaPhi_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         if(fLoad2DHistograms && fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
       } // Loop over asymmetry bins
     } // Loop over centrality bins
@@ -1427,17 +1427,17 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
             for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
               
               if(iDeltaEta > kWholeEta && iCorrelationType < kMixedEventNormalized) continue; // DeltaEta slicing not implemented for same and mixed event
-              sprintf(histogramNamer,"%sDeltaPhi%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta], fAsymmetryBinName[iAsymmetry],iCentralityBin,iTrackPtBin);
+              sprintf(histogramNamer,"%sDeltaPhi%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta], fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
               fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta]->Write(histogramNamer);
             }
             
             // Jet-track deltaEtaDeltaPhi
-            sprintf(histogramNamer,"%sDeltaEtaDeltaPhi%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fAsymmetryBinName[iAsymmetry],iCentralityBin,iTrackPtBin);
+            sprintf(histogramNamer,"%sDeltaEtaDeltaPhi%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
             if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->Write(histogramNamer);
             
             // DeltaPhi binning for deltaEta histogram
             for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
-              sprintf(histogramNamer,"%sDeltaEta%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaPhiString[iDeltaPhi].Data(), fAsymmetryBinName[iAsymmetry],iCentralityBin,iTrackPtBin);
+              sprintf(histogramNamer,"%sDeltaEta%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaPhiString[iDeltaPhi].Data(), fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
               fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]->Write(histogramNamer);
             } // DeltaPhi loop
           } // Track pT loop
@@ -1471,7 +1471,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
           
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
-            sprintf(histogramNamer,"%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape], fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry],iCentrality,iTrackPt);
+            sprintf(histogramNamer,"%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape], fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
             fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
             
           } // Track pT loop
@@ -1551,7 +1551,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
           
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
-            sprintf(histogramNamer,"seagullDeltaEta_%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fAsymmetryBinName[iAsymmetry],iCentrality,iTrackPt);
+            sprintf(histogramNamer,"seagullDeltaEta_%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
             fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
             
           } // Track pT loop
@@ -1575,7 +1575,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
           
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
-            sprintf(histogramNamer,"seagullFit_%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry],iCentrality,iTrackPt);
+            sprintf(histogramNamer,"seagullFit_%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
             fSeagullFit[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
             
           } // Track pT loop
@@ -1628,21 +1628,21 @@ void DijetHistogramManager::LoadProcessedHistograms(){
       for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
         
         // Always load single jet pT histograms
-        sprintf(histogramNamer,"%s/%sPt_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%s/%sPt_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         fhJetPt[iJetCategory][iCentralityBin][iAsymmetry] = (TH1D*) fInputFile->Get(histogramNamer);
         
         if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the loaded the selected histograms
         
         // Single jet phi
-        sprintf(histogramNamer,"%s/%sPhi_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%s/%sPhi_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry] = (TH1D*) fInputFile->Get(histogramNamer);
         
         // Single jet eta
-        sprintf(histogramNamer,"%s/%sEta_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%s/%sEta_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         fhJetEta[iJetCategory][iCentralityBin][iAsymmetry] = (TH1D*) fInputFile->Get(histogramNamer);
         
         // Single jet eta-phi
-        sprintf(histogramNamer,"%s/%sEtaPhi_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry]);
+        sprintf(histogramNamer,"%s/%sEtaPhi_C%d%s",fSingleJetHistogramName[iJetCategory],fSingleJetHistogramName[iJetCategory], iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         if(fLoad2DHistograms) fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry] = (TH2D*) fInputFile->Get(histogramNamer);
       }
     } // Loop over centrality bins
@@ -1751,17 +1751,17 @@ void DijetHistogramManager::LoadProcessedHistograms(){
             for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
               
               if(iDeltaEta > kWholeEta && iCorrelationType < kMixedEventNormalized) continue; // DeltaEta slicing not implemented for same and mixed event
-              sprintf(histogramNamer,"%s/%sDeltaPhi%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta], fAsymmetryBinName[iAsymmetry],iCentralityBin,iTrackPtBin);
+              sprintf(histogramNamer,"%s/%sDeltaPhi%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta], fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
               fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta] = (TH1D*) fInputFile->Get(histogramNamer);
             }
             
             // Jet-track deltaEtaDeltaPhi
-            sprintf(histogramNamer,"%s/%sDeltaEtaDeltaPhi%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fAsymmetryBinName[iAsymmetry],iCentralityBin,iTrackPtBin);
+            sprintf(histogramNamer,"%s/%sDeltaEtaDeltaPhi%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
             if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin] = (TH2D*) fInputFile->Get(histogramNamer);
             
             // DeltaPhi binning for deltaEta histogram
             for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
-              sprintf(histogramNamer,"%s/%sDeltaEta%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaPhiString[iDeltaPhi].Data(), fAsymmetryBinName[iAsymmetry],iCentralityBin,iTrackPtBin);
+              sprintf(histogramNamer,"%s/%sDeltaEta%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaPhiString[iDeltaPhi].Data(), fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
               fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fInputFile->Get(histogramNamer);
             } // DeltaPhi loop
           } // Track pT loop
@@ -1786,7 +1786,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
           
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
-            sprintf(histogramNamer,"%s_%s/%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack], fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry],iCentrality,iTrackPt);
+            sprintf(histogramNamer,"%s_%s/%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack], fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
             fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) fInputFile->Get(histogramNamer);
             
           } // Track pT loop

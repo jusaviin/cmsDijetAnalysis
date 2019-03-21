@@ -301,7 +301,7 @@ private:
   int fJetPtBinIndices[knJetPtBins+1];                // Indices for leading jet pT bins for asymmetry histograms
   double fJetPtBinBorders[knJetPtBins+1];             // Bin borders for the leading jet pT bins from which the indices are obtained
   int fnAsymmetryBins;                                // Number of asymmetry bins in the JCard of the data file
-  const char *fAsymmetryBinName[kMaxAsymmetryBins+1]; // Name given to each asymmetry bin
+  TString fAsymmetryBinName[kMaxAsymmetryBins+1];     // Name given to each asymmetry bin
   
   // =============================================
   // ============== Event mixing =================
