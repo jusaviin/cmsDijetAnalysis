@@ -99,6 +99,17 @@ void setupRatioLegend(TLegend* legend, TH1* dataHistogram, TH1* mcHistogram){
 }
 
 /*
+ * Draw a legend to a big canvas plot
+ */
+void drawBigCanvasLegend(TLegend* legend, TH1* histogram, const char* legendString){
+  TH1D *legender = (TH1D*) histogram->Clone(Form("legender%s",histogram->GetName()));
+  legend = new TLegend(0.15,0.3,0.9,0.5);
+  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.11);legend->SetTextFont(62);
+  legend->AddEntry(legender,legendString,"p");
+  legend->Draw();
+}
+
+/*
  * Print a slide with background overlap information to console
  *
  *
@@ -421,10 +432,10 @@ void qaPlotter(){
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
   bool drawJetShapeCorrections = true;    // Draw the jet shape corrections as a function or R
   
-  bool regularJetTrack = false;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
@@ -471,9 +482,14 @@ void qaPlotter(){
   // Creata a dijet card for the JFF correction and setup asymmetry bins
   DijetCard* jffCard = new DijetCard(jffPbPbFile);
   const int nJffAsymmetryBins = jffCard->GetNAsymmetryBins();
-  const char* jffAsymmetryName[nJffAsymmetryBins+1];
-  for(int i = 0; i < nJffAsymmetryBins; i++) jffAsymmetryName[i] = Form("A%d",i);
+  TString jffAsymmetryName[nJffAsymmetryBins+1];
+  TString jffAsymmetryLegend[nJffAsymmetryBins+1];
+  for(int iAsymmetry = 0; iAsymmetry < nJffAsymmetryBins; iAsymmetry++) {
+    jffAsymmetryName[iAsymmetry] = Form("A%d",iAsymmetry);
+    jffAsymmetryLegend[iAsymmetry] = Form("%.2f < %s < %.2f",jffCard->GetLowBinBorderAsymmetry(iAsymmetry),jffCard->GetAsymmetryBinType("latex"),jffCard->GetHighBinBorderAsymmetry(iAsymmetry));
+  }
   jffAsymmetryName[nJffAsymmetryBins] = "";
+  jffAsymmetryLegend[nJffAsymmetryBins] = Form("0.0 < %s < 1.0",jffCard->GetAsymmetryBinType("latex"));
   
   // Create a new DijetMethods so that several tricks can be easily made to distribution
   DijetMethods *methods = new DijetMethods();
@@ -543,12 +559,12 @@ void qaPlotter(){
           // Asymmetry bins for the JFF correction
           for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
             
-            sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),jffAsymmetryName[iAsymmetry],iCentrality,iTrackPt);
+            sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),jffAsymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
             correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) jffPbPbFile->Get(histogramNamer);
             
             // Jet shape histograms for pp JFF correction
             if(iCentrality == 0){
-              sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),jffAsymmetryName[iAsymmetry],iCentrality,iTrackPt);
+              sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),jffAsymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
               correctionJetShape[0][iJetTrack][iAsymmetry][nCentralityBins][iTrackPt] = (TH1D*) jffPpFile->Get(histogramNamer);
             }
           }
@@ -1120,6 +1136,7 @@ void qaPlotter(){
     DijetMethods *jetShapeCalculator = new DijetMethods();
     drawer->Reset();
     double max1, max2, min1, min2, theMax, theMin;
+    double asymmetryMin[10], asymmetryMax[10];
     double legendX1, legendY1;
     
                          // Track pT    0.7-1   1-2    2-3    3-4    4-8  8-300
@@ -1144,6 +1161,9 @@ void qaPlotter(){
     
     const char* jffLegendName[] = {"Leading jet JFF","Leading jet JFF","p_{T}w leading jet JFF","Subleading jet JFF","Subleading jet JFF","p_{T}w subleading jet JFF","Inclusive jet JFF","p_{T}w inclusive jet JFF"};
     
+    int asymmetryStyle[] = {29,33,47,34,20,21,43,45,41};
+    int asymmetryColor[] = {kGreen+3,kBlue,kRed,kBlack,kMagenta,kCyan,kOrange+4,kBlue-7,kSpring-3};
+    
     for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
       if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
       
@@ -1162,12 +1182,12 @@ void qaPlotter(){
       }
       
       // Create asymmetry comparison canvases for leading and subleading jets, but not for inclusive jets
-      /*if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){
+      if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){
         sprintf(histogramNamer,"jffAsymmetryComparison%d",iJetTrack);
         sprintf(padNamer,"JFF asymmetry comparison %s",dummyManager->GetJetTrackHistogramName(iJetTrack));
-        jffComparisonCanvas[iJetTrack] = new TCanvas(histogramNamer,padNamer,1250,1800);
-        jffComparisonCanvas[iJetTrack]->Divide(nCentralityBins+1,nTrackPtBins);
-      }*/
+        jffAsymmetryComparisonCanvas[iJetTrack] = new TCanvas(histogramNamer,padNamer,1250,1800);
+        jffAsymmetryComparisonCanvas[iJetTrack]->Divide(nCentralityBins+1,nTrackPtBins);
+      }
       
       sprintf(histogramNamer,"spilloverCorrection%d",iJetTrack);
       sprintf(padNamer,"Spillover correction %s",dummyManager->GetJetTrackHistogramName(iJetTrack));
@@ -1244,16 +1264,9 @@ void qaPlotter(){
               
               // Add legends to specific canvases
               if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 29){
-                legend = new TLegend(0.15,0.3,0.9,0.5);
-                legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.11);legend->SetTextFont(62);
-                legend->AddEntry(correctionJetShape[0][iJetTrack][nJffAsymmetryBins][iCentrality][iTrackPt],jffLegendName[iJetTrack],"p");
-                legend->Draw();
+                drawBigCanvasLegend(legend,correctionJetShape[0][iJetTrack][nJffAsymmetryBins][iCentrality][iTrackPt],jffLegendName[iJetTrack]);
               } else if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 30){
-                TH1D *legender = (TH1D*) correctionJetShape[0][iJetTrack+3][nJffAsymmetryBins][iCentrality][iTrackPt]->Clone(Form("legender%d",iJetTrack));
-                legend = new TLegend(0.15,0.3,0.9,0.5);
-                legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.11);legend->SetTextFont(62);
-                legend->AddEntry(legender,jffLegendName[iJetTrack+3],"p");
-                legend->Draw();
+                drawBigCanvasLegend(legend,correctionJetShape[0][iJetTrack+3][nJffAsymmetryBins][iCentrality][iTrackPt],jffLegendName[iJetTrack+3]);
               }
               
             } // If for leading-subleading comparison
@@ -1261,7 +1274,68 @@ void qaPlotter(){
             // Do not draw the asymmetry canvases for inclusive jet correlations
             if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){
               
+              // Set a nice drawing style for the histograms
+              if(iCentrality != nCentralityBins){ // XXXX TEMP TEMP TODO Add xj bins also to pp file
+                // Set the style
+                for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
+                  correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(asymmetryStyle[iAsymmetry]);
+                  correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(asymmetryColor[iAsymmetry]);
+                }
+              }
               
+              // Determine the drawing range for all bins from the first centrality bin
+              if(iCentrality == 0){
+                min1 = 1000;
+                max1 = -1000;
+                for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
+                  
+                  // Find the minimum and maximum from all asymmetry bins
+                  for(int iBin = 1; iBin <= correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+                    min2 = correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinContent(iBin);
+                    if(min1 > min2){
+                      min1 = min2;
+                    }
+                    if(max1 < min2){
+                      max1 = min2;
+                    }
+                  }
+                }
+                
+                // After the minimum and maximum values over asymmetry bins are determined, leave 10 % marginal for drawing
+                asymmetryMin[iTrackPt] = min1 - 0.1*(max1-min1);
+                asymmetryMax[iTrackPt] = max1 + 0.1*(max1-min1);
+              }
+              
+              // Find the correct canvas to draw the histograms
+              jffAsymmetryComparisonCanvas[iJetTrack]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
+              gPad->SetTopMargin(0.1);
+              gPad->SetBottomMargin(0.2);
+              
+              // First draw the asymmetry inclusive distribution to the canvas
+              gStyle->SetTitleSize(0.09,"t");
+              correctionJetShape[0][iJetTrack][nJffAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(asymmetryMin[iTrackPt],asymmetryMax[iTrackPt]);
+              correctionJetShape[0][iJetTrack][nJffAsymmetryBins][iCentrality][iTrackPt]->DrawCopy();
+              
+              // Then, draw all the asymmetry bins to the same canvas
+              if(iCentrality != nCentralityBins){ // XXXX TEMP TEMP TODO Add xj bins also to pp file
+                for(int iAsymmetry = 0; iAsymmetry < nJffAsymmetryBins; iAsymmetry++){
+                  correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->DrawCopy("same");
+                }
+              }
+              
+              // Draw different legends to different canvases
+              for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
+                if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 30-iAsymmetry){
+                  drawBigCanvasLegend(legend,correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt],jffAsymmetryLegend[iAsymmetry].Data());
+                }
+              }
+              
+              if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 30-nJffAsymmetryBins-1){
+                legend = new TLegend(0.15,0.3,0.9,0.5);
+                legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.11);legend->SetTextFont(62);
+                legend->AddEntry((TObject*)0,jffLegendName[iJetTrack],"");
+                legend->Draw();
+              }
               
             } // Asymmetry correction canvas if
             
