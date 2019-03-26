@@ -121,7 +121,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
+  TString inputFileName[nDatasets] = {"data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_fixedJetPt_matchedJets_processed_2019-02-25.root","data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_fixedJetPt_matchedJets_processed_2019-02-25.root"};
   //TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_jffRebin2_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -135,7 +135,7 @@ void compareDijetHistograms(){
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   
   //TString legendComment[nDatasets] = {"P+H GenMatched","P+H GenUnmatched"};
-  TString legendComment[nDatasets] = {"P+H Reco jet from reco dijet","P+H Gen jet from gen dijet"};
+  TString legendComment[nDatasets] = {"Pythia RecoGen","Pythia GenGen"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   

@@ -28,7 +28,7 @@ void produceJffCorrection(){
   // data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root // File for pp
   // data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root // File for PbPb
   // data/PbPbMC_GenGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString outputFileName = "holmenkolli.root";   // File name for the output file
+  TString outputFileName = "ooot.root";   // File name for the output file
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC2_smoothedMixing_adjustedBackground_2019-01-15.root"
   // data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root
   
@@ -78,6 +78,7 @@ void produceJffCorrection(){
   
   // Initialize correction histograms and helper histograms
   TH1D *jffCorrectionJetShape[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TH1D *jffRatioJetShape[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TH1D *jffHelperJetShape[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TH1D *jffCorrectionDeltaEta[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TH1D *jffHelperDeltaEta[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
@@ -92,6 +93,7 @@ void produceJffCorrection(){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           jffCorrectionJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+          jffRatioJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           jffHelperJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           jffCorrectionDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           jffHelperDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
@@ -113,7 +115,9 @@ void produceJffCorrection(){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
-          // Get the histograms for RecoGen and normalize it by the number of dijets
+          // Get the histograms for RecoGen
+          jffRatioJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*)recoGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iAsymmetry,iCentrality,iTrackPt)->Clone(Form("jffRatio%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
+          
           jffCorrectionJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iAsymmetry,iCentrality,iTrackPt);
           
           jffCorrectionDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kNearSide);
@@ -129,7 +133,7 @@ void produceJffCorrection(){
             jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/(nRebin*nRebin));
           }
           
-          // Get the jet shape for GenGen and normalize it by the number of dijets
+          // Get the jet shape for GenGen
           jffHelperJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iAsymmetry,iCentrality,iTrackPt);
           
           jffHelperDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kNearSide);
@@ -153,6 +157,8 @@ void produceJffCorrection(){
           
           jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Add(jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt],-1);
           
+          // Calculate also the ratio for jet shape
+          jffRatioJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Divide(jffHelperJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
           // If we do rebinning, we need to go back to original binning in the end to be able to use the corrections
           if(nRebin > 1){
@@ -218,6 +224,10 @@ void produceJffCorrection(){
           sprintf(histogramNamer,"jffCorrection_%s_%s_%sC%dT%d",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
           jffCorrectionJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
           
+          // Create a new name to the ratio histogram and write it into file
+          sprintf(histogramNamer,"jffRatio_%s_%s_%sC%dT%d",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
+          jffRatioJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
+          
         } // Track pT loop
       } // Centrality loop
     } // Asymmetry loop
@@ -278,7 +288,7 @@ void produceJffCorrection(){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
           // Create a new name to the histogram and write it into file
-          sprintf(histogramNamer,"jffCorrection_%sDeltaEtaDeltaPhi_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iJetTrack],iCentrality,iTrackPt);
+          sprintf(histogramNamer,"jffCorrection_%sDeltaEtaDeltaPhi_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
           jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
           
         } // Track pT loop
@@ -290,4 +300,7 @@ void produceJffCorrection(){
     
   } // Jet-track correlation type loop
  
+  // In the very end, write also the card information to the correction file
+  card->Write(outputFile);
+  
 }
