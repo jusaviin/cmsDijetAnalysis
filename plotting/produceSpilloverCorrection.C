@@ -67,9 +67,11 @@ void produceSpilloverCorrection(){
   double combinedFitYield[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins]; // Combine deltaEta and deltaPhi for one yield
   double deltaEtaCombinedWidth[2][DijetHistogramManager::knJetTrackCorrelations][nTrackPtBins]; // Combine all centrality bins for one width
   double deltaPhiCombinedWidth[2][DijetHistogramManager::knJetTrackCorrelations][nTrackPtBins]; // Combine all centrality bins for one width
+  double spilloverYieldDeltaEtaBinCount[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins]; // Find the yield also from bin counting
   
   // Create graphs to fit the fit parameters
   TGraphErrors *graphYield[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
+  TGraphErrors *graphYieldBinCount[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
   TGraphErrors *graphDeltaEtaWidth[DijetHistogramManager::knJetTrackCorrelations];
   TGraphErrors *graphDeltaPhiWidth[DijetHistogramManager::knJetTrackCorrelations];
   TF1 *commonYieldFit[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins];
@@ -111,6 +113,7 @@ void produceSpilloverCorrection(){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       graphYield[iJetTrack][iCentrality] = NULL;
+      graphYieldBinCount[iJetTrack][iCentrality] = NULL;
       
       // The yields will be fitted by an exponential function
       sprintf(namer,"commonYield_%s_C%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality);
@@ -140,6 +143,7 @@ void produceSpilloverCorrection(){
           combinedFitYield[iDataType][iJetTrack][iCentrality][iTrackPt] = 0;
           deltaEtaCombinedWidth[iDataType][iJetTrack][iTrackPt] = 0;
           deltaPhiCombinedWidth[iDataType][iJetTrack][iTrackPt] = 0;
+          spilloverYieldDeltaEtaBinCount[iDataType][iJetTrack][iCentrality][iTrackPt] = 0;
         } // Data type loop
       } // Track pT loop
     } // Centrality loop
@@ -191,9 +195,19 @@ void produceSpilloverCorrection(){
         
         for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
           
+          // For the RecoGen, read the bin count yield
+          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
+          if(iDataType == 0){
+            spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],1,2);
+            spilloverYieldDeltaEtaBinCount[1][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYieldError();
+            
+            // Scale the bin count yield yo the pT bin size
+            spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);
+            spilloverYieldDeltaEtaBinCount[1][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);
+          }
+          
           // If we are fixing the yield, find the number for that
           if(fixGaussYield){
-            spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
             fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],1,2);
           }
           
@@ -332,6 +346,10 @@ void produceSpilloverCorrection(){
       deltaPhiCombinedWidth[1][iJetTrack][iTrackPt] = TMath::Sqrt(deltaPhiCombinedWidth[1][iJetTrack][iTrackPt])/widthBins;
     }
     
+    // Variables needed in bin count fitting
+    double originalValueX, originalValueY, originalErrorX, originalErrorY;
+    double lowFitPt;
+    
     // Now that we have the information from different fits combined, put this combined information into graphs for fitting
     graphDeltaEtaWidth[iJetTrack] = new TGraphErrors(nTrackPtBins,graphPointsX[0],deltaEtaCombinedWidth[0][iJetTrack],graphErrorsX,deltaEtaCombinedWidth[1][iJetTrack]);
     graphDeltaPhiWidth[iJetTrack] = new TGraphErrors(nTrackPtBins,graphPointsX[0],deltaPhiCombinedWidth[0][iJetTrack],graphErrorsX,deltaPhiCombinedWidth[1][iJetTrack]);
@@ -355,6 +373,30 @@ void produceSpilloverCorrection(){
       graphYield[iJetTrack][iCentrality]->SetMarkerStyle(34);
       sprintf(namer,"%s C = %d",histograms[0]->GetJetTrackAxisName(iJetTrack),iCentrality);
       drawer->DrawGraph(graphYield[iJetTrack][iCentrality],0,8,0.001,3.5,"Track p_{T} (GeV)","Combined yield",namer,"psame");
+      
+      // Fill another graph with the values extracted from unsubtracred deltaEta histogram using bin counting
+      graphYieldBinCount[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX[iCentrality],spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality],graphErrorsX,spilloverYieldDeltaEtaBinCount[1][iJetTrack][iCentrality]);
+      
+      // Fit also this graph, excluding some points from the fit
+      lowFitPt = 0.5;
+      if(iCentrality > 0) lowFitPt = 1;
+      
+      // Remove one point from fit for 0-10 centrality bin
+      if(iCentrality == 0){
+        graphYieldBinCount[iJetTrack][iCentrality]->GetPoint(3,originalValueX,originalValueY);
+        originalErrorY = graphYieldBinCount[iJetTrack][iCentrality]->GetErrorY(3);
+        originalErrorX = graphYieldBinCount[iJetTrack][iCentrality]->GetErrorX(3);
+        graphYieldBinCount[iJetTrack][iCentrality]->RemovePoint(3);
+      }
+      
+      graphYieldBinCount[iJetTrack][iCentrality]->Fit("expo","","",lowFitPt,8);
+      
+      // Return the point to the graph after fit
+      if(iCentrality == 0) {
+        graphYieldBinCount[iJetTrack][iCentrality]->SetPoint(5,originalValueX,originalValueY);
+        graphYieldBinCount[iJetTrack][iCentrality]->SetPointError(5,originalErrorX,originalErrorY);
+      }
+      
     }
     drawer->SetLogY(false);
     
@@ -379,7 +421,7 @@ void produceSpilloverCorrection(){
         
         // To get correct binning for the histogram, clone it from the previous two-dimensional histogram
         sprintf(namer,"spilloverCorrection_%s_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Clone("namer");
+        spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Clone(namer);
         
         // Set all the bins to zero before filling the histogram with function contents
         for(int iPhiBin = 0; iPhiBin < spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetNbinsX(); iPhiBin++){
@@ -558,10 +600,14 @@ void produceSpilloverCorrection(){
     graphDeltaPhiWidth[iJetTrack]->Write(histogramNamer);
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-
-        // Create a new name to the deltaEta and deltaPhi combined yield graph and save it to file
-        sprintf(histogramNamer,"combinedGraph_%sYield_C%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality);
-        graphYield[iJetTrack][iCentrality]->Write(histogramNamer);
+      
+      // Create a new name to the deltaEta and deltaPhi combined yield graph and save it to file
+      sprintf(histogramNamer,"combinedGraph_%sYield_C%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality);
+      graphYield[iJetTrack][iCentrality]->Write(histogramNamer);
+      
+      // Create a new name to the yield graph obtained using bin counting to mixed event corrected distribution
+      sprintf(histogramNamer,"binCountGraph_%sYield_C%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality);
+      graphYieldBinCount[iJetTrack][iCentrality]->Write(histogramNamer);
       
     } // Centrality loop
     

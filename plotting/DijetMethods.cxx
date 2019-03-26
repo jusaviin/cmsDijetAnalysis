@@ -33,6 +33,7 @@ DijetMethods::DijetMethods() :
   fSeagullRebin(4),
   fnBinsProjectedOver(0),
   fMaxSignalDeltaEta(1.0),
+  fSpilloverYieldError(0),
   fJetShapeNormalizationMethod(kBinWidth),
   fnRebinDeltaEta(0),
   fnRebinDeltaPhi(0)
@@ -87,6 +88,7 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fSpilloverDeltaPhi(in.fSpilloverDeltaPhi),
   fSpilloverFitDeltaEta(in.fSpilloverFitDeltaEta),
   fSpilloverFitDeltaPhi(in.fSpilloverFitDeltaPhi),
+  fSpilloverYieldError(in.fSpilloverYieldError),
   fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
   fhJetShapeCounts(in.fhJetShapeCounts),
   fhJetShapeBinMap(in.fhJetShapeBinMap)
@@ -130,6 +132,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fSpilloverDeltaPhi = in.fSpilloverDeltaPhi;
   fSpilloverFitDeltaEta = in.fSpilloverFitDeltaEta;
   fSpilloverFitDeltaPhi = in.fSpilloverFitDeltaPhi;
+  fSpilloverYieldError = in.fSpilloverYieldError;
   fhJetShapeCounts = in.fhJetShapeCounts;
   fhJetShapeBinMap = in.fhJetShapeBinMap;
   
@@ -615,7 +618,7 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
 }
 
 /*
- * Method for finding the spillover yield from the mixed event constructed distribution. This method fits a constant line
+ * Method for finding the spillover yield from the mixed event corrected distribution. This method fits a constant line
  * to the tails of the DeltaEta projection of the distribution distribution and uses bin counting to get the histogram yield
  * on top of the fitted line. The idea is that in later stage the yield of the fitted gaussians can be fixed to this number.
  *
@@ -638,14 +641,19 @@ double DijetMethods::GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaN
   // Fit a constant to the tails of the histogram and determine the background level
   fSpilloverDeltaEta->Fit("pol0","0","",-maxEtaNormalizationRange,-minEtaNormalizationRange);
   double negativeLevel = fSpilloverDeltaEta->GetFunction("pol0")->GetParameter(0);
+  double negativeLevelError = fSpilloverDeltaEta->GetFunction("pol0")->GetParError(0);
   fSpilloverDeltaEta->Fit("pol0","0","",minEtaNormalizationRange,maxEtaNormalizationRange);
   double positiveLevel = fSpilloverDeltaEta->GetFunction("pol0")->GetParameter(0);
+  double positiveLevelError = fSpilloverDeltaEta->GetFunction("pol0")->GetParError(0);
   double averageLevel = (negativeLevel+positiveLevel)/2;
+  double averageLevelError = TMath::Sqrt(negativeLevelError*negativeLevelError+positiveLevelError*positiveLevelError)/2;
   
   // Calculate the bin count from the histogram over the background level
   int minimumYieldBin = fSpilloverDeltaEta->FindBin(-spilloverPhiRange+0.001);
   int maximumYieldBin = fSpilloverDeltaEta->FindBin(spilloverPhiRange-0.001);
-  double yield = fSpilloverDeltaEta->Integral(minimumYieldBin,maximumYieldBin,"width") - 3*averageLevel;
+  double yieldError = 0;
+  double yield = fSpilloverDeltaEta->IntegralAndError(minimumYieldBin,maximumYieldBin,yieldError,"width") - 3*averageLevel;
+  fSpilloverYieldError = TMath::Sqrt(yieldError*yieldError+9*averageLevelError*averageLevelError);
   
   // Return the obtained yield
   return yield;
@@ -666,10 +674,11 @@ double DijetMethods::GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaN
  *  double spilloverEtaFitRange = Range in deltaEta that is used to fit the spillover deltaEta distribution
  *  double spilloverPhiFitRange = Range in deltaPhi that is used to fit the spillover deltaPhi distribution
  *  double fixedYield = If number > 0, fix the yield of the Gaussian fit to this number
+ *  double fixedWidth = If number > 0, fix the width of the Gaussian fit to this number
  *
  *  return: Two-dimensional histogram with the estimation of the spillover effect
  */
-TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange, double spilloverPhiFitRange, double fixedYield){
+TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange, double spilloverPhiFitRange, double fixedYield, double fixedWidth){
   
   // Define the range over which the spillover correction is calculated
   double spilloverEtaRange = 1.5;
@@ -694,8 +703,8 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spi
   }
   
   // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
-  fSpilloverFitDeltaEta = FitGaussAndConstant(fSpilloverDeltaEta,spilloverEtaFitRange,spilloverPhiRange,fixedYield);
-  fSpilloverFitDeltaPhi = FitGaussAndConstant(fSpilloverDeltaPhi,spilloverPhiFitRange,spilloverEtaRange,fixedYield);
+  fSpilloverFitDeltaEta = FitGaussAndConstant(fSpilloverDeltaEta,spilloverEtaFitRange,spilloverPhiRange,fixedYield,fixedWidth);
+  fSpilloverFitDeltaPhi = FitGaussAndConstant(fSpilloverDeltaPhi,spilloverPhiFitRange,spilloverEtaRange,fixedYield,fixedWidth);
   
   // Combine the one-dimensional fits to a two-dimensional Gaussian distribution
   TF2 *gauss2D = new TF2("gauss2D", "[0]/(2*TMath::Pi()*[1]*[2])*TMath::Exp(-0.5*TMath::Power(x/[1],2))*TMath::Exp(-0.5*TMath::Power(y/[2],2))",-TMath::Pi()/2,3*TMath::Pi()/2,-5,5);
@@ -759,11 +768,12 @@ TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange, double norma
  *  TH1D *fittedHistogram = Histogram to be fitted with the Gaussian
  *  double fitRange = Range for the fit
  *  double normalizationRange = Range for yield normalization
- *  double fixedYield = If > 0, fix the Gaissian fit yield to this number
+ *  double fixedYield = If > 0, fix the Gaussian fit yield to this number
+ *  double fixedWidth = If > 0, fix the width of the Gaussian fit to this number
  *
  *  return: Gaussian function fitted to the histogram
  */
-TF1* DijetMethods::FitGaussAndConstant(TH1D *fittedHistogram, double fitRange, double normalizationRange, double fixedYield){
+TF1* DijetMethods::FitGaussAndConstant(TH1D *fittedHistogram, double fitRange, double normalizationRange, double fixedYield, double fixedWidth){
   
   // Create a Gaussian function for the fit
   TF1 *gaussFit = new TF1("gaussFit","[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))+[2]",-fitRange,fitRange);
@@ -782,6 +792,7 @@ TF1* DijetMethods::FitGaussAndConstant(TH1D *fittedHistogram, double fitRange, d
   gaussFit->SetParameter(0,fitYield-(averageLevel*3));
   if(fixedYield > 0) gaussFit->FixParameter(0,fixedYield);
   gaussFit->SetParameter(1,0.3);
+  if(fixedWidth > 0) gaussFit->FixParameter(1,fixedWidth);
   gaussFit->FixParameter(2,averageLevel);
   
   // Fit the histogram over the defined range
@@ -1223,6 +1234,11 @@ TF1* DijetMethods::GetSpilloverDeltaEtaFit() const{
 // Getter for the most recent fit to spillover deltaPhi distribution
 TF1* DijetMethods::GetSpilloverDeltaPhiFit() const{
   return fSpilloverFitDeltaPhi;
+}
+
+// Getter for the most recent spillover yield error
+double DijetMethods::GetSpilloverYieldError() const{
+  return fSpilloverYieldError;
 }
 
 // Getter for background error scaling factor

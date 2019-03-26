@@ -34,7 +34,8 @@ public:
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, double maxDeltaEta, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
   TH2D* ImproviseMixedEvent(const TH2D *sameEventHistogram); // Improvise mixed event distribution from background deltaPhi region of the same event histogram
   double GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaNormalizationRange, double maxEtaNormalizationRange); // Getter for the dpillover yield from the mixed event corrected distribution
-  TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange = 1.5, double spilloverPhiFitRange = 1.5, double fixedYield = 0);  // Get the spillover correction from only hydjet histogram
+  double GetSpilloverYieldError() const; // Getter for the most recent spillover yield error
+  TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange = 1.5, double spilloverPhiFitRange = 1.5, double fixedYield = 0, double fixedWidth = 0);  // Get the spillover correction from only hydjet histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
@@ -129,7 +130,8 @@ private:
   TH1D *fSpilloverDeltaEta;       // DeltaEta projection for spillover calculation
   TH1D *fSpilloverDeltaPhi;       // DeltaPhi projection for spillover calculation
   TF1 *fSpilloverFitDeltaEta;     // Fit to deltaEta projection during spillover calculation
-  TF1 *fSpilloverFitDeltaPhi;     // Fir to deltaPhi projection during spillover calculation
+  TF1 *fSpilloverFitDeltaPhi;     // Fit to deltaPhi projection during spillover calculation
+  double fSpilloverYieldError;    // Error in the latest spillover yield calculation
   
   // =============================================
   // =========== Jet shape calculation ===========
@@ -152,7 +154,7 @@ private:
   // Private methods
   double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter); // Find the normalization scale for the mixed event histogram
   TF1* FitGauss(TH1D* fittedHistogram, double fitRange, double normalizationRange);  // Fit a Gaussian function to a histogram and return the fit function
-  TF1* FitGaussAndConstant(TH1D* fittedHistogram, double fitRange, double normalizationRange, double fixedYield);  // Fit a Gaussian function together with a constant to a histogram and return the fit function
+  TF1* FitGaussAndConstant(TH1D* fittedHistogram, double fitRange, double normalizationRange, double fixedYield, double fixedWidth);  // Fit a Gaussian function together with a constant to a histogram and return the fit function
   void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
   bool CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis); // Checker that new bin boundaries correspond to old ones
   int CheckNormalizationSanity(const int normalizationType, const int maxIndex); // Sanity check for input normalizations
