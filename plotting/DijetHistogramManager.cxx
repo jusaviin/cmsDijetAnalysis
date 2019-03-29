@@ -211,6 +211,29 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
 }
 
 /*
+ * Constructor
+ */
+DijetHistogramManager::DijetHistogramManager(TFile *inputFile, DijetCard *card) :
+  DijetHistogramManager()
+{
+  fInputFile = inputFile;
+  
+  // Read the collision system from card
+  fCard = card;
+  TString collisionSystem = fCard->GetDataType();
+  
+  // Make a string for collision system based on information on the card
+  fSystemAndEnergy = Form("%s 5.02 TeV",collisionSystem.Data());
+  fCompactSystemAndEnergy = fSystemAndEnergy;
+  fCompactSystemAndEnergy.ReplaceAll(" ","");
+  fCompactSystemAndEnergy.ReplaceAll(".","v");
+  
+  // Read the number of asymmetry bins from the card and fix the naming for the last bin
+  fnAsymmetryBins = fCard->GetNAsymmetryBins();
+  fAsymmetryBinName[fnAsymmetryBins] = "";
+}
+
+/*
  * Copy constructor
  */
 DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
@@ -409,6 +432,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
   double scalingFactor;
   bool mixingPeakVisible;  // Some bins have a peak around xero in the mixed event distribution due to holes in acceptance
   // In these cases we should not smoothen the mixing to avoid having peak contribution in flat areas
+  TH2D *correctionHistogram;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -462,6 +486,16 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             fSeagullFit[iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin] = (TF1*)fMethods->GetSeagullFit()->Clone();
           }
           
+          // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
+          if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
+            if(iTrackPtBin < 5){ // Do not apply spillover correction to the highest pT bin
+              if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
+                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentralityBin,iTrackPtBin); // TODO: Maybe add asymmetry also to spillover, if it matters there
+                fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
+              } // If for subleading jets
+            } // If for track pT
+          }
+          
         } // Track pT loop
       } // Centrality loop
     } // Asymmetry loop
@@ -505,12 +539,6 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           // Apply the JFF correction to the background subtracted deltaEta-deltaPhi distribution
           if(fApplyJffCorrection && fJffCorrectionFinder->CorrectionReady()){
             correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin); // TODO: Add asymmetry to JFF correction
-            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
-          }
-          
-          // Apply the spillover correction to the background subtracted deltaEta-deltaPhi distribution
-          if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
-            correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentralityBin,iTrackPtBin); // TODO: Maybe add asymmetry also to spillover, if it matters there
             fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
           }
           

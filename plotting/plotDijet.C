@@ -132,7 +132,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root  File for pp
   // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC_smoothedMixing_adjustedBackground_2019-01-15.root  Alternative file for pp
   // data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root";  File for PbPb
-  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
+  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root";
+  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2019-02-14.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27.root"
@@ -171,8 +172,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
-  if(inputFileName.Contains("sube0")) improviseMixing = true;
+  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
@@ -228,6 +229,19 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     avoidPeaks = true;
   }
   
+  // Add the information about selected processing options to the card
+  card->AddOneDimensionalVector(DijetCard::kJffCorrection,applyJffCorrection);
+  card->AddOneDimensionalVector(DijetCard::kSpilloverCorrection,applySpilloverCorrection);
+  card->AddOneDimensionalVector(DijetCard::kSeagullCorrection,applySeagullCorrection);
+  card->AddOneDimensionalVector(DijetCard::kSmoothMixing,smoothenMixing);
+  card->AddOneDimensionalVector(DijetCard::kImprovisedMixing,improviseMixing);
+  card->AddOneDimensionalVector(DijetCard::kAdjustBackground,adjustBackground);
+  
+  // Add information about the used input files to the card
+  card->AddFileName(DijetCard::kInputFileName,inputFileName);
+  if(applyJffCorrection) card->AddFileName(DijetCard::kJffCorrectionFileName,jffCorrectionFileName);
+  if(applySpilloverCorrection) card->AddFileName(DijetCard::kSpilloverCorrectionFileName,spilloverCorrectionFileName);
+  
   ////////////////////////////////
   //        DijetMethods        //
   ////////////////////////////////
@@ -248,7 +262,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   //////////////////////////////////
   
   // Create and setup a new histogram manager to handle the histograms
-  DijetHistogramManager *histograms = new DijetHistogramManager(inputFile);
+  DijetHistogramManager *histograms = new DijetHistogramManager(inputFile,card);
   
   // Set which histograms to draw and the drawing style to use
   histograms->SetLoadEventInformation(drawEventInformation);

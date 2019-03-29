@@ -85,10 +85,11 @@ private:
   
 public:
   
-  DijetHistogramManager();                                // Default constructor
-  DijetHistogramManager(TFile *inputFile);                // Constructor
-  DijetHistogramManager(const DijetHistogramManager& in); // Copy constructor
-  ~DijetHistogramManager();                               // Destructor
+  DijetHistogramManager();                                  // Default constructor
+  DijetHistogramManager(TFile *inputFile);                  // Constructor
+  DijetHistogramManager(TFile *inputFile, DijetCard *card); // Constructor with card
+  DijetHistogramManager(const DijetHistogramManager& in);   // Copy constructor
+  ~DijetHistogramManager();                                 // Destructor
   
   void LoadHistograms();          // Load the histograms from the inputfile
   void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape

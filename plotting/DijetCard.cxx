@@ -18,11 +18,11 @@ DijetCard::DijetCard(TFile *inFile):
 {
   fInputFile->cd(fCardDirectory.Data());
   ReadVectors();
-  fDataType = (*fDataTypeVector)[1];
+  fDataType = (*fCardEntries[kDataType])[1];
   
   // Read the Monte Carlo type from the vector: 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
-  if(fMcCorrelationTypeVector) {
-    fMonteCarloType = (*fMcCorrelationTypeVector)[1];
+  if(fCardEntries[kMcCorrelationType]) {
+    fMonteCarloType = (*fCardEntries[kMcCorrelationType])[1];
   } else {
     fMonteCarloType = 0;
   }
@@ -30,8 +30,8 @@ DijetCard::DijetCard(TFile *inFile):
   FindDataTypeString();
   
   // Read the asymmetry bin type from the vector: 0 = AJ, 1 = xJ
-  if(fAsymmetryBinTypeVector){
-    fAsymmetryBinType = (*fAsymmetryBinTypeVector)[1];
+  if(fCardEntries[kAsymmetryBinType]){
+    fAsymmetryBinType = (*fCardEntries[kAsymmetryBinType])[1];
   } else {
     fAsymmetryBinType = 0;
   }
@@ -49,45 +49,17 @@ DijetCard::~DijetCard(){
  * Reader for all the vectors from the input file
  */
 void DijetCard::ReadVectors(){
-  fDataTypeVector = (TVectorT<float>*) gDirectory->Get("DataType");
-  fMcCorrelationTypeVector = (TVectorT<float>*) gDirectory->Get("McCorrelationType");
-  fMatchJetsVector = (TVectorT<float>*) gDirectory->Get("MatchJets");
-  fForestTypeVector = (TVectorT<float>*) gDirectory->Get("ForestType");
-  fReadModeVector = (TVectorT<float>*) gDirectory->Get("ReadMode");
-  fJetTypeVector = (TVectorT<float>*) gDirectory->Get("JetType");
-  fJetAxisVector = (TVectorT<float>*) gDirectory->Get("JetAxis");
-  fJetEtaCutVector = (TVectorT<float>*) gDirectory->Get("JetEtaCut");
-  fSearchEtaCutVector = (TVectorT<float>*) gDirectory->Get("SearchEtaCut");
-  fMaxPtCutVector = (TVectorT<float>*) gDirectory->Get("MaxPtCut");
-  fMinPtCutVector = (TVectorT<float>*) gDirectory->Get("MinPtCut");
-  fSubleadingPtCutVector = (TVectorT<float>*) gDirectory->Get("SubleadingPtCut");
-  fDeltaPhiCutVector = (TVectorT<float>*) gDirectory->Get("DeltaPhiCut");
-  fMinMaxTrackPtFractionVector = (TVectorT<float>*) gDirectory->Get("MinMaxTrackPtFraction");
-  fMaxMaxTrackPtFractionVector = (TVectorT<float>*) gDirectory->Get("MaxMaxTrackPtFraction");
-  fTrackEtaCutVector = (TVectorT<float>*) gDirectory->Get("TrackEtaCut");
-  fMinTrackPtCutVector = (TVectorT<float>*) gDirectory->Get("MinTrackPtCut");
-  fMaxTrackPtRelativeErrorVector = (TVectorT<float>*) gDirectory->Get("MaxTrackPtRelativeError");
-  fVertexMaxDistanceVector = (TVectorT<float>*) gDirectory->Get("VertexMaxDistance");
-  fCalorimeterSignalLimitPtVector = (TVectorT<float>*) gDirectory->Get("CalorimeterSignalLimitPt");
-  fHighPtEtFractionVector = (TVectorT<float>*) gDirectory->Get("HighPtEtFraction");
-  fChi2QualityCutVector = (TVectorT<float>*) gDirectory->Get("Chi2QualityCut");
-  fMinimumTrackHitsVector = (TVectorT<float>*) gDirectory->Get("MinimumTrackHits");
-  fSubeventCutVector = (TVectorT<float>*) gDirectory->Get("SubeventCut");
-  fZVertexCutVector = (TVectorT<float>*) gDirectory->Get("ZVertexCut");
-  fLowPtHatCutVector = (TVectorT<float>*) gDirectory->Get("LowPtHatCut");
-  fHighPtHatCutVector = (TVectorT<float>*) gDirectory->Get("HighPtHatCut");
-  fAsymmetryBinTypeVector = (TVectorT<float>*) gDirectory->Get("AsymmetryBinType");
-  fCentralityBinEdgesVector = (TVectorT<float>*) gDirectory->Get("CentralityBinEdges");
-  fTrackPtBinEdgesVector = (TVectorT<float>*) gDirectory->Get("TrackPtBinEdges");
-  fAsymmetryBinEdgesVector = (TVectorT<float>*) gDirectory->Get("AsymmetryBinEdges");
-  fPtHatBinEdgesVector = (TVectorT<float>*) gDirectory->Get("PtHatBinEdges");
-  fDoEventMixingVector = (TVectorT<float>*) gDirectory->Get("DoEventMixing");
-  fMixWithPoolVector = (TVectorT<float>*) gDirectory->Get("MixWithPool");
-  fNMixedEventsPerDijetVector = (TVectorT<float>*) gDirectory->Get("NMixedEventsPerDijet");
-  fVzToleranceVector = (TVectorT<float>*) gDirectory->Get("VzTolerance");
-  fMixingVzBinWidthVector = (TVectorT<float>*) gDirectory->Get("MixingVzBinWidth");
-  fMixingHiBinWidthVector = (TVectorT<float>*) gDirectory->Get("MixingHiBinWidth");
-  fMixingPoolDepthVector = (TVectorT<float>*) gDirectory->Get("MixingPoolDepth");
+  
+  // Read the TVectorT<float>:s
+  for(int iEntry = 0; iEntry < knEntries; iEntry++){
+    fCardEntries[iEntry] = (TVectorT<float>*) gDirectory->Get(fCardEntryNames[iEntry]);
+  }
+  
+  // Read the file names
+  for(int iFileName = 0; iFileName < knFileNames; iFileName++){
+    fFileNames[iFileName] = (TObjString*) gDirectory->Get(fFileNameSaveName[iFileName]);
+  }
+
 }
 
 /*
@@ -128,12 +100,12 @@ TString DijetCard::GetDataType() const{
  *  Getter for maximum deltaEta
  */
 double DijetCard::GetMaxDeltaEta() const{
-  return (*fJetEtaCutVector)[1] + (*fTrackEtaCutVector)[1];
+  return (*fCardEntries[kJetEtaCut])[1] + (*fCardEntries[kTrackEtaCut])[1];
 }
 
 // Get the number of asymmetry bins
 int DijetCard::GetNAsymmetryBins() const{
-  return fAsymmetryBinEdgesVector->GetNoElements()-1;
+  return fCardEntries[kAsymmetryBinEdges]->GetNoElements()-1;
 }
 
 // Get the low border of i:th asymmetry bin
@@ -144,7 +116,7 @@ double DijetCard::GetLowBinBorderAsymmetry(const int iBin) const{
   if(iBin >= GetNAsymmetryBins()) return -1;
   
   // Return the asked bin index
-  return (*fAsymmetryBinEdgesVector)[iBin+1];
+  return (*fCardEntries[kAsymmetryBinEdges])[iBin+1];
 }
 
 // Get the high border of i:th asymmetry bin
@@ -155,7 +127,7 @@ double DijetCard::GetHighBinBorderAsymmetry(const int iBin) const{
   if(iBin >= GetNAsymmetryBins()) return -1;
   
   // Return the asked bin index
-  return (*fAsymmetryBinEdgesVector)[iBin+2];
+  return (*fCardEntries[kAsymmetryBinEdges])[iBin+1];
 }
 
  // Get a description of the used asymmetry bin type
@@ -164,6 +136,62 @@ const char* DijetCard::GetAsymmetryBinType(TString latexIt) const{
   const char *asymmetryLatex[] = {"A_{J}","x_{J}"};
   if(latexIt.Contains("tex"),TString::kIgnoreCase) return asymmetryLatex[fAsymmetryBinType];
   return asymmetryNames[fAsymmetryBinType];
+}
+
+/*
+ * Add one-dimensional vector to the card
+ *
+ * Arguments:
+ *  int entryIndex = Internal index for the added vector in entry array
+ *  float entryContent = Content to be put into the vector
+ */
+void DijetCard::AddOneDimensionalVector(int entryIndex, float entryContent){
+  
+  // Only allow addition to postprocessing vectors
+  if(entryIndex < kJffCorrection) return;
+  
+  // Make a new one dimensional vector to the desired index with given content
+  float contents[1] = {entryContent};
+  fCardEntries[entryIndex] = new TVectorT<float>(1,1,contents);
+
+}
+
+/*
+ * Add file name to the card
+ *
+ * Arguments:
+ *  int entryIndex = Internal index for the added file name in file name array
+ *  TString fileName = Added file name
+ */
+void DijetCard::AddFileName(int entryIndex, TString fileName){
+  
+  // Make convert the string to TObjString and add it to the file name array
+  fFileNames[entryIndex] = new TObjString(fileName.Data());
+  
+}
+
+/*
+ * Print the contents of the card to the console
+ */
+void DijetCard::Print() const{
+
+  std::cout<<std::endl<<"========================= DijetCard =========================="<<std::endl;
+  for(int iEntry = 0; iEntry < knEntries; iEntry++){
+    if(fCardEntries[iEntry]){
+      std::cout << Form("%25s",fCardEntryNames[iEntry]); //print keyword
+      std::cout << " (dim = "<<fCardEntries[iEntry]->GetNoElements() << ") ";//print size of TVector
+      for(int iElement = 1; iElement <= fCardEntries[iEntry]->GetNoElements(); iElement++){
+        std::cout << (*fCardEntries[iEntry])[iElement] << " ";//TVector components
+      }
+      std::cout << std::endl;
+    }
+  }
+  std::cout << std::endl;
+  for(int iFileName = 0; iFileName < knFileNames; iFileName++){
+    if(fFileNames[iFileName]){
+      std::cout << "Used " << fFileNameType[iFileName] << " file: " << fFileNames[iFileName]->String().Data() << std::endl;
+    }
+  }
 }
 
 /*
@@ -176,46 +204,15 @@ void DijetCard::Write(TDirectory *file){
   file->cd("JCard");
   
   // Write all the vectors to the file. Not all of these exist in older versions of cards, thus check if exists before writing.
-  if(fDataTypeVector) fDataTypeVector->Write("DataType");
-  if(fMcCorrelationTypeVector) fMcCorrelationTypeVector->Write("McCorrelationType");
-  if(fMatchJetsVector) fMatchJetsVector->Write("MatchJets");
-  if(fForestTypeVector) fForestTypeVector->Write("ForestType");
-  if(fReadModeVector) fReadModeVector->Write("ReadMode");
-  if(fJetTypeVector) fJetTypeVector->Write("JetType");
-  if(fJetAxisVector) fJetAxisVector->Write("JetAxis");
-  if(fJetEtaCutVector) fJetEtaCutVector->Write("JetEtaCut");
-  if(fSearchEtaCutVector) fSearchEtaCutVector->Write("SearchEtaCut");
-  if(fMaxPtCutVector) fMaxPtCutVector->Write("MaxPtCut");
-  if(fMinPtCutVector) fMinPtCutVector->Write("MinPtCut");
-  if(fSubleadingPtCutVector) fSubleadingPtCutVector->Write("SubleadingPtCut");
-  if(fDeltaPhiCutVector) fDeltaPhiCutVector->Write("DeltaPhiCut");
-  if(fMinMaxTrackPtFractionVector) fMinMaxTrackPtFractionVector->Write("MinMaxTrackPtFraction");
-  if(fMaxMaxTrackPtFractionVector) fMaxMaxTrackPtFractionVector->Write("MaxMaxTrackPtFraction");
-  if(fTrackEtaCutVector) fTrackEtaCutVector->Write("TrackEtaCut");
-  if(fMinTrackPtCutVector) fMinTrackPtCutVector->Write("MinTrackPtCut");
-  if(fMaxTrackPtRelativeErrorVector) fMaxTrackPtRelativeErrorVector->Write("MaxTrackPtRelativeError");
-  if(fVertexMaxDistanceVector) fVertexMaxDistanceVector->Write("VertexMaxDistance");
-  if(fCalorimeterSignalLimitPtVector) fCalorimeterSignalLimitPtVector->Write("CalorimeterSignalLimitPt");
-  if(fHighPtEtFractionVector) fHighPtEtFractionVector->Write("HighPtEtFraction");
-  if(fChi2QualityCutVector) fChi2QualityCutVector->Write("Chi2QualityCut");
-  if(fMinimumTrackHitsVector) fMinimumTrackHitsVector->Write("MinimumTrackHits");
-  if(fSubeventCutVector) fSubeventCutVector->Write("SubeventCut");
-  if(fZVertexCutVector) fZVertexCutVector->Write("ZVertexCut");
-  if(fLowPtHatCutVector) fLowPtHatCutVector->Write("LowPtHatCut");
-  if(fHighPtHatCutVector) fHighPtHatCutVector->Write("HighPtHatCut");
-  if(fAsymmetryBinTypeVector) fAsymmetryBinTypeVector->Write("AsymmetryBinType");
-  if(fCentralityBinEdgesVector) fCentralityBinEdgesVector->Write("CentralityBinEdges");
-  if(fTrackPtBinEdgesVector) fTrackPtBinEdgesVector->Write("TrackPtBinEdges");
-  if(fAsymmetryBinEdgesVector) fAsymmetryBinEdgesVector->Write("AsymmetryBinEdges");
-  if(fPtHatBinEdgesVector) fPtHatBinEdgesVector->Write("PtHatBinEdges");
-  if(fDoEventMixingVector) fDoEventMixingVector->Write("DoEventMixing");
-  if(fMixWithPoolVector) fMixWithPoolVector->Write("MixWithPool");
-  if(fNMixedEventsPerDijetVector) fNMixedEventsPerDijetVector->Write("NMixedEventsPerDijet");
-  if(fVzToleranceVector) fVzToleranceVector->Write("VzTolerance");
-  if(fMixingVzBinWidthVector) fMixingVzBinWidthVector->Write("MixingVzBinWidth");
-  if(fMixingHiBinWidthVector) fMixingHiBinWidthVector->Write("MixingHiBinWidth");
-  if(fMixingPoolDepthVector) fMixingPoolDepthVector->Write("MixingPoolDepth");
+  for(int iEntry = 0; iEntry < knEntries; iEntry++){
+    if(fCardEntries[iEntry])  fCardEntries[iEntry]->Write(fCardEntryNames[iEntry]);
+  }
   
+  // Write all the data names to the file.
+  for(int iFileName = 0; iFileName < knFileNames; iFileName++){
+    if(fFileNames[iFileName]) fFileNames[iFileName]->Write(fFileNameSaveName[iFileName]);
+  }
+   
   // Return back to the main directory
   file->cd("../");
 }

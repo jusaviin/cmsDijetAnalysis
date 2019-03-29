@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TString.h>
+#include <TObjString.h>
 #include <TVectorT.h>
 
 /*
@@ -18,7 +19,66 @@
  */
 class DijetCard {
   
+public:
+ 
+  // Indices for card entries
+  enum enumCardEntries{
+    kDataType,                  // Data tyoe in the data file (pp, PbPb, pp MC, PbPb MC)
+    kMcCorrelationType,         // Monte Carlo correlation type (RecoReco, RecoGen, GenReco, GenGen)
+    kMatchJets,                 // 0 = Reco and Gen jets are not matched, 1 = They are matched
+    kForestType,                // 0 = High forest, 1 = Skim Forest
+    kReadMode,                  // Certain files have different structure, so branch names need to be adjusted for them
+    kJetType,                   // 0 = Calorimeter jets, 1 = PF jets
+    kJetAxis,                   // 0 = Anti-kt axis, 1 = Leading PF candidate axis, 2 = WTA axis
+    kJetEtaCut,                 // Eta cut for jets
+    kSearchEtaCut,              // Eta cut defining the region from which the dijets are searched
+    kMaxPtCut,                  // Maximum allowed pT for jets
+    kMinPtCut,                  // Minimum allowed pT for the leading jet
+    kSubleadingPtCut,           // Minimum allowed pT for the subleading jet
+    kDeltaPhiCut,               // Required deltaPhi separation between leading and subleading jets
+    kMinMaxTrackPtFraction,     // Minimum fraction of jet pT taken by the highest pT track in jet
+    kMaxMaxTrackPtFraction,     // Maximum fraction of jet pT taken by the highest pT track in jet
+    kTrackEtaCut,               // Eta cut for tracks
+    kMinTrackPtCut,             // Minimum accepted track pT
+    kMaxTrackPtRelativeError,   // Maximum relative error allowed for track pT
+    kVertexMaxDistance,         // Maximum allowed distance of tracks from reconstructed vertex
+    kCalorimeterSignalLimitPt,  // Limit for track pT above which a signal in calorimeters is required
+    kHighPtEtFraction,          // Minimum fraction between pT and Et for high pT tracks
+    kChi2QualityCut,            // Maximum accepted chi2 for reconstructed tracks
+    kMinimumTrackHits,          // Minimum number of hits in tracking for a track
+    kSubeventCut,               // 0 = Subevent 0 (Pythia), 1 = Subevent > 0 (Hydjet), 2 = No subevent selection
+    kZVertexCut,                // Maximum accepted vz in the event
+    kLowPtHatCut,               // Minimum accepted pT hat
+    kHighPtHatCut,              // Maximum accepted pT hat
+    kAsymmetryBinType,          // 0 = Asymmetry binning in AJ, 1 = Asymmetry binning in xJ
+    kCentralityBinEdges,        // Centrality bin edges
+    kTrackPtBinEdges,           // Track pT bin edges
+    kAsymmetryBinEdges,         // Asymmetry bin edges
+    kPtHatBinEdges,             // pT hat bin edges
+    kDoEventMixing,             // 0 = Do not mix events, 1 = Mix events
+    kMixWithPool,               // 0 = Use poolless mixing algorithm, 1 = Mix with pool
+    kNMixedEventsPerDijet,      // Number of events used in the event mixing
+    kVzTolerance,               // For poolless mixing, the maximum accepted distance between same event vz and mixed event vz
+    kMixingVzBinWidth,          // The vz bin width, in case we use mixing pool
+    kMixingHiBinWidth,          // The hibin width, in case we use mixing pool
+    kMixingPoolDepth,           // Number of events in each vz and hibin collected to the mixing pool
+    kJffCorrection,             // For postprocessing: 0 = No JFF correction, 1 = Apply JFF correction
+    kSpilloverCorrection,       // For postprocessing: 0 = No spillover correction, 1 = Apply spillover correction
+    kSeagullCorrection,         // For postprocessing: 0 = No seagull correction, 1 = Apply seagull correction
+    kSmoothMixing,              // For postprocessing: 0 = No smoothening in mixing, 1 = Smoothen mixed event distribution
+    kImprovisedMixing,          // For postprocessing: 0 = Use actual mixing, 1 = Improvise mixing from deltaPhi side band
+    kAdjustBackground,          // For postprocessing: 0 = No adjustment between leading and subleading backgrounds, 1 = Match leading and subleading backgrounds
+    knEntries};                 // Number of entries in the card
+  
+  // Enumeration for input files used in postprocessing
+  enum enumFileNames{kInputFileName,kJffCorrectionFileName,kSpilloverCorrectionFileName,knFileNames};
+  
 private:
+  
+  // Names for each entry read from the configuration card
+  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground"};
+  const char *fFileNameType[knFileNames] = {"input", "JFF correction","spillover correction"};
+  const char *fFileNameSaveName[knFileNames] = {"InputFile", "JFFCorrectionFile","SpilloverCorrectionFile"};
   
   TFile *fInputFile;         // Input file from which all the data is read
   TString fCardDirectory;    // Path to the ConfigurationCard directory
@@ -31,46 +91,9 @@ private:
   void ReadVectors();        // Read the vectors from the file
   
   // Vectors for all the lines inside the card
-  TVectorT<float> *fDataTypeVector;                 // Vector for data type
-  TVectorT<float> *fMcCorrelationTypeVector;        // Vector for Monte Carlo correlation type
-  TVectorT<float> *fMatchJetsVector;                // Vector for jet matching information
-  TVectorT<float> *fForestTypeVector;               // Vector for the used forest type
-  TVectorT<float> *fReadModeVector;                 // Vector telling if the used file was skim of high forest
-  TVectorT<float> *fJetTypeVector;                  // Vector telling if we used particle flow or calorimeter jets
-  TVectorT<float> *fJetAxisVector;                  // Vector telling if we used anti-kT or leading PF candidate jet axis
-  TVectorT<float> *fJetEtaCutVector;                // Vector for the used eta cut for jets
-  TVectorT<float> *fSearchEtaCutVector;             // Vector for the eta region from which the jets are searched in the analysis
-  TVectorT<float> *fMaxPtCutVector;                 // Vector for maximum pT accepted for the leading jet
-  TVectorT<float> *fMinPtCutVector;                 // Vector for the minimum pT accepted for the leading jet
-  TVectorT<float> *fSubleadingPtCutVector;          // Vector for minimum pT allowed for the subleading jet
-  TVectorT<float> *fDeltaPhiCutVector;              // Vector for minimum deltaPhi accepted between leading and subleading jet axes
-  TVectorT<float> *fMinMaxTrackPtFractionVector;    // Vector for minimum fraction of jet pT taken by the highest pT track in jet
-  TVectorT<float> *fMaxMaxTrackPtFractionVector;    // Vector for maximum fraction of jet pT taken by the highest pT track in jet
-  TVectorT<float> *fTrackEtaCutVector;              // Vector for the eta cut for tracks
-  TVectorT<float> *fMinTrackPtCutVector;            // Vector for the minimum accepted track pT
-  TVectorT<float> *fMaxTrackPtRelativeErrorVector;  // Vector for the maximum relative error allowed for track pT
-  TVectorT<float> *fVertexMaxDistanceVector;        // Vector for maximum allowed distance of tracks from reconstructed vertex
-  TVectorT<float> *fCalorimeterSignalLimitPtVector; // Vector for limit for track pT above which a signal in calorimeters is required
-  TVectorT<float> *fHighPtEtFractionVector;         // Vector for the minimum fraction between pT and Et for high pT tracks
-  TVectorT<float> *fChi2QualityCutVector;           // Vector for the maximum accepted chi2 for reconstructed tracks
-  TVectorT<float> *fMinimumTrackHitsVector;         // Vector for minimum number of hits in tracking for a track
-  TVectorT<float> *fSubeventCutVector;              // Vector for cut on subevent index
-  TVectorT<float> *fZVertexCutVector;               // Vector for maximum accepted vz in the event
-  TVectorT<float> *fLowPtHatCutVector;              // Vector for the minimum accepted pT hat
-  TVectorT<float> *fHighPtHatCutVector;             // Vector for the maximum accepted pT hat
-  TVectorT<float> *fAsymmetryBinTypeVector;         // Vector for the used asymmetry binning type (AJ or xJ)
-  TVectorT<float> *fCentralityBinEdgesVector;       // Vector for the used centrality bin edges
-  TVectorT<float> *fTrackPtBinEdgesVector;          // Vector for the used track pT bin edges
-  TVectorT<float> *fAsymmetryBinEdgesVector;        // Vector for the used dijet asymmetry bin edges
-  TVectorT<float> *fPtHatBinEdgesVector;            // Vector for the used pT hat bin edges
-  TVectorT<float> *fDoEventMixingVector;            // Vector for the event mixing flag
-  TVectorT<float> *fMixWithPoolVector;              // Vector telling if we do mixing with or without mixing pool
-  TVectorT<float> *fNMixedEventsPerDijetVector;     // Vector for the number of events used in the event mixing
-  TVectorT<float> *fVzToleranceVector;              // Vector for maximum accepted distance between same event vz and mixed event vz
-  TVectorT<float> *fMixingVzBinWidthVector;         // Vector telling vz bin width, in case we use mixing pool
-  TVectorT<float> *fMixingHiBinWidthVector;         // Vector telling hibin width, in case we use mixing pool
-  TVectorT<float> *fMixingPoolDepthVector;          // Vector telling the mixing pool depth
-  
+  TVectorT<float> *fCardEntries[knEntries];   // Array of all the vectors in the card
+  TObjString *fFileNames[knFileNames];            // Array for filenames used in postprocessing
+   
 public:
   
   DijetCard(TFile *inFile); // Contructor with input file
@@ -79,11 +102,15 @@ public:
   TString GetDataType() const;   // Getter for data type string
   void Write(TDirectory *file);  // Write the contents of the card to a file
   double GetMaxDeltaEta() const; // Get maximum deltaEta possible using jet and track cuts in the card
+  void Print() const;            // Print the contents of the card to the console
   
   int GetNAsymmetryBins() const; // Get the number of asymmetry bins
   double GetLowBinBorderAsymmetry(const int iBin) const;  // Get the low border of i:th asymmetry bin
   double GetHighBinBorderAsymmetry(const int iBin) const; // Get the high border of i:th asymmetry bin
   const char *GetAsymmetryBinType(TString latexIt = "") const; // Get a description of the used asymmetry bin type
+  
+  void AddOneDimensionalVector(int entryIndex, float entryContent); // Add one dimensional vector to the card
+  void AddFileName(int entryIndex, TString fileName); // Add a file name to the card
   
 };
 
