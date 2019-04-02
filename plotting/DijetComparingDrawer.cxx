@@ -24,6 +24,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fDrawEventMixingCheck(false),
   fSaveFigures(false),
   fFigureFormat("pdf"),
+  fFigureComment(""),
   fApplyScaling(false),
   fLogPt(true),
   fLogCorrelation(true),
@@ -1005,6 +1006,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         
         // Draw the track phi distributions to the upper panel of a split canvas plot
         sprintf(namerX,"#DeltaR");
+        fMainHistogram->GetXaxis()->SetRangeUser(0,1);
         DrawToUpperPad(namerX, "P(#DeltaR)", fLogJetShape);
         
         // Add a legend to the plot
@@ -1014,6 +1016,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         
         // Draw the ratios to the lower portion of the split canvas
         fDrawer->SetGridY(true);
+        fRatioHistogram[0]->GetXaxis()->SetRangeUser(0,1);
         DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
         fDrawer->SetGridY(false);
         
@@ -1059,6 +1062,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
 
       // Draw the track phi distributions to the upper panel of a split canvas plot
       sprintf(namerX,"#DeltaR");
+      fMainHistogram->GetXaxis()->SetRangeUser(0,1);
       DrawToUpperPad(namerX, "P(#DeltaR)", fLogJetShape);
       
       // Add a legend to the plot
@@ -1311,7 +1315,7 @@ void DijetComparingDrawer::SaveFigure(TString figureName, TString centralityStri
   if(!fSaveFigures) return;
   
   // Write the figure to a file
-  TString figName = Form("figures/%s",figureName.Data());
+  TString figName = Form("figures/%s%s",figureName.Data(),fFigureComment);
   if(fBaseHistograms->GetSystem().Contains("PbPb")) figName.Append(centralityString);
   figName.Append(trackPtString);
   figName.Append(correlationTypeString);
@@ -1544,9 +1548,10 @@ void DijetComparingDrawer::SetDrawEventMixingCheck(const bool drawOrNot, const b
 }
 
 // Setter for saving the figures to a file
-void DijetComparingDrawer::SetSaveFigures(const bool saveOrNot, const char *format){
+void DijetComparingDrawer::SetSaveFigures(const bool saveOrNot, const char *format, const char *comment){
   fSaveFigures = saveOrNot;
   fFigureFormat = format;
+  fFigureComment = comment;
 }
 
 // Set if we should scale the histograms with their integral before comparing them

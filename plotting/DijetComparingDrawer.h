@@ -98,7 +98,7 @@ public:
   void SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom);  // Setter for drawing the event mixing check
   
   // Setters for figure saving and logarithmic axes
-  void SetSaveFigures(const bool saveOrNot, const char *format);  // Setter for saving the figures to a file
+  void SetSaveFigures(const bool saveOrNot, const char *format, const char *comment = "");  // Setter for saving the figures to a file
   void SetLogPt(const bool isLog);          // Setter for logarithmic pT axis
   void SetLogCorrelation(const bool isLog); // Setter for logarithmic z axis for correlation plots
   void SetLogJetShape(const bool isLog);    // Setter for logarithmic jet shape drawing
@@ -163,6 +163,7 @@ private:
   // Choose if you want to write the figures to pdf file
   bool fSaveFigures;           // Flag for saving the figures to file
   const char* fFigureFormat;   // Format in which the figures are saved
+  const char* fFigureComment;  // Comment added to figure name
   
   // Choose if we should scale the histograms before comparing them
   bool fApplyScaling;
