@@ -10,8 +10,8 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_processed_2019-03-18.root";  // File from which the RecoGen histograms are read for the correction
-  // data/PbPbMC_RecoGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_processed_2019-03-18.root
+  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_sube0_noMixing_matchedJets_improvisedMixing_fixedCentrality_processed_2019-02-26.root";  // File from which the RecoGen histograms are read for the correction
+  // data/dijet_ppMC_RecoGen_Pythia6_mergedSkims_pfJets_noUncorr_xj_processed_2019-03-26.root
   // data/dijet_ppMC_RecoGen_Pythia6_pfJets_noUncorr_matchedJets_WTAaxis_processed_2019-03-08.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_sube0_noMixing_matchedJets_improvisedMixing_fixedCentrality_processed_2019-02-26.root
   // data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_fixedJetPt_matchedJets_processed_2019-02-25.root
@@ -19,8 +19,8 @@ void produceJffCorrection(){
   // data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root  // File for pp
   // data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_sube0_smoothedMixing_processed_2018-11-05.root // File for PbPb
   // data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString genGenFileName = "data/PbPbMC_GenGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_processed_2019-03-18.root";   // File from which the GenGen histograms are read for the correction
-  // data/PbPbMC_GenGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_processed_2019-03-18.root
+  TString genGenFileName = "data/PbPbMC_GenGen_skims_pfJets_noUncorr_sube0_noMixing_matchedJets_improvisedMixing_fixedCentrality_processed_2019-02-26.root";   // File from which the GenGen histograms are read for the correction
+  // data/dijet_ppMC_GenGen_Pythia6_mergedSkims_pfJets_noUncorr_xj_processed_2019-03-26.root
   // data/dijet_ppMC_GenGen_Pythia6_pfJets_noUncorr_matchedJets_WTAaxis_processed_2019-03-08.root
   // data/PbPbMC_GenGen_skims_pfJets_noUncorr_sube0_noMixing_matchedJets_improvisedMixing_fixedCentrality_processed_2019-02-26.root
   // data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_fixedJetPt_matchedJets_processed_2019-02-25.root
@@ -28,7 +28,7 @@ void produceJffCorrection(){
   // data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root // File for pp
   // data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root // File for PbPb
   // data/PbPbMC_GenGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString outputFileName = "ooot.root";   // File name for the output file
+  TString outputFileName = "newPpTest3.root";   // File name for the output file
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC2_smoothedMixing_adjustedBackground_2019-01-15.root"
   // data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root
   
@@ -200,7 +200,7 @@ void produceJffCorrection(){
   
   // Give a name to asymmetry bins for saving them to file
   char histogramNamer[150];
-  const char *asymmetryName[nAsymmetryBins+1];
+  TString asymmetryName[nAsymmetryBins+1];
   for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
     asymmetryName[iAsymmetry] = Form("A%d",iAsymmetry);
   }
@@ -221,11 +221,11 @@ void produceJffCorrection(){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
           // Create a new name to the histogram and write it into file
-          sprintf(histogramNamer,"jffCorrection_%s_%s_%sC%dT%d",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
+          sprintf(histogramNamer,"jffCorrection_%s_%s_%sC%dT%d",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape), recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
           jffCorrectionJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
           
           // Create a new name to the ratio histogram and write it into file
-          sprintf(histogramNamer,"jffRatio_%s_%s_%sC%dT%d",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape),recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
+          sprintf(histogramNamer,"jffRatio_%s_%s_%sC%dT%d",recoGenHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape), recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
           jffRatioJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
           
         } // Track pT loop
@@ -246,7 +246,7 @@ void produceJffCorrection(){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
           // Create a new name to the histogram and write it into file
-          sprintf(histogramNamer,"jffCorrection_%sDeltaEta_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
+          sprintf(histogramNamer,"jffCorrection_%sDeltaEta_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack), asymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
           jffCorrectionDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
           
         } // Track pT loop
@@ -267,7 +267,7 @@ void produceJffCorrection(){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
           // Create a new name to the histogram and write it into file
-          sprintf(histogramNamer,"jffCorrection_%sDeltaPhi_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
+          sprintf(histogramNamer,"jffCorrection_%sDeltaPhi_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack), asymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
           jffCorrectionDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
           
         } // Track pT loop
@@ -288,7 +288,7 @@ void produceJffCorrection(){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
           // Create a new name to the histogram and write it into file
-          sprintf(histogramNamer,"jffCorrection_%sDeltaEtaDeltaPhi_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack),asymmetryName[iAsymmetry],iCentrality,iTrackPt);
+          sprintf(histogramNamer,"jffCorrection_%sDeltaEtaDeltaPhi_%sC%dT%d",recoGenHistograms->GetJetTrackHistogramName(iJetTrack), asymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
           jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
           
         } // Track pT loop

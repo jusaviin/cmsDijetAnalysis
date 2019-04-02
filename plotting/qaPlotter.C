@@ -1298,13 +1298,13 @@ void qaPlotter(){
                     if(max1 < min2){
                       max1 = min2;
                     }
-                  }
-                }
+                  } // Bins in histogram loop
+                } // Asymmetry bin loop
                 
                 // After the minimum and maximum values over asymmetry bins are determined, leave 10 % marginal for drawing
                 asymmetryMin[iTrackPt] = min1 - 0.1*(max1-min1);
                 asymmetryMax[iTrackPt] = max1 + 0.1*(max1-min1);
-              }
+              } // If for the first centrality bin
               
               // Find the correct canvas to draw the histograms
               jffAsymmetryComparisonCanvas[iJetTrack]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
@@ -1323,13 +1323,14 @@ void qaPlotter(){
                 }
               }
               
-              // Draw different legends to different canvases
+              // Draw different asymmetry legends to different canvases
               for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
                 if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 30-iAsymmetry){
                   drawBigCanvasLegend(legend,correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt],jffAsymmetryLegend[iAsymmetry].Data());
                 }
               }
               
+              // Draw the system legend to the pad before the asymmetry legends
               if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 30-nJffAsymmetryBins-1){
                 legend = new TLegend(0.15,0.3,0.9,0.5);
                 legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.11);legend->SetTextFont(62);
