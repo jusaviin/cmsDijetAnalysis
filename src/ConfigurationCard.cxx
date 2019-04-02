@@ -267,13 +267,13 @@ void ConfigurationCard::ReadInputLine( const char *buffer ){
 void ConfigurationCard::PrintOut() const{
   // echo
   cout<<endl<<"======== "<<fCardName<<" ========="<<endl;
-  for(unsigned int i=0; i<fValuesVector.size();i++){
-    cout<<Form("%15s",fKeyWordVector[i].Data());//print keyword
-    cout<<" (dim ="<<fValuesVector[i].GetNrows()<<") ";//print size of TVector
-    for(int j=1; j<=fValuesVector[i].GetNrows(); j++){
-      cout<<fValuesVector[i][j]<<" ";//TVector components
+  for(unsigned int i=0; i < fValuesVector.size(); i++){
+    cout << Form("%15s",fKeyWordVector[i].Data()); //print keyword
+    cout << " (dim = " << fValuesVector[i].GetNrows() << ") "; //print size of TVector
+    for(int j = 1; j <= fValuesVector[i].GetNrows(); j++){
+      cout << fValuesVector[i][j] << " "; //TVector components
     }
-    cout<<endl;
+    cout << endl;
   }
 }
 

@@ -1748,8 +1748,8 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
  */
 Bool_t DijetAnalyzer::PassSubeventCut(const Int_t subeventIndex) const{
   if(fSubeventCut == kSubeventAny) return true;
-  if(fSubeventCut == kSubeventZero && subeventIndex == 0) return true;
-  if(fSubeventCut == kSubeventNonZero && subeventIndex > 0) return true;
+  if((fSubeventCut == kSubeventZero) && (subeventIndex == 0)) return true;
+  if((fSubeventCut == kSubeventNonZero) && (subeventIndex > 0)) return true;
   return false;
 }
 
