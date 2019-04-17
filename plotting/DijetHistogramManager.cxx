@@ -2532,7 +2532,7 @@ double DijetHistogramManager::GetAnyLeadingJetPtIntegral(const int iCentrality) 
  *  const double minPt = Jet pT above which the integral is calculated
  */
 double DijetHistogramManager::GetInclusiveJetPtIntegral(const int iCentrality, const double minPt) const{
-  return fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->FindBin(minPt),fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->GetNbinsX()+1,"width");
+  return fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->Integral(fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->FindBin(minPt+0.001), fhJetPt[kAnyJet][iCentrality][fnAsymmetryBins]->GetNbinsX()+1,"width");
 }
 
 // Setter for avoiding possible peaks in mixed event distribution

@@ -17,7 +17,7 @@ void produceSpilloverCorrection(){
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "spilloverTest.root"; // File name for the output file
+  TString outputFileName = "spillingOverTesting.root"; // File name for the output file
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
   TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
@@ -32,6 +32,21 @@ void produceSpilloverCorrection(){
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
   bool fixGaussYield = false;  // Fix the gaussian fit yield to result from bin counting
+  bool fixGaussWidth = false;  // Fix the gaussian fit width to the centrality averaged result before fitting for yield
+  
+  bool fitOnlyGauss = false;    // True: Fit deltaEta and deltaPhi with Gauss, False: Fit the distributions with Gauss and constant
+  bool useIntegralYield = false; // True: For yield, use integral over range [-1.5,1.5], False: Use directly yield parameter from Gauss fit
+  
+  double minConstantFitRange[] = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,1,1,1};  // Minimum range to which the constant is fitted
+  double maxConstantFitRange[] = {2.5,2.5,2.5,2.5,2.5,2.5,2.5,2,2,2};  // Maximum range to which the constant is fitted
+ 
+  // Set the constant fit ranges to 0 to indicate that we will only fit gauss without constant
+  if(fitOnlyGauss){
+    for(int i = 0; i < 10; i++){
+      minConstantFitRange[i] = 0;
+      maxConstantFitRange[i] = 0;
+    }
+  }
   
   // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
@@ -161,6 +176,7 @@ void produceSpilloverCorrection(){
   int lowXbin, lowYbin, highXbin, highYbin;
   double spilloverEtaFitRange, spilloverPhiFitRange;
   double fixedSpilloverYield = 0;
+  double fixedSpilloverYieldError = 0;
   int widthBins;
   
   // Create DijetMethods in which the correction procedure is implemented
@@ -180,26 +196,27 @@ void produceSpilloverCorrection(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
         // To obtain best fit to the spillover distribution, different bins use different fit ranges
-        if(iTrackPt < 2){
+        /*if(iTrackPt < 2){
           // Use wider fit range for the low pT bins
-          spilloverEtaFitRange = 1.0;
-          spilloverPhiFitRange = 1.0;
-        } else {
-          // Only fit close to 0 for the high pT bins
           spilloverEtaFitRange = 0.5;
           spilloverPhiFitRange = 0.5;
-        }
+        } else {
+          // Only fit close to 0 for the high pT bins
+          spilloverEtaFitRange = 0.4;
+          spilloverPhiFitRange = 0.4;
+        }*/
         
         // If background is not subtracted, use a bit larger region to fit to get the constant background level
-        spilloverEtaFitRange = 2.0;
-        spilloverPhiFitRange = 2.0;
+        // It is possible that the fit range can be further optimized, but 0.5 seems to be giving decent results
+        spilloverEtaFitRange = 0.5;
+        spilloverPhiFitRange = 0.5;
         
         for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
           
           // For the RecoGen, read the bin count yield
           spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
           if(iDataType == 0){
-            spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],1,2);
+            spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],1.5,2.5);
             spilloverYieldDeltaEtaBinCount[1][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYieldError();
             
             // Scale the bin count yield yo the pT bin size
@@ -209,12 +226,13 @@ void produceSpilloverCorrection(){
           
           // If we are fixing the yield, find the number for that
           if(fixGaussYield){
-            fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],1,2);
+            fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],minConstantFitRange[iTrackPt],maxConstantFitRange[iTrackPt]);
+            fixedSpilloverYieldError = corrector->GetSpilloverYieldError();
           }
           
           // Get the signal histogram and extract the correction from it
           spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
-          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],spilloverEtaFitRange,spilloverPhiFitRange,fixedSpilloverYield);
+          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt], spilloverEtaFitRange, spilloverPhiFitRange, minConstantFitRange[iTrackPt], maxConstantFitRange[iTrackPt], fixedSpilloverYield);
           
           // Get the QA histograms and functions
           // Need to change name, because corrector gives the same name in both loops, which causes problems with root
@@ -224,8 +242,11 @@ void produceSpilloverCorrection(){
           spilloverDeltaPhiProjection[iDataType][iJetTrack][iCentrality][iTrackPt]->SetName(Form("%s%d",spilloverDeltaPhiProjection[iDataType][iJetTrack][iCentrality][iTrackPt]->GetName(),iDataType));
           spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaEtaFit();
           spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt]->SetName(Form("%s%d",spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt]->GetName(),iDataType));
+          if(fixGaussYield) spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt]->SetParError(0,fixedSpilloverYieldError);
+          
           spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaPhiFit();
           spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt]->SetName(Form("%s%d",spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt]->GetName(),iDataType));
+          if(fixGaussYield) spilloverDeltaPhiFit[iDataType][iJetTrack][iCentrality][iTrackPt]->SetParError(0,fixedSpilloverYieldError);
         } // Data type loop
 
         // Print out the QA numbers for yield
@@ -261,6 +282,7 @@ void produceSpilloverCorrection(){
   
   // In the end, print out some yield info is doing QA
   if(yieldQA){
+    JDrawer *qaDrawer = new JDrawer();
     for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
       if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -268,12 +290,23 @@ void produceSpilloverCorrection(){
           cout << "Type: " << histograms[1]->GetJetTrackHistogramName(iJetTrack) << " Centrality: " << iCentrality << " pT " << iTrackPt <<" Spillover yield: " << spilloverYield[iJetTrack][iCentrality][iTrackPt] << " Yield without fit: " << dataYield[iJetTrack][iCentrality][iTrackPt] << " Ratio: " << yieldRatio[iJetTrack][iCentrality][iTrackPt] << endl;
           cout << "Yield from deltaPhi: " << spilloverYieldDeltaPhi[iJetTrack][iCentrality][iTrackPt] << "  Yield from deltaEta: " << spilloverYieldDeltaEta[iJetTrack][iCentrality][iTrackPt] << endl;
           cout << "Yield from deltaPhi fit: " << spilloverYieldDeltaPhiFit[iJetTrack][iCentrality][iTrackPt] << "  Yield from deltaEta fit: " << spilloverYieldDeltaEtaFit[iJetTrack][iCentrality][iTrackPt] << endl;
+          cout << "Yield from deltaPhi fit integral: " << spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5) - 3*spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2) << " Yield from deltaEta fit integral: " << spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5) - 3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2) << endl;
+          cout << "Background from deltaPhi fit: " << 3*spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2) << " background from deltaEta fit: " << 3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2) << endl;
+          cout << endl;
+          
+         spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3), qaDrawer->DrawHistogram(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt],"#Delta#eta","dN/d#Delta#eta",Form("JetTrack: %d C: %d pT: %d",iJetTrack,iCentrality,iTrackPt));
+          
+          spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3), qaDrawer->DrawHistogram(spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt],"#Delta#phi","dN/d#Delta#phi",Form("JetTrack: %d C: %d pT: %d",iJetTrack,iCentrality,iTrackPt));
+          
         } // Track pT loop
       } // Centrality loop
     } // Jet-track correlation type loop
     
+    // Do not run the actual spillover correction finding if we are only doing QA for the yields
+    return;
+    
   } // Yield QA if
-
+  
   // Use drawer for a quick sanity check for fits
   JDrawer *drawer = new JDrawer();
   
@@ -290,25 +323,37 @@ void produceSpilloverCorrection(){
         // 0.7-1 pT bin for centralities 10-100 %
         // Do not include these points to the averages, so that the fit to the resulting distribution will be better.
         
-        if((iCentrality == 0 && iTrackPt == 3) || (iCentrality > 0 && iTrackPt == 0)){
-          cout << "Fit convergence for yield is deemed bad in bin iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << endl;
-          cout << "This bin will be excluded from the total yield calculation" << endl;
-          cout << "If in some new version of the data this is not the case, please change the code accordingly!" << endl;
-          cout << endl;
-        } else {
-          
-          // For the combined yield, calculate the average of points from deltaEta and deltaPhi fits
+        // Note: This is dangerous. The values is left to 0 and may screw up the fits. Better to fill all and remove bad bins form graph.
+        //if((iCentrality == 0 && iTrackPt == 3) || (iCentrality > 0 && iTrackPt == 0)){
+        //  cout << "Fit convergence for yield is deemed bad in bin iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << endl;
+        //  cout << "This bin will be excluded from the total yield calculation" << endl;
+        //  cout << "If in some new version of the data this is not the case, please change the code accordingly!" << endl;
+        //  cout << endl;
+        //} else {
+        
+        // For the combined yield, calculate the average of points from deltaEta and deltaPhi fits
+        if(useIntegralYield){
           combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2); // Integral of the fit - constant background
-          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] += (spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2)); // Integral of the fit - constant background
-          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] / 2.0;  // Divide the sum by 2 to get the average
-          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);  // Divide the sum by bin width to get yield
+          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] += (spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2)); // Integral of the fit - constant background
           
-          // For the error, use the error of the Gauss yield parameter for now TODO: Check if this should be improved
-          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] = TMath::Power(spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0),2);
-          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] += TMath::Power(spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0),2); // Add the errors in quadrature
-          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] = TMath::Sqrt(combinedFitYield[1][iJetTrack][iCentrality][iTrackPt])/2.0;
-          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);  // Divide the sum by bin width to get yield
+        } else {
+          if(iCentrality == 3){ // For peripheral bin, use the yield from deltaPhi
+            combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+          } else {
+            combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+          }
+          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] += spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
         }
+        
+        combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] / 2.0;  // Divide the sum by 2 to get the average
+        combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);  // Divide the sum by bin width to get yield
+        
+        // For the error, use the error of the Gauss yield parameter for now TODO: Check if this should be improved
+        combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] = TMath::Power(spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0),2);
+        combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] += TMath::Power(spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0),2); // Add the errors in quadrature
+        combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] = TMath::Sqrt(combinedFitYield[1][iJetTrack][iCentrality][iTrackPt])/2.0;
+        combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);  // Divide the sum by bin width to get yield
+        //}
         
         // If the used data file is data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root
         // there are some bins where the fit convergence for width is not good and they should be removed. These bins are
@@ -363,24 +408,95 @@ void produceSpilloverCorrection(){
     graphDeltaPhiWidth[iJetTrack]->SetMarkerStyle(34);
     drawer->DrawGraph(graphDeltaPhiWidth[iJetTrack],0,8,0,1,"Track p_{T} (GeV)","Combined #Delta#phi width",histograms[0]->GetJetTrackAxisName(iJetTrack),"psame");
     
+    // If we want to fix width, read the width from the graph, refit with fixed width, and recombine yields for eta and phi
+    if(fixGaussWidth){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          
+          // Refit deltaEta and deltaPhi
+          corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt], spilloverEtaFitRange, spilloverPhiFitRange, minConstantFitRange[iTrackPt], maxConstantFitRange[iTrackPt], 0, combinedDeltaEtaWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]), combinedDeltaPhiWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]));
+          spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaEtaFit();
+          spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaPhiFit();
+          
+          // Note: this selection commented out, as we want to get directly the average for fixed width results and not do
+          // fitting for yield parameters anymore. Thus the average must be calculated in all points.
+          
+          // If the used data file is data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root
+          // there are some bins where the fit convergence for yield is not good and they should be removed. These bins are
+          // 3-4 pT bin for the centrality 0-10 %
+          // 0.7-1 pT bin for centralities 10-100 %
+          // Do not include these points to the averages, so that the fit to the resulting distribution will be better.
+          
+          /*if((iCentrality == 0 && iTrackPt == 3) || (iCentrality > 0 && iTrackPt == 0)){
+           cout << "Fit convergence for yield is deemed bad in bin iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << endl;
+           cout << "This bin will be excluded from the total yield calculation" << endl;
+           cout << "If in some new version of the data this is not the case, please change the code accordingly!" << endl;
+           cout << endl;
+           } else {*/
+          
+          // For the combined yield, calculate the average of points from deltaEta and deltaPhi fits
+          if(useIntegralYield){
+            combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2); // Integral of the fit - constant background
+            combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] += (spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2)); // Integral of the fit - constant background
+          } else {
+            if(iCentrality == 3){ // DeltaPhi yield is more reliable in the peripheral bin, so use that for yield determination there
+              combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+            } else {
+              combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+            }
+            combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] += spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
+          }
+          
+          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] / 2.0;  // Divide the sum by 2 to get the average
+          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);  // Divide the sum by bin width to get yield
+          
+          // For the error, use the error of the Gauss yield parameter for now TODO: Check if this should be improved
+          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] = TMath::Power(spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0),2);
+          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] += TMath::Power(spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParError(0),2); // Add the errors in quadrature
+          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] = TMath::Sqrt(combinedFitYield[1][iJetTrack][iCentrality][iTrackPt])/2.0;
+          combinedFitYield[1][iJetTrack][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);  // Divide the sum by bin width to get yield
+          //}
+          
+        } // track pT loop
+      } // centrality loop
+    } // Fix Gauss width
+    
     // Yield graphs come in centrality bins
     drawer->SetLogY(true);
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       graphYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX[iCentrality],combinedFitYield[0][iJetTrack][iCentrality],graphErrorsX,combinedFitYield[1][iJetTrack][iCentrality]);
       
-      // Fit the yields with an exponentinal function
-      graphYield[iJetTrack][iCentrality]->Fit(commonYieldFit[iJetTrack][iCentrality],"","",0.5,8);
-      graphYield[iJetTrack][iCentrality]->SetMarkerStyle(34);
-      sprintf(namer,"%s C = %d",histograms[0]->GetJetTrackAxisName(iJetTrack),iCentrality);
-      drawer->DrawGraph(graphYield[iJetTrack][iCentrality],0,8,0.001,3.5,"Track p_{T} (GeV)","Combined yield",namer,"psame");
-      
-      // Fill another graph with the values extracted from unsubtracred deltaEta histogram using bin counting
-      graphYieldBinCount[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX[iCentrality],spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality],graphErrorsX,spilloverYieldDeltaEtaBinCount[1][iJetTrack][iCentrality]);
+      // Remove the last point from each graph
+      graphYield[iJetTrack][iCentrality]->RemovePoint(5);
       
       // Fit also this graph, excluding some points from the fit
       lowFitPt = 0.5;
-      if(iCentrality > 0) lowFitPt = 1;
+      if(iCentrality == 1 || iCentrality == 2) lowFitPt = 1;
+      
+      // Remove one point from fit for 0-10 centrality bin
+      if(iCentrality == 0){
+        graphYield[iJetTrack][iCentrality]->GetPoint(3,originalValueX,originalValueY);
+        originalErrorY = graphYield[iJetTrack][iCentrality]->GetErrorY(3);
+        originalErrorX = graphYield[iJetTrack][iCentrality]->GetErrorX(3);
+        graphYield[iJetTrack][iCentrality]->RemovePoint(3);
+      }
+      
+      // Fit the yields with an exponentinal function
+      graphYield[iJetTrack][iCentrality]->Fit(commonYieldFit[iJetTrack][iCentrality],"","",lowFitPt,8);
+      
+      // Return the point to the graph after fit
+      if(iCentrality == 0) {
+        graphYield[iJetTrack][iCentrality]->SetPoint(5,originalValueX,originalValueY);
+        graphYield[iJetTrack][iCentrality]->SetPointError(5,originalErrorX,originalErrorY);
+      }
+      
+      graphYield[iJetTrack][iCentrality]->SetMarkerStyle(34);
+      sprintf(namer,"%s C = %d",histograms[0]->GetJetTrackAxisName(iJetTrack),iCentrality);
+      drawer->DrawGraph(graphYield[iJetTrack][iCentrality],0,8,0.001,10,"Track p_{T} (GeV)","Combined yield",namer,"psame");
+      
+      // Fill another graph with the values extracted from unsubtracred deltaEta histogram using bin counting
+      graphYieldBinCount[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX[iCentrality],spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality],graphErrorsX,spilloverYieldDeltaEtaBinCount[1][iJetTrack][iCentrality]);
       
       // Remove one point from fit for 0-10 centrality bin
       if(iCentrality == 0){
@@ -410,7 +526,11 @@ void produceSpilloverCorrection(){
         deltaPhiWidth = combinedDeltaPhiWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]);
         
         // Find the common yield for deltaEta and deltaPhi by evaluating it from the fit to the graph
-        commonYield = commonYieldFit[iJetTrack][iCentrality]->Eval(graphPointsX[iCentrality][iTrackPt]);
+        if(fixGaussWidth){
+          commonYield = commonYieldFit[iJetTrack][iCentrality]->Eval(graphPointsX[iCentrality][iTrackPt]);//commonYield = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt];  // If width is fixed, do not fit the yield anymore
+        } else {
+          commonYield = commonYieldFit[iJetTrack][iCentrality]->Eval(graphPointsX[iCentrality][iTrackPt]);
+        }
         commonYield *= (trackPtBinBorders[iTrackPt+1]-trackPtBinBorders[iTrackPt]);  // Remove the track pT bin size normalization
         
         // Now that we have yields and widths, construct the individual Gauss fits and the total spillover correction
