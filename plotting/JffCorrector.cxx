@@ -108,7 +108,7 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
     for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
         
-        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/fittedSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
       } // Track pT loop
     } // Centrality loop
