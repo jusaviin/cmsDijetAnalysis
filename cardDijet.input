@@ -5,7 +5,7 @@ DataType 2  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
 McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
-MatchJets 0 # 0 = Do not match reco and gen jets, 1 = Match reco and gen jets, 2 = Match reco and gen dijets
+MatchJets 1 # 0 = Do not match reco and gen jets, 1 = Match reco and gen jets, 2 = Match reco and gen dijets
 
 # Specify the forest type in the selected data files and choose forest readers based on this
 ForestType 0 # 0 = High Forest, 1 = Skim Forest

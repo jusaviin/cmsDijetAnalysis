@@ -42,7 +42,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
@@ -50,7 +50,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -83,9 +83,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = false;
+  bool drawJetTrackDeltaEtaDeltaPhi = true;
   
   // Draw jet shape histograms
   bool drawJetShape = false;
@@ -96,12 +96,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
+  bool drawBackgroundSubtracted = true;
+  bool drawBackground = false;
   int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -132,7 +132,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root  File for pp
   // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC_smoothedMixing_adjustedBackground_2019-01-15.root  Alternative file for pp
   // data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root";  File for PbPb
-  TString spilloverCorrectionFileName = "spilloverTest.root";
+  TString spilloverCorrectionFileName = "spillingOverTesting.root";
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2019-02-14.root"
@@ -172,7 +172,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
@@ -322,6 +322,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
       cout << "Leading dijets above 120 GeV: " << dijets << endl;
       cout << "Leading jets / all jets: " << allLeadingJets/allJets << endl;
       cout << "Dijets / all jets: " << dijets/allJets << endl;
+      cout << endl;
+      cout << "Integral over leading jet distribution = " << histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, 0)->Integral("width")/dijets << endl;
+      cout << "Integral over subleading jet distribution = " << histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, 0)->Integral("width")/dijets << endl;
+      cout << endl;
     }
     return;
   }

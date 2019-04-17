@@ -448,7 +448,11 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   char namerY[150];
   
   // Rebinning
-  int nRebinDeltaEta = 5;
+  int nRebinDeltaEta = 10; // 500 bins in deltaEta
+  int nRebinDeltaPhi = 2; // 200 bins in deltaPhi
+  
+  // Type for distributions
+  int distributionType = DijetHistogramManager::kBackgroundSubtracted; // kCorrected
   
   // Manual zooming options for deltaEta and deltaPhi
   double deltaPhiZoomAdder = 0.2;
@@ -487,10 +491,24 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         /////////////////////////////////////////////
         
         // Set up the histograms and draw them to the upper pad of a split canvas
-        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
-        fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
 
-        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
+        // Possibility to do rebinning
+        if(nRebinDeltaPhi > 1){
+          fMainHistogram->Rebin(nRebinDeltaPhi);
+          fMainHistogram->Scale(1.0/nRebinDeltaPhi);
+        }
+        
+        fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
+        
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
+        
+        // Possibility to do rebinning
+        if(nRebinDeltaPhi > 1){
+          fComparisonHistogram[0]->Rebin(nRebinDeltaPhi);
+          fComparisonHistogram[0]->Scale(1.0/nRebinDeltaPhi);
+        }
+        
         fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         
         // If specified, zoom to the tails of the histogram to see the most interesting region in detail
@@ -535,7 +553,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         /////////////////////////////////////////////
         
         // Set up the histograms and draw them to the upper pad of a split canvas
-        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins, iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins, iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
         
         // Possibility to do rebinning
         if(nRebinDeltaEta > 1){
@@ -544,9 +562,9 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         }
         
         // Zoom the interesting region
-        fMainHistogram->GetXaxis()->SetRangeUser(-4,4);
+        fMainHistogram->GetXaxis()->SetRangeUser(-3,3);
         
-        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,DijetHistogramManager::kCorrected,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
         
         // Possibility to do rebinning
         if(nRebinDeltaEta > 1){
@@ -555,7 +573,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         }
         
         // Zoom the interesting region
-        fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-4,4);
+        fComparisonHistogram[0]->GetXaxis()->SetRangeUser(-3,3);
         
         // If specified, zoom to the tails of the distribution to see the interesting region better
         if(fEventMixingZoom) ZoomToRegion(3,10,3,true,false);

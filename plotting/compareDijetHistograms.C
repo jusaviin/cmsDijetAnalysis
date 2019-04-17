@@ -35,8 +35,8 @@ void compareDijetHistograms(){
   bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations || drawTrackInclusiveJetCorrelations || drawPtWeightedTrackInclusiveJetCorrelations);
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaEta = true;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
@@ -59,9 +59,9 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
-  const char* figureComment = "_fittedSpillover";
+  const char* figureComment = "_updatedSpillover";
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
@@ -74,8 +74,8 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.5;
-  double maxZoom = 1.5;
+  double minZoom = 0.7;
+  double maxZoom = 1.3;
   TString ratioLabel = "Corrected / Sube0";
   
   // Scaling for histograms
@@ -121,8 +121,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_processed_2019-03-26.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_onlySpilloverCorrection_processed_2019-03-26.root",/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_noFitInSpillover_processed_2019-03-26.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root"/*,"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"*/};
+  const int nDatasets = 3;
+  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_onlySpilloverCorrection_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_fixedSpilloverYield_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_noFitInSpillover_processed_2019-03-26.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_10eveImprovedMix_xj_spilloverFitRange50PeripheralPhi_noJff_processed_2019-03-22.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"};
   //TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_jffRebin2_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -136,7 +136,7 @@ void compareDijetHistograms(){
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   
   //TString legendComment[nDatasets] = {"P+H GenMatched","P+H GenUnmatched"};
-  TString legendComment[nDatasets] = {/*"All subevents",*/"Spillover",/*"SpilloverNoFit",*/"Sube0"/*,"SubeNon0"*/};
+  TString legendComment[nDatasets] = {/*"All subevents",*/"Spillover",/*"SpilloverNoFit",*/"Sube0","SubeNon0"};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
