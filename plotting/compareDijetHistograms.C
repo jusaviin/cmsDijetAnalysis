@@ -35,18 +35,19 @@ void compareDijetHistograms(){
   bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations || drawTrackInclusiveJetCorrelations || drawPtWeightedTrackInclusiveJetCorrelations);
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
-  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
   bool drawJetShape = false;
-  bool drawJetShapeMCComparison = true;
+  bool drawJetShapeMCComparison = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
+  bool drawNormalizedMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
@@ -55,13 +56,13 @@ void compareDijetHistograms(){
   bool drawBackground = false;
   
   // Draw histograms to make a check on the validity of the event mixing method
-  bool drawEventMixingCheck = false;
+  bool drawEventMixingCheck = true;
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
   const char* figureFormat = "pdf";
-  const char* figureComment = "_updatedSpillover";
+  const char* figureComment = "";
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
@@ -74,9 +75,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = 0.7;
-  double maxZoom = 1.3;
-  TString ratioLabel = "Corrected / Sube0";
+  double minZoom = -3.0;
+  double maxZoom = 5.0;
+  TString ratioLabel = "pfJet / caloJet";
   
   // Scaling for histograms
   bool scaleHistograms = false; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -121,8 +122,8 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 3;
-  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_onlySpilloverCorrection_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_fixedSpilloverYield_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_noFitInSpillover_processed_2019-03-26.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_10eveImprovedMix_xj_spilloverFitRange50PeripheralPhi_noJff_processed_2019-03-22.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"};
+  const int nDatasets = 1;
+  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_onlySpilloverCorrection_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_fixedSpilloverYield_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_noFitInSpillover_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_10eveImprovedMix_xj_fixedSpilloverWidthRange50_noJff_processed_2019-03-22.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root"/*,"data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root"*/};
   //TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_jffRebin2_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -136,7 +137,7 @@ void compareDijetHistograms(){
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   
   //TString legendComment[nDatasets] = {"P+H GenMatched","P+H GenUnmatched"};
-  TString legendComment[nDatasets] = {/*"All subevents",*/"Spillover",/*"SpilloverNoFit",*/"Sube0","SubeNon0"};
+  TString legendComment[nDatasets] = {/*"All subevents","Spillover","SpilloverNoFit","Sube0",*/"SubeNon0"/*"pfJets","caloJets"*/};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -231,7 +232,7 @@ void compareDijetHistograms(){
   drawer->SetDrawAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations,drawPtWeightedTrackInclusiveJetCorrelations);
   drawer->SetDrawJetTrackDeltas(drawJetTrackDeltaPhi,drawJetTrackDeltaEta,drawJetTrackDeltaEtaDeltaPhi);
   drawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeMCComparison);
-  drawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawCorrected);
+  drawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawNormalizedMixedEvent,drawCorrected);
   drawer->SetDrawEventMixingCheck(drawEventMixingCheck,eventMixingZoom);
   drawer->SetSaveFigures(saveFigures,figureFormat,figureComment);
   drawer->SetLogAxes(logPt,logCorrelation,logJetShape);
