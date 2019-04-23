@@ -790,13 +790,15 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
               drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,iCorrelationType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,iDeltaPhi);
               
-              drawnHistogram->GetXaxis()->SetRangeUser(-3.5,3.5); // XXXXXX TODO: Good zooming possibilities
+              drawnHistogram->Rebin(4);
+              drawnHistogram->Scale(1.0/4.0);
+              drawnHistogram->GetXaxis()->SetRangeUser(-3,3); // XXXXXX TODO: Good zooming possibilities
 
               // Do not draw the deltaEta histograms for background because they are flat by construction
               if(iCorrelationType == DijetHistogramManager::kBackground) continue;
               
               // Move legend to different place for mixed event distributions
-              if(iCorrelationType == DijetHistogramManager::kBackgroundSubtracted && iDeltaPhi == DijetHistogramManager::kBetweenPeaks){
+              if((iCorrelationType == DijetHistogramManager::kBackgroundSubtracted || iCorrelationType == DijetHistogramManager::kCorrected) && iDeltaPhi == DijetHistogramManager::kBetweenPeaks){
                 legendX1 = 0.31; legendY1 = 0.75; legendX2 = 0.61; legendY2 = 0.9;
               } else if(iCorrelationType == DijetHistogramManager::kMixedEvent || iDeltaPhi > DijetHistogramManager::kNearSide) {
                 legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;

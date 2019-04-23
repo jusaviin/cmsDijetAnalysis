@@ -13,7 +13,8 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root";  // File from which the RecoGen histograms are read for the correction
+  // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
@@ -32,7 +33,7 @@ void produceSpilloverCorrection(){
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
   bool fixGaussYield = false;  // Fix the gaussian fit yield to result from bin counting
-  bool fixGaussWidth = false;  // Fix the gaussian fit width to the centrality averaged result before fitting for yield
+  bool fixGaussWidth = true;  // Fix the gaussian fit width to the centrality averaged result before fitting for yield
   
   bool fitOnlyGauss = false;    // True: Fit deltaEta and deltaPhi with Gauss, False: Fit the distributions with Gauss and constant
   bool useIntegralYield = false; // True: For yield, use integral over range [-1.5,1.5], False: Use directly yield parameter from Gauss fit
@@ -527,7 +528,7 @@ void produceSpilloverCorrection(){
         
         // Find the common yield for deltaEta and deltaPhi by evaluating it from the fit to the graph
         if(fixGaussWidth){
-          commonYield = commonYieldFit[iJetTrack][iCentrality]->Eval(graphPointsX[iCentrality][iTrackPt]);//commonYield = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt];  // If width is fixed, do not fit the yield anymore
+          commonYield = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt];  // If width is fixed, do not fit the yield anymore
         } else {
           commonYield = commonYieldFit[iJetTrack][iCentrality]->Eval(graphPointsX[iCentrality][iTrackPt]);
         }

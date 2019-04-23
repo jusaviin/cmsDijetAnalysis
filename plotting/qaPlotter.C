@@ -437,8 +437,8 @@ void qaPlotter(){
   
   bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = true;              // Draw the QA plots for spillover correction
-  bool drawSeagull = false;                // Draw the QA plots for seagull correction
+  bool drawSpillover = false;              // Draw the QA plots for spillover correction
+  bool drawSeagull = true;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
   bool drawJetShapeCorrections = false;    // Draw the jet shape corrections as a function or R
   
@@ -465,7 +465,7 @@ void qaPlotter(){
   spilloverQaFile = TFile::Open("spillingOverTesting_QA.root");
   // spillingOverTesting_QA.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18_QA.root"
-  TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15_QA.root");
+  TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15_QA.root");
   // "data/dijetPbPb_skims_pfJets_noUncorr_smoothedMixingAvoidPeakLowPt_noCorrections_2019-02-06_QA.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09_QA.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15_QA.root"
@@ -733,7 +733,7 @@ void qaPlotter(){
           spilloverDeltaEtaProjection[1][iJetTrack][iCentrality][iTrackPt]->Scale(1.0/deltaEtaRebinSpillover);
           
           // Draw the histogram to canvas
-          setHistogramStyle(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt],1.5,spilloverScaleEta,titleString,"#Delta#eta");
+          setHistogramStyle(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt],2.5,spilloverScaleEta,titleString,"#Delta#eta");
           spilloverDeltaEtaProjection[1][iJetTrack][iCentrality][iTrackPt]->SetLineColor(kRed);
           spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->DrawCopy();
           
