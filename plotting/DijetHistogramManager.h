@@ -146,6 +146,7 @@ public:
   // Setters for ranges for different bins
   void SetCentralityBinRange(const int first, const int last); // Setter for centrality bin range
   void SetTrackPtBinRange(const int first, const int last);    // Setter for track pT bin range
+  void SetAsymmetryProcessing(const bool processAsymmetry);    // Setter for processing asymmetry bins
   
   // Setter for used DijetMethods
   void SetDijetMethods(DijetMethods* newMethods); // Setter for used DijetMethods
@@ -284,6 +285,7 @@ private:
   int fLastLoadedCentralityBin;   // Last centrality bin that is drawn
   int fFirstLoadedTrackPtBin;     // First track pT bin that is drawn
   int fLastLoadedTrackPtBin;      // Last track pT bin that is drawn
+  bool fProcessAsymmetryBins;     // True = Process asymmetry bins, false = do not process them
   
   // =============================================
   // ============ Binning information ============

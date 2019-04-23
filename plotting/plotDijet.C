@@ -42,7 +42,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = false;
+  bool drawLeadingJetHistograms = true;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
@@ -50,7 +50,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -84,8 +84,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
   bool drawJetShape = false;
@@ -94,13 +94,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
-  bool drawMixedEvent = false;
+  bool drawMixedEvent = true;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = true;
+  bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = true;
+  bool drawBackgroundSubtracted = false;
   bool drawBackground = false;
   int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
@@ -151,11 +151,14 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   
+  // For subeNon0, we can use the whole away side in deltaPhi as a background region
+  if(inputFileName.Contains("subeNon0")) highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
+  
   int firstDrawnCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int lastDrawnTrackPtBin = 2;
   
   if(selectedCentralityBin >= 0){
     firstDrawnCentralityBin = selectedCentralityBin;
@@ -167,10 +170,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     lastDrawnTrackPtBin = selectedPtBin;
   }
   
+  bool processAsymmetryBins = false;  // True: Process all asymmetry bins, false: Process only integrated asymmetry
+  
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
-  const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
+  const bool smoothenMixing = false; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
   bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
@@ -282,6 +287,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,setIndices);
   histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
+  histograms->SetAsymmetryProcessing(processAsymmetryBins);
 
   // Set the used dijet methods and corrections
   histograms->SetDijetMethods(methods);
@@ -295,7 +301,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // With execution mode 0, only process the histograms and write them to file
   if(executionMode == 0){
     histograms->LoadHistograms();
-    histograms->ProcessHistograms();
+    //histograms->ProcessHistograms();
     histograms->Write(outputFileName,fileWriteMode);
     return;
   }
