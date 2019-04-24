@@ -702,7 +702,7 @@ void DijetAnalyzer::RunAnalysis(){
         const char* pbpbMixingFileNames[] = {"root://cmsxrootd.fnal.gov//store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root","root://eosuser.cern.ch//eos/user/j/jviinika/mixing/Data2015_finalTrkCut_1Mevts_copy1.root"};
         currentMixedEventFile = pbpbMixingFileNames[mixingFileIndex];
       } else if(fDataType == ForestReader::kPbPbMC){
-        const char* pbpbMCMixingFileNames[] = {"root://cmsxrootd.fnal.gov///store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://cmsxrootd.fnal.gov//store/user/wangx/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root"};
+        const char* pbpbMCMixingFileNames[] = {"root://xrootd.rcac.purdue.edu///store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://xrootd.rcac.purdue.edu//store/user/wangx/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://xrootd.rcac.purdue.edu//store/user/jviinika/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root"};
         currentMixedEventFile = pbpbMCMixingFileNames[mixingFileIndex];
       } else if(fDataType == ForestReader::kPpMC && fReadMode == 2){
         MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
