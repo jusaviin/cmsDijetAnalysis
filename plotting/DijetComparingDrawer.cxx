@@ -29,6 +29,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fLogPt(true),
   fLogCorrelation(true),
   fLogJetShape(true),
+  fUseDifferenceInsteadOfRatio(false),
   fRatioZoomMin(0.6),
   fRatioZoomMax(1.4),
   fRatioLabel(""),
@@ -588,14 +589,15 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
         sprintf(namerX,"%.1f < #Delta#varphi < %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide));
         legend->AddEntry(fMainHistogram,namerX,"l");
-        //sprintf(namerX,"#Delta#varphi < %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
-        sprintf(namerX,"%.1f < #Delta#varphi < %.1f", fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        sprintf(namerX,"#Delta#varphi > %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
+        //sprintf(namerX,"%.1f < #Delta#varphi < %.1f", fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
         legend->AddEntry(fComparisonHistogram[0],namerX,"l");
         legend->Draw();
         
         // Prepare the ratio and draw it to the lower pad
         sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
-        sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        //sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{#Delta#varphi > %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaEtaCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
         fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
         if(fEventMixingZoom){
@@ -1110,7 +1112,11 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
     fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
-    fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
+    if(fUseDifferenceInsteadOfRatio){
+      fRatioHistogram[iAdditional]->Add(fComparisonHistogram[iAdditional],-1);
+    } else {
+      fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
+    }
   }
 }
 
@@ -1581,6 +1587,11 @@ void DijetComparingDrawer::SetLogAxes(const bool pt, const bool correlation, con
   SetLogPt(pt);
   SetLogCorrelation(correlation);
   SetLogJetShape(jetShape);
+}
+
+// Setter for plotting difference instead of ratio to lower pad
+void DijetComparingDrawer::SetUseDifferenceInRatioPlot(const bool useDifference){
+  fUseDifferenceInsteadOfRatio = useDifference;
 }
 
 // Setter for minimum value of y-axis in ratio plots

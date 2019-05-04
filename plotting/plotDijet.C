@@ -84,8 +84,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
-  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaEta = true;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
@@ -94,10 +94,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
@@ -156,11 +156,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // For subeNon0, we can use the whole away side in deltaPhi as a background region
   if(inputFileName.Contains("subeNon0")) highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
   
-  int firstDrawnCentralityBin = 1;
-  int lastDrawnCentralityBin = 1;
+  int firstDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 1;
-  int lastDrawnTrackPtBin = 1;
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = 2;
   
   if(selectedCentralityBin >= 0){
     firstDrawnCentralityBin = selectedCentralityBin;

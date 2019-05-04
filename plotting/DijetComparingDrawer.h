@@ -109,6 +109,7 @@ public:
   void SetApplyScaling(const bool applyScaling); // Set if we should scale the histograms with their integral before comparing them
   
   // Setters for ratio plots
+  void SetUseDifferenceInRatioPlot(const bool useDifference);  // Setter for plotting difference instead of ratio to lower pad
   void SetRatioZoomMin(const double minValue);  // Setter for minimum value of y-axis in ratio plots
   void SetRatioZoomMax(const double maxValue);  // Setter for maximum value of y-axis in ratio plots
   void SetRatioZoom(const double minValue, const double maxValue);  // Setter for y-axis values in ratio plots
@@ -176,6 +177,7 @@ private:
   bool fLogJetShape;    // Jet shape distributions
   
   // Zooming for ratio plots
+  bool fUseDifferenceInsteadOfRatio;  // Instead of ratio, draw the difference of the two distributions
   double fRatioZoomMin;    // Lower y-axis boundary in ratio plots
   double fRatioZoomMax;    // Upper y-axis boundary in ratio plots
   TString fRatioLabel;     // Label given to ratio plots y-axes

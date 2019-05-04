@@ -441,6 +441,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
   bool mixingPeakVisible;  // Some bins have a peak around xero in the mixed event distribution due to holes in acceptance
   // In these cases we should not smoothen the mixing to avoid having peak contribution in flat areas
   TH2D *correctionHistogram;
+  int seagullMethod = 0;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -487,7 +488,8 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           
           // Apply the seagull correction after the mixed event correction
           if(fApplySeagullCorrection){
-            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],1);
+            seagullMethod = (iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet) ? 0 : 1;
+            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],seagullMethod);
             
             // Get the used background eta histogram and fitted function for QA purposes
             fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin] = (TH1D*)fMethods->GetBackgroundEta()->Clone();

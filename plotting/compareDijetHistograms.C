@@ -60,9 +60,9 @@ void compareDijetHistograms(){
   bool eventMixingZoom = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
-  const char* figureComment = "";
+  const char* figureComment = "_newSeagull";
   
   // Logarithmic scales for figures
   bool logPt = true;          // pT distributions
@@ -75,8 +75,9 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  double minZoom = -3.0;
-  double maxZoom = 5.0;
+  bool useDifferenceInsteadOfRatio = true;
+  double minZoom = 0.95;
+  double maxZoom = 1.05;
   TString ratioLabel = "pfJet / caloJet";
   
   // Scaling for histograms
@@ -123,7 +124,7 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_onlySpilloverCorrection_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_fixedSpilloverYield_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_noFitInSpillover_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_10eveImprovedMix_xj_fixedSpilloverWidthRange50_noJff_processed_2019-03-22.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root"/*,"data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root"*/};
+  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_onlySpilloverCorrection_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_fixedSpilloverYield_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_noFitInSpillover_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_10eveImprovedMix_xj_fixedSpilloverWidthRange50_noJff_processed_2019-03-22.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_modifiedSeagull_smoothedMixing_processed.root"/*,"data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root"*/};
   //TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_jffRebin2_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
   //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
   //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
@@ -237,6 +238,7 @@ void compareDijetHistograms(){
   drawer->SetSaveFigures(saveFigures,figureFormat,figureComment);
   drawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   drawer->SetDrawingStyles(colorPalette,style2D,style3D);
+  drawer->SetUseDifferenceInRatioPlot(useDifferenceInsteadOfRatio);
   drawer->SetRatioZoom(minZoom,maxZoom);
   drawer->SetRatioLabel(ratioLabel);
   drawer->SetApplyScaling(scaleHistograms);

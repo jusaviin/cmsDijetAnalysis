@@ -30,7 +30,7 @@ public:
   DijetMethods& operator=(const DijetMethods& in); // Equal sign operator
   
   TH2D* MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D *leadingMixedEventHistogram, const TH2D *subleadingMixedEventHistogram, const bool avoidPeaks); // Mixed event correction for a two-dimensional histogram
-  TH2D* DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram);  // Apply a seagull correction to the histogram
+  TH2D* DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod = 0);  // Apply a seagull correction to the histogram
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, double maxDeltaEta, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
   TH2D* ImproviseMixedEvent(const TH2D *sameEventHistogram); // Improvise mixed event distribution from background deltaPhi region of the same event histogram
   double GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaNormalizationRange, double maxEtaNormalizationRange); // Getter for the dpillover yield from the mixed event corrected distribution

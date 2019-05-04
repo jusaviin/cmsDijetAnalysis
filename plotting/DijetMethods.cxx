@@ -15,6 +15,15 @@ double seagullPoly2(double *x, double *par){
 }
 
 /*
+ * Combination of zeroth and first order polynomial for seagull correction
+ * Functional form: f(x) = a + b*e^(c*x)
+ */
+double seagullExp(double *x, double *par){
+  return par[0]+par[1]*TMath::Exp(x[0]*par[2]);
+  //return par[0]+x[0]*par[1]+x[0]*x[0]*par[2]+x[0]*x[0]*x[3]*par[3];
+}
+
+/*
  *  Constructor
  */
 DijetMethods::DijetMethods() :
@@ -30,7 +39,7 @@ DijetMethods::DijetMethods() :
   fBackgroundErrorScalingFactor(1),
   fMinBackgroundDeltaPhi(1.4),
   fMaxBackgroundDeltaPhi(1.7),
-  fSeagullRebin(4),
+  fSeagullRebin(2),
   fnBinsProjectedOver(0),
   fMaxSignalDeltaEta(1.0),
   fSpilloverYieldError(0),
@@ -339,11 +348,12 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
  *  4) Use the ratio c/f(deltaEta) as a correction factor for each point in the histogram
  *
  * Arguments:
- *  TH2D *mixedEventCorrectedHistogram = Two-dimensional deltaEta-deltaPhi distribution, that is corrected by the mixed event
+ *  const TH2D *mixedEventCorrectedHistogram = Two-dimensional deltaEta-deltaPhi distribution, that is corrected by the mixed event
+ *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta
  *
  *  return: The two dimensional distribution corrected for the seagull effect
  */
-TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
+TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod){
   
   // Project out the deltaEta distribution at background deltaPhi region
   int minDeltaPhiBin = mixedEventCorrectedHistogram->GetXaxis()->FindBin(fMinBackgroundDeltaPhi+0.0001);
@@ -356,13 +366,44 @@ TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
   fBackgroundEtaProjection->Rebin(fSeagullRebin);
   fBackgroundEtaProjection->Scale(1.0/fSeagullRebin);
   
+  // Symmetrize the positive and negative sides of the distribution
+  if(normalizationMethod == 1){
+    double negativeContent, negativeError;
+    double positiveContent, positiveError;
+    double averageContent, averageError;
+    int nDeltaEtaBins = fBackgroundEtaProjection->GetNbinsX();
+    for(int iBin = 1; iBin <= nDeltaEtaBins/2; iBin++){
+      
+      // Average the contents from the positive and negative sides of the histogram
+      negativeContent = fBackgroundEtaProjection->GetBinContent(iBin);
+      negativeError   = fBackgroundEtaProjection->GetBinError(iBin);
+      positiveContent = fBackgroundEtaProjection->GetBinContent(nDeltaEtaBins-iBin+1);
+      positiveError   = fBackgroundEtaProjection->GetBinError(nDeltaEtaBins-iBin+1);
+      averageContent  = (positiveContent+negativeContent)/2.0;
+      averageError    = (positiveError+negativeError)/2.0;
+      
+      // Set the average as the new content for both sides
+      fBackgroundEtaProjection->SetBinContent(iBin,averageContent);
+      fBackgroundEtaProjection->SetBinError(iBin,averageError);
+      fBackgroundEtaProjection->SetBinContent(nDeltaEtaBins-iBin+1,averageContent);
+      fBackgroundEtaProjection->SetBinError(nDeltaEtaBins-iBin+1,averageError);
+    }
+  }
+  
   // Prepare the fit function
-  fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,3);
-  double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
-  fSeagullFit->SetParameters(initialLevel,0,0);
+  if(normalizationMethod == 0){
+    fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,3);
+    double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
+    fSeagullFit->SetParameters(initialLevel,0,0);
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
+  } else {
+    fSeagullFit = new TF1("seagullFit",seagullExp,-3,3,3);
+    double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
+    fSeagullFit->SetParameters(initialLevel,-1,-1);
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,3);
+  }
   
   // Fit the projected distribution
-  fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
   double backgroundLevel = fSeagullFit->GetParameter(0);
   
   // Apply the correction to the input 2D histogram
@@ -376,6 +417,7 @@ TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
     
     // Calculate the correction for this deltaEta bin
     binEta = seagullCorrectedHistogram->GetYaxis()->GetBinCenter(iEta);
+    if(normalizationMethod == 1) binEta = TMath::Abs(binEta);
     seagullCorrection = backgroundLevel/fSeagullFit->Eval(binEta);
     
     // Apply the correction for all deltaPhi bins in the deltaEta strip
@@ -386,7 +428,7 @@ TH2D* DijetMethods::DoSeagullCorrection(TH2D *mixedEventCorrectedHistogram){
       seagullCorrectedHistogram->SetBinError(iPhi,iEta,binError*seagullCorrection);
     }
   }
-  
+    
   // Return the corrected histogram
   return seagullCorrectedHistogram;
 }

@@ -444,8 +444,8 @@ void qaPlotter(){
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
+  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
+  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
@@ -465,11 +465,12 @@ void qaPlotter(){
   spilloverQaFile = TFile::Open("spillingOverTesting_QA.root");
   // spillingOverTesting_QA.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18_QA.root"
-  TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15_QA.root");
+  TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_2019-02-15_seagullTesting_processed_QA.root");
   // "data/dijetPbPb_skims_pfJets_noUncorr_smoothedMixingAvoidPeakLowPt_noCorrections_2019-02-06_QA.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09_QA.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15_QA.root"
-  TFile *seagullPpFile = TFile::Open("data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14_QA.root");
+  TFile *seagullPpFile = TFile::Open("data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_fixedJetPt_matchedJets_adjustedBackground_processed_2019-02-25_QA.root");
+  // data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14_QA.root
   TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root");
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14.root"
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
@@ -1016,6 +1017,10 @@ void qaPlotter(){
           gPad->SetBottomMargin(0.2);
           
           // Draw the histogram to canvas
+          if(iCentrality != nCentralityBins){
+            seagullDeltaEtaWings[iJetTrack][iCentrality][iTrackPt]->Rebin(2);
+            seagullDeltaEtaWings[iJetTrack][iCentrality][iTrackPt]->Scale(1.0/2.0);
+          }
           seagullDeltaEtaWings[iJetTrack][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3);
           setHistogramTitles(seagullDeltaEtaWings[iJetTrack][iCentrality][iTrackPt],titleString,"#Delta#eta");
           seagullDeltaEtaWings[iJetTrack][iCentrality][iTrackPt]->DrawCopy();
