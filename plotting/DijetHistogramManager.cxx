@@ -150,12 +150,12 @@ DijetHistogramManager::DijetHistogramManager() :
             
             // Loop over deltaEta bins
             for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
-              fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iCentrality][iAsymmetry][iTrackPt][iDeltaEta] = NULL; // DeltaPhi between jet and track
+              fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentrality][iTrackPt][iDeltaEta] = NULL; // DeltaPhi between jet and track
             }
             
             // Loop over deltaPhi bins
             for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
-              fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iCentrality][iAsymmetry][iTrackPt][iDeltaPhi] = NULL; // DeltaEta between jet and track
+              fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentrality][iTrackPt][iDeltaPhi] = NULL; // DeltaEta between jet and track
             } // DeltaPhi loop
           } // Track pT loop
         } // Asymmetry loop
