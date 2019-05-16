@@ -1,7 +1,7 @@
 PROGRAM       = DrawingClasses
 version       = Dijet
 CXX           = g++
-CXXFLAGS      = -O -Wall -g -Wno-deprecated -fPIC -D$(version)
+CXXFLAGS      = -O -Wall -fPIC -D$(version) # Add -g for debugger
 LD            = g++
 LDFLAGS       = -O
 SOFLAGS       = -shared

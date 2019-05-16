@@ -1541,11 +1541,11 @@ void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[
     if(allEventsWentThrough){
       if(fDebugLevel > 0){
         cout << "Could only find " << eventsMixed << " events to mix with event " << avoidIndex << endl;
-        cout << "Increasing vz tolerance by 0.25 and hiBin tolerance by 1" << endl;
+        cout << "Increasing vz tolerance by 0.2 and hiBin tolerance by 1" << endl;
       }
       
       hiBinTolerance += 1;
-      additionalTolerance += 0.25;
+      additionalTolerance += 0.2;
       allEventsWentThrough = false;
       checkForDuplicates = true;
     }
