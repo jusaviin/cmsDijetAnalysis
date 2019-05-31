@@ -66,13 +66,15 @@ DijetHistogramManager::DijetHistogramManager() :
   }
   
   // Default binning for deltaPhi
+  TString defaultDeltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
+  TString defaultCompactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
   for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
     fLowDeltaPhiBinIndices[iDeltaPhi] = iDeltaPhi+1;
     fHighDeltaPhiBinIndices[iDeltaPhi] = iDeltaPhi+2;
     fLowDeltaPhiBinBorders[iDeltaPhi] = 0;
     fHighDeltaPhiBinBorders[iDeltaPhi] = 0;
-    fDeltaPhiString[iDeltaPhi] = "";
-    fCompactDeltaPhiString[iDeltaPhi] = "";
+    fDeltaPhiString[iDeltaPhi] = defaultDeltaPhiString[iDeltaPhi];
+    fCompactDeltaPhiString[iDeltaPhi] = defaultCompactDeltaPhiString[iDeltaPhi];
   }
   
   // Default binning for jet pT
@@ -210,6 +212,14 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
   // Read the number of asymmetry bins from the card and fix the naming for the last bin
   fnAsymmetryBins = fCard->GetNAsymmetryBins();
   fAsymmetryBinName[fnAsymmetryBins] = "";
+  
+  // Read the deltaPhi bin borders from the card
+  if(knDeltaPhiBins == fCard->GetNDeltaPhiBins()){
+    for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+      fLowDeltaPhiBinBorders[iDeltaPhi] = fCard->GetLowBinBorderDeltaPhi(iDeltaPhi);
+      fHighDeltaPhiBinBorders[iDeltaPhi] = fCard->GetHighBinBorderDeltaPhi(iDeltaPhi);
+    }
+  }
 }
 
 /*
@@ -233,6 +243,14 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile, DijetCard *card) 
   // Read the number of asymmetry bins from the card and fix the naming for the last bin
   fnAsymmetryBins = fCard->GetNAsymmetryBins();
   fAsymmetryBinName[fnAsymmetryBins] = "";
+  
+  // Read the deltaPhi bin borders from the card
+  if(knDeltaPhiBins == fCard->GetNDeltaPhiBins()){
+    for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+      fLowDeltaPhiBinBorders[iDeltaPhi] = fCard->GetLowBinBorderDeltaPhi(iDeltaPhi);
+      fHighDeltaPhiBinBorders[iDeltaPhi] = fCard->GetHighBinBorderDeltaPhi(iDeltaPhi);
+    }
+  }
 }
 
 /*
@@ -522,6 +540,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
   int nBins;
   int connectedIndex;
   int nProjectedBins;
+  int lowDeltaPhiBin, highDeltaPhiBin;
   bool isInclusive;
   double binError;
   double errorScale;
@@ -601,13 +620,16 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
             // DeltaPhi histogram over background eta region
             sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetName(),kBackgroundEtaRegion);
             fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kBackgroundEtaRegion] = (TH1D*)fMethods->ProjectBackgroundDeltaPhi(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin])->Clone();
-            
+              
             for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+              
+              lowDeltaPhiBin = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetXaxis()->FindBin(fLowDeltaPhiBinBorders[iDeltaPhi]);
+              highDeltaPhiBin = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetXaxis()->FindBin(fHighDeltaPhiBinBorders[iDeltaPhi]);
               sprintf(histogramName,"%sDeltaEtaProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetName(),iDeltaPhi);
-              fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->ProjectionY(histogramName,fLowDeltaPhiBinIndices[iDeltaPhi],fHighDeltaPhiBinIndices[iDeltaPhi])->Clone();
+              fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->ProjectionY(histogramName,lowDeltaPhiBin,highDeltaPhiBin)->Clone();
               
               // To retain the normalization, we must scale the histograms with the number of bins projected over and by the width of deltaPhi bin
-              nProjectedBins = fHighDeltaPhiBinIndices[iDeltaPhi] - fLowDeltaPhiBinIndices[iDeltaPhi] + 1;
+              nProjectedBins = highDeltaPhiBin - lowDeltaPhiBin + 1;
               if(iDeltaPhi > kWholePhi) fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(1.0/nProjectedBins);
               fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]->Scale(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetXaxis()->GetBinWidth(1));
               

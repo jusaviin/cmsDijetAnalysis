@@ -111,7 +111,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
                            // It follows that this number must be between 0 and 15.
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   TString figureNameSuffix = "";
   
@@ -140,7 +140,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27.root"
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = true;
+  bool applySeagullCorrection = false;
   if(preprocess) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
@@ -160,7 +160,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = 2;
+  int lastDrawnTrackPtBin = nTrackPtBins-1;
   
   if(selectedCentralityBin >= 0){
     firstDrawnCentralityBin = selectedCentralityBin;
@@ -243,6 +243,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   card->AddOneDimensionalVector(DijetCard::kSmoothMixing,smoothenMixing);
   card->AddOneDimensionalVector(DijetCard::kImprovisedMixing,improviseMixing);
   card->AddOneDimensionalVector(DijetCard::kAdjustBackground,adjustBackground);
+  card->AddVector(DijetCard::kLowDeltaPhiBinBorders,DijetHistogramManager::knDeltaPhiBins,lowDeltaPhiBinBorders);
+  card->AddVector(DijetCard::kHighDeltaPhiBinBorders,DijetHistogramManager::knDeltaPhiBins,highDeltaPhiBinBorders);
   
   // Add information about the used input files to the card
   card->AddFileName(DijetCard::kInputFileName,inputFileName);

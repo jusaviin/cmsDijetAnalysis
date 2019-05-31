@@ -68,6 +68,8 @@ public:
     kSmoothMixing,              // For postprocessing: 0 = No smoothening in mixing, 1 = Smoothen mixed event distribution
     kImprovisedMixing,          // For postprocessing: 0 = Use actual mixing, 1 = Improvise mixing from deltaPhi side band
     kAdjustBackground,          // For postprocessing: 0 = No adjustment between leading and subleading backgrounds, 1 = Match leading and subleading backgrounds
+    kLowDeltaPhiBinBorders,     // For postprocessing: Low deltaPhi bin borders used when producing the file
+    kHighDeltaPhiBinBorders,    // For postprocessing: High deltaPhi bin borders used when producing the file
     knEntries};                 // Number of entries in the card
   
   // Enumeration for input files used in postprocessing
@@ -76,7 +78,7 @@ public:
 private:
   
   // Names for each entry read from the configuration card
-  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground"};
+  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders"};
   const char *fFileNameType[knFileNames] = {"input", "JFF correction","spillover correction"};
   const char *fFileNameSaveName[knFileNames] = {"InputFile", "JFFCorrectionFile","SpilloverCorrectionFile"};
   
@@ -108,8 +110,12 @@ public:
   double GetLowBinBorderAsymmetry(const int iBin) const;  // Get the low border of i:th asymmetry bin
   double GetHighBinBorderAsymmetry(const int iBin) const; // Get the high border of i:th asymmetry bin
   const char *GetAsymmetryBinType(TString latexIt = "") const; // Get a description of the used asymmetry bin type
+  int GetNDeltaPhiBins() const; // Get the number of deltaPhi bins
+  double GetLowBinBorderDeltaPhi(const int iBin) const;  // Get the low border of i:th deltaPhi bin
+  double GetHighBinBorderDeltaPhi(const int iBin) const; // Get the high border of i:th deltaPhi bin
   
   void AddOneDimensionalVector(int entryIndex, float entryContent); // Add one dimensional vector to the card
+  void AddVector(int entryIndex, int dimension, double *contents); // Add a vector to the card
   void AddFileName(int entryIndex, TString fileName); // Add a file name to the card
   
 };

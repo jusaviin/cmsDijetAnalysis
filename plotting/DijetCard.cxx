@@ -127,7 +127,7 @@ double DijetCard::GetHighBinBorderAsymmetry(const int iBin) const{
   if(iBin >= GetNAsymmetryBins()) return -1;
   
   // Return the asked bin index
-  return (*fCardEntries[kAsymmetryBinEdges])[iBin+1];
+  return (*fCardEntries[kAsymmetryBinEdges])[iBin+2];
 }
 
  // Get a description of the used asymmetry bin type
@@ -136,6 +136,34 @@ const char* DijetCard::GetAsymmetryBinType(TString latexIt) const{
   const char *asymmetryLatex[] = {"A_{J}","x_{J}"};
   if(latexIt.Contains("tex"),TString::kIgnoreCase) return asymmetryLatex[fAsymmetryBinType];
   return asymmetryNames[fAsymmetryBinType];
+}
+
+// Get the number of deltaPhi bins bins
+int DijetCard::GetNDeltaPhiBins() const{
+  if(fCardEntries[kLowDeltaPhiBinBorders]) return fCardEntries[kLowDeltaPhiBinBorders]->GetNoElements();
+  return 0;
+}
+
+// Get the low border of i:th deltaPhi bin
+double DijetCard::GetLowBinBorderDeltaPhi(const int iBin) const{
+  
+  // Sanity check for the input
+  if(iBin < 0) return -1;
+  if(iBin >= GetNDeltaPhiBins()) return -1;
+  
+  // Return the asked bin index
+  return (*fCardEntries[kLowDeltaPhiBinBorders])[iBin+1];
+}
+
+// Get the high border of i:th deltaPhi bin
+double DijetCard::GetHighBinBorderDeltaPhi(const int iBin) const{
+  
+  // Sanity check for the input
+  if(iBin < 0) return -1;
+  if(iBin >= GetNDeltaPhiBins()) return -1;
+  
+  // Return the asked bin index
+  return (*fCardEntries[kHighDeltaPhiBinBorders])[iBin+1];
 }
 
 /*
@@ -154,6 +182,33 @@ void DijetCard::AddOneDimensionalVector(int entryIndex, float entryContent){
   float contents[1] = {entryContent};
   fCardEntries[entryIndex] = new TVectorT<float>(1,1,contents);
 
+}
+
+/*
+ * Add one-dimensional vector to the card
+ *
+ * Arguments:
+ *  int entryIndex = Internal index for the added vector in entry array
+ *  int dimension = Number of entries in the given array
+ *  float *contents = Content to be put into the vector
+ */
+void DijetCard::AddVector(int entryIndex, int dimension, double *contents){
+  
+  // Only allow addition to postprocessing vectors
+  if(entryIndex < kJffCorrection) return;
+  
+  // Convert double pointer to float pointer
+  float* convertedContents = new float[dimension];
+  for(int i = 0; i < dimension; i++){
+    convertedContents[i] = contents[i];
+  }
+  
+  // Make a new vector to the desired index with given content
+  fCardEntries[entryIndex] = new TVectorT<float>(1,dimension,convertedContents);
+  
+  // Delete the converted contents array
+  delete[] convertedContents;
+  
 }
 
 /*
