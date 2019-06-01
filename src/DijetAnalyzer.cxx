@@ -699,10 +699,10 @@ void DijetAnalyzer::RunAnalysis(){
     // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
     if(mixEvents){
       if(fDataType == ForestReader::kPbPb){
-        const char* pbpbMixingFileNames[] = {"root://cmsxrootd.fnal.gov//store/user/kjung/PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root","root://eosuser.cern.ch//eos/user/j/jviinika/mixing/Data2015_finalTrkCut_1Mevts_copy1.root"};
+        const char* pbpbMixingFileNames[] = {"root://xrootd.rcac.purdue.edu//store/user/kumarv/UICWork/Data2015_PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root","root://xrootd.rcac.purdue.edu//store/user/kumarv/UICWork/Data2015_PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts_copy1.root"};
         currentMixedEventFile = pbpbMixingFileNames[mixingFileIndex];
       } else if(fDataType == ForestReader::kPbPbMC){
-        const char* pbpbMCMixingFileNames[] = {"root://xrootd.rcac.purdue.edu///store/user/kjung/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/crab_PbPb_Pythia6Hydjet_MC_JetTrackSkim_finalizedJFFs_CymbalTune/mergedMixFile/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://xrootd.rcac.purdue.edu//store/user/wangx/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://xrootd.rcac.purdue.edu//store/user/jviinika/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root"};
+        const char* pbpbMCMixingFileNames[] = {"root://xrootd.rcac.purdue.edu//store/user/wangx/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://xrootd.rcac.purdue.edu//store/user/jviinika/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root"};
         currentMixedEventFile = pbpbMCMixingFileNames[mixingFileIndex];
       } else if(fDataType == ForestReader::kPpMC && fReadMode == 2){
         MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
@@ -1718,8 +1718,9 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   }
   
   // Number of events for different pT hat bins in the forest file list PbPbMC_5TeVPythia6+Hydjet_forests.txt
-  //  pT hat =             15 30 50 80     120     170     220     280    370    460
-  Int_t PbPbMcEvents[nBins] = {0,0,0,2571563,2850815,2680567,2891375,781744,129417};
+  //  pT hat =             15 30 50       80     120     170     220     280    370    460
+  Int_t PbPbMcEvents[nBins] = {0,0,1761973,4554185,3889938,2847904,2935134,793592,131390};
+  //Int_t PbPbMcEvents[nBins] = {0,0,0,2571563,2850815,2680567,2891375,781744,129417}; // Old Kurt events
   
   // Also for PbPb, there is a small change for event numbers in skimmed files. These numbers are for PbPbMC_Pythia6HydjetCymbal_list.txt
   if(fForestType == kSkimForest){

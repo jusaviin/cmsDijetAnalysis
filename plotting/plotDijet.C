@@ -111,7 +111,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
                            // It follows that this number must be between 0 and 15.
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   TString figureNameSuffix = "";
   
