@@ -659,10 +659,17 @@ void DijetAnalyzer::RunAnalysis(){
     fTrackReader[DijetHistograms::kSameEvent] = fJetReader;
   }
   
-  // If mixing events, create ForestReader for that. For PbPb, the Forest in mixing file is in different format as for other datasets
+  // If mixing events, create ForestReader for that. For PbPb and PbPbMC, the Forest in mixing file is a skim forest
   if(mixEvents){
     if(fDataType == ForestReader::kPbPb){
       fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+    } else if(fDataType == ForestReader::kPbPbMC){
+      if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
+        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+        
+      } else {
+        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      }
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
       if(fForestType == kSkimForest) {
         fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
