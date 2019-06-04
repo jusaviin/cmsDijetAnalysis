@@ -30,14 +30,15 @@ void graphFlow(){
   TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root");
   
   // Read the number of bins from histogram manager
-  DijetHistogramManager *dummyManager = new DijetHistogramManager();
+  DijetHistogramManager *dummyManager = new DijetHistogramManager(backgroundFile);
   
-  // In principle it would be better to read these from card, since in that case the number of bins can be changed
-  // in HistogramManager without breaking background compatibility. But this work also for fixed number of bins.
-  const int nCentralityBins = dummyManager->knCentralityBins;
-  const int nTrackPtBins = dummyManager->knTrackPtBins;
+  // Histogram manager reads the number of track pT bins from the DijetCard, so they are automatically
+  // updated based on how the backgroundFile is created
+  const int nCentralityBins = 4;
+  const int nTrackPtBins = dummyManager->GetNTrackPtBins();
   const int nFlowComponents = dummyManager->knFittedFlowComponents;
   
+  // Todo: Read also bin borders from the Card
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
   double graphPoints[] = {0.85,1.5,2.5,3.5,6,10};    // x-axis points in flow graphs

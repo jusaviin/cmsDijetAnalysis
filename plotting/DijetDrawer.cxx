@@ -993,7 +993,7 @@ void DijetDrawer::DrawJetShapeStack(){
   
   // If we want to do the normalization to 1, calculate the scaling here
   // Loop over jet-track correlation categories
-  double shapeIntegral[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::knCentralityBins] = {{0}};
+  double shapeIntegral[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxCentralityBins] = {{0}};
   if(fNormalizeJetShape){
     for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
       if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories

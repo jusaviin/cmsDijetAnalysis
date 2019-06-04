@@ -47,8 +47,8 @@ public:
   enum enumJetShape{kJetShape, kJetShapeBinCount, knJetShapeTypes};
   
   // Dimensions for histogram arrays
-  static const int knCentralityBins = 4;       // Number of centrality bins
-  static const int knTrackPtBins = 6;          // Number of track pT bins
+  static const int kMaxCentralityBins = 5;       // Maximum allowed number of centrality bins
+  static const int kMaxTrackPtBins = 10;         // Maximum allowed number of track pT bins
   static const int knFittedFlowComponents = 4; // Number of fitted flow components
   static const int kMaxAsymmetryBins = 5;      // Maximum allowed number of dijet asymmetry bins
   static const int knGenJetPtBins = 45;        // Number of generator level jet pT bins for jet pT closures
@@ -99,8 +99,8 @@ public:
   void NormalizeJetShape();       // Normalize the jet shape histograms
   
   // Setters for binning information
-  void SetCentralityBins(const double *binBorders, bool setIndices = true); // Set up centrality bin indices according to provided bin borders
-  void SetTrackPtBins(const double *binBorders, bool setIndices = true);    // Set up track pT bin indices according to provided bin borders
+  void SetCentralityBins(const bool readBinsFromFile, const int nBins, const double *binBorders, bool setIndices = true); // Set up centrality bin indices according to provided bin borders
+  void SetTrackPtBins(const bool readBinsFromFile, const int nBins, const double *binBorders, bool setIndices = true);    // Set up track pT bin indices according to provided bin borders
   void SetDeltaPhiBins(const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], bool setIndices = true); //  Set up deltaPhi bin indices according to provided bin borders and bin names
   
   // Setters for event information and dijets
@@ -292,11 +292,11 @@ private:
   // =============================================
   // ============ Binning information ============
   // =============================================
-  int fCentralityBinIndices[knCentralityBins+1];      // Indices for centrality bins in centrality binned histograms
-  double fCentralityBinBorders[knCentralityBins+1];   // Centrality bin borders, from which bin indices are obtained
-  int fTrackPtBinIndices[knTrackPtBins+1];            // Indices for track pT bins in track pT binned histograms
-  int fFineTrackPtBinIndices[knTrackPtBins+1];        // Indices for track pT bins in fine track pT binned histograms
-  double fTrackPtBinBorders[knTrackPtBins+1];         // Track pT bin borders, from which bin indices are obtained
+  int fCentralityBinIndices[kMaxCentralityBins+1];    // Indices for centrality bins in centrality binned histograms
+  double fCentralityBinBorders[kMaxCentralityBins+1]; // Centrality bin borders, from which bin indices are obtained
+  int fTrackPtBinIndices[kMaxTrackPtBins+1];          // Indices for track pT bins in track pT binned histograms
+  int fFineTrackPtBinIndices[kMaxTrackPtBins+1];      // Indices for track pT bins in fine track pT binned histograms
+  double fTrackPtBinBorders[kMaxTrackPtBins+1];       // Track pT bin borders, from which bin indices are obtained
   int fLowDeltaPhiBinIndices[knDeltaPhiBins];         // Indices for low bin borders in deltaPhi binned histograms
   int fHighDeltaPhiBinIndices[knDeltaPhiBins];        // Indices for high bin borders in deltaPhi binned histograms
   double fLowDeltaPhiBinBorders[knDeltaPhiBins];      // Low bin borders in deltaPhi binned histograms
@@ -305,6 +305,8 @@ private:
   TString fCompactDeltaPhiString[knDeltaPhiBins];     // Names added to figure names for deltaPhi bins
   int fJetPtBinIndices[knJetPtBins+1];                // Indices for leading jet pT bins for asymmetry histograms
   double fJetPtBinBorders[knJetPtBins+1];             // Bin borders for the leading jet pT bins from which the indices are obtained
+  int fnCentralityBins;                               // Number of centrality bins in the JCard of the data file
+  int fnTrackPtBins;                                  // Number of track pT bins in the JCard of the data file
   int fnAsymmetryBins;                                // Number of asymmetry bins in the JCard of the data file
   TString fAsymmetryBinName[kMaxAsymmetryBins+1];     // Name given to each asymmetry bin
   
@@ -333,40 +335,44 @@ private:
   TH1D *fhPtHatWeighted;      // Weighted pT hat distribution (only meaningful for MC)
   
   // Histograms for single jets
-  TH1D *fhJetPt[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];      // Jet pT histograms
-  TH1D *fhJetPhi[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];     // Jet phi histograms
-  TH1D *fhJetEta[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];     // Jet eta histograms
-  TH2D *fhJetEtaPhi[knSingleJetCategories][knCentralityBins][kMaxAsymmetryBins+1];  // 2D eta-phi histogram for jets
+  TH1D *fhJetPt[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];      // Jet pT histograms
+  TH1D *fhJetPhi[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];     // Jet phi histograms
+  TH1D *fhJetEta[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];     // Jet eta histograms
+  TH2D *fhJetEtaPhi[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];  // 2D eta-phi histogram for jets
   
   // Histograms for dijets
-  TH1D *fhDijetDphi[knCentralityBins];                    // Dijet deltaPhi histograms
-  TH1D *fhDijetAsymmetry[knCentralityBins][knJetPtBins+1]; // Dijet asymmetry AJ histograms
-  TH1D *fhDijetXj[knCentralityBins][knJetPtBins+1];        // Dijet asymmetry xJ histograms
-  TH2D *fhDijetLeadingVsSubleadingPt[knCentralityBins];   // Leading versus subleading jet pT 2D histograms
+  TH1D *fhDijetDphi[kMaxCentralityBins];                    // Dijet deltaPhi histograms
+  TH1D *fhDijetAsymmetry[kMaxCentralityBins][knJetPtBins+1]; // Dijet asymmetry AJ histograms
+  TH1D *fhDijetXj[kMaxCentralityBins][knJetPtBins+1];        // Dijet asymmetry xJ histograms
+  TH2D *fhDijetLeadingVsSubleadingPt[kMaxCentralityBins];   // Leading versus subleading jet pT 2D histograms
   
   // Histograms for tracks in dijet events
-  TH1D *fhTrackPt[knTrackCategories][knCorrelationTypes][knCentralityBins];                      // Track pT histograms
-  TH1D *fhTrackPhi[knTrackCategories][knCorrelationTypes][knCentralityBins][knTrackPtBins+1];    // Track phi histograms
-  TH1D *fhTrackEta[knTrackCategories][knCorrelationTypes][knCentralityBins][knTrackPtBins+1];    // Track eta histograms
-  TH2D *fhTrackEtaPhi[knTrackCategories][knCorrelationTypes][knCentralityBins][knTrackPtBins+1]; // 2D eta-phi histogram for track
+  TH1D *fhTrackPt[knTrackCategories][knCorrelationTypes][kMaxCentralityBins];                        // Track pT histograms
+  TH1D *fhTrackPhi[knTrackCategories][knCorrelationTypes][kMaxCentralityBins][kMaxTrackPtBins+1];    // Track phi histograms
+  TH1D *fhTrackEta[knTrackCategories][knCorrelationTypes][kMaxCentralityBins][kMaxTrackPtBins+1];    // Track eta histograms
+  TH2D *fhTrackEtaPhi[knTrackCategories][knCorrelationTypes][kMaxCentralityBins][kMaxTrackPtBins+1]; // 2D eta-phi histogram for track
   
   // Histograms for track-leading jet correlations
-  TH1D *fhJetTrackDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][knCentralityBins][knTrackPtBins][knDeltaEtaBins]; // DeltaPhi between jet and track
-  TH1D *fhJetTrackDeltaEta[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][knCentralityBins][knTrackPtBins][knDeltaPhiBins]; // DeltaEta between jet and track
-  TH2D *fhJetTrackDeltaEtaDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][knCentralityBins][knTrackPtBins];         // DeltaEta and deltaPhi between jet and track
+  TH1D *fhJetTrackDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins][knDeltaEtaBins]; // DeltaPhi between jet and track
+  TH1D *fhJetTrackDeltaEta[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins][knDeltaPhiBins]; // DeltaEta between jet and track
+  TH2D *fhJetTrackDeltaEtaDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins];         // DeltaEta and deltaPhi between jet and track
   
   // Jet shape histograms
-  TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][kMaxAsymmetryBins+1][knCentralityBins][knTrackPtBins];  // Jet shape histograms
+  TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins];  // Jet shape histograms
   
   // Histograms for jet pT closure
-  TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins][knCentralityBins][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
+  TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins][kMaxCentralityBins][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
   
   // QA histograms for seagull correction
-  TH1D *fhSeagullDeltaEta[knJetTrackCorrelations][kMaxAsymmetryBins+1][knCentralityBins][knTrackPtBins]; // Background eta projection for seagull fit
-  TF1 *fSeagullFit[knJetTrackCorrelations][kMaxAsymmetryBins+1][knCentralityBins][knTrackPtBins];        // The seagull fit to background eta projection
+  TH1D *fhSeagullDeltaEta[knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins]; // Background eta projection for seagull fit
+  TF1 *fSeagullFit[knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins];        // The seagull fit to background eta projection
   
   // Private methods
-  void SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices); // Read the bin indices for given bin borders
+  void InitializeFromCard(); // Initialize several member variables from DijetCard
+  
+  // Binning related methods
+  void SetBinIndices(const int nBins, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices); // Read the bin indices for given bin borders
+  void SetBinBordersAndIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices); // Read the bin indices for given bin borders
   void SetBinIndices(const int nBins, int *lowBinIndices, int *highBinIndices, const double *lowBinBorders, const double *highBinBorders, const int iAxis); // Read the bin indices for given bin borders
   void SetBinIndices(const char* histogramName, const int nBins, int *lowBinIndices, int *highBinIndices, const double *lowBinBorders, const double *highBinBorders, const int iAxis); // Read the bin indices for given bin borders
   void SetLoadJetTrackCorrelations(const bool loadOrNot, const int primaryIndex, const int connectedIndex); // Setter for drawing and loading the jet-track correlation histograms

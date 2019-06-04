@@ -1,5 +1,6 @@
 #include "DijetHistogramManager.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "DijetMethods.h"
+#include "DijetCard.h"
 #include "JDrawer.h"
 
 /*
@@ -52,6 +53,9 @@ void produceSpilloverCorrection(){
   // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
   TFile *yieldQAfile = TFile::Open(uncorrectedDataFileName);
+  
+  // Read the DijetCard from RecoGen file
+  DijetCard *card = new DijetCard(recoGenFile);
   
   // Make an array of input files for easier initialization of histogram readers
   TFile *inputFiles[2] = {recoGenFile,yieldQAfile};
@@ -607,6 +611,9 @@ void produceSpilloverCorrection(){
     // Return back to main directory
     gDirectory->cd("../");
     
+    // Write also the card information to the correction file
+    card->Write(outputFile);
+    
   }
   
   // Close the output file and create QA file
@@ -763,6 +770,9 @@ void produceSpilloverCorrection(){
     
     // Return back to main directory
     gDirectory->cd("../");
+    
+    // In the very end, write also the card information to the correction QA file
+    card->Write(outputFile);
     
   } // Jet-track loop
 }

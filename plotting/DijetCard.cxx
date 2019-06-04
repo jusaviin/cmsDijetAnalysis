@@ -103,31 +103,82 @@ double DijetCard::GetMaxDeltaEta() const{
   return (*fCardEntries[kJetEtaCut])[1] + (*fCardEntries[kTrackEtaCut])[1];
 }
 
+/*
+ * Get the number of bins for internal index
+ * If no vector is found in the index, return 0.
+ */
+int DijetCard::GetNBins(const int index) const{
+  if(fCardEntries[index]) return fCardEntries[index]->GetNoElements()-1;
+  return 0;
+}
+
+// Get the number of centrality bins
+int DijetCard::GetNCentralityBins() const{
+  return GetNBins(kCentralityBinEdges);
+}
+
+// Get the number of track pT bins
+int DijetCard::GetNTrackPtBins() const{
+  return GetNBins(kTrackPtBinEdges);
+}
+
 // Get the number of asymmetry bins
 int DijetCard::GetNAsymmetryBins() const{
-  return fCardEntries[kAsymmetryBinEdges]->GetNoElements()-1;
+  return GetNBins(kAsymmetryBinEdges);
+}
+
+// Get the low border of i:th bin from internal index
+double DijetCard::GetLowBinBorder(const int index, const int iBin) const{
+  
+  // Sanity check for the input
+  if(iBin < 0) return -1;
+  if(iBin > GetNBins(index)) return -1;
+  
+  // Return the asked bin index
+  if(fCardEntries[index]) return (*fCardEntries[index])[iBin+1];
+  return -1;
+}
+
+// Get the low border of i:th centrality bin
+double DijetCard::GetLowBinBorderCentrality(const int iBin) const{
+  return GetLowBinBorder(kCentralityBinEdges,iBin);
+}
+
+// Get the low border of i:th track pT bin
+double DijetCard::GetLowBinBorderTrackPt(const int iBin) const{
+  return GetLowBinBorder(kTrackPtBinEdges,iBin);
 }
 
 // Get the low border of i:th asymmetry bin
 double DijetCard::GetLowBinBorderAsymmetry(const int iBin) const{
+  return GetLowBinBorder(kAsymmetryBinEdges,iBin);
+}
+
+// Get the high border of i:th bin from internal index
+double DijetCard::GetHighBinBorder(const int index, const int iBin) const{
   
   // Sanity check for the input
   if(iBin < 0) return -1;
-  if(iBin >= GetNAsymmetryBins()) return -1;
+  if(iBin >= GetNBins(index)) return -1;
   
   // Return the asked bin index
-  return (*fCardEntries[kAsymmetryBinEdges])[iBin+1];
+  if(fCardEntries[index]) return (*fCardEntries[index])[iBin+2];
+  return -1;
+}
+
+// Get the high border of i:th centrality bin
+double DijetCard::GetHighBinBorderCentrality(const int iBin) const{
+  return GetHighBinBorder(kCentralityBinEdges,iBin);
+}
+
+// Get the high border of i:th track pT bin
+double DijetCard::GetHighBinBorderTrackPt(const int iBin) const{
+  return GetHighBinBorder(kTrackPtBinEdges,iBin);
 }
 
 // Get the high border of i:th asymmetry bin
 double DijetCard::GetHighBinBorderAsymmetry(const int iBin) const{
-  
-  // Sanity check for the input
-  if(iBin < 0) return -1;
-  if(iBin >= GetNAsymmetryBins()) return -1;
-  
-  // Return the asked bin index
-  return (*fCardEntries[kAsymmetryBinEdges])[iBin+2];
+  return GetHighBinBorder(kAsymmetryBinEdges,iBin);
 }
 
  // Get a description of the used asymmetry bin type
@@ -138,7 +189,11 @@ const char* DijetCard::GetAsymmetryBinType(TString latexIt) const{
   return asymmetryNames[fAsymmetryBinType];
 }
 
-// Get the number of deltaPhi bins bins
+/*
+ * Get the number of deltaPhi bins bins
+ * Note that this needs to be separate from the general GetNBins as low bin borders and high bin borders
+ * are in different arrays, to there is a displacement of one bin with respect to the regular case.
+ */
 int DijetCard::GetNDeltaPhiBins() const{
   if(fCardEntries[kLowDeltaPhiBinBorders]) return fCardEntries[kLowDeltaPhiBinBorders]->GetNoElements();
   return 0;
@@ -193,9 +248,6 @@ void DijetCard::AddOneDimensionalVector(int entryIndex, float entryContent){
  *  float *contents = Content to be put into the vector
  */
 void DijetCard::AddVector(int entryIndex, int dimension, double *contents){
-  
-  // Only allow addition to postprocessing vectors
-  if(entryIndex < kJffCorrection) return;
   
   // Convert double pointer to float pointer
   float* convertedContents = new float[dimension];

@@ -14,8 +14,8 @@ JffCorrector::JffCorrector() :
   
   // JFF correction histograms for jet shape
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
-    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+    for(int iCentrality = 0; iCentrality < DijetHistogramManager::kMaxCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::kMaxTrackPtBins; iTrackPt++){
         fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
         fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
         fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
@@ -52,8 +52,8 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
   
   // JFF correction histograms for jet shape
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
-    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+    for(int iCentrality = 0; iCentrality < DijetHistogramManager::kMaxCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::kMaxTrackPtBins; iTrackPt++){
         fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt];
         fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt];
         fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt];
@@ -74,12 +74,14 @@ void JffCorrector::ReadInputFile(TFile *inputFile){
   
   // Create histogram manager to find correct histogram naming in the input file
   DijetHistogramManager *namerHelper = new DijetHistogramManager();
+  DijetCard *card = new DijetCard(inputFile);
   
   // Load the correction histograms from the file
   char histogramNamer[200];
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
-    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+    //for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){ // TODO: Uncomment after correction files have been reproduced
+    for(int iCentrality = 0; iCentrality < 4; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < card->GetNTrackPtBins(); iTrackPt++){
         sprintf(histogramNamer,"%s_%s/jffCorrection_%s_%s_C%dT%d",namerHelper->GetJetShapeHistogramName(DijetHistogramManager::kJetShape), namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetShapeHistogramName(DijetHistogramManager::kJetShape), namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = (TH1D*) inputFile->Get(histogramNamer);
         
@@ -92,7 +94,8 @@ void JffCorrector::ReadInputFile(TFile *inputFile){
   // Raise the flag that input file has been loaded
   fFileLoaded = true;
   
-  // Delete the helper histogram manager
+  // Delete the helper objects
+  delete card;
   delete namerHelper;
 }
 
@@ -101,12 +104,15 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   
   // Create histogram manager to find correct histogram naming in the input file
   DijetHistogramManager *namerHelper = new DijetHistogramManager();
+  //DijetCard *card = new DijetCard(spilloverFile); TODO: Uncomment after spillover correction files have been reproduced
   
   // Load the correction histograms from the file
   char histogramNamer[200];
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
-    for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::knTrackPtBins; iTrackPt++){
+    //for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){ // TODO: Uncomment after correction files have been reproduced
+    for(int iCentrality = 0; iCentrality < 4; iCentrality++){
+      //for(int iTrackPt = 0; iTrackPt < card->GetNTrackPtBins(); iTrackPt++){ // TODO: Uncomment after correction files have been reproduced
+      for(int iTrackPt = 0; iTrackPt < 6; iTrackPt++){
         
         sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/fittedSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
@@ -117,7 +123,8 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   // Raise the flag that input file has been loaded
   fSpilloverLoaded = true;
   
-  // Delete the helper histogram manager
+  // Delete the helper objects
+  //delete card; // TODO: Uncomment after correction files have been reproduced
   delete namerHelper;
 }
 

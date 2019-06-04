@@ -42,9 +42,9 @@ private:
   bool fSpilloverLoaded;           // Flag if the spillover file has been loaded
 
   // JFF correction histograms for jet shape
-  TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::knCentralityBins][DijetHistogramManager::knTrackPtBins];  // JFF correction histograms for jet shape
-  TH2D *fhDeltaEtaDeltaPhiCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::knCentralityBins][DijetHistogramManager::knTrackPtBins];  // JFF correction histograms for deltaEta-deltaPhi histograms
-  TH2D *fhDeltaEtaDeltaPhiSpilloverCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::knCentralityBins][DijetHistogramManager::knTrackPtBins];
+  TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for jet shape
+  TH2D *fhDeltaEtaDeltaPhiCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for deltaEta-deltaPhi histograms
+  TH2D *fhDeltaEtaDeltaPhiSpilloverCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
   
 };
 

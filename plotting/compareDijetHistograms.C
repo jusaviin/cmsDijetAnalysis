@@ -88,6 +88,7 @@ void compareDijetHistograms(){
   const int nTrackPtBins = 6;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.2}; // Low bin borders for deltaPhi
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1.2}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
@@ -199,8 +200,8 @@ void compareDijetHistograms(){
     histograms[iDataset]->SetLoad2DHistograms(enable2Dhistograms);
     
     // Set the binning information
-    histograms[iDataset]->SetCentralityBins(centralityBinBorders,!loadProcessed);
-    histograms[iDataset]->SetTrackPtBins(trackPtBinBorders,!loadProcessed);
+    histograms[iDataset]->SetCentralityBins(false,nCentralityBins,centralityBinBorders,!loadProcessed);
+    histograms[iDataset]->SetTrackPtBins(readTrackBinsFromFile,nTrackPtBins,trackPtBinBorders,!loadProcessed);
     histograms[iDataset]->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,!loadProcessed);
     histograms[iDataset]->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
     histograms[iDataset]->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);

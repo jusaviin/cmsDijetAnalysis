@@ -148,6 +148,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int nTrackPtBins = 6;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.5}; // Low bin borders for deltaPhi
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1.2}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
@@ -245,6 +246,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   card->AddOneDimensionalVector(DijetCard::kAdjustBackground,adjustBackground);
   card->AddVector(DijetCard::kLowDeltaPhiBinBorders,DijetHistogramManager::knDeltaPhiBins,lowDeltaPhiBinBorders);
   card->AddVector(DijetCard::kHighDeltaPhiBinBorders,DijetHistogramManager::knDeltaPhiBins,highDeltaPhiBinBorders);
+  card->AddVector(DijetCard::kCentralityBinEdges,nCentralityBins+1,centralityBinBorders);
+  if(!readTrackBinsFromFile) card->AddVector(DijetCard::kTrackPtBinEdges,nTrackPtBins+1,trackPtBinBorders);
   
   // Add information about the used input files to the card
   card->AddFileName(DijetCard::kInputFileName,inputFileName);
@@ -286,8 +289,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetLoadJetPtClosureHistograms(drawJetPtClosure);
 
   // Set the binning information
-  histograms->SetCentralityBins(centralityBinBorders,setIndices);
-  histograms->SetTrackPtBins(trackPtBinBorders,setIndices);
+  histograms->SetCentralityBins(false,nCentralityBins,centralityBinBorders,setIndices);
+  histograms->SetTrackPtBins(readTrackBinsFromFile,nTrackPtBins,trackPtBinBorders,setIndices);
   histograms->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,setIndices);
   histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);

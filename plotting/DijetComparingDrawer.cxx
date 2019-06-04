@@ -149,8 +149,8 @@ void DijetComparingDrawer::DrawDijetHistograms(){
   
   if(!fDrawDijets) return;
   
-  // For the event mixing check, there will be four added histograms, one for each centrality bin
-  fnAddedHistograms = DijetHistogramManager::knCentralityBins;
+  // For the event mixing check, there will be one added histogram for each centrality bin
+  fnAddedHistograms = fBaseHistograms->GetNCentralityBins();
   
   // Legend helper variable
   TLegend *legend = new TLegend(0.5,0.48,0.8,0.83);
@@ -166,7 +166,7 @@ void DijetComparingDrawer::DrawDijetHistograms(){
   legend->AddEntry(fMainHistogram,"pp","l");
   
   // Loop over centrality
-  for(int iCentrality = 0; iCentrality < DijetHistogramManager::knCentralityBins; iCentrality++){
+  for(int iCentrality = 0; iCentrality < fBaseHistograms->GetNCentralityBins(); iCentrality++){
     
     centralityString = Form("PbPb Cent: %.0f-%.0f%%",fAddedHistograms[0]->GetCentralityBinBorder(iCentrality),fAddedHistograms[0]->GetCentralityBinBorder(iCentrality+1));
     

@@ -94,7 +94,12 @@ private:
   
   // Vectors for all the lines inside the card
   TVectorT<float> *fCardEntries[knEntries];   // Array of all the vectors in the card
-  TObjString *fFileNames[knFileNames];            // Array for filenames used in postprocessing
+  TObjString *fFileNames[knFileNames];        // Array for filenames used in postprocessing
+  
+  // Private methods
+  int GetNBins(const int index) const;                            // Get the number of bins for internal index
+  double GetLowBinBorder(const int index, const int iBin) const;  // Get the low border of i:th bin from internal index
+  double GetHighBinBorder(const int index, const int iBin) const; // Get the high border of i:th bin from internal index
    
 public:
   
@@ -106,9 +111,15 @@ public:
   double GetMaxDeltaEta() const; // Get maximum deltaEta possible using jet and track cuts in the card
   void Print() const;            // Print the contents of the card to the console
   
-  int GetNAsymmetryBins() const; // Get the number of asymmetry bins
-  double GetLowBinBorderAsymmetry(const int iBin) const;  // Get the low border of i:th asymmetry bin
-  double GetHighBinBorderAsymmetry(const int iBin) const; // Get the high border of i:th asymmetry bin
+  int GetNCentralityBins() const; // Get the number of centrality bins
+  int GetNTrackPtBins() const;    // Get the number of track pT bins
+  int GetNAsymmetryBins() const;  // Get the number of asymmetry bins
+  double GetLowBinBorderCentrality(const int iBin) const;  // Get the low border of i:th centrality bin
+  double GetLowBinBorderTrackPt(const int iBin) const;     // Get the low border of i:th track pT bin
+  double GetLowBinBorderAsymmetry(const int iBin) const;   // Get the low border of i:th asymmetry bin
+  double GetHighBinBorderCentrality(const int iBin) const; // Get the high border of i:th centrality bin
+  double GetHighBinBorderTrackPt(const int iBin) const;    // Get the high border of i:th track pT bin
+  double GetHighBinBorderAsymmetry(const int iBin) const;  // Get the high border of i:th asymmetry bin
   const char *GetAsymmetryBinType(TString latexIt = "") const; // Get a description of the used asymmetry bin type
   int GetNDeltaPhiBins() const; // Get the number of deltaPhi bins
   double GetLowBinBorderDeltaPhi(const int iBin) const;  // Get the low border of i:th deltaPhi bin

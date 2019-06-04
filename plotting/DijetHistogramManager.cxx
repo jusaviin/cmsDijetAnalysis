@@ -26,11 +26,13 @@ DijetHistogramManager::DijetHistogramManager() :
   fLoad2DHistograms(false),
   fLoadJetPtClosureHistograms(false),
   fFirstLoadedCentralityBin(0),
-  fLastLoadedCentralityBin(knCentralityBins-1),
+  fLastLoadedCentralityBin(1),
   fFirstLoadedTrackPtBin(0),
-  fLastLoadedTrackPtBin(knTrackPtBins-1),
+  fLastLoadedTrackPtBin(1),
   fProcessAsymmetryBins(false),
   fPreprocess(false),
+  fnCentralityBins(kMaxCentralityBins),
+  fnTrackPtBins(kMaxTrackPtBins),
   fnAsymmetryBins(kMaxAsymmetryBins),
   fAvoidMixingPeak(false),
   fImproviseMixing(false),
@@ -53,13 +55,13 @@ DijetHistogramManager::DijetHistogramManager() :
   }
   
   // Default binning for centrality
-  for(int iCentrality = 0; iCentrality < knCentralityBins + 1; iCentrality++){
+  for(int iCentrality = 0; iCentrality < kMaxCentralityBins + 1; iCentrality++){
     fCentralityBinIndices[iCentrality] = iCentrality+1;
     fCentralityBinBorders[iCentrality] = 0;
   }
   
   // Default binning for track pT
-  for(int iTrackPt = 0; iTrackPt < knTrackPtBins + 1; iTrackPt++){
+  for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins + 1; iTrackPt++){
     fTrackPtBinIndices[iTrackPt] = iTrackPt + 1;
     fFineTrackPtBinIndices[iTrackPt] = iTrackPt + 1;
     fTrackPtBinBorders[iTrackPt] = 0;
@@ -105,7 +107,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fhPtHatWeighted = NULL;      // Weighted pT hat distribution (only meaningful for MC)
   
   // Centrality loop
-  for(int iCentrality = 0; iCentrality < knCentralityBins; iCentrality++){
+  for(int iCentrality = 0; iCentrality < kMaxCentralityBins; iCentrality++){
     fhDijetDphi[iCentrality] = NULL;                  // Dijet deltaPhi histograms
     fhDijetLeadingVsSubleadingPt[iCentrality] = NULL; // Leading versus subleading jet pT 2D histograms
     
@@ -132,7 +134,7 @@ DijetHistogramManager::DijetHistogramManager() :
         fhTrackPt[iTrackType][iCorrelationType][iCentrality] = NULL;   // Track pT histograms
         
         // Loop over track pT bins
-        for(int iTrackPt = 0; iTrackPt < knTrackPtBins + 1; iTrackPt++){
+        for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins + 1; iTrackPt++){
           fhTrackPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt] = NULL;    // Track phi histograms
           fhTrackEta[iTrackType][iCorrelationType][iCentrality][iTrackPt] = NULL;    // Track eta histograms
           fhTrackEtaPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt] = NULL; // 2D eta-phi histogram for track
@@ -147,7 +149,7 @@ DijetHistogramManager::DijetHistogramManager() :
         for(int iAsymmetry = 0; iAsymmetry < kMaxAsymmetryBins+1; iAsymmetry++){
           
           // Loop over track pT bins
-          for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
+          for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins; iTrackPt++){
             fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentrality][iTrackPt] = NULL;      // DeltaEta and deltaPhi between jet and track
             
             // Loop over deltaEta bins
@@ -166,7 +168,7 @@ DijetHistogramManager::DijetHistogramManager() :
     
     // Jet shape and seagull correction histograms
     for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
-      for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
+      for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins; iTrackPt++){
         for(int iAsymmetry = 0; iAsymmetry < kMaxAsymmetryBins+1; iAsymmetry++){
           for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
             fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
@@ -199,27 +201,12 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
 {
   fInputFile = inputFile;
   
-  // Read card from inputfile and collision system from card
+  // Read card from inputfile
   fCard = new DijetCard(inputFile);
-  TString collisionSystem = fCard->GetDataType();
   
-  // Make a string for collision system based on information on the card
-  fSystemAndEnergy = Form("%s 5.02 TeV",collisionSystem.Data());
-  fCompactSystemAndEnergy = fSystemAndEnergy;
-  fCompactSystemAndEnergy.ReplaceAll(" ","");
-  fCompactSystemAndEnergy.ReplaceAll(".","v");
+  // Initialize values using the information in card
+  InitializeFromCard();
   
-  // Read the number of asymmetry bins from the card and fix the naming for the last bin
-  fnAsymmetryBins = fCard->GetNAsymmetryBins();
-  fAsymmetryBinName[fnAsymmetryBins] = "";
-  
-  // Read the deltaPhi bin borders from the card
-  if(knDeltaPhiBins == fCard->GetNDeltaPhiBins()){
-    for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
-      fLowDeltaPhiBinBorders[iDeltaPhi] = fCard->GetLowBinBorderDeltaPhi(iDeltaPhi);
-      fHighDeltaPhiBinBorders[iDeltaPhi] = fCard->GetHighBinBorderDeltaPhi(iDeltaPhi);
-    }
-  }
 }
 
 /*
@@ -230,8 +217,18 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile, DijetCard *card) 
 {
   fInputFile = inputFile;
   
-  // Read the collision system from card
+  // Initialize values using the information in card
   fCard = card;
+  InitializeFromCard();
+  
+}
+
+/*
+ * Initialize several member variables from DijetCard
+ */
+void DijetHistogramManager::InitializeFromCard(){
+  
+  // Read the collision system from the card
   TString collisionSystem = fCard->GetDataType();
   
   // Make a string for collision system based on information on the card
@@ -239,6 +236,26 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile, DijetCard *card) 
   fCompactSystemAndEnergy = fSystemAndEnergy;
   fCompactSystemAndEnergy.ReplaceAll(" ","");
   fCompactSystemAndEnergy.ReplaceAll(".","v");
+  
+  // Read the centrality and track pT bins from the card
+  fnCentralityBins = fCard->GetNCentralityBins();
+  fnTrackPtBins = fCard->GetNTrackPtBins();
+  
+  for(int iCentrality = 0; iCentrality <= fnCentralityBins; iCentrality++){
+    fCentralityBinBorders[iCentrality] = fCard->GetLowBinBorderCentrality(iCentrality);
+  }
+  fLastLoadedCentralityBin = fnCentralityBins-1;
+  
+  for(int iTrackPt = 0; iTrackPt <= fnTrackPtBins; iTrackPt++){
+    fTrackPtBinBorders[iTrackPt] = fCard->GetLowBinBorderTrackPt(iTrackPt);
+  }
+  fLastLoadedTrackPtBin = fnTrackPtBins-1;
+  
+  // Remove centrality selection from pp data and local testing
+  if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
+    fLastLoadedCentralityBin = 0;
+    fCentralityBinBorders[0] = -0.5;
+  }
   
   // Read the number of asymmetry bins from the card and fix the naming for the last bin
   fnAsymmetryBins = fCard->GetNAsymmetryBins();
@@ -303,13 +320,13 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   }
   
   // Copy binning for centrality
-  for(int iCentrality = 0; iCentrality < knCentralityBins + 1; iCentrality++){
+  for(int iCentrality = 0; iCentrality < kMaxCentralityBins + 1; iCentrality++){
     fCentralityBinIndices[iCentrality] = in.fCentralityBinIndices[iCentrality];
     fCentralityBinBorders[iCentrality] = in.fCentralityBinBorders[iCentrality];
   }
   
   // Copy binning for track pT
-  for(int iTrackPt = 0; iTrackPt < knTrackPtBins + 1; iTrackPt++){
+  for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins + 1; iTrackPt++){
     fTrackPtBinIndices[iTrackPt] = in.fTrackPtBinIndices[iTrackPt];
     fFineTrackPtBinIndices[iTrackPt] = in.fFineTrackPtBinIndices[iTrackPt];
     fTrackPtBinBorders[iTrackPt] = in.fTrackPtBinBorders[iTrackPt];
@@ -337,7 +354,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   }
   
   // Centrality loop
-  for(int iCentrality = 0; iCentrality < knCentralityBins; iCentrality++){
+  for(int iCentrality = 0; iCentrality < kMaxCentralityBins; iCentrality++){
     fhDijetDphi[iCentrality] = in.fhDijetDphi[iCentrality];                                   // Dijet deltaPhi histograms
     fhDijetLeadingVsSubleadingPt[iCentrality] = in.fhDijetLeadingVsSubleadingPt[iCentrality]; // Leading versus subleading jet pT 2D histograms
     
@@ -365,7 +382,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
         fhTrackPt[iTrackType][iCorrelationType][iCentrality] = in.fhTrackPt[iTrackType][iCorrelationType][iCentrality];   // Track pT histograms
         
         // Loop over track pT bins
-        for(int iTrackPt = 0; iTrackPt < knTrackPtBins + 1; iTrackPt++){
+        for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins + 1; iTrackPt++){
           fhTrackPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt] = in.fhTrackPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt];    // Track phi histograms
           fhTrackEta[iTrackType][iCorrelationType][iCentrality][iTrackPt] = in.fhTrackEta[iTrackType][iCorrelationType][iCentrality][iTrackPt];    // Track eta histograms
           fhTrackEtaPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt] = in.fhTrackEtaPhi[iTrackType][iCorrelationType][iCentrality][iTrackPt]; // 2D eta-phi histogram for track
@@ -380,7 +397,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
         for(int iAsymmetry = 0; iAsymmetry < kMaxAsymmetryBins+1; iAsymmetry++){
           
           // Loop over track pT bins
-          for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
+          for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins; iTrackPt++){
             fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentrality][iTrackPt] = in.fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentrality][iTrackPt]; // DeltaEta and deltaPhi between jet and track
             
             // Loop over deltaEta bins
@@ -399,7 +416,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
     
     // Jet shape and seagull correction histograms
     for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
-      for(int iTrackPt = 0; iTrackPt < knTrackPtBins; iTrackPt++){
+      for(int iTrackPt = 0; iTrackPt < kMaxTrackPtBins; iTrackPt++){
         for(int iAsymmetry = 0; iAsymmetry < kMaxAsymmetryBins+1; iAsymmetry++){
           for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
             fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt];
@@ -804,7 +821,7 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
       // Select the bin indices
-      if(iCentralityBin == knCentralityBins-1) {
+      if(iCentralityBin == fnCentralityBins-1) {
         duplicateRemoverCentrality = 0;
       } else {
         duplicateRemoverCentrality = -1;
@@ -878,7 +895,7 @@ void DijetHistogramManager::LoadDijetHistograms(){
   for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
     
     // Select the centrality bin indices
-    if(iCentralityBin == knCentralityBins-1) duplicateRemoverCentrality = 0;
+    if(iCentralityBin == fnCentralityBins-1) duplicateRemoverCentrality = 0;
     lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
     higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
     
@@ -952,7 +969,7 @@ void DijetHistogramManager::LoadTrackHistograms(){
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         
         // Select the bin indices
-        if(iCentralityBin == knCentralityBins-1) {
+        if(iCentralityBin == fnCentralityBins-1) {
           duplicateRemoverCentrality = 0;
         } else {
           duplicateRemoverCentrality = -1;
@@ -965,9 +982,9 @@ void DijetHistogramManager::LoadTrackHistograms(){
         axisIndices[1] = 4; lowLimits[1] = iCorrelationType+1; highLimits[1] = iCorrelationType+1;
         
         fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],0,2+axisAdder,axisIndices,lowLimits,highLimits);
-        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,2+axisAdder,axisIndices,lowLimits,highLimits);
-        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,2+axisAdder,axisIndices,lowLimits,highLimits);
-        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,2+axisAdder,axisIndices,lowLimits,highLimits);
+        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],1,2+axisAdder,axisIndices,lowLimits,highLimits);
+        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = FindHistogram(fInputFile,fTrackHistogramNames[iTrackType],2,2+axisAdder,axisIndices,lowLimits,highLimits);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = FindHistogram2D(fInputFile,fTrackHistogramNames[iTrackType],1,2,2+axisAdder,axisIndices,lowLimits,highLimits);
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
@@ -1031,7 +1048,7 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
           
           // Select the bin indices
-          if(iCentralityBin == knCentralityBins-1) {
+          if(iCentralityBin == fnCentralityBins-1) {
             duplicateRemoverCentrality = 0;
           } else {
             duplicateRemoverCentrality = -1;
@@ -1128,7 +1145,7 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
           
           // Select the bin indices
-          if(iCentralityBin == knCentralityBins-1) {
+          if(iCentralityBin == fnCentralityBins-1) {
             duplicateRemoverCentrality = 0;
           } else {
             duplicateRemoverCentrality = -1;
@@ -1428,16 +1445,16 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         fhTrackPt[iTrackType][iCorrelationType][iCentralityBin]->Write(histogramNamer);
         
         // pT integrated track phi
-        sprintf(histogramNamer,"%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
-        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins]->Write(histogramNamer);
+        sprintf(histogramNamer,"%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
+        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer);
         
         // pT integrated track eta
-        sprintf(histogramNamer,"%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
-        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins]->Write(histogramNamer);
+        sprintf(histogramNamer,"%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
+        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer);
         
         // pT integrated track eta-phi
-        sprintf(histogramNamer,"%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
-        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins]->Write(histogramNamer);
+        sprintf(histogramNamer,"%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer);
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
@@ -1770,16 +1787,16 @@ void DijetHistogramManager::LoadProcessedHistograms(){
         fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
         
         // pT integrated track phi
-        sprintf(histogramNamer,"%s/%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
-        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
+        sprintf(histogramNamer,"%s/%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
+        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
         
         // pT integrated track eta
-        sprintf(histogramNamer,"%s/%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
-        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
+        sprintf(histogramNamer,"%s/%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
+        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
         
         // pT integrated track eta-phi
-        sprintf(histogramNamer,"%s/%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,knTrackPtBins);
-        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][knTrackPtBins] = (TH2D*) fInputFile->Get(histogramNamer);
+        sprintf(histogramNamer,"%s/%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH2D*) fInputFile->Get(histogramNamer);
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
@@ -1904,7 +1921,27 @@ void DijetHistogramManager::LoadProcessedHistograms(){
  *   const int iAxis = Index of the axis used for reading bin indices
  *   const bool setIndices = true: Set both bin indices and bin borders, false: Set only bin borders
  */
-void DijetHistogramManager::SetBinIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices){
+void DijetHistogramManager::SetBinIndices(const int nBins, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices){
+  if(!setIndices) return;
+  TH1D* hBinner;
+  hBinner = FindHistogram(fInputFile,"trackLeadingJet",iAxis,0,0,0);
+  for(int iBin = 0; iBin < nBins+1; iBin++){
+    binIndices[iBin] = hBinner->GetXaxis()->FindBin(binBorders[iBin]);
+  }
+}
+
+/*
+ * Read the bin indices for given bin borders
+ *
+ *  Arguments:
+ *   const int nBins = Number of bins for the indices
+ *   double *copyBinBorders = Array to which a copy of bin borders is made
+ *   int *binIndices = Array of integers to be filled with bin index information read from the file
+ *   const double *binBorders = Array for bin borders that are searched from the file
+ *   const int iAxis = Index of the axis used for reading bin indices
+ *   const bool setIndices = true: Set both bin indices and bin borders, false: Set only bin borders
+ */
+void DijetHistogramManager::SetBinBordersAndIndices(const int nBins, double *copyBinBorders, int *binIndices, const double *binBorders, const int iAxis, const bool setIndices){
   TH1D* hBinner;
   if(setIndices) hBinner = FindHistogram(fInputFile,"trackLeadingJet",iAxis,0,0,0);
   for(int iBin = 0; iBin < nBins+1; iBin++){
@@ -1951,23 +1988,53 @@ void DijetHistogramManager::SetBinIndices(const int nBins, int *lowBinIndices, i
 /*
  * Set up centrality bin borders and indices according to provided bin borders
  *
- *
+ *  const bool readBinsFromFile = True: Disregard given bins ans use the ones in fCard. False: Use given bins
+ *  const int nBins = Number of given centrality bins
+ *  const double *binBorders = New bin borders for centrality
+ *  const bool setIndices = Set the bin indices in THnSparse
  */
-void DijetHistogramManager::SetCentralityBins(const double *binBorders, const bool setIndices){
-  SetBinIndices(knCentralityBins,fCentralityBinBorders,fCentralityBinIndices,binBorders,4,setIndices);
+void DijetHistogramManager::SetCentralityBins(const bool readBinsFromFile, const int nBins, const double *binBorders, const bool setIndices){
+  
+  // If bins are read from file, do not use the given bin borders
+  if(readBinsFromFile){
+    SetBinIndices(fnCentralityBins, fCentralityBinIndices, fCentralityBinBorders, 4, setIndices);
+  } else { // If the given bin borders are use, update the number of bins and bin borders according to input
+    if(nBins <= kMaxCentralityBins){
+      fnCentralityBins = nBins;
+      SetBinBordersAndIndices(fnCentralityBins,fCentralityBinBorders,fCentralityBinIndices,binBorders,4,setIndices);
+    } else {
+      cout << "Error! Too many centrality bins given. Maximum number is " << kMaxCentralityBins << ". Will not set bins." << endl;
+    }
+  }
 }
 
 /*
- * Set up track pT bin indices according to provided bin borders
+ * Set up track pT bin borders and indices according to provided bin borders
+ *
+ *  const bool readBinsFromFile = True: Disregard given bins ans use the ones in fCard. False: Use given bins
+ *  const int nBins = Number of given track pT bins
+ *  const double *binBorders = New bin borders for track pT
+ *  const bool setIndices = Set the bin indices in THnSparse
  */
-void DijetHistogramManager::SetTrackPtBins(const double *binBorders, const bool setIndices){
-  SetBinIndices(knTrackPtBins,fTrackPtBinBorders,fTrackPtBinIndices,binBorders,0,setIndices);
+void DijetHistogramManager::SetTrackPtBins(const bool readBinsFromFile, const int nBins, const double *binBorders, const bool setIndices){
+  
+  // If bins are read from file, do not use the given bin borders
+  if(readBinsFromFile){
+    SetBinIndices(fnTrackPtBins, fTrackPtBinIndices, fTrackPtBinBorders, 0, setIndices);
+  } else { // If the given bin borders are use, update the number of bins and bin borders according to input
+    if(nBins <= kMaxTrackPtBins){
+      fnTrackPtBins = nBins;
+      SetBinBordersAndIndices(fnTrackPtBins,fTrackPtBinBorders,fTrackPtBinIndices,binBorders,0,setIndices);
+    } else {
+      cout << "Error! Too many track pT bins given. Maximum number is " << kMaxTrackPtBins << ". Will not set bins." << endl;
+    }
+  }
   
   // The track histograms have finer pT binning, so we need to use different bin indices for them
   if(setIndices){
     TH1D* hTrackPtBinner = FindHistogram(fInputFile,"track",0,0,0,0);
-    for(int iTrackPt = 0; iTrackPt < knTrackPtBins+1; iTrackPt++){
-      fFineTrackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(binBorders[iTrackPt]);
+    for(int iTrackPt = 0; iTrackPt < fnTrackPtBins+1; iTrackPt++){
+      fFineTrackPtBinIndices[iTrackPt] = hTrackPtBinner->GetXaxis()->FindBin(fTrackPtBinBorders[iTrackPt]);
     }
   }
 }
@@ -2156,7 +2223,7 @@ void DijetHistogramManager::SetCentralityBinRange(const int first, const int las
   fLastLoadedCentralityBin = last;
   
   // Sanity check for drawn centrality bins
-  BinSanityCheck(knCentralityBins,fFirstLoadedCentralityBin,fLastLoadedCentralityBin);
+  BinSanityCheck(fnCentralityBins,fFirstLoadedCentralityBin,fLastLoadedCentralityBin);
 }
 
 // Setter for drawn track pT bins
@@ -2165,7 +2232,7 @@ void DijetHistogramManager::SetTrackPtBinRange(const int first, const int last){
   fLastLoadedTrackPtBin = last;
   
   // Sanity check for drawn track pT bins
-  BinSanityCheck(knTrackPtBins,fFirstLoadedTrackPtBin,fLastLoadedTrackPtBin);
+  BinSanityCheck(fnTrackPtBins,fFirstLoadedTrackPtBin,fLastLoadedTrackPtBin);
 }
 
 // Setter for processing asymmetry bins
@@ -2220,12 +2287,12 @@ void DijetHistogramManager::SetSeagullCorrection(const bool applyCorrection){
 
 // Getter for the number of centrality bins
 int DijetHistogramManager::GetNCentralityBins() const{
-  return knCentralityBins;
+  return fnCentralityBins;
 }
 
 // Getter for the number of track pT bins
 int DijetHistogramManager::GetNTrackPtBins() const{
-  return knTrackPtBins;
+  return fnTrackPtBins;
 }
 
 // Getter for the number of jet pT bins
