@@ -78,7 +78,7 @@ void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, in
             currentFileName.Remove(TString::kBoth,'"'); // Remove quotation marks
             
             // After stripping characters not belonging to the file name, we can add the file to list
-            currentFileName.Prepend("root://cmsxrootd.fnal.gov//");  // If not running locally, we need to give xrootd path
+            currentFileName.Prepend("root://xrootd.rcac.purdue.edu/");  // If not running locally, we need to give xrootd path
             fileNameVector.push_back(currentFileName);
           }
         }
