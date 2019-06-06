@@ -383,7 +383,7 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     treeName[1] = "ak4PFJetAnalyzer/t";   // Tree for PF jets
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
     treeName[0] = "akPu4CaloJetAnalyzer/t";  // Tree for calo jets
-    treeName[1] = "akPu4PFJetAnalyzer/t";    // Tree for PF jets
+    treeName[1] = "akCs4PFJetAnalyzer/t";    // Tree for PF jets
   } else if (fDataType == kLocalTest){
     treeName[0] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
     treeName[1] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
