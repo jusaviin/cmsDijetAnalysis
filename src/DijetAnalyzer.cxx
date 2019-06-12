@@ -1726,7 +1726,8 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   
   // Number of events for different pT hat bins in the forest file list PbPbMC_5TeVPythia6+Hydjet_forests.txt
   //  pT hat =             15 30 50       80     120     170     220     280    370    460
-  Int_t PbPbMcEvents[nBins] = {0,0,1761973,4554185,3889938,2847904,2935134,793592,131390};
+  Int_t PbPbMcEvents[nBins] = {0,0,1761973,2776457,2875707,2695801,2898124,783568,129714}; // Events excluding pthat100 files
+  //Int_t PbPbMcEvents[nBins] = {0,0,1761973,4554185,3889938,2847904,2935134,793592,131390}; // Events including pthat100 files
   //Int_t PbPbMcEvents[nBins] = {0,0,0,2571563,2850815,2680567,2891375,781744,129417}; // Old Kurt events
   
   // Also for PbPb, there is a small change for event numbers in skimmed files. These numbers are for PbPbMC_Pythia6HydjetCymbal_list.txt
