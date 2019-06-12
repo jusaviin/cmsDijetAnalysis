@@ -2047,13 +2047,15 @@ void DijetHistogramManager::SetTrackPtBins(const bool readBinsFromFile, const in
 /*
  * Set up deltaPhi bin indices according to provided bin borders
  */
-void DijetHistogramManager::SetDeltaPhiBins(const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], const bool setIndices){
+void DijetHistogramManager::SetDeltaPhiBins(const bool readBinsFromFile, const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], const bool setIndices){
   if(setIndices) SetBinIndices(knDeltaPhiBins,fLowDeltaPhiBinIndices,fHighDeltaPhiBinIndices,lowBinBorders,highBinBorders,1);
-  for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
-    fDeltaPhiString[iDeltaPhi] = deltaPhiStrings[iDeltaPhi];
-    fCompactDeltaPhiString[iDeltaPhi] = compactDeltaPhiStrings[iDeltaPhi];
-    fLowDeltaPhiBinBorders[iDeltaPhi] = lowBinBorders[iDeltaPhi];
-    fHighDeltaPhiBinBorders[iDeltaPhi] = highBinBorders[iDeltaPhi];
+  if(!readBinsFromFile){
+    for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+      fDeltaPhiString[iDeltaPhi] = deltaPhiStrings[iDeltaPhi];
+      fCompactDeltaPhiString[iDeltaPhi] = compactDeltaPhiStrings[iDeltaPhi];
+      fLowDeltaPhiBinBorders[iDeltaPhi] = lowBinBorders[iDeltaPhi];
+      fHighDeltaPhiBinBorders[iDeltaPhi] = highBinBorders[iDeltaPhi];
+    }
   }
 }
 

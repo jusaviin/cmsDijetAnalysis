@@ -101,7 +101,7 @@ public:
   // Setters for binning information
   void SetCentralityBins(const bool readBinsFromFile, const int nBins, const double *binBorders, bool setIndices = true); // Set up centrality bin indices according to provided bin borders
   void SetTrackPtBins(const bool readBinsFromFile, const int nBins, const double *binBorders, bool setIndices = true);    // Set up track pT bin indices according to provided bin borders
-  void SetDeltaPhiBins(const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], bool setIndices = true); //  Set up deltaPhi bin indices according to provided bin borders and bin names
+  void SetDeltaPhiBins(const bool readBinsFromFile, const double *lowBinBorders, const double *highBinBorders, TString deltaPhiStrings[knDeltaPhiBins], TString compactDeltaPhiStrings[knDeltaPhiBins], bool setIndices = true); //  Set up deltaPhi bin indices according to provided bin borders and bin names
   
   // Setters for event information and dijets
   void SetLoadEventInformation(const bool loadOrNot); // Setter for loading event information

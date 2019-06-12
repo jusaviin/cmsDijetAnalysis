@@ -30,7 +30,7 @@ done
 # Jet-track correlations have centrality and track pT binning
 for i in `seq 0 3`;
 do
-  for j in `seq 0 5`;
+  for j in `seq 0 6`;
   do  
     root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",4,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i','$PREPROCESS')' # regular jet-track correlations for leading and subleading jets
     root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",6,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i','$PREPROCESS')' # pT weighted jet-track correlations for leading and subleading jets

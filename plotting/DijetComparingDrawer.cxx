@@ -589,8 +589,11 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
         sprintf(namerX,"%.1f < #Delta#varphi < %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide));
         legend->AddEntry(fMainHistogram,namerX,"l");
-        sprintf(namerX,"#Delta#varphi > %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
-        //sprintf(namerX,"%.1f < #Delta#varphi < %.1f", fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        if(fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks) > 3*TMath::Pi()/2-0.1){
+          sprintf(namerX,"#Delta#varphi > %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
+        } else {
+          sprintf(namerX,"%.1f < #Delta#varphi < %.1f", fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        }
         legend->AddEntry(fComparisonHistogram[0],namerX,"l");
         legend->Draw();
         

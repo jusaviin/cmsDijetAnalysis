@@ -84,8 +84,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
@@ -97,12 +97,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = true;
+  bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = false;
+  bool drawBackground = true;
   int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -291,7 +291,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Set the binning information
   histograms->SetCentralityBins(false,nCentralityBins,centralityBinBorders,setIndices);
   histograms->SetTrackPtBins(readTrackBinsFromFile,nTrackPtBins,trackPtBinBorders,setIndices);
-  histograms->SetDeltaPhiBins(lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,setIndices);
+  histograms->SetDeltaPhiBins(false,lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,setIndices);
   histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
   histograms->SetAsymmetryProcessing(processAsymmetryBins);
