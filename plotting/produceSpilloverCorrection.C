@@ -14,12 +14,12 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlySeagull_processed.root";  // File from which the RecoGen histograms are read for the correction
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "spillingOverTesting.root"; // File name for the output file
+  TString outputFileName = "newSpilloverTest.root"; // File name for the output file
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
   TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
@@ -29,12 +29,12 @@ void produceSpilloverCorrection(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatio
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
   bool fixGaussYield = false;  // Fix the gaussian fit yield to result from bin counting
-  bool fixGaussWidth = true;  // Fix the gaussian fit width to the centrality averaged result before fitting for yield
+  bool fixGaussWidth = false;  // Fix the gaussian fit width to the centrality averaged result before fitting for yield
   
   bool fitOnlyGauss = false;    // True: Fit deltaEta and deltaPhi with Gauss, False: Fit the distributions with Gauss and constant
   bool useIntegralYield = false; // True: For yield, use integral over range [-1.5,1.5], False: Use directly yield parameter from Gauss fit
@@ -56,6 +56,8 @@ void produceSpilloverCorrection(){
   
   // Read the DijetCard from RecoGen file
   DijetCard *card = new DijetCard(recoGenFile);
+  
+  // TODO: Add the information about spillover parameters to the card
   
   // Make an array of input files for easier initialization of histogram readers
   TFile *inputFiles[2] = {recoGenFile,yieldQAfile};
@@ -113,9 +115,9 @@ void produceSpilloverCorrection(){
   
   // x-axis information for the graphs
   TH1D *trackPtForGraphs[nCentralityBins];            // Track pT histograms to find proper place to put pT point in graphs
-  double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};   // Bin borders for track pT
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};   // Bin borders for track pT
   double graphPointsX[nCentralityBins][nTrackPtBins]; // x-axis points in flow graphs
-  double graphErrorsX[] = {0,0,0,0,0,0};              // No errors for x-axis
+  double graphErrorsX[] = {0,0,0,0,0,0,0};              // No errors for x-axis
   int lowPtBin, highPtBin;                            // Helper variables to find the track pT bins
   
   // Initialize the arrays to NULL
@@ -217,6 +219,8 @@ void produceSpilloverCorrection(){
         spilloverPhiFitRange = 0.5;
         
         for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
+          
+          if(iDataType == 1 && iTrackPt == 6) continue; // TODO: Remove this line after this histogram is added to uncorrected file
           
           // For the RecoGen, read the bin count yield
           spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
@@ -342,11 +346,7 @@ void produceSpilloverCorrection(){
           combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] += (spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Integral(-1.5,1.5)-3*spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(2)); // Integral of the fit - constant background
           
         } else {
-          if(iCentrality == 3){ // For peripheral bin, use the yield from deltaPhi
-            combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
-          } else {
-            combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
-          }
+          combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
           combinedFitYield[0][iJetTrack][iCentrality][iTrackPt] += spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->GetParameter(0);
         }
         
@@ -473,7 +473,7 @@ void produceSpilloverCorrection(){
       graphYield[iJetTrack][iCentrality] = new TGraphErrors(nTrackPtBins,graphPointsX[iCentrality],combinedFitYield[0][iJetTrack][iCentrality],graphErrorsX,combinedFitYield[1][iJetTrack][iCentrality]);
       
       // Remove the last point from each graph
-      graphYield[iJetTrack][iCentrality]->RemovePoint(5);
+      graphYield[iJetTrack][iCentrality]->RemovePoint(nTrackPtBins-1);
       
       // Fit also this graph, excluding some points from the fit
       lowFitPt = 0.5;
@@ -492,8 +492,8 @@ void produceSpilloverCorrection(){
       
       // Return the point to the graph after fit
       if(iCentrality == 0) {
-        graphYield[iJetTrack][iCentrality]->SetPoint(5,originalValueX,originalValueY);
-        graphYield[iJetTrack][iCentrality]->SetPointError(5,originalErrorX,originalErrorY);
+        graphYield[iJetTrack][iCentrality]->SetPoint(nTrackPtBins-1,originalValueX,originalValueY);
+        graphYield[iJetTrack][iCentrality]->SetPointError(nTrackPtBins-1,originalErrorX,originalErrorY);
       }
       
       graphYield[iJetTrack][iCentrality]->SetMarkerStyle(34);
@@ -531,8 +531,10 @@ void produceSpilloverCorrection(){
         deltaPhiWidth = combinedDeltaPhiWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]);
         
         // Find the common yield for deltaEta and deltaPhi by evaluating it from the fit to the graph
-        if(fixGaussWidth){
-          commonYield = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt];  // If width is fixed, do not fit the yield anymore
+        if(fixGaussWidth || iTrackPt > 4){
+          // If width is fixed, do not fit the yield anymore
+          // Also the yield does not work over pT = 8 GeV, so just use the average yield on those bins
+          commonYield = combinedFitYield[0][iJetTrack][iCentrality][iTrackPt];
         } else {
           commonYield = commonYieldFit[iJetTrack][iCentrality]->Eval(graphPointsX[iCentrality][iTrackPt]);
         }
@@ -638,6 +640,7 @@ void produceSpilloverCorrection(){
         spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
         // Create a new name to the PbPb histogram and write it into file
+        if(iTrackPt == 6) continue; // TODO: Remove this after this is added to reference data file
         sprintf(histogramNamer,"dataReplica_%sDeltaEtaProjection_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         spilloverDeltaEtaProjection[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
       }
@@ -659,6 +662,7 @@ void produceSpilloverCorrection(){
         spilloverDeltaPhiProjection[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
         // Create a new name to the PbPb histogram and write it into file
+        if(iTrackPt == 6) continue; // TODO: Remove this after this is added to reference data file
         sprintf(histogramNamer,"dataReplica_%sDeltaPhiProjection_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         spilloverDeltaPhiProjection[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
       }
@@ -679,13 +683,14 @@ void produceSpilloverCorrection(){
         sprintf(histogramNamer,"spilloverQA_%sDeltaEtaFit_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
-        // Create a new name to the PbPb histogram and write it into file
-        sprintf(histogramNamer,"dataReplica_%sDeltaEtaFit_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
-        
         // Create a new name to the spillover correction fit
         sprintf(histogramNamer,"spilloverCorrection_%sDeltaEtaFit_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         spilloverCorrectionDeltaEtaFit[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+        if(iTrackPt == 6) continue; // TODO: Remove this after this is added to reference data file
+        // Create a new name to the PbPb histogram and write it into file
+        sprintf(histogramNamer,"dataReplica_%sDeltaEtaFit_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaEtaFit[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
       } // Track pT loop
     } // Centrality loop
@@ -705,13 +710,14 @@ void produceSpilloverCorrection(){
         sprintf(histogramNamer,"spilloverQA_%sDeltaPhiFit_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
-        // Create a new name to the PbPb histogram and write it into file
-        sprintf(histogramNamer,"dataReplica_%sDeltaPhiFit_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
-        spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
-        
         // Create a new name to the spillover correction fit
         sprintf(histogramNamer,"spilloverCorrection_%sDeltaPhiFit_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         spilloverCorrectionDeltaPhiFit[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+        if(iTrackPt == 6) continue; // TODO: Remove this after this is added to reference data file
+        // Create a new name to the PbPb histogram and write it into file
+        sprintf(histogramNamer,"dataReplica_%sDeltaPhiFit_C%dT%d",histograms[1]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        spilloverDeltaPhiFit[1][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
       } // Track pT loop
     } // Centrality loop
@@ -772,7 +778,7 @@ void produceSpilloverCorrection(){
     gDirectory->cd("../");
     
     // In the very end, write also the card information to the correction QA file
-    card->Write(outputFile);
+    card->Write(qaFile);
     
   } // Jet-track loop
 }
