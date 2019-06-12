@@ -228,7 +228,7 @@ void DijetDrawer::DrawSingleJetHistograms(){
       drawnHistogram = fHistograms->GetHistogramJetEta(iJetCategory,iCentrality);
       sprintf(namerX,"%s #eta",fHistograms->GetSingleJetAxisName(iJetCategory));
       fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#eta}"," ");
-      legend = new TLegend(0.62,0.20,0.82,0.35);
+      legend = new TLegend(0.4,0.20,0.82,0.35);
       SetupLegend(legend,centralityString);
       legend->Draw();
       

@@ -736,8 +736,8 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spi
   fSpilloverDeltaPhi->Scale(fnBinsProjectedOver);
   
   // Do some rebin
-  int etaRebin = 4; // Old: 4
-  int phiRebin = 2; // Old: 2
+  int etaRebin = 1; // Old: 4
+  int phiRebin = 1; // Old: 2
   if(etaRebin > 1){
     fSpilloverDeltaEta->Rebin(etaRebin);
     fSpilloverDeltaEta->Scale(1.0/etaRebin);

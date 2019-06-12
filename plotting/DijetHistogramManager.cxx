@@ -523,7 +523,12 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           
           // Apply the seagull correction after the mixed event correction
           if(fApplySeagullCorrection){
-            seagullMethod = (iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet) ? 0 : 1;
+            seagullMethod = 0; // TODO: This works for MC, need to check for data after data is produced!!
+            if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){
+              if(iCentralityBin == 0){
+                if(iTrackPtBin > 0 && iTrackPtBin < 5) seagullMethod = 1;
+              }
+            }
             fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],seagullMethod);
             
             // Get the used background eta histogram and fitted function for QA purposes
