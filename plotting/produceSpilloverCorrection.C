@@ -57,7 +57,11 @@ void produceSpilloverCorrection(){
   // Read the DijetCard from RecoGen file
   DijetCard *card = new DijetCard(recoGenFile);
   
-  // TODO: Add the information about spillover parameters to the card
+  // Add the information about spillover parameters to the card
+  card->AddOneDimensionalVector(DijetCard::kSpilloverFixGaussYield,fixGaussYield);
+  card->AddOneDimensionalVector(DijetCard::kSpilloverFixGaussWidth,fixGaussWidth);
+  card->AddOneDimensionalVector(DijetCard::kSpilloverOnlyGauss,fitOnlyGauss);
+  card->AddOneDimensionalVector(DijetCard::kSpilloverUseIntegralYield,useIntegralYield);
   
   // Make an array of input files for easier initialization of histogram readers
   TFile *inputFiles[2] = {recoGenFile,yieldQAfile};
