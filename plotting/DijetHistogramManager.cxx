@@ -524,9 +524,11 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           // Apply the seagull correction after the mixed event correction
           if(fApplySeagullCorrection){
             seagullMethod = 0; // TODO: This works for MC, need to check for data after data is produced!!
-            if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){
-              if(iCentralityBin == 0){
-                if(iTrackPtBin > 0 && iTrackPtBin < 5) seagullMethod = 1;
+            if(fCard->GetSubeventCut() != 0){ // For sube0 MC, always use method 0
+              if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){
+                if(iCentralityBin == 0){
+                  if(iTrackPtBin > 0 && iTrackPtBin < 3) seagullMethod = 1;
+                }
               }
             }
             fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],seagullMethod);
@@ -538,7 +540,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           
           // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
-            if(iTrackPtBin < 5){ // Do not apply spillover correction to the highest pT bin
+            if(fTrackPtBinBorders[iTrackPtBin+1] < 100){ // Do not apply spillover correction to the highest pT bin
               if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
                 correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentralityBin,iTrackPtBin); // TODO: Maybe add asymmetry also to spillover, if it matters there
                 fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
