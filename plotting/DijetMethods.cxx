@@ -24,6 +24,22 @@ double seagullExp(double *x, double *par){
 }
 
 /*
+ * Combination of two Gauss functions of different widths without overlap
+ */
+double doubleGaussNoOverlap(double *x, double *par){
+  if(x[0] < 0.4 && x[0] > -0.4) return par[0]/(TMath::Sqrt(2*TMath::Pi())*par[1])*TMath::Exp(-0.5*TMath::Power(x[0]/par[1],2));
+  return par[2]/(TMath::Sqrt(2*TMath::Pi())*par[3])*TMath::Exp(-0.5*TMath::Power(x[0]/par[3],2));
+}
+
+/*
+ * Combination of two Gauss functions of different widths without overlap
+ */
+double doubleGaussNoOverlap2D(double *x, double *par){
+  if(TMath::Sqrt(x[0]*x[0]+x[1]*x[1]) < 0.4) return par[0]/(2*TMath::Pi()*par[1]*par[2])*TMath::Exp(-0.5*TMath::Power(x[0]/par[1],2))*TMath::Exp(-0.5*TMath::Power(x[1]/par[2],2));
+  return par[3]/(2*TMath::Pi()*par[4]*par[5])*TMath::Exp(-0.5*TMath::Power(x[0]/par[4],2))*TMath::Exp(-0.5*TMath::Power(x[1]/par[5],2));
+}
+
+/*
  *  Constructor
  */
 DijetMethods::DijetMethods() :
@@ -391,20 +407,22 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   }
   
   // Prepare the fit function
-  if(normalizationMethod == 0){
-    fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,3);
-    double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
-    fSeagullFit->SetParameters(initialLevel,0,0);
-    fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
-  } else {
+  fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,3);
+  double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
+  fSeagullFit->SetParameters(initialLevel,0,0);
+  fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
+  
+  // Fit the projected distribution
+  double backgroundLevel = fSeagullFit->GetParameter(0);
+  
+  // If we want to use exponential in some bins, redifine the seagull fit
+  // Note that we want to have the same background level estimation in both cases
+  if(normalizationMethod == 1){
     fSeagullFit = new TF1("seagullFit",seagullExp,-3,3,3);
     double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
     fSeagullFit->SetParameters(initialLevel,-1,-1);
     fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,3);
   }
-  
-  // Fit the projected distribution
-  double backgroundLevel = fSeagullFit->GetParameter(0);
   
   // Apply the correction to the input 2D histogram
   TH2D *seagullCorrectedHistogram = (TH2D*) mixedEventCorrectedHistogram->Clone();
@@ -660,9 +678,95 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
 }
 
 /*
+ * Symmetrize histogram up to the given limits. Set everything to zero above that.
+ *
+ * Arguments:
+ *  const TH2D *histogramToBeSymmetrized = Histogram that is symmetrized
+ *  const double maxEta = Maximum eta value until which the histogram is symmetrized
+ *  const double maxPhi = Maximum phi value until which the histogram is symmetrized
+ *
+ *  return: Symmetrized two-dimensional histogram
+ */
+TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxEta, const double maxPhi){
+
+  // Clone the given histogram to get the original binning
+  TH2D *symmetrizedHistogram = (TH2D*) histogramToBeSymmetrized->Clone(Form("%sSymmetrized",histogramToBeSymmetrized->GetName()));
+  
+  // Find the important bin indices to properly symmetrize the distribution
+  int deltaPhiZeroPlus = symmetrizedHistogram->GetXaxis()->FindBin(0.001);
+  int deltaPhiZeroMinus = symmetrizedHistogram->GetXaxis()->FindBin(-0.001);
+  int deltaEtaZeroPlus = symmetrizedHistogram->GetYaxis()->FindBin(0.001);
+  int deltaEtaZeroMinus = symmetrizedHistogram->GetYaxis()->FindBin(-0.001);
+  int deltaPhiMinimum = symmetrizedHistogram->GetXaxis()->FindBin(-maxPhi+0.001);
+  int deltaPhiMaximum = symmetrizedHistogram->GetXaxis()->FindBin(maxPhi-0.001);
+  int deltaEtaMinimum = symmetrizedHistogram->GetYaxis()->FindBin(-maxEta+0.001);
+  int deltaEtaMaximum = symmetrizedHistogram->GetYaxis()->FindBin(maxEta-0.001);
+  
+  // Symmetrize the distribution with respect to zero
+  double averageContent, averageError;
+  int phiBinNegative, phiBinPositive, etaBinNegative, etaBinPositive;
+  
+  // Loop over deltaPhi bins
+  for(int iPhi = 1; iPhi <= symmetrizedHistogram->GetNbinsX(); iPhi++){
+    
+    // Find symmetric indices around zero for deltaPhi
+    if(iPhi < deltaPhiZeroPlus){
+      phiBinNegative = iPhi;
+      phiBinPositive = deltaPhiZeroPlus + (deltaPhiZeroMinus - iPhi);
+    } else {
+      phiBinPositive = iPhi;
+      phiBinNegative = deltaPhiZeroMinus - (iPhi - deltaPhiZeroPlus);
+    }
+    
+    for(int iEta = 1; iEta <= symmetrizedHistogram->GetNbinsY(); iEta++){
+      
+      // If the bins are out of specified range, set the content to zero
+      if(iPhi < deltaPhiMinimum || iPhi > deltaPhiMaximum || iEta < deltaEtaMinimum || iEta > deltaEtaMaximum){
+        symmetrizedHistogram->SetBinContent(iPhi,iEta,0);
+        symmetrizedHistogram->SetBinError(iPhi,iEta,0);
+        continue;
+      }
+      
+      // Find symmetric indices around zero for deltaEta
+      if(iEta < deltaEtaZeroPlus){
+        etaBinNegative = iEta;
+        etaBinPositive = deltaEtaZeroPlus + (deltaEtaZeroMinus - iEta);
+      } else {
+        etaBinPositive = iEta;
+        etaBinNegative = deltaEtaZeroMinus - (iEta - deltaEtaZeroPlus);
+      }
+      
+      // Now that we have the symmetric indices around zero, we can calculate the new content for symmetrized histogram
+      averageContent = histogramToBeSymmetrized->GetBinContent(phiBinNegative,etaBinNegative);
+      averageContent += histogramToBeSymmetrized->GetBinContent(phiBinNegative,etaBinPositive);
+      averageContent += histogramToBeSymmetrized->GetBinContent(phiBinPositive,etaBinPositive);
+      averageContent += histogramToBeSymmetrized->GetBinContent(phiBinPositive,etaBinNegative);
+      averageContent /= 4.0;
+      
+      averageError = TMath::Power(histogramToBeSymmetrized->GetBinError(phiBinNegative,etaBinNegative),2);
+      averageError += TMath::Power(histogramToBeSymmetrized->GetBinError(phiBinNegative,etaBinPositive),2);
+      averageError += TMath::Power(histogramToBeSymmetrized->GetBinError(phiBinPositive,etaBinPositive),2);
+      averageError += TMath::Power(histogramToBeSymmetrized->GetBinError(phiBinPositive,etaBinNegative),2);
+      averageError = TMath::Sqrt(averageError)/4.0;
+      
+      // After we have calculated the value and error, we can set these values to the symmetrized histogram
+      symmetrizedHistogram->SetBinContent(iPhi,iEta,averageContent);
+      symmetrizedHistogram->SetBinError(iPhi,iEta,averageError);
+      
+    } // deltaEta loop
+  } // deltaPhi loop
+  
+  // Return the symmetrized histogram
+  return symmetrizedHistogram;
+  
+}
+
+/*
  * Method for finding the spillover yield from the mixed event corrected distribution. This method fits a constant line
  * to the tails of the DeltaEta projection of the distribution distribution and uses bin counting to get the histogram yield
  * on top of the fitted line. The idea is that in later stage the yield of the fitted gaussians can be fixed to this number.
+ * If maxEtaNormalizationRange is set to a smaller number than minEtaNormalixationRange, no line is fitted and the yield is
+ * obtained directly from bin counting.
  *
  * Arguments:
  *  TH2D *onlyHydjetHistogram = Mixed event corrected histogram from the HYDJET simulation
@@ -680,13 +784,20 @@ double DijetMethods::GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaN
   fSpilloverDeltaEta = ProjectRegionDeltaEta(onlyHydjetHistogram,-spilloverPhiRange,spilloverPhiRange,"spilloverNormalizationDeltaEta");
   fSpilloverDeltaEta->Scale(fnBinsProjectedOver);
   
-  // Fit a constant to the tails of the histogram and determine the background level
-  fSpilloverDeltaEta->Fit("pol0","0","",-maxEtaNormalizationRange,-minEtaNormalizationRange);
-  double negativeLevel = fSpilloverDeltaEta->GetFunction("pol0")->GetParameter(0);
-  double negativeLevelError = fSpilloverDeltaEta->GetFunction("pol0")->GetParError(0);
-  fSpilloverDeltaEta->Fit("pol0","0","",minEtaNormalizationRange,maxEtaNormalizationRange);
-  double positiveLevel = fSpilloverDeltaEta->GetFunction("pol0")->GetParameter(0);
-  double positiveLevelError = fSpilloverDeltaEta->GetFunction("pol0")->GetParError(0);
+  // If maximum fit range is larger than minimum fit range, fit a constant to the given range and determine the background level
+  // Otherwise the background level is set to zero.
+  double negativeLevel = 0;
+  double negativeLevelError = 0;
+  double positiveLevel = 0;
+  double positiveLevelError = 0;
+  if(maxEtaNormalizationRange > minEtaNormalizationRange){
+    fSpilloverDeltaEta->Fit("pol0","0","",-maxEtaNormalizationRange,-minEtaNormalizationRange);
+    negativeLevel = fSpilloverDeltaEta->GetFunction("pol0")->GetParameter(0);
+    negativeLevelError = fSpilloverDeltaEta->GetFunction("pol0")->GetParError(0);
+    fSpilloverDeltaEta->Fit("pol0","0","",minEtaNormalizationRange,maxEtaNormalizationRange);
+    positiveLevel = fSpilloverDeltaEta->GetFunction("pol0")->GetParameter(0);
+    positiveLevelError = fSpilloverDeltaEta->GetFunction("pol0")->GetParError(0);
+  }
   double averageLevel = (negativeLevel+positiveLevel)/2;
   double averageLevelError = TMath::Sqrt(negativeLevelError*negativeLevelError+positiveLevelError*positiveLevelError)/2;
   
@@ -713,6 +824,7 @@ double DijetMethods::GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaN
  *
  * Arguments:
  *  TH2D *onlyHydjetHistogram = Two-dimensional deltaEta-deltaPhi histogram from soft HYDJET event
+ *  int fitMethod = Method used for fitting deltaEta and deltaPhi distributions. 0 = Gauss, 1 = Gauss+constant, 2 = Gauss+Gauss
  *  double spilloverEtaFitRange = Range in deltaEta that is used to fit the spillover deltaEta distribution
  *  double spilloverPhiFitRange = Range in deltaPhi that is used to fit the spillover deltaPhi distribution
  *  double lowConstantRange = Low range to which the constant is fitted in constant + Gauss fit
@@ -723,7 +835,7 @@ double DijetMethods::GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaN
  *
  *  return: Two-dimensional histogram with the estimation of the spillover effect
  */
-TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange, double spilloverPhiFitRange, double lowConstantRange, double highConstantRange, double fixedYield, double fixedEtaWidth, double fixedPhiWidth){
+TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, int fitMethod, double spilloverEtaFitRange, double spilloverPhiFitRange, double lowConstantRange, double highConstantRange, double fixedYield, double fixedEtaWidth, double fixedPhiWidth){
   
   // Define the range over which the spillover correction is calculated
   double spilloverEtaRange = 1.5;
@@ -748,19 +860,34 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spi
   }
   
   // Fit one dimensional Gaussians to the projected deltaEta and deltaPhi distributions
-  if(lowConstantRange <= 0 || highConstantRange <= 0){
+  if(fitMethod == 0){
     fSpilloverFitDeltaEta = FitGauss(fSpilloverDeltaEta, spilloverEtaFitRange, spilloverPhiRange, fixedYield, fixedEtaWidth);
     fSpilloverFitDeltaPhi = FitGauss(fSpilloverDeltaPhi, spilloverPhiFitRange, spilloverEtaRange, fixedYield, fixedPhiWidth);
-  } else {
+  } else if(fitMethod == 1){
     fSpilloverFitDeltaEta = FitGaussAndConstant(fSpilloverDeltaEta, spilloverEtaFitRange, spilloverPhiRange, lowConstantRange, highConstantRange, fixedYield, fixedEtaWidth);
     fSpilloverFitDeltaPhi = FitGaussAndConstant(fSpilloverDeltaPhi, spilloverPhiFitRange, spilloverEtaRange, 1, 2, fixedYield, fixedPhiWidth);
+  }else {
+    fSpilloverFitDeltaEta = FitDoubleGauss(fSpilloverDeltaEta, spilloverEtaFitRange, spilloverPhiRange);
+    fSpilloverFitDeltaPhi = FitDoubleGauss(fSpilloverDeltaPhi, spilloverPhiFitRange, spilloverEtaRange);
   }
   
   // Combine the one-dimensional fits to a two-dimensional Gaussian distribution
-  TF2 *gauss2D = new TF2("gauss2D", "[0]/(2*TMath::Pi()*[1]*[2])*TMath::Exp(-0.5*TMath::Power(x/[1],2))*TMath::Exp(-0.5*TMath::Power(y/[2],2))",-TMath::Pi()/2,3*TMath::Pi()/2,-5,5);
-  gauss2D->SetParameter(0,(fSpilloverFitDeltaEta->GetParameter(0)+fSpilloverFitDeltaEta->GetParameter(0))/2.0);
-  gauss2D->SetParameter(1,fSpilloverFitDeltaPhi->GetParameter(1));
-  gauss2D->SetParameter(2,fSpilloverFitDeltaEta->GetParameter(1));
+  TF2 *gauss2D;
+  
+  if(fitMethod < 2){
+    gauss2D = new TF2("gauss2D", "[0]/(2*TMath::Pi()*[1]*[2])*TMath::Exp(-0.5*TMath::Power(x/[1],2))*TMath::Exp(-0.5*TMath::Power(y/[2],2))",-TMath::Pi()/2,3*TMath::Pi()/2,-5,5);
+    gauss2D->SetParameter(0,(fSpilloverFitDeltaEta->GetParameter(0)+fSpilloverFitDeltaEta->GetParameter(0))/2.0);
+    gauss2D->SetParameter(1,fSpilloverFitDeltaPhi->GetParameter(1));
+    gauss2D->SetParameter(2,fSpilloverFitDeltaEta->GetParameter(1));
+  } else {
+    gauss2D = new TF2("gauss2D",doubleGaussNoOverlap2D,-TMath::Pi()/2,3*TMath::Pi()/2,-5,5,6);
+    gauss2D->SetParameter(0,(fSpilloverFitDeltaEta->GetParameter(0)+fSpilloverFitDeltaEta->GetParameter(0))/2.0);
+    gauss2D->SetParameter(1,fSpilloverFitDeltaPhi->GetParameter(1));
+    gauss2D->SetParameter(2,fSpilloverFitDeltaEta->GetParameter(1));
+    gauss2D->SetParameter(3,(fSpilloverFitDeltaEta->GetParameter(2)+fSpilloverFitDeltaEta->GetParameter(2))/2.0);
+    gauss2D->SetParameter(4,fSpilloverFitDeltaPhi->GetParameter(3));
+    gauss2D->SetParameter(5,fSpilloverFitDeltaEta->GetParameter(3));
+  }
   
   // Create a new two-dimensional histogram from the two-dimensional Gaussian function
   char histogramName[150];
@@ -776,6 +903,15 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spi
   }
   
   spilloverCorrection->Eval(gauss2D,"A");
+  
+  // Set the errors to zero after filling the histogram from the two-dimensional function
+  // The systematic error estimation should be done separately, errors would be overestimated otherwise
+  // By default, root just assigns the square root of the bin content as an error for each bin
+  for(int iPhiBin = 1; iPhiBin <= spilloverCorrection->GetNbinsX(); iPhiBin++){
+    for(int iEtaBin = 1; iEtaBin <= spilloverCorrection->GetNbinsY(); iEtaBin++){
+      spilloverCorrection->SetBinError(iPhiBin,iEtaBin,0);
+    }
+  }
     
   // Return the spillover correction
   return spilloverCorrection;
@@ -851,6 +987,43 @@ TF1* DijetMethods::FitGaussAndConstant(TH1D *fittedHistogram, double fitRange, d
   gaussFit->SetParameter(1,0.3);
   if(fixedWidth > 0) gaussFit->FixParameter(1,fixedWidth);
   gaussFit->FixParameter(2,averageLevel);
+  
+  // Fit the histogram over the defined range
+  fittedHistogram->Fit("gaussFit","","",-fitRange,fitRange);
+  
+  // Return the fit function
+  return gaussFit;
+  
+}
+
+/*
+ * Fit narrow and wide Gaussians function to a histogram and return the fit function
+ *
+ * Arguments:
+ *  TH1D *fittedHistogram = Histogram to be fitted with two Gaussians
+ *  double fitRange = Range for the fit
+ *  double normalizationRange = Range for yield normalization
+ *
+ *  return: Double Gaussian function fitted to the histogram
+ */
+TF1* DijetMethods::FitDoubleGauss(TH1D *fittedHistogram, double fitRange, double normalizationRange){
+  
+  // Create a Gaussian function for the fit
+  //TF1 *gaussFit = new TF1("gaussFit","[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))+[2]/(TMath::Sqrt(2*TMath::Pi())*[3])*TMath::Exp(-0.5*TMath::Power(x/[3],2))",-fitRange,fitRange);
+  TF1 *gaussFit = new TF1("gaussFit",doubleGaussNoOverlap,-fitRange,fitRange,4);
+  
+  // Calculate the integral of the fitted histogram over the normalization range
+  double fitYield = fittedHistogram->Integral(fittedHistogram->FindBin(-normalizationRange+0.001),fittedHistogram->FindBin(normalizationRange-0.001),"width");
+  
+  // Initialize the yield of the Gaussian function to the integral and give some rought estimate for the width
+  gaussFit->SetParameter(0,fitYield*0.8);
+  gaussFit->SetParameter(1,0.3);
+  gaussFit->SetParameter(2,fitYield*0.2);
+  gaussFit->SetParameter(3,0.8);
+  gaussFit->SetParLimits(0,0,fitYield);
+  gaussFit->SetParLimits(1,0.05,0.38);
+  gaussFit->SetParLimits(2,0,fitYield);
+  gaussFit->SetParLimits(3,0.38,10);
   
   // Fit the histogram over the defined range
   fittedHistogram->Fit("gaussFit","","",-fitRange,fitRange);

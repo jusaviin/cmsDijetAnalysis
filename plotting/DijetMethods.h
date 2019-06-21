@@ -35,9 +35,10 @@ public:
   TH2D* ImproviseMixedEvent(const TH2D *sameEventHistogram); // Improvise mixed event distribution from background deltaPhi region of the same event histogram
   double GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaNormalizationRange, double maxEtaNormalizationRange); // Getter for the dpillover yield from the mixed event corrected distribution
   double GetSpilloverYieldError() const; // Getter for the most recent spillover yield error
-  TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram, double spilloverEtaFitRange = 1.5, double spilloverPhiFitRange = 1.5, double lowConstantRange = 1, double highConstantRange = 2, double fixedYield = 0, double fixedEtaWidth = 0, double fixedPhiWidth = 0);  // Get the spillover correction from only hydjet histogram
+  TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram, int fitMethod, double spilloverEtaFitRange = 1.5, double spilloverPhiFitRange = 1.5, double lowConstantRange = 1, double highConstantRange = 2, double fixedYield = 0, double fixedEtaWidth = 0, double fixedPhiWidth = 0);  // Get the spillover correction from only hydjet histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
+  TH2D* SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxEta, const double maxPhi); // Symmetrize eta and phi in a histogram up to given maximum values
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   TF1* FourierFit(TH1D* backgroundDeltaPhi, const int maxVn); // Do a Fourier fit for the background deltaPhi distribution
@@ -155,6 +156,7 @@ private:
   double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter); // Find the normalization scale for the mixed event histogram
   TF1* FitGauss(TH1D* fittedHistogram, double fitRange, double normalizationRange, double fixedYield, double fixedWidth);  // Fit a Gaussian function to a histogram and return the fit function
   TF1* FitGaussAndConstant(TH1D* fittedHistogram, double fitRange, double normalizationRange, double lowConstantRange, double highConstantRange, double fixedYield, double fixedWidth);  // Fit a Gaussian function together with a constant to a histogram and return the fit function
+  TF1* FitDoubleGauss(TH1D* fittedHistogram, double fitRange, double normalizationRange);  // Fit a narrow and wide Gauss functions to a histogram and return the fit function
   void SetBinBoundaries(const int nBins, double *binBorders, int& copyNbins, double *copyBinBorders[]); // Setter for bin boundaries
   bool CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis); // Checker that new bin boundaries correspond to old ones
   int CheckNormalizationSanity(const int normalizationType, const int maxIndex); // Sanity check for input normalizations
