@@ -462,10 +462,11 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
   TFile *spilloverQaFile;
-  spilloverQaFile = TFile::Open("newSpilloverTest_QA.root");
+  spilloverQaFile = TFile::Open("newSpilloverTest_doubleGauss_QA.root");
   // spillingOverTesting_QA.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18_QA.root"
-  TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlySeagull_processed_QA.root");
+  TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15_QA.root");
+  // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed_QA.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_smoothedMixingAvoidPeakLowPt_noCorrections_2019-02-06_QA.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09_QA.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15_QA.root"
@@ -476,11 +477,11 @@ void qaPlotter(){
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrectionsOrAdjust_processed_2019-01-09.root"
-  TFile *jffPbPbFile = TFile::Open("newPbPbTest.root");
+  TFile *jffPbPbFile = TFile::Open("newPpTest4.root");
   // "data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root"
-  TFile *jffPpFile = TFile::Open("newPpTest2.root");
+  TFile *jffPpFile = TFile::Open("newPpTest4.root");
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root"
-  TFile *spilloverFile = TFile::Open("newSpilloverTest.root");
+  TFile *spilloverFile = TFile::Open("newSpilloverTest_doubleGauss.root");
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   
   // Read the number of bins from histogram manager
@@ -488,7 +489,7 @@ void qaPlotter(){
   const int nCentralityBins = 4; // TODO: See if these can be read in a clever way
   const int nTrackPtBins = 6;    // TODO: Different files may have different binning!
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
-  double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,12};  // Bin borders for track pT
   const char *saveNameComment = "";
   
   // Creata a dijet card for the JFF correction and setup asymmetry bins
@@ -582,7 +583,7 @@ void qaPlotter(){
           }
         }
         
-        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/fittedSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt); // TODO: Here generally shoud be fitted
         spilloverDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
         
         // Background histograms for background adjustment check
@@ -734,7 +735,7 @@ void qaPlotter(){
           spilloverDeltaEtaProjection[1][iJetTrack][iCentrality][iTrackPt]->Scale(1.0/deltaEtaRebinSpillover);
           
           // Draw the histogram to canvas
-          setHistogramStyle(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt],2.5,spilloverScaleEta,titleString,"#Delta#eta");
+          setHistogramStyle(spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt], 1.5, spilloverScaleEta, titleString, "#Delta#eta");
           spilloverDeltaEtaProjection[1][iJetTrack][iCentrality][iTrackPt]->SetLineColor(kRed);
           spilloverDeltaEtaProjection[0][iJetTrack][iCentrality][iTrackPt]->DrawCopy();
           

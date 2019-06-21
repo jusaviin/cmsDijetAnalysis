@@ -72,7 +72,7 @@ public:
     kHighDeltaPhiBinBorders,    // For postprocessing: High deltaPhi bin borders used when producing the file
     kSpilloverFixGaussYield,    // For spillover correction: 0 = Do not fix Gauss yield in fits. 1 = Fix Gauss yield in fits.
     kSpilloverFixGaussWidth,    // For spillover correction: 0 = Do not fix Gauss width in fits. 1 = Fix Gauss width in fits.
-    kSpilloverOnlyGauss,        // For spillover correction: 0 = Fit with Gauss and constant. 1 = Fit only with Gauss.
+    kSpilloverFitMethod,        // For spillover correction: 0 = Fit with Gauss and constant. 1 = Fit only with Gauss.
     kSpilloverUseIntegralYield, // For spillover correction: 0 = Read yield directly from Gauss fit parameter. 1 = Read yield from integral over the fitted Gauss distribution.
     knEntries};                 // Number of entries in the card
   
@@ -82,7 +82,7 @@ public:
 private:
   
   // Names for each entry read from the configuration card
-  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders","SpilloverFixGaussYield","SpilloverFixGaussWidth","SpilloverOnlyGauss","SpilloverUseIntegralYield"};
+  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders","SpilloverFixGaussYield","SpilloverFixGaussWidth","SpilloverFitMethod","SpilloverUseIntegralYield"};
   const char *fFileNameType[knFileNames] = {"input", "JFF correction","spillover correction"};
   const char *fFileNameSaveName[knFileNames] = {"InputFile", "JFFCorrectionFile","SpilloverCorrectionFile"};
   
@@ -125,9 +125,10 @@ public:
   double GetHighBinBorderTrackPt(const int iBin) const;    // Get the high border of i:th track pT bin
   double GetHighBinBorderAsymmetry(const int iBin) const;  // Get the high border of i:th asymmetry bin
   const char *GetAsymmetryBinType(TString latexIt = "") const; // Get a description of the used asymmetry bin type
-  int GetNDeltaPhiBins() const; // Get the number of deltaPhi bins
+  int GetNDeltaPhiBins() const;   // Get the number of deltaPhi bins
   double GetLowBinBorderDeltaPhi(const int iBin) const;  // Get the low border of i:th deltaPhi bin
   double GetHighBinBorderDeltaPhi(const int iBin) const; // Get the high border of i:th deltaPhi bin
+  int GetSubeventCut() const;     // Get theindex for used subevent cut
   
   void AddOneDimensionalVector(int entryIndex, float entryContent); // Add one dimensional vector to the card
   void AddVector(int entryIndex, int dimension, double *contents); // Add a vector to the card

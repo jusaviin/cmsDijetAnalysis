@@ -104,6 +104,13 @@ double DijetCard::GetMaxDeltaEta() const{
 }
 
 /*
+ *  Getter for subevent cut
+ */
+int DijetCard::GetSubeventCut() const{
+  return (*fCardEntries[kSubeventCut])[1];
+}
+
+/*
  * Get the number of bins for internal index
  * If no vector is found in the index, return 0.
  */

@@ -35,8 +35,8 @@ void compareDijetHistograms(){
   bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations || drawTrackInclusiveJetCorrelations || drawPtWeightedTrackInclusiveJetCorrelations);
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = false;
+  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaEta = true;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
@@ -45,7 +45,7 @@ void compareDijetHistograms(){
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
+  bool drawSameEvent = true;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
   bool drawCorrected = false;
@@ -56,8 +56,9 @@ void compareDijetHistograms(){
   bool drawBackground = false;
   
   // Draw histograms to make a check on the validity of the event mixing method
-  bool drawEventMixingCheck = true;
+  bool drawEventMixingCheck = false;
   bool eventMixingZoom = false;
+  int eventMixingDistribution = DijetHistogramManager::kBackgroundSubtracted; // kCorrected kBackgroundSubtracted
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
@@ -75,10 +76,10 @@ void compareDijetHistograms(){
   const char* style3D = "surf1";
   
   // Settings for ratios
-  bool useDifferenceInsteadOfRatio = true;
-  double minZoom = 0.95;
-  double maxZoom = 1.05;
-  TString ratioLabel = "pfJet / caloJet";
+  bool useDifferenceInsteadOfRatio = false;
+  double minZoom = 0.7;
+  double maxZoom = 1.3;
+  TString ratioLabel = "spillover / sube0";
   
   // Scaling for histograms
   bool scaleHistograms = false; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -96,10 +97,10 @@ void compareDijetHistograms(){
   bool readDeltaPhiBinsFromFile = true; // Disregard above deltaPhi binning and use the binning directly from DijetCard
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins;
+  int lastDrawnTrackPtBin = 3;
   
   int asymmetryBin = -1; // Asymmetry selection: -1 = No selection, 0 = 0 < AJ < 0.11, 1 = 0.11 < AJ < 0.22, 2 = 0.22 < AJ < 0.33, 3 = 0.33 < AJ < 0.75. For inclusive, set this to 0 to select only jets above 120 GeV.
   
@@ -125,22 +126,11 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 1;
-  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_onlySpilloverCorrection_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_fixedSpilloverYield_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_improvisedMixing_noFitInSpillover_processed_2019-03-26.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_10eveImprovedMix_xj_fixedSpilloverWidthRange50_noJff_processed_2019-03-22.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root",*/"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlySeagull_processed.root"/*,"data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root"*/};
-  //TString inputFileName[nDatasets] = {"data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_jffRebin2_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noJffCorrection_processed_2019-01-25.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"};
-  //  "data/dijet_pp_highForest_pfJets_processed_2018-09-14.root"
-  //  "data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
-  //  "data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
-  //  "data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root"
-  //  "data/dijetPbPb_pfJets_3eventsMixed_noUncorrected_processed_2018-10-02.root"
-  //  "data/dijetPbPb_pfJets_noInclusiveOrUncorrected_noCorrections_smoothedMixing_processed_2018-11-19.root"
-  //  "data/dijetPbPb_pfJets_skims_noUncorrected_10mixedEvents_noCorrections_smoothedMixing_processed_2018-11-19.root"
-  // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
-  // "data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root","data/PbPbMC_RecoReco_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root","data/PbPbMC_GenGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root"
-  // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
+  const int nDatasets = 2;
+  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noJffCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndSpilloverDoubleGauss_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_seagullAndSymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlySymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndNoFitSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_noCorrections_processed.root",*/"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed.root",/*"data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_notAdjustedBackground_processed_2019-02-15.root"/*,"data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root"*/};
   
-  //TString legendComment[nDatasets] = {"P+H GenMatched","P+H GenUnmatched"};
-  TString legendComment[nDatasets] = {/*"All subevents","Spillover","SpilloverNoFit","Sube0",*/"SubeNon0"/*"pfJets","caloJets"*/};
+  TString legendComment[nDatasets] = {"PF CS jets","PF PU jets"};
+  //TString legendComment[nDatasets] = {/*"All subevents","Spillover",*/"SpilloverNoFit","Sube0",/*"SubeNon0","pfJets","caloJets"*/};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
@@ -236,7 +226,7 @@ void compareDijetHistograms(){
   drawer->SetDrawJetTrackDeltas(drawJetTrackDeltaPhi,drawJetTrackDeltaEta,drawJetTrackDeltaEtaDeltaPhi);
   drawer->SetDrawAllJetShapes(drawJetShape,drawJetShapeMCComparison);
   drawer->SetDrawCorrelationTypes(drawSameEvent,drawMixedEvent,drawNormalizedMixedEvent,drawCorrected);
-  drawer->SetDrawEventMixingCheck(drawEventMixingCheck,eventMixingZoom);
+  drawer->SetDrawEventMixingCheck(drawEventMixingCheck,eventMixingZoom,eventMixingDistribution);
   drawer->SetSaveFigures(saveFigures,figureFormat,figureComment);
   drawer->SetLogAxes(logPt,logCorrelation,logJetShape);
   drawer->SetDrawingStyles(colorPalette,style2D,style3D);
@@ -253,133 +243,4 @@ void compareDijetHistograms(){
   // Draw the selected histograms
   drawer->DrawHistograms();
   
-  
-//
-//  // Example comparison between two histograms
-//  JDrawer *drawer = new JDrawer();
-//
-//  // Legend helper variable
-//  TLegend *legend;
-//
-//  // Helper variables
-//  TString centralityString;
-//  TString compactCentralityString;
-//  char namerX[100];
-//  char namerY[100];
-//  TH1D *mainHistogram;
-//  TH1D *otherHistogram;
-//  TH1D *hRatio;
-//
-//  // Loop over single jet categories
-//  for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
-//
-//    // Only draw selected jet categories
-//    if(iJetCategory == DijetHistogramManager::kLeadingJet && !drawLeadingJetHistograms) continue;
-//    if(iJetCategory == DijetHistogramManager::kSubleadingJet && !drawSubleadingJetHistograms) continue;
-//    if(iJetCategory == DijetHistogramManager::kAnyJet && !drawAnyJetHistograms) continue;
-//
-//    // Loop over centrality
-//    for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
-//
-//      centralityString = Form("Cent: %.0f-%.0f%%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
-//      compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
-//
-//      // Select logarithmic drawing for pT
-//
-//      // Read the same event histogram between the peaks and mixed event histogram from the whole phi region
-//      mainHistogram = (TH1D*)histograms[0]->GetHistogramJetPt(iJetCategory,iCentrality)->Clone();
-//      otherHistogram = (TH1D*)histograms[1]->GetHistogramJetPt(iJetCategory,iCentrality)->Clone();
-//
-//      // Scale both to 1 and then divide to get the normalized ratio
-//      mainHistogram->Scale(1.0/mainHistogram->Integral());
-//      otherHistogram->Scale(1.0/otherHistogram->Integral());
-//      sprintf(namerX,"jetPtRatio%d%d",iCentrality,iJetCategory);
-//      hRatio = (TH1D*)mainHistogram->Clone(namerX);
-//      hRatio->Divide(otherHistogram);
-//
-//      // === Jet pT ===
-//      sprintf(namerX,"%s p_{T}  (GeV)",histograms[0]->GetSingleJetAxisName(iJetCategory));
-//      drawer->SetDefaultAppearanceSplitCanvas();
-//      drawer->CreateSplitCanvas();
-//      drawer->SetLogY(logPt);
-//      drawer->DrawHistogramToUpperPad(mainHistogram,namerX,"#frac{dN}{p_{T}}");
-//      otherHistogram->SetLineColor(kRed);
-//      otherHistogram->Draw("same");
-//      //legend = new TLegend(0.62,0.75,0.82,0.9);
-//      //SetupLegend(legend,centralityString);
-//      //legend->Draw();
-//
-//      drawer->SetLogY(false);
-//      hRatio->GetYaxis()->SetRangeUser(0.6,1.4); // Set a good viewing range for the plot
-//      drawer->DrawHistogramToLowerPad(hRatio,namerX,"Data/MC", " ");
-//
-//      // Save the figure to a file
-//      //sprintf(namerX,"%sPt",fSingleJetHistogramName[iJetCategory]);
-//      //SaveFigure(namerX,compactCentralityString);
-//
-//      // Set linear drawing
-//
-//
-//      mainHistogram = (TH1D*)histograms[0]->GetHistogramJetPhi(iJetCategory,iCentrality)->Clone();
-//      otherHistogram = (TH1D*)histograms[1]->GetHistogramJetPhi(iJetCategory,iCentrality)->Clone();
-//
-//      // Scale both to 1 and then divide to get the normalized ratio
-//      mainHistogram->Scale(1.0/mainHistogram->Integral());
-//      otherHistogram->Scale(1.0/otherHistogram->Integral());
-//      sprintf(namerX,"jetPtRatio%d%d",iCentrality,iJetCategory);
-//      hRatio = (TH1D*)mainHistogram->Clone(namerX);
-//      hRatio->Divide(otherHistogram);
-//
-//
-//      // === Jet phi ===
-//      sprintf(namerX,"%s #varphi",histograms[0]->GetSingleJetAxisName(iJetCategory));
-//      drawer->SetDefaultAppearanceSplitCanvas();
-//      drawer->CreateSplitCanvas();
-//      drawer->DrawHistogramToUpperPad(mainHistogram,namerX,"#frac{dN}{d#varphi}");
-//      otherHistogram->SetLineColor(kRed);
-//      otherHistogram->Draw("same");
-//      //legend = new TLegend(0.62,0.75,0.82,0.9);
-//      //SetupLegend(legend,centralityString);
-//      //legend->Draw();
-//
-//      hRatio->GetYaxis()->SetRangeUser(0.6,1.4); // Set a good viewing range for the plot
-//      drawer->DrawHistogramToLowerPad(hRatio,namerX,"Data/MC", " ");
-////      // Save the figure to a file
-////      sprintf(namerX,"%sPhi",fSingleJetHistogramName[iJetCategory]);
-////      SaveFigure(namerX,compactCentralityString);
-//
-//      mainHistogram = (TH1D*)histograms[0]->GetHistogramJetEta(iJetCategory,iCentrality)->Clone();
-//      otherHistogram = (TH1D*)histograms[1]->GetHistogramJetEta(iJetCategory,iCentrality)->Clone();
-//
-//      // Scale both to 1 and then divide to get the normalized ratio
-//      mainHistogram->Scale(1.0/mainHistogram->Integral());
-//      otherHistogram->Scale(1.0/otherHistogram->Integral());
-//      sprintf(namerX,"jetPtRatio%d%d",iCentrality,iJetCategory);
-//      hRatio = (TH1D*)mainHistogram->Clone(namerX);
-//      hRatio->Divide(otherHistogram);
-//
-//      // === Jet eta ===
-//      sprintf(namerX,"%s #eta",histograms[0]->GetSingleJetAxisName(iJetCategory));
-//      drawer->SetDefaultAppearanceSplitCanvas();
-//      drawer->CreateSplitCanvas();
-//      drawer->DrawHistogramToUpperPad(mainHistogram,namerX,"#frac{dN}{d#eta}");
-//      otherHistogram->SetLineColor(kRed);
-//      otherHistogram->Draw("same");
-//      //legend = new TLegend(0.62,0.75,0.82,0.9);
-//      //SetupLegend(legend,centralityString);
-//      //legend->Draw();
-//
-//      hRatio->GetYaxis()->SetRangeUser(0.6,1.4); // Set a good viewing range for the plot
-//      drawer->DrawHistogramToLowerPad(hRatio,namerX,"Data/MC", " ");
-////      legend = new TLegend(0.62,0.20,0.82,0.35);
-////      SetupLegend(legend,centralityString);
-////      legend->Draw();
-////
-////      // Save the figure to a file
-////      sprintf(namerX,"%sEta",fSingleJetHistogramName[iJetCategory]);
-////      SaveFigure(namerX,compactCentralityString);
-//
-//    } // Centrality loop
-//  } // Single jet category loop
-//
 }

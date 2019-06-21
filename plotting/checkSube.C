@@ -12,12 +12,12 @@ void checkSube(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString sube0FileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root";  // File from which the RecoGen histograms are read for the correction
+  TString sube0FileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlySeagull_processed.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC_RecoGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_xj_processed_2019-03-18.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root
-  TString subeNon0FileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root";   // File from which the GenGen histograms are read for the correction
-  TString anySubeFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_10eveImprovedMix_xj_noCorrections_processed_2019-03-22.root";   // File name for the output file
-  TString spilloverFileName = "spillingOverTesting.root";
+  TString subeNon0FileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlySeagull_processed.root";   // File from which the GenGen histograms are read for the correction
+  TString anySubeFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlySeagull_processed.root";   // File name for the output file
+  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_noUncorr_5eveStrictMix_subeNon0_2019-06-06.root";
 
   // Possible distribution to compare: kSameEvent, kMixedEvent, kMixedEventNormalized, kCorrected, kBackgroundSubtracted, kBackground, kBackgroundOverlap
   int comparedDistribution = DijetHistogramManager::kBackgroundSubtracted;

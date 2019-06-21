@@ -96,7 +96,7 @@ public:
   void SetDrawBackground(const bool drawOrNot);             // Setter for drawing the generated background distributions
   
   // Setter for drawing the event mixing check
-  void SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom);  // Setter for drawing the event mixing check
+  void SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom, const int distributionType);  // Setter for drawing the event mixing check
   
   // Setters for figure saving and logarithmic axes
   void SetSaveFigures(const bool saveOrNot, const char *format, const char *comment = "");  // Setter for saving the figures to a file
@@ -178,10 +178,11 @@ private:
   
   // Zooming for ratio plots
   bool fUseDifferenceInsteadOfRatio;  // Instead of ratio, draw the difference of the two distributions
-  double fRatioZoomMin;    // Lower y-axis boundary in ratio plots
-  double fRatioZoomMax;    // Upper y-axis boundary in ratio plots
-  TString fRatioLabel;     // Label given to ratio plots y-axes
-  bool fEventMixingZoom;   // Zoom closer to background region for event mixing check figures
+  double fRatioZoomMin;               // Lower y-axis boundary in ratio plots
+  double fRatioZoomMax;               // Upper y-axis boundary in ratio plots
+  TString fRatioLabel;                // Label given to ratio plots y-axes
+  bool fEventMixingZoom;              // Zoom closer to background region for event mixing check figures
+  int fEventMixingDistribution;       // Choose which type of distribution is used in the event mixing check
   
   // Plotting style for 2D and 3D plots
   int fColorPalette;      // Used color palatte for drawing

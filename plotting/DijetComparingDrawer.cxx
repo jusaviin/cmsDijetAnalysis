@@ -34,6 +34,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fRatioZoomMax(1.4),
   fRatioLabel(""),
   fEventMixingZoom(false),
+  fEventMixingDistribution(3),
   fColorPalette(kRainBow),
   fStyle2D("colz"),
   fStyle3D("surf1"),
@@ -452,9 +453,6 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
   int nRebinDeltaEta = 10; // 500 bins in deltaEta
   int nRebinDeltaPhi = 2; // 200 bins in deltaPhi
   
-  // Type for distributions
-  int distributionType = DijetHistogramManager::kCorrected; // kCorrected kBackgroundSubtracted
-  
   // Manual zooming options for deltaEta and deltaPhi
   double deltaPhiZoomAdder = 0.2;
   double deltaEtaZoomAdder[6] = {0.2,0.2,0.3,0.4,0.5,0.7};
@@ -492,7 +490,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         /////////////////////////////////////////////
         
         // Set up the histograms and draw them to the upper pad of a split canvas
-        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,fEventMixingDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion)->Clone();
 
         // Possibility to do rebinning
         if(nRebinDeltaPhi > 1){
@@ -502,7 +500,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         
         fMainHistogram->GetXaxis()->SetRangeUser(-TMath::Pi()/2.0,TMath::Pi()/2.0); // Only plot near side
         
-        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,fEventMixingDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion)->Clone();
         
         // Possibility to do rebinning
         if(nRebinDeltaPhi > 1){
@@ -533,7 +531,15 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
 
         // Prepare the ratio and draw it to the lower pad
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaPhiCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
-        fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+        
+        if(fUseDifferenceInsteadOfRatio){
+          fRatioHistogram[0]->Add(fComparisonHistogram[0],-1);
+          sprintf(namerY,"Black - #color[2]{red}");
+        } else {
+          fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+          sprintf(namerY,"#frac{#||{#Delta#eta} < 1.0}{1.5 < #||{#Delta#eta} < 2.5}");
+        }
+        
         if(fEventMixingZoom){
           zoomMin = 1 - deltaPhiZoomAdder;
           zoomMax = 1 + deltaPhiZoomAdder;
@@ -542,7 +548,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
           zoomMin = fRatioZoomMin;
           zoomMax = fRatioZoomMax;
         }
-        DrawToLowerPad(namerX,"#frac{#||{#Delta#eta} < 1.0}{1.5 < #||{#Delta#eta} < 2.5}",zoomMin,zoomMax);
+        DrawToLowerPad(namerX,namerY,zoomMin,zoomMax);
         
         // Save the figure to a file
         sprintf(namerX,"%sMixedEventPhiCheck",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
@@ -554,7 +560,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         /////////////////////////////////////////////
         
         // Set up the histograms and draw them to the upper pad of a split canvas
-        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins, iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
+        fMainHistogram = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,fEventMixingDistribution, DijetHistogramManager::kMaxAsymmetryBins, iCentrality,iTrackPt,DijetHistogramManager::kNearSide)->Clone();
         
         // Possibility to do rebinning
         if(nRebinDeltaEta > 1){
@@ -565,7 +571,7 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         // Zoom the interesting region
         fMainHistogram->GetXaxis()->SetRangeUser(-3,3);
         
-        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,distributionType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
+        fComparisonHistogram[0] = (TH1D*)fBaseHistograms->GetHistogramJetTrackDeltaEta(iJetTrack,fEventMixingDistribution, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kBetweenPeaks)->Clone();
         
         // Possibility to do rebinning
         if(nRebinDeltaEta > 1){
@@ -589,20 +595,38 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
         legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
         sprintf(namerX,"%.1f < #Delta#varphi < %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide),fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide));
         legend->AddEntry(fMainHistogram,namerX,"l");
+        
+        // If the upper deltaPhi limit is at 3Pi/2, format legend as deltaPhi > valueLow instead of valueLow < deltaPhi < valueHigh
         if(fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks) > 3*TMath::Pi()/2-0.1){
           sprintf(namerX,"#Delta#varphi > %.1f",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
         } else {
           sprintf(namerX,"%.1f < #Delta#varphi < %.1f", fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
         }
+        
         legend->AddEntry(fComparisonHistogram[0],namerX,"l");
         legend->Draw();
         
         // Prepare the ratio and draw it to the lower pad
         sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
-        //sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
-        sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{#Delta#varphi > %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
+        
+        // If the upper deltaPhi limit is at 3Pi/2, format axis title as deltaPhi > valueLow instead of valueLow < deltaPhi < valueHigh
+        
+        if(fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks) > 3*TMath::Pi()/2-0.1){
+          sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{#Delta#varphi > %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks));
+        } else {
+          sprintf(namerY,"#frac{%.1f < #Delta#varphi < %.1f}{%.1f < #Delta#varphi < %.1f}",fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kNearSide), fBaseHistograms->GetDeltaPhiBorderLow(DijetHistogramManager::kBetweenPeaks), fBaseHistograms->GetDeltaPhiBorderHigh(DijetHistogramManager::kBetweenPeaks));
+        }
+        
         fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("mixedEventDeltaEtaCheckRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
-        fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+        
+        if(fUseDifferenceInsteadOfRatio){
+          fRatioHistogram[0]->Add(fComparisonHistogram[0],-1);
+          sprintf(namerY,"Black - #color[2]{red}");
+        } else {
+          fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+        }
+        
+        
         if(fEventMixingZoom){
           zoomMin = 1 - deltaEtaZoomAdder[iTrackPt];
           zoomMax = 1 + deltaEtaZoomAdder[iTrackPt];
@@ -1553,9 +1577,10 @@ void DijetComparingDrawer::SetDrawBackground(const bool drawOrNot){
 }
 
 // Setter for drawing the event mixing check
-void DijetComparingDrawer::SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom){
+void DijetComparingDrawer::SetDrawEventMixingCheck(const bool drawOrNot, const bool zoom, const int distributionType){
   fDrawEventMixingCheck = drawOrNot;
   fEventMixingZoom = zoom;
+  fEventMixingDistribution = distributionType;
 }
 
 // Setter for saving the figures to a file

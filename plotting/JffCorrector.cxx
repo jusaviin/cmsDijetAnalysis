@@ -104,17 +104,20 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   
   // Create histogram manager to find correct histogram naming in the input file
   DijetHistogramManager *namerHelper = new DijetHistogramManager();
-  //DijetCard *card = new DijetCard(spilloverFile); TODO: Uncomment after spillover correction files have been reproduced
+  DijetCard *card = new DijetCard(spilloverFile); //TODO: Uncomment after spillover correction files have been reproduced
   
   // Load the correction histograms from the file
   char histogramNamer[200];
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
-    //for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){ // TODO: Uncomment after correction files have been reproduced
-    for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-      //for(int iTrackPt = 0; iTrackPt < card->GetNTrackPtBins(); iTrackPt++){ // TODO: Uncomment after correction files have been reproduced
-      for(int iTrackPt = 0; iTrackPt < 6; iTrackPt++){
+    for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){ // TODO: Uncomment after correction files have been reproduced
+    //for(int iCentrality = 0; iCentrality < 4; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < card->GetNTrackPtBins(); iTrackPt++){ // TODO: Uncomment after correction files have been reproduced
+      //for(int iTrackPt = 0; iTrackPt < 6; iTrackPt++){
         
-        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/fittedSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        //sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/fittedSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        //sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        
         fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
       } // Track pT loop
     } // Centrality loop
