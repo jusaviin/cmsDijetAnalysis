@@ -86,7 +86,7 @@ void constructJetPtClosures(){
         for(int iGenJetPt = 0; iGenJetPt < DijetHistogramManager::knGenJetPtBins; iGenJetPt++){
           
           // Read the reco/gen histogram from the file
-          hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle] = closureHistograms->GetHistogramJetPtClosure(iClosureType,iGenJetPt,iCentrality,iClosureParticle);
+          hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle] = closureHistograms->GetHistogramJetPtClosure(iClosureType, iGenJetPt, DijetHistogramManager::knJetEtaBins, iCentrality, iClosureParticle);
           
           // Fit the histogram with a gauss function
           hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle]->Fit("gaus","","",0.5,1.5);

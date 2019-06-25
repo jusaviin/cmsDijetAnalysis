@@ -49,10 +49,11 @@ public:
   // Dimensions for histogram arrays
   static const int kMaxCentralityBins = 5;       // Maximum allowed number of centrality bins
   static const int kMaxTrackPtBins = 10;         // Maximum allowed number of track pT bins
-  static const int knFittedFlowComponents = 4; // Number of fitted flow components
-  static const int kMaxAsymmetryBins = 5;      // Maximum allowed number of dijet asymmetry bins
-  static const int knGenJetPtBins = 45;        // Number of generator level jet pT bins for jet pT closures
-  static const int knJetPtBins = 3;            // Number of leading jet pT bins for asymmetry histograms
+  static const int knFittedFlowComponents = 4;   // Number of fitted flow components
+  static const int kMaxAsymmetryBins = 5;        // Maximum allowed number of dijet asymmetry bins
+  static const int knGenJetPtBins = 45;          // Number of generator level jet pT bins for jet pT closures
+  static const int knJetPtBins = 3;              // Number of leading jet pT bins for asymmetry histograms
+  static const int knJetEtaBins = 50;            // Number of jet eta bins for jet pT closures
   
 private:
   
@@ -225,7 +226,7 @@ public:
   TH1D* GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, const int iCentrality, const int iTrackPt) const;  // Jet shape histograms
   
   // Getter for jet pT closure histograms
-  TH1D* GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iCentrality, const int iClosureParticle) const; // Jet pT closure
+  TH1D* GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, const int iClosureParticle) const; // Jet pT closure
   
   TH1D* GetOneDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0, int bin6 = 0) const; // Getter for any one-dimensional histogram based on input string
   TH2D* GetTwoDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0) const; // Getter for any two-dimensional histogram based on input string
@@ -361,7 +362,7 @@ private:
   TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins];  // Jet shape histograms
   
   // Histograms for jet pT closure
-  TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins][kMaxCentralityBins][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
+  TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins+1][knJetEtaBins+1][kMaxCentralityBins][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
   
   // QA histograms for seagull correction
   TH1D *fhSeagullDeltaEta[knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins]; // Background eta projection for seagull fit

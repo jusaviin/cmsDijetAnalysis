@@ -1388,7 +1388,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
 void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType){
 
   // Define a filler for the closure histogram
-  Double_t fillerClosure[5];
+  Double_t fillerClosure[6];
   
   // Find the pT of the matched gen jet and flavor of reference parton
   Float_t matchedGenPt = fJetReader->GetMatchedPt(jetIndex);
@@ -1397,6 +1397,7 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   // Find the centrality of the event and the pT of the reconstructed jet
   Double_t recoPt = fJetReader->GetJetPt(jetIndex);
   Double_t centrality = fJetReader->GetCentrality();
+  Double_t jetEta = fJetReader->GetJetEta(jetIndex);
   
   // If we are using generator level jets, swap recoPt and genPt
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
@@ -1413,9 +1414,11 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   // Fill the different axes for the filler
   fillerClosure[0] = closureType;          // Axis 0: Type of closure (leading/subleading/inclusive)
   fillerClosure[1] = matchedGenPt;         // Axis 1: pT of the matched generator level jet
-  fillerClosure[2] = centrality;           // Axis 2: Centrality of the event
-  fillerClosure[3] = referencePartonIndex; // Axis 3: Reference parton type (quark/gluon)
-  fillerClosure[4] = recoPt/matchedGenPt;  // Axis 4: Reconstructed level jet to generator level jet pT ratio
+  fillerClosure[2] = jetEta;               // Axis 2: eta of the jet under consideration
+  fillerClosure[3] = centrality;           // Axis 3: Centrality of the event
+  fillerClosure[4] = referencePartonIndex; // Axis 4: Reference parton type (quark/gluon)
+  fillerClosure[5] = recoPt/matchedGenPt;  // Axis 5: Reconstructed level jet to generator level jet pT ratio
+  // Add eta of reco or gen jet
   
   // Fill the closure histogram
   fHistograms->fhJetPtClosure->Fill(fillerClosure,fTotalEventWeight);
@@ -1824,19 +1827,24 @@ Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fill
  */
 Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType){
   
+  // Only fill the track cut histograms for same event data
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kAllTracks);
+  
   // Cuts specific to generator level MC tracks
   if(fTrackReader[correlationType]->GetTrackCharge(iTrack) == 0) return false;  // Require that the track is charged
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kMcCharge);
+  
   if(!PassSubeventCut(fTrackReader[correlationType]->GetTrackSubevent(iTrack))) return false;  // Require desired subevent
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kMcSube);
+  
   if(fTrackReader[correlationType]->GetTrackMCStatus(iTrack) != 1) return false;  // Require final state particles
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kMcStatus);
   
   Double_t trackPt = fTrackReader[correlationType]->GetTrackPt(iTrack);
   Double_t trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
   Double_t trackEt = (fTrackReader[correlationType]->GetTrackEnergyEcal(iTrack)+fTrackReader[correlationType]->GetTrackEnergyHcal(iTrack))/TMath::CosH(trackEta);
   
   //  ==== Apply cuts for tracks and collect information on how much track are cut in each step ====
-  
-  // Only fill the track cut histograms for same event data
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kAllTracks);
   
   // Cut for track pT
   if(trackPt <= fTrackMinPtCut) return false;                     // Minimum pT cut

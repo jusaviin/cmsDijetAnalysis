@@ -621,36 +621,41 @@ void DijetHistograms::CreateHistograms(){
   
   // ======== THnSparses for jet pT closures ========
   
-  // Axis 0 for the track-inclusive jet correlation histogram: closure type (leading/subleading/inclusive)
-  nBins5D[0] = nClosureTypeBins;         // nBins for closure types
-  lowBinBorder5D[0] = minClosureType;    // low bin border for closure types
-  highBinBorder5D[0] = maxClosureType;   // high bin border for closure types
+  // Axis 0 for the jet pT closure histogram: closure type (leading/subleading/inclusive)
+  nBins6D[0] = nClosureTypeBins;         // nBins for closure types
+  lowBinBorder6D[0] = minClosureType;    // low bin border for closure types
+  highBinBorder6D[0] = maxClosureType;   // high bin border for closure types
   
-  // Axis 1 for the track-inclusive jet correlation histogram: generator level jet pT
-  nBins5D[1] = nClosurePtBins;       // nBins for generator level pT bins in closure plots
-  lowBinBorder5D[1] = minClosurePt;  // low bin border generator level pT in closure plots
-  highBinBorder5D[1] = maxClosurePt; // high bin border generator level pT in closure plots
+  // Axis 1 for the jet pT closure histogram: generator level jet pT
+  nBins6D[1] = nClosurePtBins;       // nBins for generator level pT bins in closure plots
+  lowBinBorder6D[1] = minClosurePt;  // low bin border generator level pT in closure plots
+  highBinBorder6D[1] = maxClosurePt; // high bin border generator level pT in closure plots
   
-  // Axis 2 for the track-inclusive jet correlation histogram: centrality
-  nBins5D[2] = nWideCentralityBins;     // nBins for centrality
-  lowBinBorder5D[2] = minCentrality;    // low bin border for centrality
-  highBinBorder5D[2] = maxCentrality;   // high bin border for centrality
+  // Axis 2 for the jet pT closure histogram: generator level jet eta
+  nBins6D[2] = nEtaBins;             // nBins for jet eta
+  lowBinBorder6D[2] = minEta;        // low bin border for jet eta
+  highBinBorder6D[2] = maxEta;       // high bin border for jet eta
   
-  // Axis 3 for the track-inclusive jet correlation histogram: ref parton = quark/gluon
-  nBins5D[3] = nClosureParticleTypeBins;         // nBins for reference parton
-  lowBinBorder5D[3] = minClosureParticleType;    // low bin border for reference parton
-  highBinBorder5D[3] = maxClosureParticleType;   // high bin border for reference parton
+  // Axis 3 for the jet pT closure histogram: centrality
+  nBins6D[3] = nWideCentralityBins;     // nBins for centrality
+  lowBinBorder6D[3] = minCentrality;    // low bin border for centrality
+  highBinBorder6D[3] = maxCentrality;   // high bin border for centrality
   
-  // Axis 4 for the track-inclusive jet correlation histogram: reco/gen ratio for closure
-  nBins5D[4] = nClosureRatioBins;        // nBins for closure ratio
-  lowBinBorder5D[4] = minClosureRatio;   // low bin border for closure ratio
-  highBinBorder5D[4] = maxClosureRatio;  // high bin border for closure ratio
+  // Axis 4 for the jet pT closure histogram: ref parton = quark/gluon
+  nBins6D[4] = nClosureParticleTypeBins;         // nBins for reference parton
+  lowBinBorder6D[4] = minClosureParticleType;    // low bin border for reference parton
+  highBinBorder6D[4] = maxClosureParticleType;   // high bin border for reference parton
+  
+  // Axis 5 for the jet pT closure histogram: reco/gen ratio for closure
+  nBins6D[5] = nClosureRatioBins;        // nBins for closure ratio
+  lowBinBorder6D[5] = minClosureRatio;   // low bin border for closure ratio
+  highBinBorder6D[5] = maxClosureRatio;  // high bin border for closure ratio
   
   // Create histograms for jet pT closure
-  fhJetPtClosure = new THnSparseF("jetPtClosure","jetPtClosure",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhJetPtClosure->Sumw2();
+  fhJetPtClosure = new THnSparseF("jetPtClosure","jetPtClosure",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhJetPtClosure->Sumw2();
   
   // Set custom centrality bins for histograms
-  fhJetPtClosure->SetBinEdges(2,wideCentralityBins);
+  fhJetPtClosure->SetBinEdges(3,wideCentralityBins);
 }
 
 /*
