@@ -94,7 +94,7 @@ private:
   Float_t fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
   Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
   Float_t fJetRefPtArray[fnMaxJet] = {0};      // reference generator level pT for a reconstructed jet
-  Float_t fJetRefFlavorArray[fnMaxJet] = {0};  // flavor for initiating parton for the reference gen jet
+  Int_t fJetRefFlavorArray[fnMaxJet] = {0};    // flavor for initiating parton for the reference gen jet
   Float_t fRecoJetPtArray[fnMaxJet] = {0};     // Array for matched reconstructed jet pT
   Float_t fRecoJetEtaArray[fnMaxJet] = {0};    // Array for matched reconstructed jet pta
   Float_t fRecoJetPhiArray[fnMaxJet] = {0};    // Array for matched reconstructed jet phi
