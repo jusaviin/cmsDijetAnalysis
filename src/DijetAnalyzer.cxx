@@ -1710,7 +1710,7 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   }
   
   // Xiao's skims with WTA axis start from ptHat 80. These numbers are good for list pythia6FileListWTA.txt
-  if(fJetAxis == 2){
+  if(fJetAxis == 2 || fReadMode == 3){
     //  pT hat =             15 30 50   80     120     170   220    280    370   460
     Int_t wtaEvents[nBins] = {0,0,   0  ,430463,475122,448889,259493,234524,39285};
     for(Int_t i = 0; i < nBins; i++){

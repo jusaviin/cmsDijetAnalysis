@@ -125,9 +125,6 @@ GeneratorLevelForestReader::~GeneratorLevelForestReader(){
  */
 void GeneratorLevelForestReader::Initialize(){
   
-  // Helper variable for choosing correct branches
-  const char *branchName[2] = {"none","none"};
-  
   // Connect the branches of the heavy ion tree
   fHeavyIonTree->SetBranchStatus("*",0);
   fHeavyIonTree->SetBranchStatus("vz",1);
@@ -138,6 +135,10 @@ void GeneratorLevelForestReader::Initialize(){
   fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   
   // Connect the branches to the jet tree
+  const char *jetAxis[3] = {"jt","jt","WTA"};
+  char branchName[30];
+  
+  // TODO: Add WTA axis for generator level jets
   fJetTree->SetBranchStatus("*",0);
   fJetTree->SetBranchStatus("genpt",1);
   fJetTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
@@ -156,27 +157,37 @@ void GeneratorLevelForestReader::Initialize(){
     fJetTree->SetBranchAddress("refparton_flavor",&fJetRefFlavorArray,&fJetRefFlavorBranch);
     fJetTree->SetBranchStatus("jtpt",1);
     fJetTree->SetBranchAddress("jtpt",&fRecoJetPtArray,&fJetMatchedPtBranch);
-    fJetTree->SetBranchStatus("jtphi",1);
-    fJetTree->SetBranchAddress("jtphi",&fRecoJetPhiArray,&fJetMatchedPhiBranch);
-    fJetTree->SetBranchStatus("jteta",1);
-    fJetTree->SetBranchAddress("jteta",&fRecoJetEtaArray,&fJetMatchedEtaBranch);
+    
+    // If specified, select WTA axis for jet phi
+    sprintf(branchName,"%sphi",jetAxis[fJetAxis]);
+    fJetTree->SetBranchStatus(branchName,1);
+    fJetTree->SetBranchAddress(branchName,&fRecoJetPhiArray,&fJetMatchedPhiBranch);
+    
+    // If specified, select WTA axis for jet eta
+    sprintf(branchName,"%seta",jetAxis[fJetAxis]);
+    fJetTree->SetBranchStatus(branchName,1);
+    fJetTree->SetBranchAddress(branchName,&fRecoJetEtaArray,&fJetMatchedEtaBranch);
+    
     fJetTree->SetBranchStatus("nref",1);
     fJetTree->SetBranchAddress("nref",&fnMatchedJets,&fnTrackDegreesOfFreedomBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   }
   
+  // Helper variable for choosing correct branches in HLT tree
+  const char *branchNameHlt[2] = {"none","none"};
+  
   // Connect the branches to the HLT tree
   fHltTree->SetBranchStatus("*",0);
   if(fDataType == kPp){ // pp data
-    branchName[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
-    branchName[1] = "HLT_AK4PFJet80_Eta5p1_v1";
-    fHltTree->SetBranchStatus(branchName[fJetType],1);
-    fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
+    branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1_v1";
+    fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
+    fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
-    branchName[0] = "HLT_AK4CaloJet80_Eta5p1ForPPRef_v1";
-    branchName[1] = "HLT_AK4PFJet80_Eta5p1ForPPRef_v1";
+    branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1ForPPRef_v1";
+    branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1ForPPRef_v1";
     if(fReadMode == 0 || fReadMode == 2){
-      fHltTree->SetBranchStatus(branchName[fJetType],1);
-      fHltTree->SetBranchAddress(branchName[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
+      fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
+      fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
     } else {
       fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
     }

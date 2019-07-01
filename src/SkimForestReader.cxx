@@ -235,7 +235,7 @@ void SkimForestReader::Initialize(){
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
   } else if (fDataType == kPpMC){
-    if(fJetAxis == 2){
+    if(fJetAxis == 2 || fReadMode == 3){
       fEventTree->SetBranchStatus("pPAprimaryVertexFilter",1);
       fEventTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch); // Naming in Xiao's skim
     } else {
