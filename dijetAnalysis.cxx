@@ -32,10 +32,14 @@ using namespace std;
  *    std::vector<TString> &fileNameVector = Vector filled with filenames found in the file
  *    TString fileNameFile = Text file containing one analysis file name in each line
  *    int debug = Level of debug messages shown
+ *    int locationIndex = Where to find analysis files: 0 = Purdue EOS, 1 = CERN EOS, 2 = Use xrootd to find the data
  *    bool runLocal = True: Local run mode. False: Crab run mode
  */
-void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, int debug, bool runLocal)
+void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, int debug, int locationIndex, bool runLocal)
 {
+  
+  // Possible location for the input files
+  const char *fileLocation[] = {"root://xrootd.rcac.purdue.edu/","root://eoscms.cern.ch/","root://cmsxrootd.fnal.gov/"};
   
   // Set up the file names file for reading
   ifstream file_stream(fileNameFile);
@@ -78,7 +82,7 @@ void ReadFileList(std::vector<TString> &fileNameVector, TString fileNameFile, in
             currentFileName.Remove(TString::kBoth,'"'); // Remove quotation marks
             
             // After stripping characters not belonging to the file name, we can add the file to list
-            currentFileName.Prepend("root://xrootd.rcac.purdue.edu/");  // If not running locally, we need to give xrootd path
+            currentFileName.Prepend(fileLocation[locationIndex]);  // If not running locally, we need to give xrootd path
             fileNameVector.push_back(currentFileName);
           }
         }
@@ -114,18 +118,20 @@ bool checkBool(string str) {
  *  argv[1] = List of files to be analyzed, given in text file. For crab analysis a job ID instead.
  *  argv[2] = Card file with binning and cut information for the analysis
  *  argv[3] = .root file to which the histograms are written
- *  argv[4] = True: Search input files from local machine. False (default): Search input files from grid with xrootd
+ *  argv[4] = Index for the EOS location from where the input files are searched
+ *  argv[5] = True: Search input files from local machine. False (default): Search input files from grid with xrootd
  */
 int main(int argc, char **argv) {
   
   //==== Read arguments =====
-  if ( argc<4 ) {
+  if ( argc<5 ) {
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout<<"+ Usage of the macro: " << endl;
-    cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] <runLocal>"<<endl;
+    cout<<"+  "<<argv[0]<<" [fileNameFile] [configurationCard] [outputFileName] [fileLocation] <runLocal>"<<endl;
     cout<<"+  fileNameFile: Text file containing the list of files used in the analysis. For crab analysis a job id should be given here." <<endl;
     cout<<"+  configurationCard: Card file with binning and cut information for the analysis." <<endl;
     cout<<"+  outputFileName: .root file to which the histograms are written." <<endl;
+    cout<<"+  fileLocation: Where to find analysis files: 0 = Purdue EOS, 1 = CERN EOS, 2 = Use xrootd to find the data." << endl;
     cout<<"+  runLocal: True: Search input files from local machine. False (default): Search input files from grid with xrootd." << endl;
     cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
     cout << endl << endl;
@@ -134,7 +140,7 @@ int main(int argc, char **argv) {
 
   // First, check if we are supposed to run locally or on crab
   bool runLocal = false;
-  if(argc >= 5) runLocal = checkBool(argv[4]);
+  if(argc >= 6) runLocal = checkBool(argv[5]);
   
   // Find the file list name depending on if we run locally or on crab
   TString fileNameFile;
@@ -147,6 +153,7 @@ int main(int argc, char **argv) {
   // Read the other command line arguments
   const char *cardName = argv[2];
   TString outputFileName = argv[3];
+  const int fileSearchIndex = atoi(argv[4]);
   
   // Read the card
   ConfigurationCard *dijetCard = new ConfigurationCard(cardName);
@@ -159,7 +166,7 @@ int main(int argc, char **argv) {
   // Read the file names used for the analysis to a vector
   std::vector<TString> fileNameVector;
   fileNameVector.clear();
-  ReadFileList(fileNameVector,fileNameFile,debugLevel,runLocal);
+  ReadFileList(fileNameVector,fileNameFile,debugLevel,fileSearchIndex,runLocal);
   
   // Variable for histograms in the analysis
   DijetHistograms *histograms;
