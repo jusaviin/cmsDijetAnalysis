@@ -14,14 +14,16 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedDijets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-02.root
+  // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root"
   // PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "newSpilloverTest_noSeagull_doubleGauss_includeSymmetrization.root"; // File name for the output file
+  TString outputFileName = "newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root"; // File name for the output file
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
   TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
@@ -46,6 +48,13 @@ void produceSpilloverCorrection(){
   
   double minConstantFitRange[] = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,1,1,1};  // Minimum range to which the constant is fitted
   double maxConstantFitRange[] = {2.5,2.5,2.5,2.5,2.5,2.5,2.5,2,2,2};  // Maximum range to which the constant is fitted
+  
+  // DeltaR cut applied for symmetrized spillover histograms
+  //   pT bin border           0.7  1   2   3   4   8  12  300 GeV
+  double spilloverRcut[4][7] = {{1.5,1.5,1.0,0.8,0.8,0.4,0.4},  // 0-10 % centrality
+                                {1.5,1.5,1.5,0.8,0.8,0.4,0.4},  // 10-30 % centrality
+                                {1.0,1.0,1.0,0.8,0.6,0.4,0.4},  // 30-50 % centrality
+                                {0.5,0.5,0.5,0.5,0.5,0.4,0.4}}; // 50-100 % centrality
   
   // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
@@ -72,17 +81,19 @@ void produceSpilloverCorrection(){
     histograms[iInputFile]->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
     histograms[iInputFile]->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
     histograms[iInputFile]->SetLoad2DHistograms(true);  // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
+    if(iInputFile == 0) histograms[iInputFile]->SetAsymmetryBinRange(0,3);  // Load histograms in asymmetry bins
     histograms[iInputFile]->LoadProcessedHistograms();
   }
   
   // Find the correct number of centrality and track pT bins
   const int nCentralityBins = histograms[0]->GetNCentralityBins();
   const int nTrackPtBins = histograms[0]->GetNTrackPtBins();
+  const int nAsymmetryBins = histograms[0]->GetNAsymmetryBins();
   
   // Initialize correction histograms and helper histograms
   TH2D *spilloverDeltaEtaDeltaPhi[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH2D *spilloverHelperDeltaEtaDeltaPhi[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
-  TH2D *symmetrizedSpilloverDeltaEtaDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH2D *spilloverHelperDeltaEtaDeltaPhi[2][DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TH2D *symmetrizedSpilloverDeltaEtaDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TH1D *spilloverDeltaEtaProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *spilloverDeltaPhiProjection[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TF1 *spilloverDeltaEtaFit[2][DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
@@ -116,11 +127,11 @@ void produceSpilloverCorrection(){
   double deltaPhiWidth;
   
   // x-axis information for the graphs
-  TH1D *trackPtForGraphs[nCentralityBins];            // Track pT histograms to find proper place to put pT point in graphs
-  double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};   // Bin borders for track pT
-  double graphPointsX[nCentralityBins][nTrackPtBins]; // x-axis points in flow graphs
+  TH1D *trackPtForGraphs[nCentralityBins];              // Track pT histograms to find proper place to put pT point in graphs
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
+  double graphPointsX[nCentralityBins][nTrackPtBins];   // x-axis points in flow graphs
   double graphErrorsX[] = {0,0,0,0,0,0,0};              // No errors for x-axis
-  int lowPtBin, highPtBin;                            // Helper variables to find the track pT bins
+  int lowPtBin, highPtBin;                              // Helper variables to find the track pT bins
   
   // Initialize the arrays to NULL
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -156,12 +167,17 @@ void produceSpilloverCorrection(){
         sprintf(namer,"spilloverFitDeltaPhi_%s_C%dT%d",histograms[0]->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         spilloverCorrectionDeltaPhiFit[iJetTrack][iCentrality][iTrackPt] = new TF1(namer,"[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))",-1.5,1.5);
         
-        symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = NULL;
+        for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+          symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+        }
         
         for(int iDataType = 0; iDataType < 2; iDataType++){
           
+          for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+            spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+          }
+          
           spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
-          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
           spilloverDeltaEtaProjection[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
           spilloverDeltaPhiProjection[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
           spilloverDeltaEtaFit[iDataType][iJetTrack][iCentrality][iTrackPt] = NULL;
@@ -227,9 +243,9 @@ void produceSpilloverCorrection(){
           if(iDataType == 1 && iTrackPt == 6) continue; // TODO: Remove this line after this histogram is added to uncorrected file
           
           // For the RecoGen, read the bin count yield
-          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
+          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
           if(iDataType == 0){
-            spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],1.5,2.5);
+            spilloverYieldDeltaEtaBinCount[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt],1.5,2.5);
             spilloverYieldDeltaEtaBinCount[1][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverYieldError();
             
             // Scale the bin count yield yo the pT bin size
@@ -240,24 +256,35 @@ void produceSpilloverCorrection(){
           
           // If we are fixing the yield, find the number for that
           if(fixGaussYield == 1){
-            fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],minConstantFitRange[iTrackPt],maxConstantFitRange[iTrackPt]);
+            fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt],minConstantFitRange[iTrackPt],maxConstantFitRange[iTrackPt]);
             fixedSpilloverYieldError = corrector->GetSpilloverYieldError();
           }
           
           // Get the signal histogram and extract the correction from it
-          spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
-          
-          // Symmetrize the subeNon0 distribution
-          if(iDataType == 0){
-            symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt], 1.5, 1.5);
+          if(iDataType == 0 && iJetTrack < DijetHistogramManager::kTrackInclusiveJet){ // This can be modified if the data file also has asymmetry binning
+            for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+              
+              spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, iAsymmetry,iCentrality,iTrackPt);
+              
+              // Symmetrize the subeNon0 distribution
+              cout << "WTF??" << endl;
+              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt], spilloverRcut[iCentrality][iTrackPt]);
+            }
+          } else {
+            spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
+            
+            if(iDataType == 0){
+              // Symmetrize the subeNon0 distribution
+              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt], spilloverRcut[iCentrality][iTrackPt]);
+            }
           }
           
           if(fixGaussYield == 2){
-            fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt],0,0);
+            fixedSpilloverYield = corrector->GetSpilloverYield(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt],0,0);
             fixedSpilloverYieldError = corrector->GetSpilloverYieldError();
           }
           
-          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt], fitMethod,  spilloverEtaFitRange, spilloverPhiFitRange, minConstantFitRange[iTrackPt], maxConstantFitRange[iTrackPt], fixedSpilloverYield);
+          spilloverDeltaEtaDeltaPhi[iDataType][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt], fitMethod,  spilloverEtaFitRange, spilloverPhiFitRange, minConstantFitRange[iTrackPt], maxConstantFitRange[iTrackPt], fixedSpilloverYield);
           
           // Get the QA histograms and functions
           // Need to change name, because corrector gives the same name in both loops, which causes problems with root
@@ -280,12 +307,12 @@ void produceSpilloverCorrection(){
           // Find the bins for signal region
           lowXbin = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(-1.5+0.001);
           highXbin = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetXaxis()->FindBin(1.5-0.001);
-          lowYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(-1.5+0.001);
-          highYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->GetYaxis()->FindBin(1.5-0.001);
+          lowYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->FindBin(-1.5+0.001);
+          highYbin = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->FindBin(1.5-0.001);
           
           // Get the yields by integration and calculate ratio
           spilloverYield[iJetTrack][iCentrality][iTrackPt] = spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin,"width");
-          dataYield[iJetTrack][iCentrality][iTrackPt] = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin,"width"); // Changed 1 to 0 in first index for checking purposes
+          dataYield[iJetTrack][iCentrality][iTrackPt] = spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt]->Integral(lowXbin,highXbin,lowYbin,highYbin,"width"); // Changed 1 to 0 in first index for checking purposes
           yieldRatio[iJetTrack][iCentrality][iTrackPt] = spilloverYield[iJetTrack][iCentrality][iTrackPt]/dataYield[iJetTrack][iCentrality][iTrackPt];
           
           // Find the bins for signal region in the projected histograms (might be some rebinning happening)
@@ -435,7 +462,7 @@ void produceSpilloverCorrection(){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
           // Refit deltaEta and deltaPhi
-          corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt], fitMethod, spilloverEtaFitRange, spilloverPhiFitRange, minConstantFitRange[iTrackPt], maxConstantFitRange[iTrackPt], 0, combinedDeltaEtaWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]), combinedDeltaPhiWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]));
+          corrector->GetSpilloverCorrection(spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt], fitMethod, spilloverEtaFitRange, spilloverPhiFitRange, minConstantFitRange[iTrackPt], maxConstantFitRange[iTrackPt], 0, combinedDeltaEtaWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]), combinedDeltaPhiWidthFit[iJetTrack]->Eval(graphPointsX[iCentrality][iTrackPt]));
           spilloverDeltaEtaFit[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaEtaFit();
           spilloverDeltaPhiFit[0][iJetTrack][iCentrality][iTrackPt] = corrector->GetSpilloverDeltaPhiFit();
           
@@ -598,8 +625,6 @@ void produceSpilloverCorrection(){
     
   } // Jet-track correlation type loop
   
-  
-  
   // Create the output file
   TFile *outputFile = new TFile(outputFileName,"RECREATE");
   
@@ -626,8 +651,16 @@ void produceSpilloverCorrection(){
         
         // Create a new name to the symmetrized subeNon0 histogram and write it into file
         sprintf(histogramNamer,"nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
-        //spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
-        symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        //spilloverHelperDeltaEtaDeltaPhi[0][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt]->Write(histogramNamer);
+        symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][nAsymmetryBins][iCentrality][iTrackPt]->Write(histogramNamer);
+        
+        // No asymmetry binning for inclusive jets
+        if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){
+          for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+            sprintf(histogramNamer,"nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_A%dC%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
+            symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
+          }
+        }
         
       }
     }

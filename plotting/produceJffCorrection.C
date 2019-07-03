@@ -11,7 +11,8 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/dijet_ppMC_RecoGen_Pythia6_mergedSkims_pfJets_noUncorr_xj_processed_2019-03-26.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xjBins_onlySeagullCorrection_2019-06-10_processed.root";  // File from which the RecoGen histograms are read for the correction
+  // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xjBins_onlySeagullCorrection_2019-06-10_processed.root"
   // "data/PbPbMC_RecoGen_skims_caloJets_onlyInclusive_xj_sube0_matchedJets_improvisedMixing_processed_2019-04-10.root"
   // data/PbPbMC_RecoGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_xj_processed_2019-03-18.root
   // data/dijet_ppMC_RecoGen_Pythia6_mergedSkims_pfJets_noUncorr_xj_processed_2019-03-26.root
@@ -22,7 +23,8 @@ void produceJffCorrection(){
   // data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root  // File for pp
   // data/PbPbMC_RecoGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eventsMixed_sube0_smoothedMixing_processed_2018-11-05.root // File for PbPb
   // data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString genGenFileName = "data/dijet_ppMC_GenGen_Pythia6_mergedSkims_pfJets_noUncorr_xj_processed_2019-03-26.root";   // File from which the GenGen histograms are read for the correction
+  TString genGenFileName = "data/PbPbMC_GenGen_pfCsJets_noUncorr_matchedJets_sube0_5eveStrictMix_xjBins_onlySeagullCorrection_processed_2019-06-24.root";   // File from which the GenGen histograms are read for the correction
+  // "data/PbPbMC_GenGen_pfCsJets_noUncorr_matchedJets_sube0_5eveStrictMix_xjBins_onlySeagullCorrection_processed_2019-06-24.root"
   // "data/PbPbMC_GenGen_skims_caloJets_onlyInclusive_xj_sube0_matchedJets_improvisedMixing_processed_2019-04-10.root"
   // data/PbPbMC_GenGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_xj_processed_2019-03-18.root
   // data/dijet_ppMC_GenGen_Pythia6_mergedSkims_pfJets_noUncorr_xj_processed_2019-03-26.root
@@ -33,19 +35,19 @@ void produceJffCorrection(){
   // data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_processed_2019-01-15.root // File for pp
   // data/PbPbMC_GenGen_skims_pfJets_pfCandAxis_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-19.root // File for PbPb
   // data/PbPbMC_GenGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString outputFileName = "newPpTest4.root";   // File name for the output file
+  TString outputFileName = "jffPbPbForPuTest.root";   // File name for the output file
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC2_smoothedMixing_adjustedBackground_2019-01-15.root"
   // data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root
   
-  bool regularJetTrack = false;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
   
   // If 2D MC distribution give too much fluctuations to the results, can try different methods to reduce them
   int nRebin = 1;               // Rebin the histograms in order to reduce fluctuations
-  bool fitDistribution = false; // Fit a two dimensional gaussian to the distributions to reduce the fluctuations
-  int distributionForCorrection = DijetHistogramManager::kSameEvent; // Choose which distribution is used for the
+  bool symmetrizeDistribution = true; // Symmetrize eta and phi in the JFF correction to reduce fluctuations
+  int distributionForCorrection = DijetHistogramManager::kBackgroundSubtracted; // Choose which distribution is used for the correction DijetHistogramManager::kBackgroundSubtracted DijetHistogramManager::kCorrected DijetHistogramManager::kSameEvent
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   bool useAsymmetryBins = true; // true = Do correction in asymmetry bins, false = do only asymmetry inclusive corrections
@@ -60,6 +62,10 @@ void produceJffCorrection(){
   const char *asymmetryBinType = card->GetAsymmetryBinType();
   bool ppData = (collisionSystem.Contains("pp") || collisionSystem.Contains("localTest"));
   
+  // Find the number of asymmetry bins
+  const int nAsymmetryBins = card->GetNAsymmetryBins();
+  const int firstAsymmetryBin = useAsymmetryBins ? 0 : nAsymmetryBins;
+  
   // Create histogram managers to provide the histograms for the correction
   DijetHistogramManager *recoGenHistograms = new DijetHistogramManager(recoGenFile);
   recoGenHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
@@ -67,6 +73,7 @@ void produceJffCorrection(){
   recoGenHistograms->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
   recoGenHistograms->SetLoad2DHistograms(true);              // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
   if(ppData) recoGenHistograms->SetCentralityBinRange(0,0);  // Disable centrality binning for pp data
+  recoGenHistograms->SetAsymmetryBinRange(firstAsymmetryBin,nAsymmetryBins);   // Enable the loading of asymmetry bins
   recoGenHistograms->LoadProcessedHistograms();
   
   DijetHistogramManager *genGenHistograms = new DijetHistogramManager(genGenFile);
@@ -75,13 +82,12 @@ void produceJffCorrection(){
   genGenHistograms->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
   genGenHistograms->SetLoad2DHistograms(true);               // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
   if(ppData) recoGenHistograms->SetCentralityBinRange(0,0);  // Disable centrality binning for pp data
+  genGenHistograms->SetAsymmetryBinRange(firstAsymmetryBin,nAsymmetryBins);   // Enable the loading of asymmetry bins
   genGenHistograms->LoadProcessedHistograms();
   
-  // Find the correct number of centrality, track pT and asymmetry bins
+  // Find the correct number of centrality and track pT bins
   const int nCentralityBins = ppData ? 1 : recoGenHistograms->GetNCentralityBins();
   const int nTrackPtBins = recoGenHistograms->GetNTrackPtBins();
-  const int nAsymmetryBins = card->GetNAsymmetryBins();
-  const int firstAsymmetryBin = useAsymmetryBins ? 0 : nAsymmetryBins;
   
   // Initialize correction histograms and helper histograms
   TH1D *jffCorrectionJetShape[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
@@ -160,18 +166,9 @@ void produceJffCorrection(){
             jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/(nRebin*nRebin));
           }
           
-          // Another method that can be used to suppress fluctuations is to fit the distributions with 2D-Gaussian
-          if(fitDistribution){
-            jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,distributionForCorrection,iAsymmetry,iCentrality,iTrackPt)->Clone();
-            jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = fitter->GetSpilloverCorrection(jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
-            
-            // Errors are not handles properly in the fit, just use errors from the original histogram
-            for(int iDeltaPhi = 1; iDeltaPhi <= jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iDeltaPhi++){
-              for(int iDeltaEta = 1; iDeltaEta <= jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsY(); iDeltaEta++){
-                jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi,iDeltaEta, jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinError(iDeltaPhi,iDeltaEta)/4.0);
-              }
-            }
-            
+          // Another method that can be used to suppress fluctuations is to symmetrize deltaEta and deltaPhi
+          if(symmetrizeDistribution){
+            jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = fitter->SymmetrizeHistogram(jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt],1.5);
           }
           
           // Get the jet shape for GenGen
@@ -206,16 +203,8 @@ void produceJffCorrection(){
           }
           
           // Another method that can be used to suppress fluctuations is to fit the distributions with 2D-Gaussian
-          if(fitDistribution){
-            jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,distributionForCorrection,iAsymmetry,iCentrality,iTrackPt)->Clone();
-            jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = fitter->GetSpilloverCorrection(jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
-            
-            // Errors are not handles properly in the fit, just use errors from the original histogram
-            for(int iDeltaPhi = 1; iDeltaPhi <= jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iDeltaPhi++){
-              for(int iDeltaEta = 1; iDeltaEta <= jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsY(); iDeltaEta++){
-                jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi,iDeltaEta, jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinError(iDeltaPhi,iDeltaEta)/4.0);
-              }
-            }
+          if(symmetrizeDistribution){
+            jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = fitter->SymmetrizeHistogram(jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt],1.5);
           }
           
           // The correction is obtained by subtracting GenGen from RecoGen
