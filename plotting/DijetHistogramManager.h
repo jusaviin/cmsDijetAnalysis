@@ -147,7 +147,7 @@ public:
   // Setters for ranges for different bins
   void SetCentralityBinRange(const int first, const int last); // Setter for centrality bin range
   void SetTrackPtBinRange(const int first, const int last);    // Setter for track pT bin range
-  void SetAsymmetryProcessing(const bool processAsymmetry);    // Setter for processing asymmetry bins
+  void SetAsymmetryBinRange(const int first, const int last);  // Setter for processing asymmetry bins
   void SetPreprocess(const bool preprocess);                   // Setter for preprocessing (only load and write same and mixed event)
   
   // Setter for used DijetMethods
@@ -231,6 +231,9 @@ public:
   TH1D* GetOneDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0, int bin6 = 0) const; // Getter for any one-dimensional histogram based on input string
   TH2D* GetTwoDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0) const; // Getter for any two-dimensional histogram based on input string
   
+  // Check if any of the loaded histograms is NULL
+  bool CheckNull(const bool preprocess) const;   // Check if any of the loaded histograms is NULL
+  
   // Getters for the loaded centrality and track pT bins
   int GetFirstCentralityBin() const;  // Get the first loaded centrality bin
   int GetLastCentralityBin() const;   // Get the last loaded centrality bin
@@ -248,6 +251,9 @@ public:
   void SetAvoidMixingPeak(const bool avoid);     // Avoid peak region in mixed event distribution
   void SetImproviseMixing(const bool improvise); // Create mixed event distributions from deltaPhi sideband region
   void SetDefaultMixingDeltaEtaFitRange(const double fitRange);  // Default fit range used to normalize the mixed event
+  
+  // Getter for the card
+  DijetCard* GetCard() const;  // Getter for the JCard
   
 private:
   
@@ -283,11 +289,12 @@ private:
   // ==============================================
   
   // Drawn centrality bins
-  int fFirstLoadedCentralityBin;  // First centrality bin that is drawn
-  int fLastLoadedCentralityBin;   // Last centrality bin that is drawn
-  int fFirstLoadedTrackPtBin;     // First track pT bin that is drawn
-  int fLastLoadedTrackPtBin;      // Last track pT bin that is drawn
-  bool fProcessAsymmetryBins;     // True = Process asymmetry bins, false = do not process them
+  int fFirstLoadedCentralityBin;  // First centrality bin that is loaded
+  int fLastLoadedCentralityBin;   // Last centrality bin that is loaded
+  int fFirstLoadedTrackPtBin;     // First track pT bin that is loaded
+  int fLastLoadedTrackPtBin;      // Last track pT bin that is loaded
+  int fFirstLoadedAsymmetryBin;   // First asymmetry bin that is loaded
+  int fLastLoadedAsymmetryBin;    // Last asymmetry bin that is loaded
   bool fPreprocess;               // For preprocessing, only load and write same and mixed event
   
   // =============================================

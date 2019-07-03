@@ -29,7 +29,8 @@ DijetHistogramManager::DijetHistogramManager() :
   fLastLoadedCentralityBin(1),
   fFirstLoadedTrackPtBin(0),
   fLastLoadedTrackPtBin(1),
-  fProcessAsymmetryBins(false),
+  fFirstLoadedAsymmetryBin(0),
+  fLastLoadedAsymmetryBin(0),
   fPreprocess(false),
   fnCentralityBins(kMaxCentralityBins),
   fnTrackPtBins(kMaxTrackPtBins),
@@ -263,6 +264,10 @@ void DijetHistogramManager::InitializeFromCard(){
   fnAsymmetryBins = fCard->GetNAsymmetryBins();
   fAsymmetryBinName[fnAsymmetryBins] = "";
   
+  // Also no asymmetry bin loading as a default behavior
+  fFirstLoadedAsymmetryBin = fnAsymmetryBins;
+  fLastLoadedAsymmetryBin = fnAsymmetryBins;
+  
   // Read the deltaPhi bin borders from the card
   if(knDeltaPhiBins == fCard->GetNDeltaPhiBins()){
     for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
@@ -293,7 +298,8 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fLastLoadedCentralityBin(in.fLastLoadedCentralityBin),
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
   fLastLoadedTrackPtBin(in.fLastLoadedTrackPtBin),
-  fProcessAsymmetryBins(in.fProcessAsymmetryBins),
+  fFirstLoadedAsymmetryBin(in.fFirstLoadedAsymmetryBin),
+  fLastLoadedAsymmetryBin(in.fLastLoadedAsymmetryBin),
   fPreprocess(in.fPreprocess),
   fnAsymmetryBins(in.fnAsymmetryBins),
   fAvoidMixingPeak(in.fAvoidMixingPeak),
@@ -486,8 +492,8 @@ void DijetHistogramManager::DoMixedEventCorrection(){
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
-    for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-      if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+    for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+      if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         
@@ -589,8 +595,8 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     isInclusive = (iJetTrack >= kTrackInclusiveJet); // Set the flag for inclusive jet-track correlations
-    for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-      if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+    for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+      if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
@@ -705,8 +711,8 @@ void DijetHistogramManager::ApplyJffCorrection(JffCorrector *jffCorrectionFinder
         scalingFactor = 1.0/GetInclusiveJetPtIntegral(iCentralityBin);
       }
       
-      for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-        if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           correctionHistogram = jffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
           fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin]->Scale(scalingFactor);  // Need to scale with the number of dijets/all jets since the correction is also normalized to the number of dijets/all jets
@@ -728,8 +734,8 @@ void DijetHistogramManager::NormalizeJetShape(){
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only scale the histograms that are selected for analysis
-    for(int iAsymmetry = 0; iAsymmetry < fnAsymmetryBins; iAsymmetry++){
-      if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+    for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+      if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         jetShapeSum = (TH1D*)fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentralityBin][fFirstLoadedTrackPtBin]->Clone(Form("jetShapeSum%d%d%d",iJetTrack,iAsymmetry,iCentralityBin));
@@ -1065,8 +1071,8 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
   // Load all the histograms from the file
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
-    for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-      if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+    for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+      if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){ // Data file contains only same and mixed event distributions
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
           
@@ -1193,7 +1199,7 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
           for(int iJetEta = 0; iJetEta < knJetEtaBins; iJetEta++){
             
             // For the last closure particle bin no restrictions for quark/gluon jets
-            if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
+            /*if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
               nRestrictionAxes = 4;
               axisIndices[3] = 2; lowLimits[3] = iJetEta+1; highLimits[3] = iJetEta+1; // Jet eta
             } else {
@@ -1201,7 +1207,7 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
               axisIndices[4] = 2; lowLimits[4] = iJetEta+1; highLimits[4] = iJetEta+1; // Jet eta
             }
             
-            fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",5,nRestrictionAxes,axisIndices,lowLimits,highLimits);
+            fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",5,nRestrictionAxes,axisIndices,lowLimits,highLimits);*/
             
             // Fill the pT integrated ets slices only once
             if(iGenJetPt == 0){
@@ -1549,8 +1555,8 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
       if(iCorrelationType > kMixedEvent && fPreprocess) continue;
       
       // Loop over asymmetry bins
-      for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-        if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
         
         // Loop over centrality bins
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
@@ -1601,8 +1607,8 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         gDirectory->cd(histogramNamer);
         
         // Loop over asymmetry
-        for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-          if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+        for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+          if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
           
           // Loop over centrality
           for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
@@ -1647,8 +1653,12 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
             
             // Loop ovet jet eta bins
             for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
-            sprintf(histogramNamer,"jetPtClosure_%s%s_C%dT%dE%d",fSingleJetHistogramName[iClosureType],fClosureParticleName[iClosureParticle],iCentrality,iGenJetPt,iJetEta);
-            fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]->Write(histogramNamer);
+           
+              // Only write histogram that are non-NULL
+              if(fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]){
+                sprintf(histogramNamer,"jetPtClosure_%s%s_C%dT%dE%d", fSingleJetHistogramName[iClosureType], fClosureParticleName[iClosureParticle], iCentrality, iGenJetPt, iJetEta);
+                fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]->Write(histogramNamer);
+              }
             
             } // Jet eta bin loop
           } // Generator level jet pT loop
@@ -1688,8 +1698,8 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
       gDirectory->cd(histogramNamer);
       
       // Loop over asymmetry
-      for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-        if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
         
         // Loop over centrality
         for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
@@ -1712,8 +1722,8 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
       gDirectory->cd(histogramNamer);
       
       // Loop over asymmetry
-      for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-        if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
         
         // Loop over centrality
         for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
@@ -1884,8 +1894,8 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
       
       // Loop over asymmetry bins
-      for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-        if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
         
         // Loop over centrality bins
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
@@ -1924,8 +1934,8 @@ void DijetHistogramManager::LoadProcessedHistograms(){
       if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only load the selected categories
       
       // Loop ovar asymmetry
-      for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-        if((iJetTrack >= kTrackInclusiveJet || !fProcessAsymmetryBins) && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
         
         // Loop over centrality
         for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
@@ -1973,6 +1983,215 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     
   } // Opening jet pT closure histograms
 
+}
+
+/*
+ * Check if any of the loaded histograms is NULL
+ */
+bool DijetHistogramManager::CheckNull(const bool preprocess) const{
+  
+  int lastCorrelationType = knCorrelationTypes;
+  if(preprocess) lastCorrelationType = kMixedEventNormalized;
+  
+  // Load the event information histograms
+  if(fLoadEventInformation){
+    if(fhEvents == NULL) return true;
+    if(fhVertexZ == NULL) return true;                  // Vertex z position
+    if(fhVertexZWeighted == NULL) return true;          // MC weighted vertex z position
+    if(fhVertexZDijet == NULL) return true;             // Vertex z position in dijet events
+    if(fhTrackCuts == NULL) return true;                // Number of tracks surviving different track cuts
+    if(fhTrackCutsInclusive == NULL) return true;       // Number of inclusive tracks surviving different track cuts
+    if(fhCentrality == NULL) return true;               // Centrality in all events
+    if(fhCentralityWeighted == NULL) return true;       // MC weighted centrality in all events
+    if(fhCentralityDijet == NULL) return true;          // Centrality in dijet events
+    if(fhPtHat == NULL) return true;                    // pT hat for MC events
+    if(fhPtHatWeighted == NULL) return true;            // Weighted pT hat for MC events
+  }
+  
+  // Load the single jet histograms from the input file
+  for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
+    
+    for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      
+      for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
+        
+        if(!fLoadSingleJets[iJetCategory]) continue;  // Only load the loaded the selected histograms
+        
+        // Single jet pT histograms
+        if(fhJetPt[iJetCategory][iCentralityBin][iAsymmetry] == NULL) return true;
+        
+        // Single jet phi
+        if(fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry] == NULL) return true;
+        
+        // Single jet eta
+        if(fhJetEta[iJetCategory][iCentralityBin][iAsymmetry] == NULL) return true;
+        
+        // Single jet eta-phi
+        if(fLoad2DHistograms && fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry] == NULL) return true;
+      }
+    } // Loop over centrality bins
+    
+  } // Loop over single jet categories
+  
+  // Load the dijet histograms from the input file
+  if(fLoadDijetHistograms){
+    
+    for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      
+      // Dijet deltaPhi
+      if(fhDijetDphi[iCentralityBin] == NULL) return true;
+      
+      // Dijet asymmetry AJ
+      if(fhDijetAsymmetry[iCentralityBin][knJetPtBins] == NULL) return true;
+      
+      // Dijet asymmetry xJ
+      if(fhDijetXj[iCentralityBin][knJetPtBins] == NULL) return true;
+      
+      // Asymmetries in jet pT bins
+      for(int iJetPt = 0; iJetPt < knJetPtBins; iJetPt++){
+        
+        // Dijet asymmetry AJ in jet pT bins
+        if(fhDijetAsymmetry[iCentralityBin][iJetPt] == NULL) return true;
+        
+        // Dijet asymmetry xJ in jet pT bins
+        if(fhDijetXj[iCentralityBin][iJetPt] == NULL) return true;
+        
+      }
+      
+      // Leading jet pT vs. subleading jet pT
+      if(fLoad2DHistograms && fhDijetLeadingVsSubleadingPt[iCentralityBin] == NULL) return true;
+    }
+    
+  }
+  
+  // Load the track histograms from the input file
+  for(int iTrackType = 0; iTrackType < knTrackCategories; iTrackType++){
+    if(!fLoadTracks[iTrackType]) continue;  // Only load the selected track types
+    
+    for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){  // Tracks have only same and mixed event distributions
+      if(iTrackType > kUncorrectedTrack && iCorrelationType == kMixedEvent) continue; // No mixed event histograms for inclusive tracks
+      
+      for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+        
+        // Track pT
+        if(fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] == NULL) return true;
+        
+        // pT integrated track phi
+        if(fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] == NULL) return true;
+        
+        // pT integrated track eta
+        if(fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] == NULL) return true;
+        
+        // pT integrated track eta-phi
+        if(fLoad2DHistograms && fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] == NULL) return true;
+        
+        for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+          
+          // Track phi in track pT bins
+          if(fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] == NULL) return true;
+          
+          // Track eta in track pT bins
+          if(fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] == NULL) return true;
+          
+          // Track eta-phi in track pT bins
+          if(fLoad2DHistograms && fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] == NULL) return true;
+          
+        } // Track pT loop
+      } // Centrality loop
+    } // Correlation type loop
+  } // Track category loop
+
+  // Load the jet-track correlation histograms from the input file
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
+    
+    // Loop over correlation types
+    for(int iCorrelationType = 0; iCorrelationType < lastCorrelationType; iCorrelationType++){
+      
+      // Loop over asymmetry bins
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+        
+        // Loop over centrality bins
+        for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+          
+          // Loop over track pT bins
+          for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+            
+            // Jet-track deltaPhi
+            for(int iDeltaEta = 0; iDeltaEta < knDeltaEtaBins; iDeltaEta++){
+              if(iDeltaEta > kWholeEta && iCorrelationType < kMixedEventNormalized) continue; // DeltaEta slicing not implemented for same and mixed event
+              if(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta] == NULL) return true;
+              
+            }
+            
+            // Jet-track deltaEtaDeltaPhi
+            if(fLoad2DHistograms && fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin] == NULL) return true;
+            
+            
+            // DeltaPhi binning for deltaEta histogram
+            for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+              if(fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi] == NULL) return true;
+            } // DeltaPhi loop
+          } // Track pT loop
+        } // Centrality loop
+      } // Asymmetry loop
+    } // Correlation type loop
+  } // Jet-track correlation category loop
+
+  // Load the jet shape histograms from the input file
+  if(!preprocess){
+    for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
+      
+      // Loop over jet-track correlation categories
+      for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+        if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only load the selected categories
+        
+        // Loop ovar asymmetry
+        for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+          if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+          
+          // Loop over centrality
+          for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+            
+            // Loop over track pT bins
+            for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
+              if(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt] == NULL) return true;
+              
+            } // Track pT loop
+          } // Centrality loop
+        } // Asymmetry loop
+      } // Jet-track correlation category loop
+    } // Jet shape type loop
+  } // No jet shapes for preprocessing
+  
+  // Load the jet pT closure histograms from a processed file
+  if(fLoadJetPtClosureHistograms){
+    
+    // Loop over closure types (leading/subleading/inclusive)
+    for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+      
+      // Centrality loop
+      for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+        
+        // Loop over closure particles (quark/gluon/no selection)
+        for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+          
+          // Loop over generator level jet pT bins
+          for(int iGenJetPt = 0; iGenJetPt <= knGenJetPtBins; iGenJetPt++){
+            
+            // Loop over jet eta bins
+            for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
+              
+              if(fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle] == NULL) return true;
+              
+            } // Jet eta bin loop
+          } // Generator level jet pT loop
+        } // Closure particle type (quark/gluon) loop
+      } // Centrality loop
+    } // Closure type (leading/subleading/inclusive) loop
+  } // Opening jet pT closure histograms
+  return false;
 }
 
 /*
@@ -2302,8 +2521,16 @@ void DijetHistogramManager::SetTrackPtBinRange(const int first, const int last){
 }
 
 // Setter for processing asymmetry bins
-void DijetHistogramManager::SetAsymmetryProcessing(const bool processAsymmetry){
-  fProcessAsymmetryBins = processAsymmetry;
+void DijetHistogramManager::SetAsymmetryBinRange(const int first, const int last){
+  
+  // For any out of bounds of non-sensical input, only loas asymmetry integrated results
+  if(first < 0 || last < 0 || first > fnAsymmetryBins || last > fnAsymmetryBins || last < first){
+    fFirstLoadedAsymmetryBin = fnAsymmetryBins;
+    fLastLoadedAsymmetryBin = fnAsymmetryBins;
+  } else {
+    fFirstLoadedAsymmetryBin = first;
+    fLastLoadedAsymmetryBin = last;
+  }
 }
 
 // Setter for preprocessing (only load and write same and mixed event)
@@ -2695,6 +2922,11 @@ int DijetHistogramManager::GetNEvents() const{
 // Getter for the number of dijets
 int DijetHistogramManager::GetNDijets() const{
   return fhEvents->GetBinContent(fhEvents->FindBin(DijetHistograms::kDijet));
+}
+
+// Getter for the JCard
+DijetCard* DijetHistogramManager::GetCard() const{
+  return fCard;
 }
 
 // Getter for integral over leading jet pT. Include the overflow bin in the integral. There is no jet pT limit
