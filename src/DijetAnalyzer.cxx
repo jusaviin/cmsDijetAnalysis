@@ -544,6 +544,8 @@ void DijetAnalyzer::RunAnalysis(){
   // Input files and forest readers for analysis
   TFile *inputFile;
   TFile *copyInputFile; // If we read forest for tracks and jets with different readers, we need to give different file pointers to them
+  TFile *comparisonInputFile; // If we read forest for tracks and jets with different readers, we need to give different file pointers to them
+
   TFile *mixedEventFile;
   
   // Event variables
@@ -729,6 +731,7 @@ void DijetAnalyzer::RunAnalysis(){
     // Find the filename and open the input file
     currentFile = fFileNames.at(iFile);
     inputFile = TFile::Open(currentFile);
+    if(fMatchJetAlgorithm) comparisonInputFile = TFile::Open(currentFile);
     if(useDifferentReaderFotJetsAndTracks) copyInputFile = TFile::Open(currentFile);
     
     // If we are doing mixing, find and open the mixing file
@@ -800,7 +803,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     // If file is good, read the forest from the file
     fJetReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
-    if(fMatchJetAlgorithm) fComparisonJetReader->ReadForestFromFile(inputFile);  // (match calo jet branch)
+    if(fMatchJetAlgorithm) fComparisonJetReader->ReadForestFromFile(comparisonInputFile);  // (match calo jet branch)
     if(useDifferentReaderFotJetsAndTracks) fTrackReader[DijetHistograms::kSameEvent]->ReadForestFromFile(copyInputFile); // If we mix reco and gen, the reader for jets and tracks is different
     nEvents = fJetReader->GetNEvents();
     
@@ -1444,6 +1447,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     // Close the input files after the event has been read
     inputFile->Close();
+    if(fMatchJetAlgorithm) comparisonInputFile->Close();
     if(useDifferentReaderFotJetsAndTracks) copyInputFile->Close();
     if(mixEvents) mixedEventFile->Close();
     
