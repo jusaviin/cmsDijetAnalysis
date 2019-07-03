@@ -55,7 +55,8 @@ DijetMethods::DijetMethods() :
   fBackgroundErrorScalingFactor(1),
   fMinBackgroundDeltaPhi(1.4),
   fMaxBackgroundDeltaPhi(1.7),
-  fSeagullRebin(2),
+  fSeagullRebin(4),
+  fSeagullChi2Limit(1.15),
   fnBinsProjectedOver(0),
   fMaxSignalDeltaEta(1.0),
   fSpilloverYieldError(0),
@@ -107,6 +108,7 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fMinBackgroundDeltaPhi(in.fMinBackgroundDeltaPhi),
   fMaxBackgroundDeltaPhi(in.fMaxBackgroundDeltaPhi),
   fSeagullRebin(in.fSeagullRebin),
+  fSeagullChi2Limit(in.fSeagullChi2Limit),
   fnBinsProjectedOver(in.fnBinsProjectedOver),
   fMaxSignalDeltaEta(in.fMaxSignalDeltaEta),
   fSpilloverDeltaEta(in.fSpilloverDeltaEta),
@@ -150,6 +152,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fMinBackgroundDeltaPhi = in.fMinBackgroundDeltaPhi;
   fMaxBackgroundDeltaPhi = in.fMaxBackgroundDeltaPhi;
   fSeagullRebin = in.fSeagullRebin;
+  fSeagullChi2Limit = in.fSeagullChi2Limit;
   fnBinsProjectedOver = in.fnBinsProjectedOver;
   fMaxSignalDeltaEta = in.fMaxSignalDeltaEta;
   fJetShapeNormalizationMethod = in.fJetShapeNormalizationMethod;
@@ -365,11 +368,12 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
  *
  * Arguments:
  *  const TH2D *mixedEventCorrectedHistogram = Two-dimensional deltaEta-deltaPhi distribution, that is corrected by the mixed event
- *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta
+ *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta.
+ *  const int vetoFlag = 0: Regular correction. 1: Skip constant check. 2: Skip correction
  *
  *  return: The two dimensional distribution corrected for the seagull effect
  */
-TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod){
+TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod, const int vetoFlag){
   
   // Project out the deltaEta distribution at background deltaPhi region
   int minDeltaPhiBin = mixedEventCorrectedHistogram->GetXaxis()->FindBin(fMinBackgroundDeltaPhi+0.0001);
@@ -381,6 +385,21 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   fBackgroundEtaProjection->Scale(mixedEventCorrectedHistogram->GetXaxis()->GetBinWidth(1));
   fBackgroundEtaProjection->Rebin(fSeagullRebin);
   fBackgroundEtaProjection->Scale(1.0/fSeagullRebin);
+  
+  // Clone the original histogram
+  TH2D *seagullCorrectedHistogram = (TH2D*) mixedEventCorrectedHistogram->Clone();
+  
+  // Check if a constant fit gives a good description of the background deltaEta distribution
+  // In this case, do not apply the correction
+  if(vetoFlag != 1){
+    fBackgroundEtaProjection->Fit("pol0","","",-3,3);
+    fSeagullFit = fBackgroundEtaProjection->GetFunction("pol0");
+    double chi2PerNdf = fSeagullFit->GetChisquare() / fSeagullFit->GetNDF();
+    if(chi2PerNdf < fSeagullChi2Limit || vetoFlag == 2) return seagullCorrectedHistogram;
+    
+    // Remove the constant fit from the list of functions if it is deemed bad
+    fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
+  }
   
   // Symmetrize the positive and negative sides of the distribution
   if(normalizationMethod == 1){
@@ -425,7 +444,6 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   }
   
   // Apply the correction to the input 2D histogram
-  TH2D *seagullCorrectedHistogram = (TH2D*) mixedEventCorrectedHistogram->Clone();
   double binEta;
   double seagullCorrection;
   double binContent;
@@ -682,12 +700,11 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
  *
  * Arguments:
  *  const TH2D *histogramToBeSymmetrized = Histogram that is symmetrized
- *  const double maxEta = Maximum eta value until which the histogram is symmetrized
- *  const double maxPhi = Maximum phi value until which the histogram is symmetrized
+ *  const double maxR = Maximum radius until which the histogram is symmetrized around zero
  *
  *  return: Symmetrized two-dimensional histogram
  */
-TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxEta, const double maxPhi){
+TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR){
 
   // Clone the given histogram to get the original binning
   TH2D *symmetrizedHistogram = (TH2D*) histogramToBeSymmetrized->Clone(Form("%sSymmetrized",histogramToBeSymmetrized->GetName()));
@@ -697,14 +714,11 @@ TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, co
   int deltaPhiZeroMinus = symmetrizedHistogram->GetXaxis()->FindBin(-0.001);
   int deltaEtaZeroPlus = symmetrizedHistogram->GetYaxis()->FindBin(0.001);
   int deltaEtaZeroMinus = symmetrizedHistogram->GetYaxis()->FindBin(-0.001);
-  int deltaPhiMinimum = symmetrizedHistogram->GetXaxis()->FindBin(-maxPhi+0.001);
-  int deltaPhiMaximum = symmetrizedHistogram->GetXaxis()->FindBin(maxPhi-0.001);
-  int deltaEtaMinimum = symmetrizedHistogram->GetYaxis()->FindBin(-maxEta+0.001);
-  int deltaEtaMaximum = symmetrizedHistogram->GetYaxis()->FindBin(maxEta-0.001);
   
   // Symmetrize the distribution with respect to zero
   double averageContent, averageError;
   int phiBinNegative, phiBinPositive, etaBinNegative, etaBinPositive;
+  double binCenterEta, binCenterPhi;
   
   // Loop over deltaPhi bins
   for(int iPhi = 1; iPhi <= symmetrizedHistogram->GetNbinsX(); iPhi++){
@@ -717,11 +731,14 @@ TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, co
       phiBinPositive = iPhi;
       phiBinNegative = deltaPhiZeroMinus - (iPhi - deltaPhiZeroPlus);
     }
+    binCenterPhi = symmetrizedHistogram->GetXaxis()->GetBinCenter(iPhi);
     
     for(int iEta = 1; iEta <= symmetrizedHistogram->GetNbinsY(); iEta++){
       
+      binCenterEta = symmetrizedHistogram->GetYaxis()->GetBinCenter(iEta);
+      
       // If the bins are out of specified range, set the content to zero
-      if(iPhi < deltaPhiMinimum || iPhi > deltaPhiMaximum || iEta < deltaEtaMinimum || iEta > deltaEtaMaximum){
+      if(TMath::Sqrt(binCenterEta*binCenterEta+binCenterPhi*binCenterPhi) > maxR){
         symmetrizedHistogram->SetBinContent(iPhi,iEta,0);
         symmetrizedHistogram->SetBinError(iPhi,iEta,0);
         continue;
@@ -765,7 +782,7 @@ TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, co
  * Method for finding the spillover yield from the mixed event corrected distribution. This method fits a constant line
  * to the tails of the DeltaEta projection of the distribution distribution and uses bin counting to get the histogram yield
  * on top of the fitted line. The idea is that in later stage the yield of the fitted gaussians can be fixed to this number.
- * If maxEtaNormalizationRange is set to a smaller number than minEtaNormalixationRange, no line is fitted and the yield is
+ * If maxEtaNormalizationRange is set to a smaller number than minEtaNormalizationRange, no line is fitted and the yield is
  * obtained directly from bin counting.
  *
  * Arguments:
