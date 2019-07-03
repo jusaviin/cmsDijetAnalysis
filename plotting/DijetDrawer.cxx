@@ -352,10 +352,11 @@ void DijetDrawer::DrawDijetHistograms(){
     SaveFigure("asymmetryIntegral",compactCentralityString);
 
     // Print the number of dijets in each asymmetry bin
-    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
       integralValue = fHistograms->GetPtIntegral(iCentrality,iAsymmetry);
-      cout << "Total number of jets for asymmetry bin " << iAsymmetry << ": " << integralValue << endl;
+      cout << Form("Total number of jets for asymmetry bin %.2f < %s <%.2f: %.0f",fHistograms->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry), fHistograms->GetCard()->GetAsymmetryBinType(), fHistograms->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry), integralValue) << endl;
     }
+    cout << "Total number of jets in the centrality bin: " << fHistograms->GetPtIntegral(iCentrality,nAsymmetryBins) << endl;
     
     // === Dijet asymmetry xJ ===
     drawnHistogram = fHistograms->GetHistogramDijetXj(iCentrality);
@@ -372,6 +373,16 @@ void DijetDrawer::DrawDijetHistograms(){
       
       // Save the figure to a file
       SaveFigure("asymmetryXj",compactCentralityString);
+      
+      // Do some integration of histogram
+      double integrationBorders[] = {0,0.6,0.8,1};
+      int lowBorder,highBorder;
+      for(int i = 0; i < 3; i++){
+        lowBorder = drawnHistogram->FindBin(integrationBorders[i]+0.001);
+        highBorder = drawnHistogram->FindBin(integrationBorders[i+1]-0.001);
+        integralValue = drawnHistogram->Integral(lowBorder,highBorder);
+        cout << Form("Number of jets in asymmetry bin %.2f < xj < %.2f: %.0f",integrationBorders[i],integrationBorders[i+1],integralValue) << endl;
+      }
     }
     
     // Change the right margin better suited for 2D-drawing
@@ -652,6 +663,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           if(fDrawJetTrackDeltaPhi){
             drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
             //drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
+            //cout << "Integral of deltaPhi: " << drawnHistogram->Integral("width") << endl; // Can print integral for debug purposes
             
             // Move legend to different place for leading jet background figures
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;

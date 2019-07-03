@@ -12,12 +12,12 @@ void checkSube(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString sube0FileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlySeagull_processed.root";  // File from which the RecoGen histograms are read for the correction
+  TString sube0FileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlyNecessarySeagull_processed.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC_RecoGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_xj_processed_2019-03-18.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root
-  TString subeNon0FileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlySeagull_processed.root";   // File from which the GenGen histograms are read for the correction
-  TString anySubeFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlySeagull_processed.root";   // File name for the output file
-  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_noUncorr_5eveStrictMix_subeNon0_2019-06-06.root";
+  TString subeNon0FileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyOccasionalSeagull_processed.root";   // File from which the GenGen histograms are read for the correction
+  TString anySubeFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlyImprovedSeagull_processed.root";   // File name for the output file
+  TString spilloverFileName = "newSpilloverTest_symmetrizedDistribution.root";
 
   // Possible distribution to compare: kSameEvent, kMixedEvent, kMixedEventNormalized, kCorrected, kBackgroundSubtracted, kBackground, kBackgroundOverlap
   int comparedDistribution = DijetHistogramManager::kBackgroundSubtracted;
@@ -51,16 +51,19 @@ void checkSube(){
   const int nCentralityBins = sube0Histograms->GetNCentralityBins();
   const int nTrackPtBins = sube0Histograms->GetNTrackPtBins();
   
-  int iCentralityBin = 0;
+  int iCentralityBin = 1;
   int iTrackPtBin = 1;
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
-  double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,12};  // Bin borders for track pT
   
   // Define arrays for the histograms
   TH2D *sube0TestHistogram[nCentralityBins][nTrackPtBins];
   TH2D *subeNon0TestHistogram[nCentralityBins][nTrackPtBins];
   TH2D *anySubeTestHistogram[nCentralityBins][nTrackPtBins];
   TH2D *spilloverHistogram[nCentralityBins][nTrackPtBins];
+  TF1 *zeroLine = new TF1("Nolla","[0]",0,1.5);
+  zeroLine->SetParameter(0,0);
+  zeroLine->SetLineColor(kBlack);
   
   // For a quick check, read the same histogram from all three files and check that sube0 + subeNon0 = anySube
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -68,7 +71,7 @@ void checkSube(){
       sube0TestHistogram[iCentrality][iTrackPt] = sube0Histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(0,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
       subeNon0TestHistogram[iCentrality][iTrackPt] = subeNon0Histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(0,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
       anySubeTestHistogram[iCentrality][iTrackPt] = anySubeHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(0,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
-      spilloverHistogram[iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/fittedSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
+      spilloverHistogram[iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
     }
   }
     
@@ -139,6 +142,7 @@ void checkSube(){
       spilloverDeltaR[iCentrality][iTrackPt] = calculator->GetJetShape(spilloverHistogram[iCentrality][iTrackPt]);
       spilloverDeltaR[iCentrality][iTrackPt]->SetLineColor(kRed);
       spilloverDeltaR[iCentrality][iTrackPt]->Draw("same");
+      zeroLine->DrawCopy("same");
       
       legend = new TLegend(0.5,0.55,0.9,0.8);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);

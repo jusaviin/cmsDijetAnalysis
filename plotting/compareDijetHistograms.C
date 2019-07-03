@@ -23,10 +23,10 @@ void compareDijetHistograms(){
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = false;
+  bool drawTrackSubleadingJetCorrelations = true;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
   bool drawTrackInclusiveJetCorrelations = false;
@@ -45,10 +45,10 @@ void compareDijetHistograms(){
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
@@ -61,7 +61,7 @@ void compareDijetHistograms(){
   int eventMixingDistribution = DijetHistogramManager::kBackgroundSubtracted; // kCorrected kBackgroundSubtracted
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   const char* figureComment = "_pfCsJets";
   
@@ -77,9 +77,9 @@ void compareDijetHistograms(){
   
   // Settings for ratios
   bool useDifferenceInsteadOfRatio = false;
-  double minZoom = 0.7;
-  double maxZoom = 1.3;
-  TString ratioLabel = "spillover / sube0";
+  double minZoom = 0.95;
+  double maxZoom = 1.05;
+  TString ratioLabel = "CS / PU";
   
   // Scaling for histograms
   bool scaleHistograms = false; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -97,10 +97,10 @@ void compareDijetHistograms(){
   bool readDeltaPhiBinsFromFile = true; // Disregard above deltaPhi binning and use the binning directly from DijetCard
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = 3;
+  int lastDrawnTrackPtBin = nTrackPtBins-1;
   
   int asymmetryBin = -1; // Asymmetry selection: -1 = No selection, 0 = 0 < AJ < 0.11, 1 = 0.11 < AJ < 0.22, 2 = 0.22 < AJ < 0.33, 3 = 0.33 < AJ < 0.75. For inclusive, set this to 0 to select only jets above 120 GeV.
   
@@ -127,10 +127,10 @@ void compareDijetHistograms(){
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
   const int nDatasets = 2;
-  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noJffCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndSpilloverDoubleGauss_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_seagullAndSymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlySymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndNoFitSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_noCorrections_processed.root",*/"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed.root",/*"data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root",*/"data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_notAdjustedBackground_processed_2019-02-15.root"/*,"data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root"*/};
+  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noJffCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_vetoedSeagullAndSymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndSpilloverDoubleGauss_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_seagullAndSymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlySymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndNoFitSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlyNecessarySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyOccasionalSeagull_processed.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root",*/"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root","data/PbPbMC_RecoGen_skims_pfJets_noUncOrInc_5eveImprovedMix_subeNon0_2019-02-15_processed_noCorrections_newCodeTest.root"/*,"data/dijetPbPb_highForest_pfJets_noUncorr_strictVzMixing_2019-05-17_enoughStats_noCorrections_processed.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root""data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root","data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_notAdjustedBackground_processed_2019-02-15.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root"*/};
   
-  TString legendComment[nDatasets] = {"PF CS jets","PF PU jets"};
-  //TString legendComment[nDatasets] = {/*"All subevents","Spillover",*/"SpilloverNoFit","Sube0",/*"SubeNon0","pfJets","caloJets"*/};
+  TString legendComment[nDatasets] = {"pfCsJets","pfPuJets"};
+  //TString legendComment[nDatasets] = {/*"All subevents",*/"Spillover",/*"SpilloverNoFit",*/"Sube0"/*,"SubeNon0","pfJets","caloJets"*/};
   
   bool loadProcessed = inputFileName[0].Contains("processed");
   
