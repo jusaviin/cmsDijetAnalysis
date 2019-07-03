@@ -16,7 +16,7 @@
  *   int selectedCentralityBin = If 0 or greater, only look at centrality bin corresponding to the index
  *   bool preprocess = True: Do not process jet track correlations, just project same and mixed event from THnSparses, False: Process jet track correlation histograms
  */
-void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false, bool applySpilloverCorrection = false, int selectedPtBin = -1, int selectedCentralityBin = -1, bool preprocess = false){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false, bool applySpilloverCorrection = false, int selectedPtBin = -1, int selectedCentralityBin = -1, int selectedAsymmetryBin = -1, bool preprocess = false){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
@@ -42,7 +42,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = false;
+  bool drawDijetHistograms = true;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
@@ -51,7 +51,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -84,7 +84,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaPhi = true;
   bool drawJetTrackDeltaEta = true;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
@@ -133,7 +133,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root  File for pp
   // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC_smoothedMixing_adjustedBackground_2019-01-15.root  Alternative file for pp
   // data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root";  File for PbPb
-  TString spilloverCorrectionFileName = "newSpilloverTest_noSeagull_doubleGauss_includeSymmetrization.root";
+  TString spilloverCorrectionFileName = "newSpilloverTest_symmetrizedDistribution_radial.root";
   // "newSpilloverTest_doubleGauss_includeSymmetrization.root"
   // "data/spilloverCorrection_PbPbMC_noUncorr_5eveStrictMix_subeNon0_2019-06-06.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root"
@@ -142,12 +142,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27.root"
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = false;
+  bool applySeagullCorrection = true;
   if(preprocess) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
   const int nCentralityBins = 4;
   const int nTrackPtBins = 6;
+  const int nAsymmetryBins = 3;
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
   bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
@@ -163,10 +164,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = 2;
+  int lastDrawnTrackPtBin = nTrackPtBins;
+  
+  int firstDrawnAsymmetryBin = 0;
+  int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   if(selectedCentralityBin >= 0){
     firstDrawnCentralityBin = selectedCentralityBin;
@@ -176,6 +180,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   if(selectedPtBin >= 0){
     firstDrawnTrackPtBin = selectedPtBin;
     lastDrawnTrackPtBin = selectedPtBin;
+  }
+  
+  if(selectedAsymmetryBin >= 0){
+    firstDrawnAsymmetryBin = selectedAsymmetryBin;
+    lastDrawnAsymmetryBin = selectedAsymmetryBin;
   }
   
   bool processAsymmetryBins = false;  // True: Process all asymmetry bins, false: Process only integrated asymmetry
@@ -299,7 +308,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetDeltaPhiBins(false,lowDeltaPhiBinBorders,highDeltaPhiBinBorders,deltaPhiString,compactDeltaPhiString,setIndices);
   histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
-  histograms->SetAsymmetryProcessing(processAsymmetryBins);
+  histograms->SetAsymmetryBinRange(firstDrawnAsymmetryBin,lastDrawnAsymmetryBin);
   histograms->SetPreprocess(preprocess);
   
   // Set the used dijet methods and corrections
