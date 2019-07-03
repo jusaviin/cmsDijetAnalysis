@@ -59,7 +59,7 @@ private:
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
-  std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(const Double_t jetPhi, const Double_t jetEta); // Find the number of particle flow cnadidates in a jet and the direction of leading particle flow candidate
+  std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(const ForestReader* jetReader, const Double_t jetPhi, const Double_t jetEta); // Find the number of particle flow cnadidates in a jet and the direction of leading particle flow candidate
   void FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType); // Fill jet pT closure histograms
   
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
@@ -75,6 +75,7 @@ private:
   
   // Private data members
   ForestReader *fJetReader;           // Reader for jets in the event
+  ForestReader *fComparisonJetReader; // Reader for comparison jets in the event
   ForestReader *fTrackReader[2];      // Readers for tracks in the event. Index 0 = same event. Index 1 = mixed event.
   std::vector<TString> fFileNames;    // Vector for all the files to loop over
   ConfigurationCard *fCard;           // Configuration card for the analysis
@@ -92,6 +93,7 @@ private:
   Int_t fJetType;                    // Type of jets used for analysis. 0 = Calo jets, 1 = PF jets
   Bool_t fMatchJets;                 // Match generator and reconstruction level jets
   Bool_t fMatchDijet;                // Match reco and gen dijets (have the same leading and subleading jets for both reco and gen)
+  Bool_t fMatchJetAlgorithm;         // Match pf and calo jets
   Int_t fDebugLevel;                 // Amoun of debug messages printed to console
   
   // Weights for filling the MC histograms

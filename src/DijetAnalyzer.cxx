@@ -27,6 +27,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fJetType(0),
   fMatchJets(false),
   fMatchDijet(false),
+  fMatchJetAlgorithm(false),
   fDebugLevel(0),
   fVzWeight(1),
   fCentralityWeight(1),
@@ -83,6 +84,7 @@ DijetAnalyzer::DijetAnalyzer() :
   
   // Initialize readers to null
   fJetReader = NULL;
+  fComparisonJetReader = NULL;
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
   
@@ -106,6 +108,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fJetType(0),
   fMatchJets(false),
   fMatchDijet(false),
+  fMatchJetAlgorithm(false),
   fVzWeight(1),
   fCentralityWeight(1),
   fPtHatWeight(1),
@@ -142,6 +145,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Initialize readers to null
   fJetReader = NULL;
+  fComparisonJetReader = NULL;
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
   
@@ -248,6 +252,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
  */
 DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fJetReader(in.fJetReader),
+  fComparisonJetReader(in.fComparisonJetReader),
   fFileNames(in.fFileNames),
   fCard(in.fCard),
   fHistograms(in.fHistograms),
@@ -261,6 +266,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fJetType(in.fJetType),
   fMatchJets(in.fMatchJets),
   fMatchDijet(in.fMatchDijet),
+  fMatchJetAlgorithm(in.fMatchJetAlgorithm),
   fDebugLevel(in.fDebugLevel),
   fVzWeight(in.fVzWeight),
   fCentralityWeight(in.fCentralityWeight),
@@ -321,6 +327,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   if (&in==this) return *this;
   
   fJetReader = in.fJetReader;
+  fComparisonJetReader = in.fComparisonJetReader;
   fTrackReader[DijetHistograms::kSameEvent] = in.fTrackReader[DijetHistograms::kSameEvent];
   fTrackReader[DijetHistograms::kMixedEvent] = in.fTrackReader[DijetHistograms::kMixedEvent];
   fFileNames = in.fFileNames;
@@ -336,6 +343,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fJetType = in.fJetType;
   fMatchJets = in.fMatchJets;
   fMatchDijet = in.fMatchDijet;
+  fMatchJetAlgorithm = in.fMatchJetAlgorithm;
   fDebugLevel = in.fDebugLevel;
   fVzWeight = in.fVzWeight;
   fCentralityWeight = in.fCentralityWeight;
@@ -396,6 +404,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fVzWeightFunction) delete fVzWeightFunction;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
   if(fJetReader) delete fJetReader;
+  if(fComparisonJetReader) delete fComparisonJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
   if(fTrackReader[DijetHistograms::kMixedEvent]) delete fTrackReader[DijetHistograms::kMixedEvent];
 }
@@ -412,7 +421,7 @@ DijetAnalyzer::~DijetAnalyzer(){
  *            1: Leading particle flow candidate phi
  *            2: Leading particle flow candidate eta
  */
-std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJet(const Double_t jetPhi, const Double_t jetEta){
+std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJet(const ForestReader *jetReader, const Double_t jetPhi, const Double_t jetEta){
   
   // Variables for particle flow candidate properties
   Double_t leadingParticleFlowCandidatePt = 0;
@@ -428,20 +437,20 @@ std::tuple<Int_t,Double_t,Double_t> DijetAnalyzer::GetNParticleFlowCandidatesInJ
   Double_t distanceToThisJet = 0;
   
   // Loop over all particle flow candidates
-  for(Int_t iParticleFlowCandidate = 0; iParticleFlowCandidate < fJetReader->GetNParticleFlowCandidates(); iParticleFlowCandidate++){
-    if(fJetReader->GetParticleFlowCandidateId(iParticleFlowCandidate) != 1) continue; // Require ID 1 for candidates
-    particleFlowCandidatePt = fJetReader->GetParticleFlowCandidatePt(iParticleFlowCandidate);
+  for(Int_t iParticleFlowCandidate = 0; iParticleFlowCandidate < jetReader->GetNParticleFlowCandidates(); iParticleFlowCandidate++){
+    if(jetReader->GetParticleFlowCandidateId(iParticleFlowCandidate) != 1) continue; // Require ID 1 for candidates
+    particleFlowCandidatePt = jetReader->GetParticleFlowCandidatePt(iParticleFlowCandidate);
     if(particleFlowCandidatePt < 2) continue; // Require minimum pT of 2 GeV for candidates
     
     // Specific cuts only for generator level tracks
     if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
-      if(fJetReader->GetTrackCharge(iParticleFlowCandidate) == 0) continue;                 // Require that the track is charged
-      if(!PassSubeventCut(fJetReader->GetTrackSubevent(iParticleFlowCandidate))) continue;  // Require desired subevent
-      if(fJetReader->GetTrackMCStatus(iParticleFlowCandidate) != 1) continue;               // Require final state particles
+      if(jetReader->GetTrackCharge(iParticleFlowCandidate) == 0) continue;                 // Require that the track is charged
+      if(!PassSubeventCut(jetReader->GetTrackSubevent(iParticleFlowCandidate))) continue;  // Require desired subevent
+      if(jetReader->GetTrackMCStatus(iParticleFlowCandidate) != 1) continue;               // Require final state particles
     }
     
-    particleFlowCandidatePhi = fJetReader->GetParticleFlowCandidatePhi(iParticleFlowCandidate);
-    particleFlowCandidateEta = fJetReader->GetParticleFlowCandidateEta(iParticleFlowCandidate);
+    particleFlowCandidatePhi = jetReader->GetParticleFlowCandidatePhi(iParticleFlowCandidate);
+    particleFlowCandidateEta = jetReader->GetParticleFlowCandidateEta(iParticleFlowCandidate);
     deltaPhi = jetPhi-particleFlowCandidatePhi;
     
     // Transform deltaPhi to interval [-pi,pi]
@@ -540,6 +549,7 @@ void DijetAnalyzer::RunAnalysis(){
   // Event variables
   Int_t nEvents = 0;            // Number of events
   Bool_t dijetFound = false;    // Is there a dijet in the event?
+  Bool_t dijetFoundComparison = false;  // Is there a comparison dijet in the event (match calo jet branch)
   Bool_t twoJetsFound = false;  // Are there two jets in the event?
   Double_t vz = 0;              // Vertex z-position
   Double_t centrality = 0;      // Event centrality
@@ -562,9 +572,19 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t leadingJetPt = 0;       // Leading jet pT
   Double_t leadingJetPhi = 0;      // Leading jet phi
   Double_t leadingJetEta = 0;      // Leading jet eta
+  Double_t leadingJetPtComparison = 0;       // Leading comparison jet pT
+  Double_t leadingJetPhiComparison = 0;      // Leading comparison jet phi
+  Double_t leadingJetEtaComparison = 0;      // Leading comparison jet eta
+  Double_t leadingJetEtaDifference = 0;      // Matching angle between leading jets (match calo branch)
+  Double_t leadingJetPhiDifference = 0;      // Matching angle between leading jets (match calo branch)
   Double_t subleadingJetPt = 0;    // Subleading jet pT
   Double_t subleadingJetPhi = 0;   // Subleading jet phi
   Double_t subleadingJetEta = 0;   // Subleading jet eta
+  Double_t subleadingJetPtComparison = 0;    // Subleading comparison jet pT
+  Double_t subleadingJetPhiComparison = 0;   // Subleading comparison jet phi
+  Double_t subleadingJetEtaComparison = 0;   // Subleading comparison jet eta
+  Double_t subleadingJetEtaDifference = 0;      // Matching angle between subleading jets (match calo branch)
+  Double_t subleadingJetPhiDifference = 0;      // Matching angle between subleading jets (match calo branch)
   Double_t leadingParticleFlowCandidatePhi = 0;     // Leading particle lofw candidate phi
   Double_t leadingParticleFlowCandidateEta = 0;     // Leading particle flow candidate eta
   Double_t subleadingParticleFlowCandidatePhi = 0;  // Subleading particle flow candidate phi
@@ -574,6 +594,8 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t swapJetEta = 0;          // Swapping helper variable
   Int_t secondHighestIndex = -1;    // Index of the subleading jet in the event
   Int_t highestIndex = -1;          // Index of the leading jet in the event
+  Int_t secondHighestIndexComparison = -1; // Index of the subleading comparison jet in the event
+  Int_t highestIndexComparison = -1;       // Index of the leading comparison jet in the event
   Int_t swapIndex = -1;             // Swapping helper variable
   Double_t jetPt = 0;               // pT of the i:th jet in the event
   Double_t jetPtCorrected = 0;      // Jet pT corrected with the JFF correction
@@ -583,6 +605,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t highestPhi = 0;          // phi of any leading jet
   Double_t highestEta = 0;          // eta of any leading jet
   Double_t dphi = 0;                // deltaPhi for the considered jets
+  Double_t dphiComparison = 0;      // deltaPhi for the comparison jets
   Double_t leadingJetInfo[3] = {0};       // Array for leading jet pT, phi and eta
   Double_t subleadingJetInfo[3] = {0};    // Array for subleading jet pT, phi and eta
   Double_t inclusiveJetInfo[60][3] = {{0}}; // Array for jet pT, phi and eta for all the jets in the event
@@ -631,18 +654,24 @@ void DijetAnalyzer::RunAnalysis(){
   fJetType = fCard->Get("JetType");
   fMatchJets = (fCard->Get("MatchJets") >= 1);
   fMatchDijet = (fCard->Get("MatchJets") == 2);
+  fMatchJetAlgorithm = true;  // Note: This is for test branch where we match calo jets with pf jets. You should not see this line in the main analysis branch.
+  
   
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
       fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      if(fMatchJetAlgorithm) fComparisonJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,1-fJetType,fJetAxis,fMatchJets);
     } else {
       fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      if(fMatchJetAlgorithm) fComparisonJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,1-fJetType,fJetAxis,fMatchJets);
     }
   } else {
     if(fForestType == kSkimForest) {
       fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      if(fMatchJetAlgorithm) fComparisonJetReader = new SkimForestReader(fDataType,fReadMode,1-fJetType,fJetAxis,fMatchJets);
     } else {
       fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      if(fMatchJetAlgorithm) fComparisonJetReader = new HighForestReader(fDataType,fReadMode,1-fJetType,fJetAxis,fMatchJets);
     }
   }
   
@@ -771,6 +800,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     // If file is good, read the forest from the file
     fJetReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
+    if(fMatchJetAlgorithm) fComparisonJetReader->ReadForestFromFile(inputFile);  // (match calo jet branch)
     if(useDifferentReaderFotJetsAndTracks) fTrackReader[DijetHistograms::kSameEvent]->ReadForestFromFile(copyInputFile); // If we mix reco and gen, the reader for jets and tracks is different
     nEvents = fJetReader->GetNEvents();
     
@@ -803,6 +833,7 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Read the event to memory
       fJetReader->GetEvent(iEvent);
+      if(fMatchJetAlgorithm) fComparisonJetReader->GetEvent(iEvent);
       
       // If track reader is not the same as jet reader, read the event to memory in trackReader
       if(useDifferentReaderFotJetsAndTracks) fTrackReader[DijetHistograms::kSameEvent]->GetEvent(iEvent);
@@ -847,10 +878,15 @@ void DijetAnalyzer::RunAnalysis(){
       // Reset the variables used in dijet finding
       twoJetsFound = false;
       dijetFound = false;
+      dijetFoundComparison = false;
       highestIndex = -1;
       secondHighestIndex = -1;
+      highestIndexComparison = -1;
+      secondHighestIndexComparison = -1;
       leadingJetPt = 0;
+      leadingJetPtComparison = 0;
       subleadingJetPt = 0;
+      subleadingJetPtComparison = 0;
       highestAnyPt = 0;
       highestPhi = 0;
       highestEta = 0;
@@ -919,7 +955,7 @@ void DijetAnalyzer::RunAnalysis(){
             
             // Apply JFF correction for jet pT only if we are using calorimeter jets
             if(fJetType == 0){
-              std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
+              std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(fJetReader,jetPhi,jetEta);
               jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
             } else {
               jetPtCorrected = jetPt;
@@ -952,7 +988,7 @@ void DijetAnalyzer::RunAnalysis(){
             // If we are using leading particle flow candidate axis, we need to determine the direction
             // of the leading particle flow candidate whether we do the correction or not.
             if(fJetType == 0 || fJetAxis == 1){
-            std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
+            std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(fJetReader,jetPhi,jetEta);
             }
             if(fJetType == 0){
               jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
@@ -1051,9 +1087,9 @@ void DijetAnalyzer::RunAnalysis(){
         // Determine the directions of the leading particle flow candidates for the leading and subleading
         // jets also if leading particle flow candidate is used to estimate the jet axis
         if(fJetType == 0 || fJetAxis == 1){
-          std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(leadingJetPhi,leadingJetEta);
+          std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(fJetReader,leadingJetPhi,leadingJetEta);
           if(fJetType == 0) leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
-          std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(subleadingJetPhi,subleadingJetEta);
+          std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(fJetReader,subleadingJetPhi,subleadingJetEta);
           if(fJetType == 0) subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
         }
         
@@ -1086,8 +1122,165 @@ void DijetAnalyzer::RunAnalysis(){
           dijetFound = false;
         }
         
-        if(dijetFound) dijetCounter++;
       } // End of dijet cuts (two jets found if)
+      
+      // Matching calo jet branch. If a dijet is found using first algorithm, repeat the exercise with the second algorithm
+      // (match calo jet branch)
+      
+      if(dijetFound){
+        
+        //*******************************************************
+        //    Loop over all jets and find leading comparison jet
+        //*******************************************************
+        
+        // Search for leading jet and fill histograms for all jets within the eta range
+        for(Int_t jetIndex = 0; jetIndex < fComparisonJetReader->GetNJets(); jetIndex++) {
+          jetPt = fComparisonJetReader->GetJetPt(jetIndex);
+          jetPhi = fComparisonJetReader->GetJetPhi(jetIndex);
+          jetEta = fComparisonJetReader->GetJetEta(jetIndex);
+          
+          //  ========================================
+          //  ======== Apply jet quality cuts ========
+          //  ========================================
+          
+          if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
+          if(fMinimumMaxTrackPtFraction >= fComparisonJetReader->GetJetMaxTrackPt(jetIndex)/fComparisonJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
+          if(fMaximumMaxTrackPtFraction <= fComparisonJetReader->GetJetMaxTrackPt(jetIndex)/fComparisonJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
+          
+          // Jet matching between reconstructed and generator level jets
+          if(fMatchJets && !fComparisonJetReader->HasMatchingJet(jetIndex)) {
+            unmatchedCounter++;
+            continue;
+          }
+          
+          // For debugging purposes, count the number of matched jets
+          if(fMatchJets) matchedCounter++;
+          
+          // Require also reference parton flavor to be quark [-6,-1] U [1,6] or gluon (21)
+          if(fMatchJets){
+            partonFlavor = fComparisonJetReader->GetPartonFlavor(jetIndex);
+            if(partonFlavor == -999) nonSensicalPartonIndex++;
+            if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21) || partonFlavor == 0) continue;
+          }
+          
+          //  ========================================
+          //  ======= Jet quality cuts applied =======
+          //  ========================================
+          
+          // Remember the highest jet pT
+          if(jetPt > leadingJetPtComparison){
+            leadingJetPtComparison = jetPt;
+            highestIndexComparison = jetIndex;
+          }
+          
+        } // End of search for leading comparison jet loop
+        
+        //************************************************
+        //   Loop over all jets and find subleading jet
+        //************************************************
+        
+        // Search for subleading jet
+        for(Int_t jetIndex = 0 ; jetIndex < fComparisonJetReader->GetNJets(); jetIndex++){
+          jetPt = fComparisonJetReader->GetJetPt(jetIndex);
+          jetPhi = fComparisonJetReader->GetJetPhi(jetIndex);
+          jetEta = fComparisonJetReader->GetJetEta(jetIndex);
+          
+          //  ========================================
+          //  ======== Apply jet quality cuts ========
+          //  ========================================
+          
+          if(jetIndex == highestIndexComparison) continue; // Do not consider leading particle
+          if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
+          if(fMinimumMaxTrackPtFraction >= fComparisonJetReader->GetJetMaxTrackPt(jetIndex)/fComparisonJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
+          if(fMaximumMaxTrackPtFraction <= fComparisonJetReader->GetJetMaxTrackPt(jetIndex)/fComparisonJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
+          
+          // Jet matching between reconstructed and generator level jets
+          if(fMatchJets && !fComparisonJetReader->HasMatchingJet(jetIndex)) continue;
+          
+          //  ========================================
+          //  ======= Jet quality cuts applied =======
+          //  ========================================
+          
+          if(jetPt > subleadingJetPtComparison){
+            subleadingJetPtComparison = jetPt;
+            secondHighestIndexComparison = jetIndex;
+          }
+        }  //End of subleading jet search
+        
+        //************************************************
+        //              Apply dijet criteria
+        //************************************************
+        
+        // Check if at least two jets were found
+        if(highestIndexComparison > -1 && secondHighestIndexComparison > -1) twoJetsFound = true;
+        
+        // Only apply the dijet cuts for events with at least two jets
+        if(twoJetsFound){
+          
+          // Read the eta and phi values for leading and subleading jets
+          leadingJetPhiComparison = fComparisonJetReader->GetJetPhi(highestIndexComparison);
+          leadingJetEtaComparison = fComparisonJetReader->GetJetEta(highestIndexComparison);
+          subleadingJetPhiComparison = fComparisonJetReader->GetJetPhi(secondHighestIndexComparison);
+          subleadingJetEtaComparison = fComparisonJetReader->GetJetEta(secondHighestIndexComparison);
+          
+          // Apply the JFF correction for leading and subleading jet pT only if we are using calo jets
+          // Determine the directions of the leading particle flow candidates for the leading and subleading
+          // jets also if leading particle flow candidate is used to estimate the jet axis
+          if(fJetType == 1 || fJetAxis == 1){
+            std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(fComparisonJetReader,leadingJetPhiComparison,leadingJetEtaComparison);
+            if(fJetType == 1) leadingJetPtComparison = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPtComparison,leadingJetEtaComparison);
+            std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(fComparisonJetReader,subleadingJetPhiComparison,subleadingJetEtaComparison);
+            if(fJetType == 1) subleadingJetPtComparison = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPtComparison,subleadingJetEtaComparison);
+          }
+          
+          // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info
+          if(subleadingJetPtComparison > leadingJetPtComparison){
+            swapJetPt = leadingJetPtComparison;   leadingJetPtComparison = subleadingJetPtComparison;    subleadingJetPtComparison = swapJetPt;
+            swapJetPhi = leadingJetPhiComparison; leadingJetPhiComparison = subleadingJetPhiComparison;  subleadingJetPhiComparison = swapJetPhi;
+            swapJetEta = leadingJetEtaComparison; leadingJetEtaComparison = subleadingJetEtaComparison;  subleadingJetEtaComparison = swapJetEta;
+            swapIndex = highestIndexComparison;   highestIndexComparison = secondHighestIndexComparison; secondHighestIndexComparison = swapIndex;
+            swapJetPhi = leadingParticleFlowCandidatePhi;
+            leadingParticleFlowCandidatePhi = subleadingParticleFlowCandidatePhi;
+            subleadingParticleFlowCandidatePhi = leadingParticleFlowCandidatePhi;
+            swapJetEta = leadingParticleFlowCandidateEta;
+            leadingParticleFlowCandidateEta = subleadingParticleFlowCandidateEta;
+            subleadingParticleFlowCandidateEta = leadingParticleFlowCandidateEta;
+          }
+          
+          dijetFoundComparison = true;
+          dphiComparison =  leadingJetPhiComparison - subleadingJetPhiComparison;
+          if(dphiComparison < 0) dphiComparison = -dphiComparison;
+          if(dphiComparison > TMath::Pi()) dphiComparison = 2*TMath::Pi() - dphiComparison;
+          
+          // Apply dijet cuts
+          if((leadingJetPtComparison >= fJetMaximumPtCut) ||              // Maximum leading jet pT cut
+             (leadingJetPtComparison <= fLeadingJetMinPtCut) ||           // Leading jet minimum pT cut
+             (subleadingJetPtComparison <= fSubleadingJetMinPtCut) ||     // Subleading jet minimum pT cut
+             (TMath::Abs(leadingJetEtaComparison) >= fJetEtaCut) ||       // Leading jet eta cut
+             (TMath::Abs(subleadingJetEtaComparison) >= fJetEtaCut)||     // Subleading jet eta cut
+             (TMath::Abs(dphiComparison) <= fDeltaPhiCut)){               // DeltaPhi cut
+            dijetFoundComparison = false;
+          }
+          
+          // Require pf and calo jets to be within deltaR < 0.4
+          leadingJetEtaDifference = leadingJetEtaComparison - leadingJetEta;
+          leadingJetPhiDifference = leadingJetPhiComparison - leadingJetPhi;
+          subleadingJetEtaDifference = subleadingJetEtaComparison - subleadingJetEta;
+          subleadingJetPhiDifference = subleadingJetPhiComparison - subleadingJetPhi;
+          
+          // Transform deltaPhis to interval [-pi/2,3pi/2]
+          while(leadingJetPhiDifference > (1.5*TMath::Pi())){leadingJetPhiDifference += -2*TMath::Pi();}
+          while(subleadingJetPhiDifference > (1.5*TMath::Pi())){subleadingJetPhiDifference += -2*TMath::Pi();}
+          while(leadingJetPhiDifference < (-0.5*TMath::Pi())){leadingJetPhiDifference += 2*TMath::Pi();}
+          while(subleadingJetPhiDifference < (-0.5*TMath::Pi())){subleadingJetPhiDifference += 2*TMath::Pi();}
+          
+          if(TMath::Sqrt(leadingJetEtaDifference*leadingJetEtaDifference + leadingJetPhiDifference*leadingJetPhiDifference) > 0.4) dijetFoundComparison = false;
+          if(TMath::Sqrt(subleadingJetEtaDifference*subleadingJetEtaDifference + subleadingJetPhiDifference*subleadingJetPhiDifference) > 0.4) dijetFoundComparison = false;
+          
+          if(dijetFoundComparison) dijetCounter++;
+        } // End of dijet cuts (two jets found if)
+        
+      } // Dijet found, check that the dijet matched a calo dijet
       
       //************************************************
       //       Fill histograms for inclusive tracks
@@ -1153,7 +1346,7 @@ void DijetAnalyzer::RunAnalysis(){
       }
       
       // If a dijet is found, fill some information to fHistograms
-      if(dijetFound){
+      if(dijetFound && dijetFoundComparison){
         
         matchedDijetCounter++;
         
