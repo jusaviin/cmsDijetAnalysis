@@ -278,27 +278,25 @@ void closurePlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = true;          // Save the figures to a file
+  bool saveFigures = false;          // Save the figures to a file
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = true;      // Draw the tracking closures
+  bool drawTrackClosure = false;       // Draw the tracking closures
   
   bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
-  bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
+  bool drawJetKinematicsAsymmerty = true;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
   int ptRebin = 10;                  // Rebin for track pT closure histograms (there are 500 bins)
   int trackAngleRebin = 2;          // Rebin for track eta and phi histograms
   
   // Read the number of bins from histogram manager
-  DijetHistogramManager *dummyManager = new DijetHistogramManager();
-  const int nCentralityBins = dummyManager->GetNCentralityBins();
-  const int nTrackPtBins = dummyManager->GetNTrackPtBins();
-  const int nAsymmetryBins = 4;
+  const int nCentralityBins = 4; // Expected number of centrality bins
+  const int nTrackPtBins = 6; // Expected number of ttack pT bins
+  const int nAsymmetryBins = 4; // Maximum number of asymmetry bins that can be in a file
   double centralityBinBorders[] = {0,10,30,50,100};       // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};       // Bin borders for track pT
-  double asymmetryBinBorders[] = {0,0.11,0.22,0.33,0.75}; // Bin borders for dijet asymmetry
   
   // Select which bins to plot
   int firstCentralityBin = 0;
@@ -320,22 +318,48 @@ void closurePlotter(){
   TString systemString[knCollisionSystems] = {"Pp","PbPb"};
   
   // Open files containing the QA histograms
+  DijetHistogramManager *inputManager[knCollisionSystems][knDataTypes];
   TFile *inputFile[knCollisionSystems][knDataTypes];
   inputFile[kPp][kData] = TFile::Open("data/dijet_pp_highForest_pfJets_smoothedMixing_noCorrections_processed_2019-01-07.root");
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root");
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root");
+  // data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root
+  // data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root
   inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_noCorrelations_2019-01-08.root");
-  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root");
+  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noCorrections_processed.root");
+  // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedCaloJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root
+  // data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root
+  
+  // Load the necessary histograms to histogram managers
+  for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
+    for(int iDataType = 0; iDataType < knDataTypes; iDataType++){
+      inputManager[iSystem][iDataType] = new DijetHistogramManager(inputFile[iSystem][iDataType]);
+      inputManager[iSystem][iDataType]->SetLoadEventInformation(true);
+      inputManager[iSystem][iDataType]->SetLoadAllJets(true,true,true,true);
+      inputManager[iSystem][iDataType]->LoadProcessedHistograms();
+    }
+  }
   
   // Open files for the closure tests
+  DijetHistogramManager *closureManager[knCollisionSystems][knMonteCarloTypes];
   TFile *closureFile[knCollisionSystems][knMonteCarloTypes];
-  closureFile[kPp][kRecoReco] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
+  closureFile[kPp][kRecoReco] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_noCorrections_processed_2019-01-15.root");
   closureFile[kPp][kRecoGen] = TFile::Open("data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
   closureFile[kPp][kGenReco] = TFile::Open("data/dijet_ppMC_GenReco_mergedSkims_Pythia6_processed_2018-08-16.root");
   closureFile[kPp][kGenGen] = TFile::Open("data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
   closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root");
-  closureFile[kPbPb][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noMixing_processed_2019-01-04.root");
+  closureFile[kPbPb][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root");
   closureFile[kPbPb][kGenReco] = TFile::Open("data/PbPbMC_GenReco_skims_pfJets_noMixing_processed_2019-01-04.root");
   closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_GenGen_skims_pfJets_noMixing_processed_2019-01-04.root");
+  
+  // Load the necessary histograms to histogram managers
+  for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
+    for(int iDataType = 0; iDataType < knMonteCarloTypes; iDataType++){
+      closureManager[iSystem][iDataType] = new DijetHistogramManager(closureFile[iSystem][iDataType]);
+      closureManager[iSystem][iDataType]->SetLoadAllTracks(true,true);
+      closureManager[iSystem][iDataType]->SetLoadAllInclusiveTracks(true,true);
+      closureManager[iSystem][iDataType]->LoadProcessedHistograms();
+    }
+  }
   
   // Define needed histograms
   TH1D *hVz[knCollisionSystems][knDataTypes+1];
@@ -361,31 +385,31 @@ void closurePlotter(){
   const char *correctionString[2] = {"","Uncorrected"}; // 0 = Track correction included, 1 = No tracking corrections
   const char *inclusiveJetHeader[3] = {"Leading","Inclusive","Subleading"};
   const char *cutFinder[3] = {"","A0",""}; // A0 selects inclusive jets with pT cut of 120.
-  char namer[200];
   double normalizationFactor;
+  int jetTypeIndex[3] = {DijetHistogramManager::kLeadingJet, DijetHistogramManager::kAnyJet, DijetHistogramManager::kSubleadingJet};
+  int asymmetryBinIndex[3] = {DijetHistogramManager::kMaxAsymmetryBins, 0, DijetHistogramManager::kMaxAsymmetryBins}; // Selecting asymmetry bin 0 for inclusive jet gives only jets above 120 GeV.
   
   // ******************************************
   // **    Read the histograms from files    **
   // ******************************************
   
-  char histogramNamer[200];
   for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
     for(int iDataType = 0; iDataType < knDataTypes; iDataType++){
       
       // Vz plots for both pp and PbPb
-      hVz[iSystem][iDataType] = (TH1D*) inputFile[iSystem][iDataType]->Get("vertexZ");
+      hVz[iSystem][iDataType] = inputManager[iSystem][iDataType]->GetHistogramVertexZ();
       setStyleAndNormalize(hVz[iSystem][iDataType],iDataType);
       if(iDataType == kMC) {
-        hVz[iSystem][iDataType+1] = (TH1D*) inputFile[iSystem][iDataType]->Get("vertexZweighted");
+        hVz[iSystem][iDataType+1] = inputManager[iSystem][iDataType]->GetHistogramVertexZWeighted();
         setStyleAndNormalize(hVz[iSystem][iDataType+1],iDataType+1);
       }
       
       // Centrality plots only for PbPb
       if(iSystem == kPbPb){
-        hCentrality[iDataType] = (TH1D*) inputFile[iSystem][iDataType]->Get("centrality");
+        hCentrality[iDataType] = inputManager[iSystem][iDataType]->GetHistogramCentrality();
         setStyleAndNormalize(hCentrality[iDataType],iDataType);
         if(iDataType == kMC){
-          hCentrality[iDataType+1] = (TH1D*) inputFile[iSystem][iDataType]->Get("centralityWeighted");
+          hCentrality[iDataType+1] = inputManager[iSystem][iDataType]->GetHistogramCentralityWeighted();
           setStyleAndNormalize(hCentrality[iDataType+1],iDataType+1);
         }
       }
@@ -402,19 +426,16 @@ void closurePlotter(){
         for(int iDataType = 0; iDataType < knDataTypes; iDataType++){
 
           // Read jet pT histograms
-          sprintf(namer,"%sJet/%sJetPt_C%d%s",inclusiveJetString[iJetType],inclusiveJetString[iJetType],iCentrality,cutFinder[iJetType]);
-          jetPt[iJetType][iSystem][iDataType][iCentrality] = (TH1D*) inputFile[iSystem][iDataType]->Get(namer);
+          jetPt[iJetType][iSystem][iDataType][iCentrality] = inputManager[iSystem][iDataType]->GetHistogramJetPt(jetTypeIndex[iJetType], iCentrality, asymmetryBinIndex[iJetType]);
           normalizationFactor = 1.0/jetPt[iJetType][iSystem][iDataType][iCentrality]->Integral("width");
           jetPt[iJetType][iSystem][iDataType][iCentrality]->Scale(normalizationFactor);
           
           // Read jet eta histograms and scale them with the number of jets
-          sprintf(namer,"%sJet/%sJetEta_C%d%s",inclusiveJetString[iJetType],inclusiveJetString[iJetType],iCentrality,cutFinder[iJetType]);
-          jetEta[iJetType][iSystem][iDataType][iCentrality] = (TH1D*) inputFile[iSystem][iDataType]->Get(namer);
+          jetEta[iJetType][iSystem][iDataType][iCentrality] = inputManager[iSystem][iDataType]->GetHistogramJetEta(jetTypeIndex[iJetType], iCentrality, asymmetryBinIndex[iJetType]);
           jetEta[iJetType][iSystem][iDataType][iCentrality]->Scale(normalizationFactor);
           
           // Read jet phi histograms and scale them with the number of jets
-          sprintf(namer,"%sJet/%sJetPhi_C%d%s",inclusiveJetString[iJetType],inclusiveJetString[iJetType],iCentrality,cutFinder[iJetType]);
-          jetPhi[iJetType][iSystem][iDataType][iCentrality] = (TH1D*) inputFile[iSystem][iDataType]->Get(namer);
+          jetPhi[iJetType][iSystem][iDataType][iCentrality] = inputManager[iSystem][iDataType]->GetHistogramJetPhi(jetTypeIndex[iJetType], iCentrality, asymmetryBinIndex[iJetType]);
           jetPhi[iJetType][iSystem][iDataType][iCentrality]->Scale(normalizationFactor);
           
         } // Data type loop (real data / simulation)
@@ -422,79 +443,72 @@ void closurePlotter(){
         if(iJetType == 2) continue;  // Asymmetry binning only for leading and subleading jets (not for inclusive)
         
         // For the asymmetry binning, we only make the figures for real data
-        for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+        for(int iAsymmetry = 0; iAsymmetry < inputManager[iSystem][kData]->GetNAsymmetryBins(); iAsymmetry++){
           
           // Read jet pT histograms in dijet asymmetry bins
-          sprintf(namer,"%sJet/%sJetPt_C%dA%d",leadingJetString[iJetType],leadingJetString[iJetType],iCentrality,iAsymmetry);
-          jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality] = (TH1D*) inputFile[iSystem][kData]->Get(namer);
+          jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality] = inputManager[iSystem][kData]->GetHistogramJetPt(iJetType, iCentrality, iAsymmetry);
           normalizationFactor = 1.0/jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Integral("width");
           jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Scale(normalizationFactor);
           
           // Read jet eta histograms in dijet asymmetry bins and scale them with the number of jets
-          sprintf(namer,"%sJet/%sJetEta_C%dA%d",leadingJetString[iJetType],leadingJetString[iJetType],iCentrality,iAsymmetry);
-          jetEtaDijet[iJetType][iAsymmetry][iSystem][iCentrality] = (TH1D*) inputFile[iSystem][kData]->Get(namer);
+          jetEtaDijet[iJetType][iAsymmetry][iSystem][iCentrality] = inputManager[iSystem][kData]->GetHistogramJetEta(iJetType, iCentrality, iAsymmetry);
           jetEtaDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Scale(normalizationFactor);
           
           // Read jet phi histograms in dijet asymmetry bins and scale them with the number of jets
-          sprintf(namer,"%sJet/%sJetPhi_C%dA%d",leadingJetString[iJetType],leadingJetString[iJetType],iCentrality,iAsymmetry);
-          jetPhiDijet[iJetType][iAsymmetry][iSystem][iCentrality] = (TH1D*) inputFile[iSystem][kData]->Get(namer);
+          jetPhiDijet[iJetType][iAsymmetry][iSystem][iCentrality] = inputManager[iSystem][kData]->GetHistogramJetPhi(iJetType, iCentrality, iAsymmetry);
           jetPhiDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Scale(normalizationFactor);
           
         } // Asymmetry bin loop
       } // Centrality loop
     } // Jet type loop (leading/subleading)
     
-    // Read all the histograms needed for tracking closure plots
-    for(int iInclusive = 0; iInclusive < 2; iInclusive++){
-      
-      for(int iMonteCarloType = 0; iMonteCarloType < knMonteCarloTypes; iMonteCarloType++){
-        for(int iCentrality = firstCentralityBin; iCentrality <= lastCentralityBin; iCentrality++){
-          
-          // No centrality binning for pp
-          if(iSystem == kPp && iCentrality > 0) continue;
-          
-          // Read jet pT histograms for normalizing the track histograms per jet
-          sprintf(namer,"%sJet/%sJetPt_C%d",inclusiveJetString[iInclusive],inclusiveJetString[iInclusive],iCentrality);
-          jetPtNormalizer[iInclusive][iSystem][iMonteCarloType][iCentrality] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
-          normalizationFactor = 1.0/jetPtNormalizer[iInclusive][iSystem][iMonteCarloType][iCentrality]->Integral("width");
-          jetPtNormalizer[iInclusive][iSystem][iMonteCarloType][iCentrality]->Scale(normalizationFactor);
-          
-          for(int iCorrection = 0; iCorrection < 2; iCorrection++){
+    if(drawTrackClosure){
+      // Read all the histograms needed for tracking closure plots
+      for(int iInclusive = 0; iInclusive < 2; iInclusive++){
+        
+        for(int iMonteCarloType = 0; iMonteCarloType < knMonteCarloTypes; iMonteCarloType++){
+          for(int iCentrality = firstCentralityBin; iCentrality <= lastCentralityBin; iCentrality++){
             
-            // Read track pT histograms
-            sprintf(namer,"track%s%s/track%s%sPt_SameEvent_C%d",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality);
-            trackPt[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
-            trackPt[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality]->Scale(normalizationFactor);
+            // No centrality binning for pp
+            if(iSystem == kPp && iCentrality > 0) continue;
             
-            // Read track eta histograms without pT cut
-            sprintf(namer,"track%s%s/track%s%sEta_SameEvent_C%dT6",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality);
-            trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
-            trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins]->Scale(normalizationFactor);
+            // Read jet pT histograms for normalizing the track histograms per jet
+            jetPtNormalizer[iInclusive][iSystem][iMonteCarloType][iCentrality] =  closureManager[iSystem][iMonteCarloType]->GetHistogramJetPt(jetTypeIndex[iInclusive], iCentrality, DijetHistogramManager::kMaxAsymmetryBins);
+            normalizationFactor = 1.0/jetPtNormalizer[iInclusive][iSystem][iMonteCarloType][iCentrality]->Integral("width");
+            jetPtNormalizer[iInclusive][iSystem][iMonteCarloType][iCentrality]->Scale(normalizationFactor);
             
-            // Read track phi histograms without pT cut
-            sprintf(namer,"track%s%s/track%s%sPhi_SameEvent_C%dT6",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality);
-            trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
-            trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins]->Scale(normalizationFactor);
-            
-            for(int iTrackPt = firstTrackPtBin; iTrackPt <= lastTrackPtBin; iTrackPt++){
+            for(int iCorrection = 0; iCorrection < 2; iCorrection++){
               
-              // Read track eta histograms in pT bins
-              sprintf(namer,"track%s%s/track%s%sEta_SameEvent_C%dT%d",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality,iTrackPt);
-              trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
-              trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt]->Scale(normalizationFactor);
+              // Read track pT histograms
+              trackPt[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality] = closureManager[iSystem][iMonteCarloType]->GetHistogramTrackPt(iInclusive*2 + iCorrection, 0, iCentrality);
+              trackPt[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality]->Scale(normalizationFactor);
               
-              // Read track phi histograms in pT bins
-              sprintf(namer,"track%s%s/track%s%sPhi_SameEvent_C%dT%d",inclusiveString[iInclusive],correctionString[iCorrection],inclusiveString[iInclusive],correctionString[iCorrection],iCentrality,iTrackPt);
-              trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt] = (TH1D*) closureFile[iSystem][iMonteCarloType]->Get(namer);
-              trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt]->Scale(normalizationFactor);
+              // Read track eta histograms without pT cut
+              trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = closureManager[iSystem][iMonteCarloType]->GetHistogramTrackEta(iInclusive*2 + iCorrection, 0, iCentrality, closureManager[iSystem][iMonteCarloType]->GetNTrackPtBins());
+              trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins]->Scale(normalizationFactor);
               
-            } // Track pT loop
-          } // Corrected - Uncorrected loop
-        } // Centrality loop
-      } // Loop over Monte Carlo types
-      
-    } // Dijet - inclusive loop
-  } // Collision system loop
+              // Read track phi histograms without pT cut
+              trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins] = closureManager[iSystem][iMonteCarloType]->GetHistogramTrackPhi(iInclusive*2 + iCorrection, 0, iCentrality, closureManager[iSystem][iMonteCarloType]->GetNTrackPtBins());
+              trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][nTrackPtBins]->Scale(normalizationFactor);
+              
+              for(int iTrackPt = firstTrackPtBin; iTrackPt <= lastTrackPtBin; iTrackPt++){
+                
+                // Read track eta histograms in pT bins
+                trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt] = closureManager[iSystem][iMonteCarloType]->GetHistogramTrackEta(iInclusive*2 + iCorrection, 0, iCentrality, iTrackPt);
+                trackEta[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt]->Scale(normalizationFactor);
+                
+                // Read track phi histograms in pT bins
+                trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt] = closureManager[iSystem][iMonteCarloType]->GetHistogramTrackPhi(iInclusive*2 + iCorrection, 0, iCentrality, iTrackPt);
+                trackPhi[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality][iTrackPt]->Scale(normalizationFactor);
+                
+              } // Track pT loop
+            } // Corrected - Uncorrected loop
+          } // Centrality loop
+        } // Loop over Monte Carlo types
+        
+      } // Dijet - inclusive loop
+    } // Collision system loop
+  }
   
   // Drawing class for drawing your favorite root style
   JDrawer *drawer = new JDrawer();
@@ -850,38 +864,38 @@ void closurePlotter(){
            */
           
           // Asymmetry binning only for special asymmetry plots
-          for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+          for(int iAsymmetry = 0; iAsymmetry < inputManager[iSystem][kData]->GetNAsymmetryBins() ; iAsymmetry++){
             
             // Define asymmetry strings
-            sprintf(asymmetryString,"AJ%.0f-AJ%.0f",asymmetryBinBorders[iAsymmetry]*100,asymmetryBinBorders[iAsymmetry+1]*100);
+            sprintf(asymmetryString,"%.2f < %s < %.2f",inputManager[iSystem][kData]->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry) ,inputManager[iSystem][kData]->GetCard()->GetAsymmetryBinType(), inputManager[iSystem][kData]->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry));
             
             // Plot the kinematics figures for jet pT
             // Note: For jetPt 0 = leading and 2 = subleading and for jetPtDijet 0 = leading and 1 = subleading
-            plotJetKinematicsAsymmetry(drawer,jetPt[0][iSystem][kData][iCentrality],jetPt[2][iSystem][kData][iCentrality],jetPtDijet[0][iAsymmetry][iSystem][iCentrality],jetPtDijet[1][iAsymmetry][iSystem][iCentrality],"p_{T} (GeV)","#frac{1}{N_{dijet}} #frac{dN}{dp_{T}} (1/GeV)",true,1,50,0.06,false,0.2,0.2,legendNames[iSystem][0],centralityString,asymmetryString);
+            plotJetKinematicsAsymmetry(drawer, jetPt[0][iSystem][kData][iCentrality], jetPt[2][iSystem][kData][iCentrality], jetPtDijet[0][iAsymmetry][iSystem][iCentrality], jetPtDijet[1][iAsymmetry][iSystem][iCentrality], "p_{T} (GeV)", "#frac{1}{N_{dijet}} #frac{dN}{dp_{T}} (1/GeV)", true, 1, 50, 0.06, false, 0.2, 0.2, legendNames[iSystem][0], centralityString, asymmetryString);
             
             // Save the figures for jet pT
             if(saveFigures){
-              sprintf(figureName,"figures/jetPtAsymmetryKinematics_%s%s_%s.pdf",legendNames[iSystem][0],centralityName,asymmetryString);
+              sprintf(figureName,"figures/jetPtAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, asymmetryString);
               gPad->GetCanvas()->SaveAs(figureName);
             }
             
             // Plot the kinematics figures for jet eta
             // Note: For jetEta 0 = leading and 2 = subleading and for jetEtaDijet 0 = leading and 1 = subleading
-            plotJetKinematicsAsymmetry(drawer,jetEta[0][iSystem][kData][iCentrality],jetEta[2][iSystem][kData][iCentrality],jetEtaDijet[0][iAsymmetry][iSystem][iCentrality],jetEtaDijet[1][iAsymmetry][iSystem][iCentrality],"#eta","#frac{1}{N_{dijet}} #frac{dN}{d#eta}",false,1,-1000,1,true,0.3,0.6,legendNames[iSystem][0],centralityString,asymmetryString);
+            plotJetKinematicsAsymmetry(drawer, jetEta[0][iSystem][kData][iCentrality], jetEta[2][iSystem][kData][iCentrality], jetEtaDijet[0][iAsymmetry][iSystem][iCentrality], jetEtaDijet[1][iAsymmetry][iSystem][iCentrality], "#eta", "#frac{1}{N_{dijet}} #frac{dN}{d#eta}", false, 1, -1000, 1, true, 0.26, 0.6, legendNames[iSystem][0], centralityString, asymmetryString);
             
             // Save the figures for jet eta
             if(saveFigures){
-              sprintf(figureName,"figures/jetEtaAsymmetryKinematics_%s%s_%s.pdf",legendNames[iSystem][0],centralityName,asymmetryString);
+              sprintf(figureName, "figures/jetEtaAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, asymmetryString);
               gPad->GetCanvas()->SaveAs(figureName);
             }
             
             // Plot the kinematics figures for jet phi
             // Note: For jetPhi 0 = leading and 2 = subleading and for jetPhiDijet 0 = leading and 1 = subleading
-            plotJetKinematicsAsymmetry(drawer,jetPhi[0][iSystem][kData][iCentrality],jetPhi[2][iSystem][kData][iCentrality],jetPhiDijet[0][iAsymmetry][iSystem][iCentrality],jetPhiDijet[1][iAsymmetry][iSystem][iCentrality],"#phi","#frac{1}{N_{dijet}} #frac{dN}{d#phi}",false,1,-1000,0.3,false,0.3,0.2,legendNames[iSystem][0],centralityString,asymmetryString);
+            plotJetKinematicsAsymmetry(drawer, jetPhi[0][iSystem][kData][iCentrality], jetPhi[2][iSystem][kData][iCentrality], jetPhiDijet[0][iAsymmetry][iSystem][iCentrality], jetPhiDijet[1][iAsymmetry][iSystem][iCentrality], "#phi","#frac{1}{N_{dijet}} #frac{dN}{d#phi}", false, 1, -1000, 0.3, false, 0.3, 0.2, legendNames[iSystem][0], centralityString, asymmetryString);
             
             // Save the figures for jet phi
             if(saveFigures){
-              sprintf(figureName,"figures/jetPhiAsymmetryKinematics_%s%s_%s.pdf",legendNames[iSystem][0],centralityName,asymmetryString);
+              sprintf(figureName, "figures/jetPhiAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, asymmetryString);
               gPad->GetCanvas()->SaveAs(figureName);
             }
             
