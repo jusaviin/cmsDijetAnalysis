@@ -23,7 +23,7 @@ void produceSpilloverCorrection(){
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root"; // File name for the output file
+  TString outputFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root"; // File name for the output file
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
   TString uncorrectedDataFileName = "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"; // Data file to compare yields with spillover file
@@ -34,6 +34,8 @@ void produceSpilloverCorrection(){
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatio
+  
+  bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -261,13 +263,12 @@ void produceSpilloverCorrection(){
           }
           
           // Get the signal histogram and extract the correction from it
-          if(iDataType == 0 && iJetTrack < DijetHistogramManager::kTrackInclusiveJet){ // This can be modified if the data file also has asymmetry binning
+          if(iDataType == 0 && iJetTrack < DijetHistogramManager::kTrackInclusiveJet && processAsymmetryBins){ // This can be modified if the data file also has asymmetry binning
             for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
               
               spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, iAsymmetry,iCentrality,iTrackPt);
               
               // Symmetrize the subeNon0 distribution
-              cout << "WTF??" << endl;
               symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt], spilloverRcut[iCentrality][iTrackPt]);
             }
           } else {
@@ -655,7 +656,7 @@ void produceSpilloverCorrection(){
         symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][nAsymmetryBins][iCentrality][iTrackPt]->Write(histogramNamer);
         
         // No asymmetry binning for inclusive jets
-        if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){
+        if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet && processAsymmetryBins){
           for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
             sprintf(histogramNamer,"nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_A%dC%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
             symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);

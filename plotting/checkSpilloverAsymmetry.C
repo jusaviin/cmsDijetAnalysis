@@ -12,13 +12,16 @@ void checkSpilloverAsymmetry(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "newSpilloverTest_symmetrizedDistribution_xj_radial.root";
-  TString spilloverComparisonFileName = "newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root";
+  TString spilloverFileName = "newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root";
+  TString spilloverComparisonFileName = "newSpilloverTest_symmetrizedDistribution_genJets_radial.root";
+  // newSpilloverTest_symmetrizedDistribution_xj_radial.root
+  // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
+  // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
   
   bool drawAsymmetryComparison = false;
   bool drawFileComparison = true;
   
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -45,10 +48,10 @@ void checkSpilloverAsymmetry(){
   // Read the histograms from spillover file
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+      /*for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
         spilloverHistogram[iAsymmetry][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_A%dC%dT%d",iAsymmetry,iCentrality,iTrackPt));
         spilloverDeltaR[iAsymmetry][iCentrality][iTrackPt] = calculator->GetJetShape(spilloverHistogram[iAsymmetry][iCentrality][iTrackPt]);
-      }
+      }*/
       spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
       spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]->SetName(Form("regularSpillover%d%d",iCentrality,iTrackPt));
       spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt] = calculator->GetJetShape(spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]);
@@ -122,11 +125,11 @@ void checkSpilloverAsymmetry(){
         
         spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kRed);
         drawer->DrawHistogramToUpperPad(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],"#DeltaR","P(#DeltaR)"," ");
-        legend->AddEntry(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],"Regular","l");
+        legend->AddEntry(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],"Matched","l");
         
         spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlue);
         spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt]->Draw("same");
-        legend->AddEntry(spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt],"Matched","l");
+        legend->AddEntry(spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt],"Gen jets","l");
         
         legend->Draw();
         
