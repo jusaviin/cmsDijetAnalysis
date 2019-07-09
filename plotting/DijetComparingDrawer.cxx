@@ -974,7 +974,16 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   TString compactCentralityString;
   TString trackPtString;
   TString compactTrackPtString;
+  TString asymmetryString = "";
+  TString compactAsymmetryString = "";
   char namerX[100];
+  
+  // Set the asymmetry string based on the selected asymmetry bin
+  if(fAsymmetryBin >= 0 && fAsymmetryBin < fBaseHistograms->GetNAsymmetryBins()){
+    asymmetryString = Form("%.2f < %s < %.2f", fBaseHistograms->GetCard()->GetLowBinBorderAsymmetry(fAsymmetryBin), fBaseHistograms->GetCard()->GetAsymmetryBinType(), fBaseHistograms->GetCard()->GetHighBinBorderAsymmetry(fAsymmetryBin));
+    compactAsymmetryString = Form("_A=%.2f-%.2f", fBaseHistograms->GetCard()->GetLowBinBorderAsymmetry(fAsymmetryBin), fBaseHistograms->GetCard()->GetHighBinBorderAsymmetry(fAsymmetryBin));
+    compactAsymmetryString.ReplaceAll(".","v");
+  }
   
   // Helper histograms for summing over pT
   TH1D *mainSum;
@@ -982,7 +991,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   TH1D *comparisonSumRatio[knMaxRatios];
   
   // Canvas for the big closure plot
-  TCanvas *closureCanvas = new TCanvas("jetShapeClosureCanvas","jetShapeClosureCanvas",1000,1800);
+  TCanvas *closureCanvas = new TCanvas(Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), 1000, 1800);
   double nCentralityBins = fLastDrawnCentralityBin-fFirstDrawnCentralityBin+1;
   double nTrackPtBins = fLastDrawnTrackPtBin-fFirstDrawnTrackPtBin+1;
   closureCanvas->Divide(nCentralityBins,nTrackPtBins);
@@ -1009,7 +1018,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         legendX1 = 0.45; legendY1 = 0.58; legendX2 = 0.77; legendY2 = 0.83;
         
         // Prepare the track phi histograms to be drawn
-        PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt);
+        PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, fAsymmetryBin, iCentrality, iTrackPt);
         closureHistogram = (TH1D*) fRatioHistogram[0]->Clone(Form("closureHistogram%d%d%d",iJetTrack,iCentrality,iTrackPt));
         
         // Calculate the pT sum
@@ -1032,7 +1041,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         
         // Add a legend to the plot
         legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-        SetupLegend(legend,centralityString,trackPtString);
+        SetupLegend(legend,centralityString,trackPtString,asymmetryString);
         legend->Draw();
         
         // Draw the ratios to the lower portion of the split canvas
@@ -1088,7 +1097,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
       
       // Add a legend to the plot
       legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-      SetupLegend(legend,centralityString,trackPtString);
+      SetupLegend(legend,centralityString,trackPtString,asymmetryString);
       legend->Draw();
       
       // Draw the ratios to the lower portion of the split canvas
@@ -1318,11 +1327,13 @@ std::tuple<double,double> DijetComparingDrawer::GetHistogramAverageAndDifference
  *  TLegend *legend = Pointer to legend that needs setup
  *  TString centralityString = Collision centrality
  *  TString trackString = Track pT information
+ *  TString asymmetryString = Asymmetry information
  */
-void DijetComparingDrawer::SetupLegend(TLegend *legend, TString centralityString, TString trackString){
+void DijetComparingDrawer::SetupLegend(TLegend *legend, TString centralityString, TString trackString, TString asymmetryString){
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
+  if(asymmetryString != "") legend->AddEntry((TObject*) 0,asymmetryString.Data(),"");
   legend->AddEntry(fMainHistogram,/*fBaseHistograms->GetSystem() + " " +*/ fLegendComment[0],"l");
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     legend->AddEntry(fComparisonHistogram[iAdditional],/*fAddedHistograms[iAdditional]->GetSystem() + " " +*/ fLegendComment[iAdditional+1],"l");

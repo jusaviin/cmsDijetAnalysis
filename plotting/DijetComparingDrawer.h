@@ -210,7 +210,7 @@ private:
   void DrawJetShapeHistograms();  // Draw jet shape histograms
   void DrawJetShapeMCComparison();  // Draw jet shape Monte Carlo comparison histograms
   void DrawEventMixingCheck();  // Draw different deltaEta regions in deltaPhi histograms to the same figure to ensure event mixing gives good background
-  void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = ""); // Common legend style setup for figures
+  void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = "", TString asymmetryString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
   void PrepareRatio(TString name, int rebin, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0, int bin6 = 0, double minRange = 1000, double maxRange = -1000); // Prepare the ratio histograms out of input histograms
   void DrawToUpperPad(const char* xTitle, const char* yTitle, bool logAxis = false); // Draw the histograms to the same figure in the upper pad of JDrawer
