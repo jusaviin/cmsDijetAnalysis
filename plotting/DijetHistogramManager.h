@@ -191,13 +191,14 @@ public:
   TString GetSystem() const;  // Getter for collision system
   
   // Getters for event information histograms
-  TH1D* GetHistogramVertexZ() const;         // Getter for z-vertex histogram
-  TH1D* GetHistogramVertexZWeighted() const;  // Getter for weighted z-vertex histogram
-  TH1D* GetHistogramVertexZDijet() const;     // Getter for z-vertex histogram in dijet events
-  TH1D* GetHistogramEvents() const;          // Getter for histogram for number of events surviving different event cuts
-  TH1D* GetHistogramTrackCuts() const;       // Getter for histogram for number of tracks surviving different track cuts
-  TH1D* GetHistogramCentrality() const;      // Getter for centrality histogram in all events
-  TH1D* GetHistogramCentralityDijet() const; // Getter for centrality histogram in dijet events
+  TH1D* GetHistogramVertexZ() const;            // Getter for z-vertex histogram
+  TH1D* GetHistogramVertexZWeighted() const;    // Getter for weighted z-vertex histogram
+  TH1D* GetHistogramVertexZDijet() const;       // Getter for z-vertex histogram in dijet events
+  TH1D* GetHistogramEvents() const;             // Getter for histogram for number of events surviving different event cuts
+  TH1D* GetHistogramTrackCuts() const;          // Getter for histogram for number of tracks surviving different track cuts
+  TH1D* GetHistogramCentrality() const;         // Getter for centrality histogram in all events
+  TH1D* GetHistogramCentralityWeighted() const; // Getter for weighted centrality histogram in all events
+  TH1D* GetHistogramCentralityDijet() const;    // Getter for centrality histogram in dijet events
   
   // Getters for single jet histograms
   TH1D* GetHistogramJetPt(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;     // Jet pT histograms

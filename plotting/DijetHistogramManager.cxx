@@ -536,7 +536,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           if(fApplySeagullCorrection){
             seagullMethod = 0; // TODO: This works for MC, need to check for data after data is produced!!
             seagullVeto = 0;
-            if(fCard->GetSubeventCut() != 0){ // For sube0 MC, always use method 0
+            if(fCard->GetSubeventCut() == 1){ // For sube0 MC, always use method 0
               if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){
                 if(iCentralityBin == 0){
                   if(iTrackPtBin > 0 && iTrackPtBin < 3) seagullMethod = 1;
@@ -545,7 +545,41 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             }
             
             // No seagull correction for the very high pT bins (poly2 does not improve chi2/NDF)
-            //if(iTrackPtBin > 4) seagullVeto = 2;
+            if(iTrackPtBin > 4) seagullVeto = 2;
+            
+            // Special case. Some bins for RecoGen sube0 need special care. E-scheme axis, old xJ bins
+            if(fCard->GetSubeventCut() == 0 && fCard->GetDataType().EqualTo("PbPb MC RecoGen",TString::kIgnoreCase)){
+              
+              // For subleading jet set veto for all bins above 4 GeV
+              if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+                if(iTrackPtBin > 3) seagullVeto = 2;
+              } else {
+                // For leading jets, veto one bin and force another bin
+                if(iAsymmetry == 0 && iCentralityBin == 2 && iTrackPtBin == 4) seagullVeto = 2; // Veto
+                if(iAsymmetry == 2 && iCentralityBin == 0 && iTrackPtBin == 2) seagullVeto = 1; // Force
+                if(iAsymmetry == 1 && iCentralityBin == 1 && iTrackPtBin == 2) seagullVeto = 1; // Force
+              }
+            }
+            
+            // Special case. Some bins for GenGen sube0 need special care. E-scheme axis, old xJ bins
+            if(fCard->GetSubeventCut() == 0 && fCard->GetDataType().EqualTo("PbPb MC GenGen",TString::kIgnoreCase)){
+              
+              // For subleading jet set veto for all bins above 4 GeV
+              if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+                if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin == 3) seagullVeto = 2; // Veto
+                if(iAsymmetry == 1 && iCentralityBin == 3 && iTrackPtBin == 4) seagullVeto = 2; // Veto
+              } else {
+                // For leading jets, veto one bin and force another bin
+                if(iAsymmetry == 0 && iCentralityBin == 1 && iTrackPtBin == 4) seagullVeto = 2; // Veto
+                if(iAsymmetry == 0 && iCentralityBin == 2 && iTrackPtBin == 2) seagullVeto = 2; // Veto
+                if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 3 && iTrackPtBin == 3) seagullVeto = 1; // Force
+              }
+            }
+            
+            // Special case. Force the seagull correction in two bins for PbPb MC RecoReco
+            if(fCard->GetSubeventCut() == 2 && fCard->GetDataType().EqualTo("PbPb MC RecoReco",TString::kIgnoreCase) && iAsymmetry > 1){
+              if(iTrackPtBin == 1 || iTrackPtBin == 2) seagullVeto = 1;
+            }
             
             // Special case. If we are looking at RecoGen all subevents, force seagull correction in low pT bins so that
             // the same correction is made as in sube0 and subeNon0 cases
@@ -563,10 +597,10 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
             if(fTrackPtBinBorders[iTrackPtBin+1] < 100){ // Do not apply spillover correction to the highest pT bin
-              if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
+              //if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
                 correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentralityBin,iTrackPtBin); // TODO: Maybe add asymmetry also to spillover, if it matters there
                 fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
-              } // If for subleading jets
+              //} // If for subleading jets
             } // If for track pT
           }
           
@@ -2730,6 +2764,11 @@ TH1D* DijetHistogramManager::GetHistogramTrackCuts() const{
 // Getter for centrality histogram in all events
 TH1D* DijetHistogramManager::GetHistogramCentrality() const{
   return fhCentrality;
+}
+
+// Getter for weighted centrality histogram in all events
+TH1D* DijetHistogramManager::GetHistogramCentralityWeighted() const{
+  return fhCentralityWeighted;
 }
 
 // Getter for centrality histogram in dijet events
