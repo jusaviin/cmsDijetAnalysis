@@ -48,6 +48,11 @@ public:
   TH1D* ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution
   int GetNBinsProjectedOver() const; // Get the number of bins projected over in the previously done projection
   
+  // Methods for estimating the systematic uncertainties
+  double EstimateSystematicsForPairAcceptanceCorrection(const TH1* deltaEtaHistogram);
+  double EstimateSystematicsForBackgroundSubtraction(const TH1* deltaEtaHistogram);
+  void PropagateDeltaEtaToDeltaR(TH1* errorHistogram, const double deltaEtaError);
+  
   // Getters for produced distributions
   TH2D* GetNormalizedMixedEvent() const; // Getter for the most recent normalized mixed event histogram
   TH2D* GetBackground() const;           // Getter for the most recent background distribution used to subtract the background

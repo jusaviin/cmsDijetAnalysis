@@ -1318,6 +1318,80 @@ TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi, const int maxVn){
 }
 
 /*
+ * Systematic uncertainty estimation for the pair acceptance correction.
+ * To estimate the uncertainty, the mixed event corrected deltaEta histogram is fitted with
+ * a constant to the regions -2.5 < deltaEta < -1.5 and 1.5 < deltaEta < 2.5 separately.
+ * The difference between these two fits is assigned as the systematic uncertainty coming
+ * from the pair acceptance correction
+ */
+double DijetMethods::EstimateSystematicsForPairAcceptanceCorrection(const TH1* deltaEtaHistogram){
+  
+  TH1D *fitHistogram = (TH1D*) deltaEtaHistogram->Clone("temporaryFitHistogram");
+  double pairAcceptanceLowLimit = 1.5;
+  double pairAcceptanceHighLimit = 2.5;
+  
+  // Fit a constant to the specified ranges
+  fitHistogram->Fit("pol0","","",-pairAcceptanceHighLimit,-pairAcceptanceLowLimit);
+  double negativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  fitHistogram->Fit("pol0","","",pairAcceptanceLowLimit,pairAcceptanceHighLimit);
+  double positiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  
+  // Return the absolute value of the diffence between the two levels.
+  return TMath::Abs(positiveLevel-negativeLevel);
+  
+}
+
+/*
+ * Systematic uncertainty estimation for the background subtraction.
+ * To estimate the uncertainty, the background subtracted deltaEta histogram is fitted in
+ * four different regions, -2.5 < deltaEta < -2.0, -2.0 < deltaEta < -1.5, 1.5 < deltaEta < 2.0
+ * and 2.0 < deltaEta < 2.5. We then calculate the average for the inner part 1.5 < |deltaEta| < 2.0
+ * and the outer part 2.0 < |deltaEta| < 2.5 and assign larger for these deviation from zero as the
+ * systematic uncertainty coming from the background subtraction.
+ */
+double DijetMethods::EstimateSystematicsForBackgroundSubtraction(const TH1* deltaEtaHistogram){
+  
+  TH1D *fitHistogram = (TH1D*) deltaEtaHistogram->Clone("temporaryFitHistogram");
+  double backgroundLowLimit = 1.5;
+  double backgroundMidPoint = 2.0;
+  double backgroundHighLimit = 2.5;
+  
+  // Fit a constant to the specified ranges
+  fitHistogram->Fit("pol0","","",-backgroundMidPoint,-backgroundLowLimit);
+  double innerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  fitHistogram->Fit("pol0","","",-backgroundHighLimit,-backgroundMidPoint);
+  double outerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  fitHistogram->Fit("pol0","","",backgroundLowLimit,backgroundMidPoint);
+  double innerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  fitHistogram->Fit("pol0","","",backgroundMidPoint,backgroundHighLimit);
+  double outerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  
+  // Calculate means for outer and inner levels
+  double innerMean = TMath::Abs((innerNegativeLevel+innerPositiveLevel)/2.0);
+  double outerMean = TMath::Abs((outerNegativeLevel+outerPositiveLevel)/2.0);
+  
+  // Return the larger deviation from zero
+  if(outerMean > innerMean) innerMean = outerMean;
+  return innerMean;
+  
+}
+
+/*
+ * Some systematic uncertainty estimations are calculated from deltaEta histograms.
+ * We cannot just straighforwardly propagate those to deltaR, but we need to take
+ * into account the ring structure. The ring is taken into account by multiplying by
+ * the area of the current ring and then normalizing by the deltaR bin width.
+ */
+void DijetMethods::PropagateDeltaEtaToDeltaR(TH1* errorHistogram, const double deltaEtaError){
+  
+  double ring;
+  for(int iDeltaR = 1; iDeltaR <= errorHistogram->GetNbinsX(); iDeltaR++){
+    ring = TMath::Pi()*(pow(errorHistogram->GetBinLowEdge(iDeltaR)+errorHistogram->GetBinWidth(iDeltaR),2) - pow(errorHistogram->GetBinLowEdge(iDeltaR),2))/errorHistogram->GetBinWidth(iDeltaR);
+    errorHistogram->SetBinContent(iDeltaR,ring*deltaEtaError);
+  }
+}
+
+/*
  * Rebin a two-dimensional deltaPhi-deltaEta histogram
  *
  *  Arguments:
