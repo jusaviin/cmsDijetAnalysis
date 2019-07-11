@@ -9,7 +9,8 @@
  */
 JffCorrector::JffCorrector() :
   fFileLoaded(false),
-  fSpilloverLoaded(false)
+  fSpilloverLoaded(false),
+  fSpilloverAsymmetryBins(0)
 {
   
   // JFF correction histograms for jet shape
@@ -18,7 +19,9 @@ JffCorrector::JffCorrector() :
       for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::kMaxTrackPtBins; iTrackPt++){
         fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
         fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
-        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = NULL;
+        for(int iAsymmetry = 0; iAsymmetry <= DijetHistogramManager::kMaxAsymmetryBins; iAsymmetry++){
+          fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+        } // Asymmetry loop
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation type loop
@@ -46,7 +49,8 @@ JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile)
  */
 JffCorrector::JffCorrector(const JffCorrector& in) :
   fFileLoaded(in.fFileLoaded),
-  fSpilloverLoaded(in.fSpilloverLoaded)
+  fSpilloverLoaded(in.fSpilloverLoaded),
+  fSpilloverAsymmetryBins(in.fSpilloverAsymmetryBins)
 {
   // Copy constructor
   
@@ -56,7 +60,9 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
       for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::kMaxTrackPtBins; iTrackPt++){
         fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhJetShapeCorrection[iJetTrack][iCentrality][iTrackPt];
         fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiCorrection[iJetTrack][iCentrality][iTrackPt];
-        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt];
+        for(int iAsymmetry = 0; iAsymmetry <= DijetHistogramManager::kMaxAsymmetryBins; iAsymmetry++){
+        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+        } // Asymmetry loop
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation type loop
@@ -105,6 +111,7 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   // Create histogram manager to find correct histogram naming in the input file
   DijetHistogramManager *namerHelper = new DijetHistogramManager();
   DijetCard *card = new DijetCard(spilloverFile); //TODO: Uncomment after spillover correction files have been reproduced
+  fSpilloverAsymmetryBins = card->GetNAsymmetryBins();
   
   // Load the correction histograms from the file
   char histogramNamer[200];
@@ -118,7 +125,15 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
         sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         //sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
         
-        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
+        fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][fSpilloverAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
+        
+        for(int iAsymmetry = 0; iAsymmetry < fSpilloverAsymmetryBins; iAsymmetry++){
+          
+          sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_A%dC%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
+          fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(histogramNamer);
+          
+        }
+        
       } // Track pT loop
     } // Centrality loop
   } // Jet-track correlation type loop
@@ -127,7 +142,7 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   fSpilloverLoaded = true;
   
   // Delete the helper objects
-  //delete card; // TODO: Uncomment after correction files have been reproduced
+  delete card; // TODO: Uncomment after correction files have been reproduced
   delete namerHelper;
 }
 
@@ -142,8 +157,13 @@ TH2D* JffCorrector::GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelat
 }
 
 // Getter for deltaEta-deltaPhi spillover correction histograms
-TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const{
-  return fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrackCorrelation][iCentrality][iTrackPt];
+TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated correction
+  if(iAsymmetry < 0 || iAsymmetry >= fSpilloverAsymmetryBins) return fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrackCorrelation][fSpilloverAsymmetryBins][iCentrality][iTrackPt];
+  
+  // Return the correction in the selected bin
+  return fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
 }
 
 // Return information, if correction is ready to be obtained
