@@ -27,6 +27,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fJetType(0),
   fMatchJets(false),
   fMatchDijet(false),
+  fMatchLeadingJet(false),
   fDebugLevel(0),
   fVzWeight(1),
   fCentralityWeight(1),
@@ -106,6 +107,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fJetType(0),
   fMatchJets(false),
   fMatchDijet(false),
+  fMatchLeadingJet(false),
   fVzWeight(1),
   fCentralityWeight(1),
   fPtHatWeight(1),
@@ -261,6 +263,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fJetType(in.fJetType),
   fMatchJets(in.fMatchJets),
   fMatchDijet(in.fMatchDijet),
+  fMatchLeadingJet(in.fMatchLeadingJet),
   fDebugLevel(in.fDebugLevel),
   fVzWeight(in.fVzWeight),
   fCentralityWeight(in.fCentralityWeight),
@@ -336,6 +339,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fJetType = in.fJetType;
   fMatchJets = in.fMatchJets;
   fMatchDijet = in.fMatchDijet;
+  fMatchLeadingJet = in.fMatchLeadingJet;
   fDebugLevel = in.fDebugLevel;
   fVzWeight = in.fVzWeight;
   fCentralityWeight = in.fCentralityWeight;
@@ -538,13 +542,15 @@ void DijetAnalyzer::RunAnalysis(){
   TFile *mixedEventFile;
   
   // Event variables
-  Int_t nEvents = 0;            // Number of events
-  Bool_t dijetFound = false;    // Is there a dijet in the event?
-  Bool_t twoJetsFound = false;  // Are there two jets in the event?
-  Double_t vz = 0;              // Vertex z-position
-  Double_t centrality = 0;      // Event centrality
-  Int_t hiBin = 0;              // CMS hiBin (centrality * 2)
-  Double_t ptHat = 0;           // pT hat for MC events
+  Int_t nEvents = 0;               // Number of events
+  Bool_t dijetFound = false;       // Is there a dijet in the event?
+  Bool_t twoJetsFound = false;     // Are there two jets in the event?
+  Bool_t matchVeto = false;        // Veto the found dijet because it did not match with Gen or Reco
+  Bool_t reverseMatchVeto = false; // Only look at events where dijet was found but not matched
+  Double_t vz = 0;                 // Vertex z-position
+  Double_t centrality = 0;         // Event centrality
+  Int_t hiBin = 0;                 // CMS hiBin (centrality * 2)
+  Double_t ptHat = 0;              // pT hat for MC events
   
   // Combining bools to make the code more readable
   Bool_t useDifferentReaderFotJetsAndTracks = (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco); // Use different forest reader for jets and tracks
@@ -630,7 +636,9 @@ void DijetAnalyzer::RunAnalysis(){
   fReadMode = fCard->Get("ReadMode");
   fJetType = fCard->Get("JetType");
   fMatchJets = (fCard->Get("MatchJets") >= 1);
-  fMatchDijet = (fCard->Get("MatchJets") == 2);
+  fMatchDijet = (fCard->Get("MatchJets") == 2 || fCard->Get("MatchJets") == 4);
+  fMatchLeadingJet = (fCard->Get("MatchJets") == 3 || fCard->Get("MatchJets") == 5);
+  reverseMatchVeto = (fCard->Get("MatchJets") == 4 || fCard->Get("MatchJets") == 5);
   
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
@@ -1122,7 +1130,8 @@ void DijetAnalyzer::RunAnalysis(){
       //************************************************
       
       // If we require to match the dijet, check that the matching jet pairs also fulfill the dijet definition
-      if(dijetFound && fMatchDijet){
+      matchVeto = false;
+      if(dijetFound && (fMatchDijet || fMatchLeadingJet)){
         matchedLeadingJetPt = fJetReader->GetMatchedPt(highestIndex);
         matchedLeadingJetPhi = fJetReader->GetMatchedPhi(highestIndex);
         matchedLeadingJetEta = fJetReader->GetMatchedEta(highestIndex);
@@ -1131,8 +1140,8 @@ void DijetAnalyzer::RunAnalysis(){
         matchedSubleadingJetEta = fJetReader->GetMatchedEta(secondHighestIndex);
         
         // Check for leading-subleading swapping
-        if(matchedLeadingJetPt < matchedSubleadingJetPt) {
-          dijetFound = false;
+        if((matchedLeadingJetPt < matchedSubleadingJetPt) && fMatchDijet) {
+          matchVeto = true;
           jetSwapCounter++;
         }
         
@@ -1142,18 +1151,21 @@ void DijetAnalyzer::RunAnalysis(){
         if(matchedDeltaPhi > TMath::Pi()) matchedDeltaPhi = 2*TMath::Pi() - matchedDeltaPhi;
         
         // Apply dijet cuts for matched jets
-        if((matchedLeadingJetPt >= fJetMaximumPtCut) ||              // Maximum leading jet pT cut
-           (matchedLeadingJetPt <= fLeadingJetMinPtCut) ||           // Leading jet minimum pT cut
-           (matchedSubleadingJetPt <= fSubleadingJetMinPtCut) ||     // Subleading jet minimum pT cut
-           (TMath::Abs(matchedLeadingJetEta) >= fJetEtaCut) ||       // Leading jet eta cut
-           (TMath::Abs(matchedSubleadingJetEta) >= fJetEtaCut)||     // Subleading jet eta cut
-           (TMath::Abs(matchedDeltaPhi) <= fDeltaPhiCut)){           // DeltaPhi cut
-          dijetFound = false;
+        if((matchedLeadingJetPt >= fJetMaximumPtCut) ||                            // Maximum leading jet pT cut
+           (matchedLeadingJetPt <= fLeadingJetMinPtCut) ||                         // Leading jet minimum pT cut
+           ((matchedSubleadingJetPt <= fSubleadingJetMinPtCut) && fMatchDijet) ||  // Subleading jet minimum pT cut
+           (TMath::Abs(matchedLeadingJetEta) >= fJetEtaCut) ||                     // Leading jet eta cut
+           ((TMath::Abs(matchedSubleadingJetEta) >= fJetEtaCut) && fMatchDijet) || // Subleading jet eta cut
+           ((TMath::Abs(matchedDeltaPhi) <= fDeltaPhiCut) && fMatchDijet)){        // DeltaPhi cut
+          matchVeto = true;
         }
       }
       
-      // If a dijet is found, fill some information to fHistograms
-      if(dijetFound){
+      // If reverse veto is in place, do the opposite as with regular veto
+      if(reverseMatchVeto) matchVeto = !matchVeto;
+      
+      // If a dijet is found and not vetoed, fill some information to fHistograms
+      if(dijetFound && !matchVeto){
         
         matchedDijetCounter++;
         
@@ -1235,11 +1247,11 @@ void DijetAnalyzer::RunAnalysis(){
       // This is best done for everything at once to avoid loading mixing event several times (slow process)
       // Do not go to mixing if no inclusive jets are found and we are doing inclusive jet mixing or no dijet are found
       // and we are doing dijet mixing
-      if(mixEvents && ((fFillInclusiveJetTrackCorrelation && (nJetsInThisEvent > 0)) || (fFillDijetJetTrackCorrelation && dijetFound))){
+      if(mixEvents && ((fFillInclusiveJetTrackCorrelation && (nJetsInThisEvent > 0)) || (fFillDijetJetTrackCorrelation && (dijetFound && !matchVeto)))){
         if(mixWithPool) {
-          MixTracksAndJets(inclusiveJetInfo,leadingJetInfo,subleadingJetInfo,iEvent,nJetsInThisEvent,vz,hiBin,dijetFound);
+          MixTracksAndJets(inclusiveJetInfo,leadingJetInfo,subleadingJetInfo,iEvent,nJetsInThisEvent,vz,hiBin,(dijetFound && !matchVeto));
         } else {
-          MixTracksAndJetsWithoutPool(inclusiveJetInfo,leadingJetInfo,subleadingJetInfo,iEvent,nJetsInThisEvent,vz,hiBin,dijetFound);
+          MixTracksAndJetsWithoutPool(inclusiveJetInfo,leadingJetInfo,subleadingJetInfo,iEvent,nJetsInThisEvent,vz,hiBin,(dijetFound && !matchVeto));
         }
       }
       
