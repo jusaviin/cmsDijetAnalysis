@@ -200,6 +200,7 @@ void HighForestReader::Initialize(){
   
   // Connect the branches to the jet tree
   const char *jetAxis[3] = {"jt","jt","WTA"};
+  const char *genJetAxis[3] = {"","","WTA"};
   char branchName[30];
   
   fJetTree->SetBranchStatus("*",0);
@@ -225,7 +226,6 @@ void HighForestReader::Initialize(){
   fJetTree->SetBranchAddress("trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
   // If we are matching jets and looking at Monte Carlo, connect the reference pT and parton arrays
-  // TODO: WTA axis for generated jets
   if(fMatchJets && fDataType > kPbPb){
     fJetTree->SetBranchStatus("refpt",1);
     fJetTree->SetBranchAddress("refpt",&fJetRefPtArray,&fJetRefPtBranch);
@@ -233,10 +233,17 @@ void HighForestReader::Initialize(){
     fJetTree->SetBranchAddress("refparton_flavor",&fJetRefFlavorArray,&fJetRefFlavorBranch);
     fJetTree->SetBranchStatus("genpt",1);
     fJetTree->SetBranchAddress("genpt",&fMatchedJetPtArray,&fJetMatchedPtBranch);
-    fJetTree->SetBranchStatus("genphi",1);
-    fJetTree->SetBranchAddress("genphi",&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
-    fJetTree->SetBranchStatus("geneta",1);
-    fJetTree->SetBranchAddress("geneta",&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
+    
+    // If specified, select WTA axis for jet phi
+    sprintf(branchName,"%sgenphi",genJetAxis[fJetAxis]);
+    fJetTree->SetBranchStatus(branchName,1);
+    fJetTree->SetBranchAddress(branchName,&fMatchedJetPhiArray,&fJetMatchedPhiBranch);
+    
+    // If specified, select WTA axis for jet eta
+    sprintf(branchName,"%sgeneta",genJetAxis[fJetAxis]);
+    fJetTree->SetBranchStatus(branchName,1);
+    fJetTree->SetBranchAddress(branchName,&fMatchedJetEtaArray,&fJetMatchedEtaBranch);
+    
     fJetTree->SetBranchStatus("ngen",1);
     fJetTree->SetBranchAddress("ngen",&fnMatchedJets,&fnMatchedJetsBranch);
   }

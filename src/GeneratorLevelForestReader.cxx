@@ -136,16 +136,24 @@ void GeneratorLevelForestReader::Initialize(){
   
   // Connect the branches to the jet tree
   const char *jetAxis[3] = {"jt","jt","WTA"};
+  const char *genJetAxis[3] = {"","","WTA"};
   char branchName[30];
   
   // TODO: Add WTA axis for generator level jets
   fJetTree->SetBranchStatus("*",0);
   fJetTree->SetBranchStatus("genpt",1);
   fJetTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
-  fJetTree->SetBranchStatus("genphi",1);
-  fJetTree->SetBranchAddress("genphi",&fJetPhiArray,&fJetPhiBranch);
-  fJetTree->SetBranchStatus("geneta",1);
-  fJetTree->SetBranchAddress("geneta",&fJetEtaArray,&fJetEtaBranch);
+  
+  // If specified, select WTA axis for jet phi
+  sprintf(branchName,"%sgenphi",genJetAxis[fJetAxis]);
+  fJetTree->SetBranchStatus(branchName,1);
+  fJetTree->SetBranchAddress(branchName,&fJetPhiArray,&fJetPhiBranch);
+  
+  // If specified, select WTA axis for jet eta
+  sprintf(branchName,"%sgeneta",genJetAxis[fJetAxis]);
+  fJetTree->SetBranchStatus(branchName,1);
+  fJetTree->SetBranchAddress(branchName,&fJetEtaArray,&fJetEtaBranch);
+  
   fJetTree->SetBranchStatus("ngen",1);
   fJetTree->SetBranchAddress("ngen",&fnJets,&fJetRawPtBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   
@@ -247,10 +255,10 @@ void GeneratorLevelForestReader::Initialize(){
   fTrackTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch);  // Reuse a branch from ForestReader that is not otherwise needed here
   fTrackTree->SetBranchStatus("sube",1);
   fTrackTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch);  // Reuse a branch from ForestReader that is not otherwise needed here
-  if(fDataType != kLocalTest && fReadMode == 0) {
+  /*if(fDataType != kLocalTest && fReadMode == 0) {
     fTrackTree->SetBranchStatus("sta",1);
     fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test or PYTHIA8 forest
-  }
+  } */ // Quick test. New PbPb MC files do not have this branch TODO TODO DEBUG DEBUG XXXXXXXX
 
 }
 
@@ -364,8 +372,9 @@ Int_t GeneratorLevelForestReader::GetTrackSubevent(Int_t iTrack) const{
 
 // Getter for track MC status
 Int_t GeneratorLevelForestReader::GetTrackMCStatus(Int_t iTrack) const{
-  if(fDataType == kLocalTest || fReadMode == 1 || fReadMode == 2) return 1;
-  return fTrackStatusArray->at(iTrack);
+  /*if(fDataType == kLocalTest || fReadMode == 1 || fReadMode == 2) return 1;
+  return fTrackStatusArray->at(iTrack);*/ // There is no status for MC tracks in new PbPb MC trees. TODO DEBUG
+  return 1;
 }
 
 // Getter for track pT error (not relevant for generator tracks)
