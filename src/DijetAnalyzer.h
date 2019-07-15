@@ -53,9 +53,9 @@ public:
 private:
   
   // Private methods
-  void CorrelateTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlations
-  void MixTracksAndJets(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
-  void MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
+  void CorrelateTracksAndJets(const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlations
+  void MixTracksAndJets(const Double_t inclusiveJetInfo[60][4], const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
+  void MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[60][4], const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
@@ -93,7 +93,7 @@ private:
   Bool_t fMatchJets;                 // Match generator and reconstruction level jets
   Bool_t fMatchDijet;                // Match reco and gen dijets (have the same leading and subleading jets for both reco and gen)
   Bool_t fMatchLeadingJet;           // Match reco and gen leading jets (in both cases the leading jet fulfills the requirements)
-  Int_t fDebugLevel;                 // Amoun of debug messages printed to console
+  Int_t fDebugLevel;                 // Amount of debug messages printed to console
   
   // Weights for filling the MC histograms
   Double_t fVzWeight;                // Weight for vz in MC

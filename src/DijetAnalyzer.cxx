@@ -562,15 +562,17 @@ void DijetAnalyzer::RunAnalysis(){
 
   
   // Variables for jets
-  Double_t dijetAsymmetry = -99;   // Dijet asymmetry used for binning
-  Double_t dijetAJ = -99;          // Dijet asymmetry AJ
-  Double_t dijetXj = -99;          // Dijet asymmetry xJ
-  Double_t leadingJetPt = 0;       // Leading jet pT
-  Double_t leadingJetPhi = 0;      // Leading jet phi
-  Double_t leadingJetEta = 0;      // Leading jet eta
-  Double_t subleadingJetPt = 0;    // Subleading jet pT
-  Double_t subleadingJetPhi = 0;   // Subleading jet phi
-  Double_t subleadingJetEta = 0;   // Subleading jet eta
+  Double_t dijetAsymmetry = -99;    // Dijet asymmetry used for binning
+  Double_t dijetAJ = -99;           // Dijet asymmetry AJ
+  Double_t dijetXj = -99;           // Dijet asymmetry xJ
+  Double_t leadingJetPt = 0;        // Leading jet pT
+  Double_t leadingJetPhi = 0;       // Leading jet phi
+  Double_t leadingJetEta = 0;       // Leading jet eta
+  Double_t leadingJetFlavor = 0;    // Flavor of the leading jet
+  Double_t subleadingJetPt = 0;     // Subleading jet pT
+  Double_t subleadingJetPhi = 0;    // Subleading jet phi
+  Double_t subleadingJetEta = 0;    // Subleading jet eta
+  Double_t subleadingJetFlavor = 0; // Flavor of the subleading jet
   Double_t leadingParticleFlowCandidatePhi = 0;     // Leading particle lofw candidate phi
   Double_t leadingParticleFlowCandidateEta = 0;     // Leading particle flow candidate eta
   Double_t subleadingParticleFlowCandidatePhi = 0;  // Subleading particle flow candidate phi
@@ -585,13 +587,14 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t jetPtCorrected = 0;      // Jet pT corrected with the JFF correction
   Double_t jetPhi = 0;              // phi of the i:th jet in the event
   Double_t jetEta = 0;              // eta of the i:th jet in the event
+  Int_t jetFlavor = 0;              // Flavor of the jet. 0 = Quark jet. 1 = Gluon jet.
   Double_t highestAnyPt = 0;        // Highest pT filled for all jets
   Double_t highestPhi = 0;          // phi of any leading jet
   Double_t highestEta = 0;          // eta of any leading jet
   Double_t dphi = 0;                // deltaPhi for the considered jets
-  Double_t leadingJetInfo[3] = {0};       // Array for leading jet pT, phi and eta
-  Double_t subleadingJetInfo[3] = {0};    // Array for subleading jet pT, phi and eta
-  Double_t inclusiveJetInfo[60][3] = {{0}}; // Array for jet pT, phi and eta for all the jets in the event
+  Double_t leadingJetInfo[4] = {0};       // Array for leading jet pT, phi and eta
+  Double_t subleadingJetInfo[4] = {0};    // Array for subleading jet pT, phi and eta
+  Double_t inclusiveJetInfo[60][4] = {{0}}; // Array for jet pT, phi and eta for all the jets in the event
   Int_t nJetsInThisEvent = 0;             // Number of jets in the event
   Double_t matchedLeadingJetPt = 0;       // Leading matched jet pT
   Double_t matchedLeadingJetPhi = 0;      // Leading matched jet phi
@@ -873,6 +876,7 @@ void DijetAnalyzer::RunAnalysis(){
         jetPt = fJetReader->GetJetPt(jetIndex);
         jetPhi = fJetReader->GetJetPhi(jetIndex);
         jetEta = fJetReader->GetJetEta(jetIndex);
+        jetFlavor = 0;
         
         //  ========================================
         //  ======== Apply jet quality cuts ========
@@ -888,14 +892,17 @@ void DijetAnalyzer::RunAnalysis(){
           continue;
         }
         
-        // For debugging purposes, count the number of matched jets
-        if(fMatchJets) matchedCounter++;
-        
         // Require also reference parton flavor to be quark [-6,-1] U [1,6] or gluon (21)
         if(fMatchJets){
+          
+          matchedCounter++; // For debugging purposes, count the number of matched jets
+          jetFlavor = 0;    // Jet flavor. 0 = Quark jet.
+          
           partonFlavor = fJetReader->GetPartonFlavor(jetIndex);
           if(partonFlavor == -999) nonSensicalPartonIndex++;
           if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21) || partonFlavor == 0) continue;
+          if(TMath::Abs(partonFlavor) == 21) jetFlavor = 1; // 1 = Gluon jet
+          
         }
         
         //  ========================================
@@ -975,6 +982,7 @@ void DijetAnalyzer::RunAnalysis(){
               inclusiveJetInfo[nJetsInThisEvent][0] = jetPtCorrected;
               inclusiveJetInfo[nJetsInThisEvent][1] = jetPhi;
               inclusiveJetInfo[nJetsInThisEvent][2] = jetEta;
+              inclusiveJetInfo[nJetsInThisEvent][3] = jetFlavor;
               
               // If we are using leading particle flow candidate as a probe for jet axis, change the jet info
               if(fJetAxis == 1){
@@ -1029,6 +1037,12 @@ void DijetAnalyzer::RunAnalysis(){
         // Jet matching between reconstructed and generator level jets
         if(fMatchJets && !fJetReader->HasMatchingJet(jetIndex)) continue;
         
+        // Parton flavor cut for subleading jets
+        if(fMatchJets){
+          partonFlavor = fJetReader->GetPartonFlavor(jetIndex);
+          if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21) || partonFlavor == 0) continue;
+        }
+        
         //  ========================================
         //  ======= Jet quality cuts applied =======
         //  ========================================
@@ -1052,8 +1066,16 @@ void DijetAnalyzer::RunAnalysis(){
         // Read the eta and phi values for leading and subleading jets
         leadingJetPhi = fJetReader->GetJetPhi(highestIndex);
         leadingJetEta = fJetReader->GetJetEta(highestIndex);
+        leadingJetFlavor = 0; // 0 = Quark jet
         subleadingJetPhi = fJetReader->GetJetPhi(secondHighestIndex);
         subleadingJetEta = fJetReader->GetJetEta(secondHighestIndex);
+        subleadingJetFlavor = 0; // 0 = Quark jet
+        
+        // If matching jets, find the jet flavor
+        if(fMatchJets){
+          if(TMath::Abs(fJetReader->GetPartonFlavor(highestIndex)) == 21) leadingJetFlavor = 1; // 1 = Gluon jet
+          if(TMath::Abs(fJetReader->GetPartonFlavor(secondHighestIndex)) == 21) subleadingJetFlavor = 1; // 1 = Gluon jet
+        }
         
         // Apply the JFF correction for leading and subleading jet pT only if we are using calo jets
         // Determine the directions of the leading particle flow candidates for the leading and subleading
@@ -1077,6 +1099,10 @@ void DijetAnalyzer::RunAnalysis(){
           swapJetEta = leadingParticleFlowCandidateEta;
           leadingParticleFlowCandidateEta = subleadingParticleFlowCandidateEta;
           subleadingParticleFlowCandidateEta = leadingParticleFlowCandidateEta;
+          if(leadingJetFlavor != subleadingJetFlavor){ // Flavor can only be 1 or 0
+            leadingJetFlavor = subleadingJetFlavor;
+            subleadingJetFlavor = TMath::Abs(leadingJetFlavor - 1);
+          }
         }
         
         dijetFound = true;
@@ -1221,9 +1247,11 @@ void DijetAnalyzer::RunAnalysis(){
         leadingJetInfo[0] = leadingJetPt;
         leadingJetInfo[1] = leadingJetPhi;
         leadingJetInfo[2] = leadingJetEta;
+        leadingJetInfo[3] = leadingJetFlavor;
         subleadingJetInfo[0] = subleadingJetPt;
         subleadingJetInfo[1] = subleadingJetPhi;
         subleadingJetInfo[2] = subleadingJetEta;
+        subleadingJetInfo[3] = subleadingJetFlavor;
         
         // If we are using leading particle flow candidate as a probe for jet axis, change the jet info
         if(fJetAxis == 1){
@@ -1284,10 +1312,11 @@ void DijetAnalyzer::RunAnalysis(){
  *  const Int_t correlationType = DijetHistograms::kSameEvent for same event correlations, DijetHistograms::kMixedEvent for mixed event correlations
  *  const Bool_t useInclusiveJets = True: Correlation done for inclusive jets. False: Correlation done for leading and subleading jets
  */
-void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t correlationType, const Bool_t useInclusiveJets){
+void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t correlationType, const Bool_t useInclusiveJets){
   
   // Define a filler for THnSparses
-  Double_t fillerJetTrack[6];
+  Double_t fillerJetTrack[7];
+  Double_t fillerJetTrackInclusive[6];
   Double_t fillerTrack[5];
   
   // Event information
@@ -1307,9 +1336,11 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
   Double_t leadingJetPt = leadingJetInfo[0];
   Double_t leadingJetPhi = leadingJetInfo[1];
   Double_t leadingJetEta = leadingJetInfo[2];
+  Double_t leadingJetFlavor = leadingJetInfo[3];
   Double_t subleadingJetPt = subleadingJetInfo[0];
   Double_t subleadingJetPhi = subleadingJetInfo[1];
   Double_t subleadingJetEta = subleadingJetInfo[2];
+  Double_t subleadingJetFlavor = subleadingJetInfo[3];
   
   // Calculate the dijet asymmetry. Choose AJ or xJ based on selection from JCard.
   Double_t dijetAsymmetry = (fAsymmetryBinType == 0) ? (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt) : subleadingJetPt/leadingJetPt;
@@ -1353,15 +1384,16 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
     // Fill the selected jet-track correlation histograms
     
     if(useInclusiveJets){
-      fillerTrack[0] = trackPt;                    // Axis 0: Track pT
-      fillerTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and inclusive jet
-      fillerTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and inclusive jet
-      fillerTrack[3] = centrality;                 // Axis 3: Centrality
-      fillerTrack[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
+      fillerJetTrackInclusive[0] = trackPt;                    // Axis 0: Track pT
+      fillerJetTrackInclusive[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and inclusive jet
+      fillerJetTrackInclusive[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and inclusive jet
+      fillerJetTrackInclusive[3] = centrality;                 // Axis 3: Centrality
+      fillerJetTrackInclusive[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
+      fillerJetTrackInclusive[5] = leadingJetFlavor;           // Axis 5: Jet flavor (quark of gluon)
       
       if(fFillInclusiveJetTrackCorrelation){
-        fHistograms->fhTrackJetInclusive->Fill(fillerTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
-        fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
+        fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
+        fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
       }
     } else {
       
@@ -1372,6 +1404,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
       fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      fillerJetTrack[6] = leadingJetFlavor;           // Axis 6: Leading jet flavor (quark or gluon)
       if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
       if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
       if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
@@ -1383,6 +1416,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
       fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+      fillerJetTrack[6] = subleadingJetFlavor;        // Axis 6: Subleading jet flavor (quark or gluon)
       if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-subleading jet correlation histogram
       if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-subleading jet correlation histogram
       if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-subleading jet correlation histogram
@@ -1400,7 +1434,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[3], con
 void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType){
 
   // Define a filler for the closure histogram
-  Double_t fillerClosure[6];
+  Double_t fillerClosure[7];
   
   // Find the pT of the matched gen jet and flavor of reference parton
   Float_t matchedGenPt = fJetReader->GetMatchedPt(jetIndex);
@@ -1426,10 +1460,11 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   // Fill the different axes for the filler
   fillerClosure[0] = closureType;          // Axis 0: Type of closure (leading/subleading/inclusive)
   fillerClosure[1] = matchedGenPt;         // Axis 1: pT of the matched generator level jet
-  fillerClosure[2] = jetEta;               // Axis 2: eta of the jet under consideration
-  fillerClosure[3] = centrality;           // Axis 3: Centrality of the event
-  fillerClosure[4] = referencePartonIndex; // Axis 4: Reference parton type (quark/gluon)
-  fillerClosure[5] = recoPt/matchedGenPt;  // Axis 5: Reconstructed level jet to generator level jet pT ratio
+  fillerClosure[2] = recoPt;               // Axis 2: pT of the matched reconstructed jet
+  fillerClosure[3] = jetEta;               // Axis 3: eta of the jet under consideration
+  fillerClosure[4] = centrality;           // Axis 4: Centrality of the event
+  fillerClosure[5] = referencePartonIndex; // Axis 5: Reference parton type (quark/gluon)
+  fillerClosure[6] = recoPt/matchedGenPt;  // Axis 6: Reconstructed level jet to generator level jet pT ratio
   // Add eta of reco or gen jet
   
   // Fill the closure histogram
@@ -1440,16 +1475,16 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
 /*
  * Do the jet-track correlations with mixed events
  *
- *  const Double_t inclusiveJetInfo[60][3] = Array containing pT, phi and eta for all jets above the leading jet cut in the event
- *  const Double_t leadingJetInfo[3] = Array containing leading jet pT, phi and eta
- *  const Double_t subleadingJetInfo[3] = Array containing subleading jet pT, phi and eta
+ *  const Double_t inclusiveJetInfo[60][4] = Array containing pT, phi and eta for all jets above the leading jet cut in the event
+ *  const Double_t leadingJetInfo[4] = Array containing leading jet pT, phi and eta
+ *  const Double_t subleadingJetInfo[4] = Array containing subleading jet pT, phi and eta
  *  const Int_t avoidIndex = Index of the current event. Do not use this index for mixing in order not to mix with the same event
  *  const Int_t nJetsInThisEvent = Number of jets above the leading jet cut in this event
  *  const Double_t vz = Vertex z-position for the main event
  *  const Int_t hiBin = HiBin of the main event
  *  const Bool_t dijetInEvent = True: Event has dijet. False: No dijet in this event
  */
-void DijetAnalyzer::MixTracksAndJets(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent){
+void DijetAnalyzer::MixTracksAndJets(const Double_t inclusiveJetInfo[60][4], const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex;                        // Index of current event in mixing loop
@@ -1538,7 +1573,7 @@ void DijetAnalyzer::MixTracksAndJets(const Double_t inclusiveJetInfo[60][3], con
  *  const Int_t hiBin = HiBin of the main event
  *  const Bool_t dijetInEvent = True: Event has dijet. False: No dijet in this event
  */
-void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[60][3], const Double_t leadingJetInfo[3], const Double_t subleadingJetInfo[3], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent){
+void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[60][4], const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent){
   
   // Start mixing from the first event index
   Int_t mixedEventIndex = fMixingStartIndex; // Index of current event in mixing loop
@@ -1692,7 +1727,8 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   
   // Number of events for different pT hat bins in the high forest files
   //  pT hat =            15 30     50     80     120    170    220    280    370   460
-  Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};  // File list ppMC_Pythia6_forest_5TeV.txt
+  //Int_t ppMcEvents[nBins] = {0,444104,322347,383263,468748,447937,259209,234447,39275};  // File list ppMC_Pythia6_forest_5TeV.txt
+  Int_t ppMcEvents[nBins] = {0,  0   ,   0  ,480628,481952,449945,259726,234589,39297};  // File list ppMC_Pythia6_wtaForest.txt
   
   // Different number of events for PYTHIA8
   if(fReadMode == 1){
@@ -1741,7 +1777,8 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   
   // Number of events for different pT hat bins in the forest file list PbPbMC_5TeVPythia6+Hydjet_forests.txt
   //  pT hat =             15 30 50       80     120     170     220     280    370    460
-  Int_t PbPbMcEvents[nBins] = {0,0,1761973,2776457,2875707,2695801,2898124,783568,129714}; // Events excluding pthat100 files
+    Int_t PbPbMcEvents[nBins] = {0,0,1761973,2792672,2880895,2696425,2910642,786932,130273}; // Events in WTA forest
+  //Int_t PbPbMcEvents[nBins] = {0,0,1761973,2776457,2875707,2695801,2898124,783568,129714}; // Events excluding pthat100 files
   //Int_t PbPbMcEvents[nBins] = {0,0,1761973,4554185,3889938,2847904,2935134,793592,131390}; // Events including pthat100 files
   //Int_t PbPbMcEvents[nBins] = {0,0,0,2571563,2850815,2680567,2891375,781744,129417}; // Old Kurt events
   

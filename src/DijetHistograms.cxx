@@ -333,12 +333,15 @@ void DijetHistograms::CreateHistograms(){
   Int_t nBins4D[4];
   Int_t nBins5D[5];
   Int_t nBins6D[6];
+  Int_t nBins7D[7];
   Double_t lowBinBorder4D[4];
   Double_t lowBinBorder5D[5];
   Double_t lowBinBorder6D[6];
+  Double_t lowBinBorder7D[7];
   Double_t highBinBorder4D[4];
   Double_t highBinBorder5D[5];
   Double_t highBinBorder6D[6];
+  Double_t highBinBorder7D[7];
   
   // ======== Plain TH1 histograms ========
   
@@ -517,38 +520,43 @@ void DijetHistograms::CreateHistograms(){
   // ======== THnSparses for correlation between tracks and leading or subleading jets ========
   
   // Axis 0 for the track-jet correlation histogram: track pT
-  nBins6D[0] = nWideTrackPtBins;     // nBins for wide track pT bins
-  lowBinBorder6D[0] = minPtTrack;    // low bin border for track pT
-  highBinBorder6D[0] = maxPtTrack;   // high bin border for track pT
+  nBins7D[0] = nWideTrackPtBins;     // nBins for wide track pT bins
+  lowBinBorder7D[0] = minPtTrack;    // low bin border for track pT
+  highBinBorder7D[0] = maxPtTrack;   // high bin border for track pT
   
   // Axis 1 for the track-jet correlation histogram: deltaPhi between track and jet
-  nBins6D[1] = nDeltaPhiBinsJetTrack;       // nBins for deltaPhi between track and jet
-  lowBinBorder6D[1] = minDeltaPhiJetTrack;  // low bin border for deltaPhi between track and jet
-  highBinBorder6D[1] = maxDeltaPhiJetTrack; // high bin border for deltaPhi between track and jet
+  nBins7D[1] = nDeltaPhiBinsJetTrack;       // nBins for deltaPhi between track and jet
+  lowBinBorder7D[1] = minDeltaPhiJetTrack;  // low bin border for deltaPhi between track and jet
+  highBinBorder7D[1] = maxDeltaPhiJetTrack; // high bin border for deltaPhi between track and jet
   
   // Axis 2 for the track-jet correlation histogram: deltaEta between track and jet
-  nBins6D[2] = nDeltaEtaBinsJetTrack;         // nBins for deltaEta between track and jet
-  lowBinBorder6D[2] = minDeltaEtaJetTrack;    // low bin border deltaEta between track and jet
-  highBinBorder6D[2] = maxDeltaEtaJetTrack;   // high bin border deltaEta between track and jet
+  nBins7D[2] = nDeltaEtaBinsJetTrack;         // nBins for deltaEta between track and jet
+  lowBinBorder7D[2] = minDeltaEtaJetTrack;    // low bin border deltaEta between track and jet
+  highBinBorder7D[2] = maxDeltaEtaJetTrack;   // high bin border deltaEta between track and jet
   
   // Axis 3 for the track-jet correlation histogram: dijet asymmetry
-  nBins6D[3] = nWideAsymmetryBins;     // nBins for wide dijet asymmetry bins
-  lowBinBorder6D[3] = minAsymmetry;    // low bin border for dijet asymmetry
-  highBinBorder6D[3] = maxAsymmetry;   // high bin border for dijet asymmetry
+  nBins7D[3] = nWideAsymmetryBins;     // nBins for wide dijet asymmetry bins
+  lowBinBorder7D[3] = minAsymmetry;    // low bin border for dijet asymmetry
+  highBinBorder7D[3] = maxAsymmetry;   // high bin border for dijet asymmetry
   
   // Axis 4 for the track-jet correlation histogram: centrality
-  nBins6D[4] = nWideCentralityBins;     // nBins for centrality
-  lowBinBorder6D[4] = minCentrality;    // low bin border for centrality
-  highBinBorder6D[4] = maxCentrality;   // high bin border for centrality
+  nBins7D[4] = nWideCentralityBins;     // nBins for centrality
+  lowBinBorder7D[4] = minCentrality;    // low bin border for centrality
+  highBinBorder7D[4] = maxCentrality;   // high bin border for centrality
   
   // Axis 5 for the track-jet correlation histogram: correlation type
-  nBins6D[5] = nCorrelationTypeBins;        // nBins for correlation types
-  lowBinBorder6D[5] = minCorrelationType;   // low bin border for correlation types
-  highBinBorder6D[5] = maxCorrelationType;  // high bin border for correlation types
+  nBins7D[5] = nCorrelationTypeBins;        // nBins for correlation types
+  lowBinBorder7D[5] = minCorrelationType;   // low bin border for correlation types
+  highBinBorder7D[5] = maxCorrelationType;  // high bin border for correlation types
+  
+  // Axis 6 for the track-jet correlation histogram: jet flavor (quark/gluon)
+  nBins7D[6] = nClosureParticleTypeBins;        // nBins for jet flavors
+  lowBinBorder7D[6] = minClosureParticleType;   // low bin border for jet flavor
+  highBinBorder7D[6] = maxClosureParticleType;  // high bin border for jet flavor
   
   // Create histograms for track-jet correlations
-  fhTrackLeadingJet = new THnSparseF("trackLeadingJet","trackLeadingJet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackLeadingJet->Sumw2();
-  fhTrackSubleadingJet = new THnSparseF("trackSubleadingJet","trackSubleadingJet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackSubleadingJet->Sumw2();
+  fhTrackLeadingJet = new THnSparseF("trackLeadingJet","trackLeadingJet",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackLeadingJet->Sumw2();
+  fhTrackSubleadingJet = new THnSparseF("trackSubleadingJet","trackSubleadingJet",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackSubleadingJet->Sumw2();
   
   // Set custom centrality, asymmetry and track pT bins for histograms
   fhTrackLeadingJet->SetBinEdges(0,wideTrackPtBins);
@@ -559,8 +567,8 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJet->SetBinEdges(4,wideCentralityBins);
 
   // Create histograms for uncorrected track-jet correlations
-  fhTrackLeadingJetUncorrected = new THnSparseF("trackLeadingJetUncorrected","trackLeadingJetUncorrected",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackLeadingJetUncorrected->Sumw2();
-  fhTrackSubleadingJetUncorrected = new THnSparseF("trackSubleadingJetUncorrected","trackSubleadingJetUncorrected",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackSubleadingJetUncorrected->Sumw2();
+  fhTrackLeadingJetUncorrected = new THnSparseF("trackLeadingJetUncorrected","trackLeadingJetUncorrected",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackLeadingJetUncorrected->Sumw2();
+  fhTrackSubleadingJetUncorrected = new THnSparseF("trackSubleadingJetUncorrected","trackSubleadingJetUncorrected",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackSubleadingJetUncorrected->Sumw2();
   
   // Set custom centrality, asymmetry and track pT bins for histograms
   fhTrackLeadingJetUncorrected->SetBinEdges(0,wideTrackPtBins);
@@ -571,8 +579,8 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
   
   // Create histograms for pT weighted track-jet correlations
-  fhTrackLeadingJetPtWeighted = new THnSparseF("trackLeadingJetPtWeighted","trackLeadingJetPtWeighted",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackLeadingJetPtWeighted->Sumw2();
-  fhTrackSubleadingJetPtWeighted = new THnSparseF("trackSubleadingJetPtWeighted","trackSubleadingJetPtWeighted",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackSubleadingJetPtWeighted->Sumw2();
+  fhTrackLeadingJetPtWeighted = new THnSparseF("trackLeadingJetPtWeighted","trackLeadingJetPtWeighted",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackLeadingJetPtWeighted->Sumw2();
+  fhTrackSubleadingJetPtWeighted = new THnSparseF("trackSubleadingJetPtWeighted","trackSubleadingJetPtWeighted",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackSubleadingJetPtWeighted->Sumw2();
   
   // Set custom centrality, asymmetry and track pT bins for histograms
   fhTrackLeadingJetPtWeighted->SetBinEdges(0,wideTrackPtBins);
@@ -585,33 +593,38 @@ void DijetHistograms::CreateHistograms(){
   // ======== THnSparses for correlation between tracks and inclusive jets ========
   
   // Axis 0 for the track-inclusive jet correlation histogram: track pT
-  nBins5D[0] = nWideTrackPtBins;     // nBins for wide track pT bins
-  lowBinBorder5D[0] = minPtTrack;    // low bin border for track pT
-  highBinBorder5D[0] = maxPtTrack;   // high bin border for track pT
+  nBins6D[0] = nWideTrackPtBins;     // nBins for wide track pT bins
+  lowBinBorder6D[0] = minPtTrack;    // low bin border for track pT
+  highBinBorder6D[0] = maxPtTrack;   // high bin border for track pT
   
   // Axis 1 for the track-inclusive jet correlation histogram: deltaPhi between track and jet
-  nBins5D[1] = nDeltaPhiBinsJetTrack;       // nBins for deltaPhi between track and jet
-  lowBinBorder5D[1] = minDeltaPhiJetTrack;  // low bin border for deltaPhi between track and jet
-  highBinBorder5D[1] = maxDeltaPhiJetTrack; // high bin border for deltaPhi between track and jet
+  nBins6D[1] = nDeltaPhiBinsJetTrack;       // nBins for deltaPhi between track and jet
+  lowBinBorder6D[1] = minDeltaPhiJetTrack;  // low bin border for deltaPhi between track and jet
+  highBinBorder6D[1] = maxDeltaPhiJetTrack; // high bin border for deltaPhi between track and jet
   
   // Axis 2 for the track-inclusive jet correlation histogram: deltaEta between track and jet
-  nBins5D[2] = nDeltaEtaBinsJetTrack;         // nBins for deltaEta between track and jet
-  lowBinBorder5D[2] = minDeltaEtaJetTrack;    // low bin border deltaEta between track and jet
-  highBinBorder5D[2] = maxDeltaEtaJetTrack;   // high bin border deltaEta between track and jet
+  nBins6D[2] = nDeltaEtaBinsJetTrack;         // nBins for deltaEta between track and jet
+  lowBinBorder6D[2] = minDeltaEtaJetTrack;    // low bin border deltaEta between track and jet
+  highBinBorder6D[2] = maxDeltaEtaJetTrack;   // high bin border deltaEta between track and jet
   
   // Axis 3 for the track-inclusive jet correlation histogram: centrality
-  nBins5D[3] = nWideCentralityBins;     // nBins for centrality
-  lowBinBorder5D[3] = minCentrality;    // low bin border for centrality
-  highBinBorder5D[3] = maxCentrality;   // high bin border for centrality
+  nBins6D[3] = nWideCentralityBins;     // nBins for centrality
+  lowBinBorder6D[3] = minCentrality;    // low bin border for centrality
+  highBinBorder6D[3] = maxCentrality;   // high bin border for centrality
   
   // Axis 4 for the track-inclusive jet correlation histogram: correlation type
-  nBins5D[4] = nCorrelationTypeBins;        // nBins for correlation types
-  lowBinBorder5D[4] = minCorrelationType;   // low bin border for correlation types
-  highBinBorder5D[4] = maxCorrelationType;  // high bin border for correlation types
+  nBins6D[4] = nCorrelationTypeBins;        // nBins for correlation types
+  lowBinBorder6D[4] = minCorrelationType;   // low bin border for correlation types
+  highBinBorder6D[4] = maxCorrelationType;  // high bin border for correlation types
+  
+  // Axis 6 for the track-inclusive jet correlation histogram: jet flavor (quark/gluon)
+  nBins6D[5] = nClosureParticleTypeBins;        // nBins for jet flavors
+  lowBinBorder6D[5] = minClosureParticleType;   // low bin border for jet flavor
+  highBinBorder6D[5] = maxClosureParticleType;  // high bin border for jet flavor
   
   // Create histograms for track-inclusive jet correlations
-  fhTrackJetInclusive = new THnSparseF("trackJetInclusive","trackJetInclusive",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrackJetInclusive->Sumw2();
-  fhTrackJetInclusivePtWeighted = new THnSparseF("trackJetInclusivePtWeighted","trackJetInclusivePtWeighted",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhTrackJetInclusivePtWeighted->Sumw2();
+  fhTrackJetInclusive = new THnSparseF("trackJetInclusive","trackJetInclusive",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackJetInclusive->Sumw2();
+  fhTrackJetInclusivePtWeighted = new THnSparseF("trackJetInclusivePtWeighted","trackJetInclusivePtWeighted",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackJetInclusivePtWeighted->Sumw2();
   
   // Set custom centrality and track pT bins for histograms
   fhTrackJetInclusive->SetBinEdges(0,wideTrackPtBins);
@@ -622,40 +635,45 @@ void DijetHistograms::CreateHistograms(){
   // ======== THnSparses for jet pT closures ========
   
   // Axis 0 for the jet pT closure histogram: closure type (leading/subleading/inclusive)
-  nBins6D[0] = nClosureTypeBins;         // nBins for closure types
-  lowBinBorder6D[0] = minClosureType;    // low bin border for closure types
-  highBinBorder6D[0] = maxClosureType;   // high bin border for closure types
+  nBins7D[0] = nClosureTypeBins;         // nBins for closure types
+  lowBinBorder7D[0] = minClosureType;    // low bin border for closure types
+  highBinBorder7D[0] = maxClosureType;   // high bin border for closure types
   
   // Axis 1 for the jet pT closure histogram: generator level jet pT
-  nBins6D[1] = nClosurePtBins;       // nBins for generator level pT bins in closure plots
-  lowBinBorder6D[1] = minClosurePt;  // low bin border generator level pT in closure plots
-  highBinBorder6D[1] = maxClosurePt; // high bin border generator level pT in closure plots
+  nBins7D[1] = nClosurePtBins;       // nBins for generator level pT bins in closure plots
+  lowBinBorder7D[1] = minClosurePt;  // low bin border generator level pT in closure plots
+  highBinBorder7D[1] = maxClosurePt; // high bin border generator level pT in closure plots
   
-  // Axis 2 for the jet pT closure histogram: generator level jet eta
-  nBins6D[2] = nEtaBins;             // nBins for jet eta
-  lowBinBorder6D[2] = minEta;        // low bin border for jet eta
-  highBinBorder6D[2] = maxEta;       // high bin border for jet eta
+  // Axis 2 for the jet pT closure histogram: reconstructed jet pT
+  nBins7D[2] = nClosurePtBins;       // nBins for reconstructed jet pT bins in closure plots
+  lowBinBorder7D[2] = minClosurePt;  // low bin border for reconstructed jet pT in closure plots
+  highBinBorder7D[2] = maxClosurePt; // high bin border for reconstructed jet pT in closure plots
   
-  // Axis 3 for the jet pT closure histogram: centrality
-  nBins6D[3] = nWideCentralityBins;     // nBins for centrality
-  lowBinBorder6D[3] = minCentrality;    // low bin border for centrality
-  highBinBorder6D[3] = maxCentrality;   // high bin border for centrality
+  // Axis 3 for the jet pT closure histogram: generator level jet eta
+  nBins7D[3] = nEtaBins;             // nBins for jet eta
+  lowBinBorder7D[3] = minEta;        // low bin border for jet eta
+  highBinBorder7D[3] = maxEta;       // high bin border for jet eta
   
-  // Axis 4 for the jet pT closure histogram: ref parton = quark/gluon
-  nBins6D[4] = nClosureParticleTypeBins;         // nBins for reference parton
-  lowBinBorder6D[4] = minClosureParticleType;    // low bin border for reference parton
-  highBinBorder6D[4] = maxClosureParticleType;   // high bin border for reference parton
+  // Axis 4 for the jet pT closure histogram: centrality
+  nBins7D[4] = nWideCentralityBins;     // nBins for centrality
+  lowBinBorder7D[4] = minCentrality;    // low bin border for centrality
+  highBinBorder7D[4] = maxCentrality;   // high bin border for centrality
   
-  // Axis 5 for the jet pT closure histogram: reco/gen ratio for closure
-  nBins6D[5] = nClosureRatioBins;        // nBins for closure ratio
-  lowBinBorder6D[5] = minClosureRatio;   // low bin border for closure ratio
-  highBinBorder6D[5] = maxClosureRatio;  // high bin border for closure ratio
+  // Axis 5 for the jet pT closure histogram: ref parton = quark/gluon
+  nBins7D[5] = nClosureParticleTypeBins;         // nBins for reference parton
+  lowBinBorder7D[5] = minClosureParticleType;    // low bin border for reference parton
+  highBinBorder7D[5] = maxClosureParticleType;   // high bin border for reference parton
+  
+  // Axis 6 for the jet pT closure histogram: reco/gen ratio for closure
+  nBins7D[6] = nClosureRatioBins;        // nBins for closure ratio
+  lowBinBorder7D[6] = minClosureRatio;   // low bin border for closure ratio
+  highBinBorder7D[6] = maxClosureRatio;  // high bin border for closure ratio
   
   // Create histograms for jet pT closure
-  fhJetPtClosure = new THnSparseF("jetPtClosure","jetPtClosure",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhJetPtClosure->Sumw2();
+  fhJetPtClosure = new THnSparseF("jetPtClosure","jetPtClosure",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhJetPtClosure->Sumw2();
   
   // Set custom centrality bins for histograms
-  fhJetPtClosure->SetBinEdges(3,wideCentralityBins);
+  fhJetPtClosure->SetBinEdges(4,wideCentralityBins);
 }
 
 /*
