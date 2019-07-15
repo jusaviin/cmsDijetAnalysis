@@ -8,18 +8,20 @@
  * Macro estimating the systematic uncertainties from different sources
  *
  *  Different sources currently implemented:
+ *    - Background fluctuation (spillover correction)
+ *    - Tracking efficiency
+ *    - Residual tracking efficiency
  *    - Pair acceptance correction
- *    - 
+ *    - Backround subtraction
  *
+ *  TODO: Jet energy scale (compare results to different leading jet threshold, take the difference)
+ *        JFF (compare the difference betwee nquark and gluon jet corrections)
  */
 void estimateSystematics(){
   
   // ==================================================================
   // ========================= Configuration ==========================
   // ==================================================================
-  
-  enum enumUncertaintySources{kBackgroundFluctuation, kTrackingEfficiency, kResidualTracking, kPairAcceptance, kBackgroundSubtraction, kTotal, knUncertaintySources};
-  TString uncertaintyName[knUncertaintySources] = {"backgroundFluctuation", "trackingEfficiency", "residualTracking", "pairAcceptance", "backgroundSubtraction", "total"};
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "RECREATE";
@@ -46,7 +48,8 @@ void estimateSystematics(){
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   // Remove centrality selection from pp data and local testing
-  TString collisionSystem = dataHistograms->GetCard()->GetDataType();
+  DijetCard *dataCard = new DijetCard(dataFile);
+  TString collisionSystem = dataCard->GetDataType();
   if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
     lastDrawnCentralityBin = 0;
   }
@@ -74,7 +77,7 @@ void estimateSystematics(){
   DijetMethods *methods = new DijetMethods();
   
   // Create an array of histograms to hold the systematic uncertainties
-  TH1D *jetShapeUncertainty[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins][knUncertaintySources];
+  TH1D *jetShapeUncertainty[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins][JffCorrector::knUncertaintySources];
   
   // Jet shape binning: TODO: Use card to propagate information
   const int nRBins = 16;  // Number of R-bins for jet shape histograms
@@ -100,8 +103,8 @@ void estimateSystematics(){
       
       for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
         for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
-          for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
-            histogramName = Form("jetShapeUncertainty_%s_%sC%dT%d_%s", dataHistograms->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
+          for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
+            histogramName = Form("jetShapeUncertainty_%s_%sC%dT%d_%s", dataHistograms->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, spilloverReader->GetUncertaintyName(iUncertainty).Data());
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = new TH1D(histogramName.Data(), histogramName.Data(), nRBins, rBins);
           } // Uncertainty source loop
         } // Track pT loop
@@ -143,10 +146,10 @@ void estimateSystematics(){
           helperHistogram = methods->GetJetShape(twoDimensionalHelper);
           
           // Assign half of the correction as an uncertainty in each DeltaR bin
-          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kBackgroundFluctuation]->GetNbinsX(); iBin++){
+          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->GetNbinsX(); iBin++){
             
             currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.5);
-            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
+            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
           }
           
           // ================================================ //
@@ -156,10 +159,10 @@ void estimateSystematics(){
           helperHistogram = dataHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
           
           // In each deltaR bin, assign one per cent of the bin value as the systematic uncertainty
-          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kTrackingEfficiency]->GetNbinsX(); iBin++){
+          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingEfficiency]->GetNbinsX(); iBin++){
             
             currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.01);
-            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kTrackingEfficiency]->SetBinContent(iBin, currentUncertainty);
+            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingEfficiency]->SetBinContent(iBin, currentUncertainty);
           }
           
           // ========================================================= //
@@ -167,10 +170,10 @@ void estimateSystematics(){
           // ========================================================= //
           
           //Just put five percent to each bin.
-          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kResidualTracking]->GetNbinsX(); iBin++){
+          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kResidualTracking]->GetNbinsX(); iBin++){
             
             currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.05);
-            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kResidualTracking]->SetBinContent(iBin, currentUncertainty);
+            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kResidualTracking]->SetBinContent(iBin, currentUncertainty);
           }
           
           // ======================================================== //
@@ -182,7 +185,7 @@ void estimateSystematics(){
           
           // This uncertainty is flat in deltaEta-deltaPhi. Different R bins have different areas, so uncertainty changes in R
           // Use specific method to propagate a flat uncertainty in 2D to R
-          methods->PropagateDeltaEtaToDeltaR(jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kPairAcceptance], currentUncertainty);
+          methods->PropagateDeltaEtaToDeltaR(jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kPairAcceptance], currentUncertainty);
           
           // ==================================================== //
           // Estimate the uncertainty from background subtraction //
@@ -190,19 +193,19 @@ void estimateSystematics(){
           
           helperHistogram = dataHistograms->GetHistogramJetTrackDeltaEta(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kNearSide);
           currentUncertainty = methods->EstimateSystematicsForBackgroundSubtraction(helperHistogram);
-          methods->PropagateDeltaEtaToDeltaR(jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kBackgroundSubtraction], currentUncertainty);
+          methods->PropagateDeltaEtaToDeltaR(jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundSubtraction], currentUncertainty);
           
           // =================== //
           // Combine all sources //
           // =================== //
           
           // After all the sources have been estimated, get the total uncertainty by adding different sources in quadrature
-          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kTotal]->GetNbinsX(); iBin++){
+          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTotal]->GetNbinsX(); iBin++){
             currentUncertainty = 0;
-            for(int iUncertainty = 0; iUncertainty < kTotal; iUncertainty++){
+            for(int iUncertainty = 0; iUncertainty < JffCorrector::kTotal; iUncertainty++){
               currentUncertainty += TMath::Power(jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetBinContent(iBin),2);
             }
-            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][kTotal]->SetBinContent(iBin, TMath::Sqrt(currentUncertainty));
+            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTotal]->SetBinContent(iBin, TMath::Sqrt(currentUncertainty));
           }
           
         } // Track pT loop
@@ -234,7 +237,7 @@ void estimateSystematics(){
       
       for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
         for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
-          for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
+          for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
             
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->Write();
             
@@ -247,6 +250,9 @@ void estimateSystematics(){
     gDirectory->cd("../");
     
   } // Jet-track correlation type loop
+  
+  // Write the card information from the data histogram to the file
+  dataCard->Write(outputFile);
   
   outputFile->Close();
 }
