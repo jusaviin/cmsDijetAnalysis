@@ -2,4 +2,8 @@
 
 #./processHistogramsInSteps.sh "data/" "data/" false false false
 #./processHistogramsInStepsAsymmetry.sh "data/" "data/" false false false
-./processHistogramsInSteps.sh "data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncorr_improvisedMixing_preprocessed_2019-07-05.root" "data/dijetPbPb_pfCsJets_wtaAxis_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root" false false false
+./processHistogramsInStepsAsymmetry.sh "data/PbPbMC_GenGen_pfCsJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_wtaAxis_preprocessed_2019-07-12.root" "data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root" false false false
+./processHistogramsInStepsAsymmetry.sh "data/PbPbMC_GenGen_pfCsJets_noUncorr_xjBins_improvisedMixing_wtaAxis_preprocessed_2019-07-12.root" "data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root" false false false
+./processHistogramsInStepsAsymmetry.sh "data/PbPbMC_GenReco_pfCsJets_noUncorr_xjBins_improvisedMixing_wtaAxis_preprocessed_2019-07-12.root" "data/PbPbMC_GenReco_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root" false false false
+./processHistogramsInStepsAsymmetry.sh "data/PbPbMC_RecoGen_pfCsJets_noUncorr_xjBins_improvisedMixing_wtaAxis_preprocessed_2019-07-12.root" "data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root" false false false
+./processHistogramsInStepsAsymmetry.sh "data/PbPbMC_RecoReco_pfCsJets_xjBins_improvisedMixing_wtaAxis_preprocessed_2019-07-12.root" "data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root" false false false

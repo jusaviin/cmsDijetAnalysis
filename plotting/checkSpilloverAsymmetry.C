@@ -12,16 +12,21 @@ void checkSpilloverAsymmetry(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root";
-  TString spilloverComparisonFileName = "newSpilloverTest_symmetrizedDistribution_genJets_radial.root";
+  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root";
+  TString spilloverComparisonFileName = "spilloverCorrection_wtaAxis.root";
+  // data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root
   // newSpilloverTest_symmetrizedDistribution_xj_radial.root
   // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
   // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
   
   bool drawAsymmetryComparison = false;
   bool drawFileComparison = true;
+  bool draw2Dsample = false;   // Draw sample 2D distributions
   
-  bool saveFigures = false;
+  const char *firstFileComment = "EScheme";
+  const char *secondFileComment = "WTA";
+  
+  bool saveFigures = true;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -64,6 +69,19 @@ void checkSpilloverAsymmetry(){
   
   // Draw all asymmery bins deltaR curves to a single plot to see if the spillover is similar regardless of asymmetry bin
   JDrawer *drawer = new JDrawer();
+  
+  // Draw sample 2D distributions from the two input files
+  if(draw2Dsample){
+    drawer->SetRightMargin(0.13);
+    spilloverHistogram[nAsymmetryBins][0][1]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    spilloverHistogram[nAsymmetryBins][0][1]->GetYaxis()->SetRangeUser(-1.5,1.5);
+    drawer->DrawHistogram(spilloverHistogram[nAsymmetryBins][0][1],"#Delta#eta","#Delta#phi","EScheme, 1 < p_{T} < 2 GeV, C = 0-10","colz");
+    
+    spilloverHistogramComparison[nAsymmetryBins][0][1]->GetXaxis()->SetRangeUser(-1.5,1.5);
+    spilloverHistogramComparison[nAsymmetryBins][0][1]->GetYaxis()->SetRangeUser(-1.5,1.5);
+    drawer->DrawHistogram(spilloverHistogramComparison[nAsymmetryBins][0][1],"#Delta#eta","#Delta#phi","WTA, 1 < p_{T} < 2 GeV, C = 0-10","colz");
+  }
+  
   drawer->SetDefaultAppearanceSplitCanvas();
   
   // Make subeNon0 to spillover comparison in all bins
@@ -125,21 +143,23 @@ void checkSpilloverAsymmetry(){
         
         spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kRed);
         drawer->DrawHistogramToUpperPad(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],"#DeltaR","P(#DeltaR)"," ");
-        legend->AddEntry(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],"Matched","l");
+        legend->AddEntry(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],firstFileComment,"l");
         
         spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlue);
         spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt]->Draw("same");
-        legend->AddEntry(spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt],"Gen jets","l");
+        legend->AddEntry(spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt],secondFileComment,"l");
         
         legend->Draw();
         
         spilloverRatioComparison[nAsymmetryBins][iCentrality][iTrackPt] = (TH1D*) spilloverDeltaRComparison[nAsymmetryBins][iCentrality][iTrackPt]->Clone(Form("ratioOfDeltaRComparison%d%d",iCentrality,iTrackPt));
         spilloverRatioComparison[nAsymmetryBins][iCentrality][iTrackPt]->Divide(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt]);
         spilloverRatioComparison[nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,2);
-        drawer->DrawHistogramToLowerPad(spilloverRatioComparison[nAsymmetryBins][iCentrality][iTrackPt],"#DeltaR","Matched/Regular");
+        drawer->DrawHistogramToLowerPad(spilloverRatioComparison[nAsymmetryBins][iCentrality][iTrackPt], "#DeltaR", Form("%s/%s",secondFileComment,firstFileComment));
         
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/spilloverAsymmetryFileComparison_C=%.0f-%.0f_pT=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]));
+          gPad->GetCanvas()->SaveAs(Form("figures/spilloverAxisComparison_C=%.0f-%.0f_pT=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]));
+
+          //gPad->GetCanvas()->SaveAs(Form("figures/spilloverAsymmetryFileComparison_C=%.0f-%.0f_pT=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]));
         }
       } // Track pt Loop
     } // Centrality loop

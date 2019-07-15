@@ -23,7 +23,7 @@ public:
  
   // Indices for card entries
   enum enumCardEntries{
-    kDataType,                  // Data tyoe in the data file (pp, PbPb, pp MC, PbPb MC)
+    kDataType,                  // Data type in the data file (pp, PbPb, pp MC, PbPb MC)
     kMcCorrelationType,         // Monte Carlo correlation type (RecoReco, RecoGen, GenReco, GenGen)
     kMatchJets,                 // 0 = Reco and Gen jets are not matched, 1 = They are matched
     kForestType,                // 0 = High forest, 1 = Skim Forest
