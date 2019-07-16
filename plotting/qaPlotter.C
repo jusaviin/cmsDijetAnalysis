@@ -438,9 +438,9 @@ void qaPlotter(){
   bool saveFigures = false;          // Save the figures to a file
   
   bool drawSpillover = false;              // Draw the QA plots for spillover correction
-  bool drawSeagull = true;                // Draw the QA plots for seagull correction
+  bool drawSeagull = false;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
-  bool drawJetShapeCorrections = false;    // Draw the jet shape corrections as a function or R
+  bool drawJetShapeCorrections = true;    // Draw the jet shape corrections as a function or R
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
@@ -464,7 +464,7 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
   TFile *spilloverQaFile;
-  spilloverQaFile = TFile::Open("data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06_QA.root");
+  spilloverQaFile = TFile::Open("data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15_QA.root");
   // spillingOverTesting_QA.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18_QA.root"
   TFile *seagullFile = TFile::Open("data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_antiMatchedLeadingJet_sube0_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-14_QA.root");
@@ -476,24 +476,24 @@ void qaPlotter(){
   // "data/dijetPbPb_skims_pfJets_noUncorr_smoothedMixingAvoidPeakLowPt_noCorrections_2019-02-06_QA.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09_QA.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15_QA.root"
-  TFile *seagullPpFile = TFile::Open("data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_fixedJetPt_matchedJets_adjustedBackground_processed_2019-02-25_QA.root");
+  TFile *seagullPpFile = TFile::Open("data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13_QA.root");
   // data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14_QA.root
   TFile *backgroundFile = TFile::Open("data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_allCorrections_spilloverAlsoForSubleading_processed_2019-07-05.root");
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14.root"
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrectionsOrAdjust_processed_2019-01-09.root"
-  TFile *jffPbPbFile = TFile::Open("jffPbPbTestAsymmetry2.root");
+  TFile *jffPbPbFile = TFile::Open("data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root");
   // "data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root"
-  TFile *jffPpFile = TFile::Open("jffNewPpTest.root");
+  TFile *jffPpFile = TFile::Open("data/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root");
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root"
-  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root");
+  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root");
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager();
   const int nCentralityBins = 4; // TODO: See if these can be read in a clever way
-  const int nTrackPtBins = 6;    // TODO: Different files may have different binning!
+  const int nTrackPtBins = 7;    // TODO: Different files may have different binning!
   const int nAsymmetryBins = 3;  // TODO: Better switching of bins
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
@@ -581,9 +581,9 @@ void qaPlotter(){
             sprintf(histogramNamer,"seagullDeltaEta_%s/seagullDeltaEta_%s_A%dC%dT%d", dummyManager->GetJetTrackHistogramName(iJetTrack), dummyManager->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
             seagullDeltaEtaWings[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) seagullFile->Get(histogramNamer);
             
-            // Seagull histograms for pp (TODO: add asymmetry binning after it is implemented in the pp file)
+            // Seagull histograms for pp
             if(iCentrality == 0){
-              sprintf(histogramNamer,"seagullDeltaEta_%s/seagullDeltaEta_%s_C%dT%d", dummyManager->GetJetTrackHistogramName(iJetTrack), dummyManager->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
+              sprintf(histogramNamer,"seagullDeltaEta_%s/seagullDeltaEta_%s_A%dC%dT%d", dummyManager->GetJetTrackHistogramName(iJetTrack), dummyManager->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
               seagullDeltaEtaWings[iJetTrack][iAsymmetry][nCentralityBins][iTrackPt] = (TH1D*) seagullPpFile->Get(histogramNamer);
             }
           }
@@ -1341,12 +1341,10 @@ void qaPlotter(){
             if(iJetTrack < DijetHistogramManager::kTrackInclusiveJet){
               
               // Set a nice drawing style for the histograms
-              if(iCentrality != nCentralityBins){ // XXXX TEMP TEMP TODO Add xj bins also to pp file
-                // Set the style
-                for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
-                  correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(asymmetryStyle[iAsymmetry]);
-                  correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(asymmetryColor[iAsymmetry]);
-                }
+              // Set the style
+              for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
+                correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(asymmetryStyle[iAsymmetry]);
+                correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(asymmetryColor[iAsymmetry]);
               }
               
               // Determine the drawing range for all bins from the first centrality bin
@@ -1383,10 +1381,8 @@ void qaPlotter(){
               correctionJetShape[0][iJetTrack][nJffAsymmetryBins][iCentrality][iTrackPt]->DrawCopy();
               
               // Then, draw all the asymmetry bins to the same canvas
-              if(iCentrality != nCentralityBins){ // XXXX TEMP TEMP TODO Add xj bins also to pp file
-                for(int iAsymmetry = 0; iAsymmetry < nJffAsymmetryBins; iAsymmetry++){
-                  correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->DrawCopy("same");
-                }
+              for(int iAsymmetry = 0; iAsymmetry < nJffAsymmetryBins; iAsymmetry++){
+                correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->DrawCopy("same");
               }
               
               // Draw different asymmetry legends to different canvases

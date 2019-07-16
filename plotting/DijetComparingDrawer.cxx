@@ -1017,7 +1017,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         
         legendX1 = 0.45; legendY1 = 0.58; legendX2 = 0.77; legendY2 = 0.83;
         
-        // Prepare the track phi histograms to be drawn
+        // Prepare the jet shape histograms to be drawn
         PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, fAsymmetryBin, iCentrality, iTrackPt);
         closureHistogram = (TH1D*) fRatioHistogram[0]->Clone(Form("closureHistogram%d%d%d",iJetTrack,iCentrality,iTrackPt));
         

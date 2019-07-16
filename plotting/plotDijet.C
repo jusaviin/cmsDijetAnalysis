@@ -84,12 +84,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
+  bool drawJetShape = false;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
@@ -102,7 +102,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = false;
+  bool drawBackground = true;
   int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -113,7 +113,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
   const char* figureFormat = "pdf";
-  TString figureNameSuffix = "_eschame";
+  TString figureNameSuffix = "";
   
   // Normalization for jet shape plotting
   bool normalizeJetShapePlot = false;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
@@ -128,12 +128,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style2D = "colz";
   const char* style3D = "colz";//"surf1";
   
-  // File for JFF correction
+  // File for JFF correction (automatically changed for pp)
   TString jffCorrectionFileName = "data/jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root";
-  // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root  File for pp
-  // data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC_smoothedMixing_adjustedBackground_2019-01-15.root  Alternative file for pp
-  // data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root";  File for PbPb
-  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root";
+  //"data/jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root";
+  
+  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root";
+  // "data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root";
   // "newSpilloverTest_doubleGauss_includeSymmetrization.root"
   // "data/spilloverCorrection_PbPbMC_noUncorr_5eveStrictMix_subeNon0_2019-06-06.root"
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root"
@@ -198,7 +198,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
   double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
-  bool adjustBackground = false;        // Adjust background level based on differences on leading an subleading sides
+  bool adjustBackground = true;        // Adjust background level based on differences on leading an subleading sides
   int backgroundOverlapBins = 3;       // Number of bins around deltaPhi = Pi/2 used to calculate background adjustment
   
   // Jet shape
@@ -221,10 +221,6 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Open the input file
   TFile *inputFile = TFile::Open(inputFileName);
-  TFile *jffCorrectionFile;
-  TFile *spilloverFile;
-  if(jffCorrectionFileName != "") jffCorrectionFile = TFile::Open(jffCorrectionFileName);
-  if(spilloverCorrectionFileName != "") spilloverFile = TFile::Open(spilloverCorrectionFileName);
   
   if(inputFile == NULL){
     cout << "Error! The file " << inputFileName.Data() << " does not exist!" << endl;
@@ -241,7 +237,14 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
     lastDrawnCentralityBin = 0;
     centralityBinBorders[0] = -0.5;
+    jffCorrectionFileName = "data/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root";
   }
+  
+  // Open correction files
+  TFile *jffCorrectionFile;
+  TFile *spilloverFile;
+  if(applyJffCorrection && jffCorrectionFileName != "") jffCorrectionFile = TFile::Open(jffCorrectionFileName);
+  if(applySpilloverCorrection && spilloverCorrectionFileName != "") spilloverFile = TFile::Open(spilloverCorrectionFileName);
   
   // There are peaks visible only in PbPb mixed event distribution due to some detector effects.
   // Take this into account when normalizing the mixed event event distribution for PbPb

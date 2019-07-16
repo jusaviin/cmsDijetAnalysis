@@ -14,7 +14,7 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_GenGen_pfCsJets_noUncorr_onlySeagull_subeNon0_improvisedMixing_wtaAxis_processed_2019-07-14.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_subeNon0_wtaAxis_processed_2019-07-12.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedDijets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-02.root
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root"
   // PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root
@@ -23,7 +23,7 @@ void produceSpilloverCorrection(){
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "spilloverCorrection_wtaAxis_genJets.root"; // File name for the output file
+  TString outputFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root"; // File name for the output file
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
   TString uncorrectedDataFileName = "data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root"; // Data file to compare yields with spillover file
@@ -35,7 +35,7 @@ void produceSpilloverCorrection(){
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatio
   
-  bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
+  bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   

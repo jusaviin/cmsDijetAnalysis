@@ -12,21 +12,21 @@ void checkSpilloverAsymmetry(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root";
+  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root";
   TString spilloverComparisonFileName = "spilloverCorrection_wtaAxis.root";
   // data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root
   // newSpilloverTest_symmetrizedDistribution_xj_radial.root
   // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
   // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
   
-  bool drawAsymmetryComparison = false;
-  bool drawFileComparison = true;
+  bool drawAsymmetryComparison = true;
+  bool drawFileComparison = false;
   bool draw2Dsample = false;   // Draw sample 2D distributions
   
   const char *firstFileComment = "EScheme";
   const char *secondFileComment = "WTA";
   
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -37,7 +37,7 @@ void checkSpilloverAsymmetry(){
   const int nAsymmetryBins = 3;
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12};  // Bin borders for track pT
-  double xjBinBorders[] = {0,0.5,0.75,1}; // Bin borders for xj
+  double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
   // Define arrays for the histograms
   TH2D *spilloverHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
@@ -53,10 +53,10 @@ void checkSpilloverAsymmetry(){
   // Read the histograms from spillover file
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      /*for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+      for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
         spilloverHistogram[iAsymmetry][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_A%dC%dT%d",iAsymmetry,iCentrality,iTrackPt));
         spilloverDeltaR[iAsymmetry][iCentrality][iTrackPt] = calculator->GetJetShape(spilloverHistogram[iAsymmetry][iCentrality][iTrackPt]);
-      }*/
+      }
       spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
       spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]->SetName(Form("regularSpillover%d%d",iCentrality,iTrackPt));
       spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt] = calculator->GetJetShape(spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]);
