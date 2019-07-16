@@ -598,7 +598,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
             if(fTrackPtBinBorders[iTrackPtBin+1] < 100){ // Do not apply spillover correction to the highest pT bin
               //if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
-                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentralityBin,iTrackPtBin); // TODO: Maybe add asymmetry also to spillover, if it matters there
+                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
                 fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
               //} // If for subleading jets
             } // If for track pT
@@ -647,8 +647,8 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           
           // Apply the JFF correction to the background subtracted deltaEta-deltaPhi distribution
           if(fApplyJffCorrection && fJffCorrectionFinder->CorrectionReady()){
-            correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin); // TODO: Add asymmetry to JFF correction
-            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
+            correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram, -1);
           }
           
           // Calculate the jet shape from the background subtracted histogram
@@ -748,7 +748,7 @@ void DijetHistogramManager::ApplyJffCorrection(JffCorrector *jffCorrectionFinder
       for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
         if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
-          correctionHistogram = jffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin);
+          correctionHistogram = jffCorrectionFinder->GetJetShapeJffCorrection(iJetTrack,iCentralityBin,iTrackPtBin,iAsymmetry);
           fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin]->Scale(scalingFactor);  // Need to scale with the number of dijets/all jets since the correction is also normalized to the number of dijets/all jets
           fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
         } // Track pT loop
@@ -2867,8 +2867,9 @@ TH2D* DijetHistogramManager::GetHistogramJetTrackDeltaEtaDeltaPhi(const int iJet
 }
 
 // Getters for jet shape histograms
-TH1D* DijetHistogramManager::GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, const int iCentrality, const int iTrackPt) const{
+TH1D* DijetHistogramManager::GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, int iCentrality, const int iTrackPt) const{
   if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  if(fSystemAndEnergy.Contains("pp")) iCentrality = 0;
   return fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
 }
 
@@ -2951,6 +2952,16 @@ int DijetHistogramManager::GetFirstTrackPtBin() const{
 // Get the last loaded track pT bin
 int DijetHistogramManager::GetLastTrackPtBin() const{
   return fLastLoadedTrackPtBin;
+}
+
+// Get the first loaded asymmetry bin
+int DijetHistogramManager::GetFirstAsymmetryBin() const{
+  return fFirstLoadedAsymmetryBin;
+}
+
+// Get the last loaded asymmetry bin
+int DijetHistogramManager::GetLastAsymmetryBin() const{
+  return fLastLoadedAsymmetryBin;
 }
 
 // Getter for the number of events passing the cuts

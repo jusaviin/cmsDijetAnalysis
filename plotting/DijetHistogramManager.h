@@ -224,7 +224,7 @@ public:
   TH2D* GetHistogramJetTrackDeltaEtaDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, int iAsymmetry, const int iCentrality, const int iTrackPt) const;         // DeltaEta and deltaPhi between jet and track
   
   // Getters for jet shape histograms
-  TH1D* GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, const int iCentrality, const int iTrackPt) const;  // Jet shape histograms
+  TH1D* GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, int iCentrality, const int iTrackPt) const;  // Jet shape histograms
   
   // Getter for jet pT closure histograms
   TH1D* GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, const int iClosureParticle) const; // Jet pT closure
@@ -240,6 +240,8 @@ public:
   int GetLastCentralityBin() const;   // Get the last loaded centrality bin
   int GetFirstTrackPtBin() const;     // Get the first loaded track pT bin
   int GetLastTrackPtBin() const;      // Get the last loaded track pT bin
+  int GetFirstAsymmetryBin() const;   // Get the first loaded asymmetry bin
+  int GetLastAsymmetryBin() const;    // Get the last loaded asymmetry bin
   
   // Getters for normalization information
   int GetNEvents() const;                      // Getter for the number of events passing the cuts

@@ -31,8 +31,8 @@ public:
   void ReadSystematicFile(TFile *systematicFile); // Read thehistograms related to systematic uncertainties
   
   // Getters JFF correction histograms
-  TH1D* GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const;  // Jet shape JFF correction histograms
-  TH2D* GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt) const;  // DeltaEta-DeltaPhi JFF correction histograms
+  TH1D* GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // Jet shape JFF correction histograms
+  TH2D* GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi spillover correction histograms
   
   // Getters related to systematic uncertainties
@@ -48,14 +48,15 @@ private:
   
   // Data members
   bool fFileLoaded;                // Flag if the input file has been loaded
+  int  fJffAsymmetryBins;          // Number of asymmetry bins in the JFF correction file
   bool fSpilloverLoaded;           // Flag if the spillover file has been loaded
   int  fSpilloverAsymmetryBins;    // Number of asymmetry bins in the spillover file
   bool fSystematicErrorLoaded;     // Flag if a systematic error file has been loaded
   int  fSystematicAsymmetryBins;   // Number of asymmetry bins in the systematic uncertainty file
 
   // JFF correction histograms for jet shape
-  TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for jet shape
-  TH2D *fhDeltaEtaDeltaPhiCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for deltaEta-deltaPhi histograms
+  TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for jet shape
+  TH2D *fhDeltaEtaDeltaPhiCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for deltaEta-deltaPhi histograms
   
   // Spillover correction
   TH2D *fhDeltaEtaDeltaPhiSpilloverCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
