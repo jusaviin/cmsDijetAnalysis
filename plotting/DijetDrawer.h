@@ -152,11 +152,13 @@ private:
   const char* fStyle2D;   // Used option for two-dimensional drawing style
   const char* fStyle3D;   // Used option for three-dimensional drawing style
   
-  // Drawn centrality bins
+  // Drawn bins
   int fFirstDrawnCentralityBin;  // First centrality bin that is drawn
   int fLastDrawnCentralityBin;   // Last centrality bin that is drawn
   int fFirstDrawnTrackPtBin;     // First track pT bin that is drawn
   int fLastDrawnTrackPtBin;      // Last track pT bin that is drawn
+  int fFirstDrawnAsymmetryBin;   // First asymmetry bin that is drawn
+  int fLastDrawnAsymmetryBin;    // Last asymmetry bin that is drawn
   
   // Methods for drawing
   void DrawEventInformation();    // Draw the event information histograms
