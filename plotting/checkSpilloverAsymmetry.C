@@ -19,14 +19,15 @@ void checkSpilloverAsymmetry(){
   // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
   // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
   
-  bool drawAsymmetryComparison = true;
+  bool drawAsymmetryComparison = false;
   bool drawFileComparison = false;
   bool draw2Dsample = false;   // Draw sample 2D distributions
+  bool drawIntegral = true;
   
   const char *firstFileComment = "EScheme";
   const char *secondFileComment = "WTA";
   
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -47,8 +48,15 @@ void checkSpilloverAsymmetry(){
   TH1D *spilloverDeltaRComparison[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TH1D *spilloverRatioComparison[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   
+  // Yield extraction
+  TGraphErrors *yieldGraph[nCentralityBins];
+  double yieldIntegral[nCentralityBins][nTrackPtBins];
+  double yieldIntegralError[nCentralityBins][nTrackPtBins];
+  double yieldXpoints[] = {0.85,1.5,2.5,3.5,6,10};
+  double yieldXerrors[] = {0,0,0,0,0,0};
+  
   // Define a DijetMethods to get the spillover correction as a function of DeltaR
-  DijetMethods *calculator = new DijetMethods;
+  DijetMethods *calculator = new DijetMethods();
   
   // Read the histograms from spillover file
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -67,8 +75,17 @@ void checkSpilloverAsymmetry(){
     }
   }
   
+  // Calculate integrals for asymmetry integrated distributions and normalize them to pT bin width
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+      yieldIntegral[iCentrality][iTrackPt] = spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(1, 200, 1, 500, yieldIntegralError[iCentrality][iTrackPt], "width");
+      yieldIntegral[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
+    }
+  }
+  
   // Draw all asymmery bins deltaR curves to a single plot to see if the spillover is similar regardless of asymmetry bin
   JDrawer *drawer = new JDrawer();
+  TLegend *legend;
   
   // Draw sample 2D distributions from the two input files
   if(draw2Dsample){
@@ -82,10 +99,36 @@ void checkSpilloverAsymmetry(){
     drawer->DrawHistogram(spilloverHistogramComparison[nAsymmetryBins][0][1],"#Delta#eta","#Delta#phi","WTA, 1 < p_{T} < 2 GeV, C = 0-10","colz");
   }
   
+  // Draw the spillover yield in each track pT bin
+  if(drawIntegral){
+    drawer->SetDefaultAppearanceGraph();
+    TLine *zeroLine = new TLine(0,0,12,0);
+    zeroLine->SetLineStyle(2);
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[iCentrality], yieldXerrors, yieldIntegralError[iCentrality]);
+      yieldGraph[iCentrality]->SetMarkerStyle(21);
+      yieldGraph[iCentrality]->SetMarkerColor(kBlack);
+      drawer->DrawGraph(yieldGraph[iCentrality],0,12,-0.5,6,"p_{T} (GeV)","Spillover yield","","psame");
+      zeroLine->Draw();
+      
+      // Put the centrality bin to the canvas
+      legend = new TLegend(0.5,0.55,0.9,0.8);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->SetHeader(Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
+      legend->Draw();
+      
+      // Save the figures into a file
+      if(saveFigures){
+        gPad->GetCanvas()->SaveAs(Form("figures/spilloverYield_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+      }
+    }
+    
+    
+  }
+  
   drawer->SetDefaultAppearanceSplitCanvas();
   
   // Make subeNon0 to spillover comparison in all bins
-  TLegend *legend;
   int colors[] = {kBlue,kRed,kMagenta,kBlack};
   
   if(drawAsymmetryComparison){
