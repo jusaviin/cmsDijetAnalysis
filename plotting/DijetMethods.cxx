@@ -611,12 +611,12 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   // In the optimal case the ratio of overlapping bins from leading and subleading backgrounds is 1.
   // We can adjust the subleading background level based on the sum of background level in the overlap
   // region to make this happen. Nothing to adjust for inclusive jet-track correlation
+  double leadingScalingFactor = 1;
+  double subleadingScalingFactor = 1;
   if(fAdjustBackground && !isInclusive){
     double leadingToSubleadingRatio = leadingOverlap/subleadingOverlap;
     double subleadingToLeadingRatio = subleadingOverlap/leadingOverlap;
     double leadingToSubleadingRatioError = TMath::Sqrt(TMath::Power(leadingOverlapError/subleadingOverlap,2)+TMath::Power(leadingOverlap*subleadingOverlapError/TMath::Power(subleadingOverlap,2),2));
-    double leadingScalingFactor;
-    double subleadingScalingFactor;
     double scaledLeadingContent, scaledLeadingError;
     double scaledSubleadingContent, scaledSubleadingError;
     
@@ -666,6 +666,59 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
     } // Reasonable error if
   } // Adjusting the background if
   
+  // In the optimal case the difference in yields of overlapping bins from leading and subleading backgrounds is 0.
+  // We can adjust the background levels to make this happen. Nothing to adjust for inclusive jet-track correlation
+  /*if(fAdjustBackground && !isInclusive){
+    double leadingToSubleadingRatio = leadingOverlap/subleadingOverlap;
+    double subleadingToLeadingRatio = subleadingOverlap/leadingOverlap;
+    double leadingToSubleadingRatioError = TMath::Sqrt(TMath::Power(leadingOverlapError/subleadingOverlap,2)+TMath::Power(leadingOverlap*subleadingOverlapError/TMath::Power(subleadingOverlap,2),2));
+    leadingAdjustment = (leadingOverlap-subleadingOverlap)/2;
+    subleadingAdjustment = (subleadingOverlap-leadingOverlap)/2;
+    double errorAverage = (leadingOverlapError-subleadingOverlapError)/2;
+    double scaledLeadingContent, scaledSubleadingContent;
+    
+    // Only do the adjustment if the error of the ratio is somewhat reasonable
+    if(leadingToSubleadingRatioError < 1){
+      
+      // Scale both sides to match in the middle
+      if(leadingToSubleadingRatio > 1){
+        leadingScalingFactor = 1 + ((leadingToSubleadingRatio-1)/2);
+        subleadingScalingFactor = 1 - ((1-subleadingToLeadingRatio)/2);
+      } else {
+        leadingScalingFactor = 1 - ((1-leadingToSubleadingRatio)/2);
+        subleadingScalingFactor = 1 + ((subleadingToLeadingRatio-1)/2);
+      }
+      
+      leadingAdjustment = (leadingOverlap/(fnOverlapBins*2))*leadingScalingFactor;
+      subleadingAdjustment = (subleadingOverlap/(fnOverlapBins*2))*subleadingScalingFactor;
+      
+      for(int iDeltaPhi = 1; iDeltaPhi <= nDeltaPhiBins/2; iDeltaPhi++){
+        for(int iDeltaEta = 1; iDeltaEta <= fBackgroundDistribution->GetNbinsY(); iDeltaEta++){
+          
+          // If there is no content in the histogram, do not do adjustments
+          if(iDeltaEta >= minFilledDeltaEtaBin && iDeltaEta <= maxFilledDeltaEtaBin){
+            
+            // Scale the actual distribution
+            scaledLeadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi,iDeltaEta)-leadingAdjustment;
+            scaledSubleadingContent = fBackgroundDistribution->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)-subleadingAdjustment;
+            fBackgroundDistribution->SetBinContent(iDeltaPhi,iDeltaEta,scaledLeadingContent);
+            fBackgroundDistribution->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingContent);
+            
+            // Scale also the overlap histogram for debugging purposes
+            // Note that for overlap leading and subleading sides change with respect to pi/2
+            scaledLeadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi,iDeltaEta)-subleadingAdjustment;
+            scaledSubleadingContent = fBackgroundOverlap->GetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta)-leadingAdjustment;
+            fBackgroundOverlap->SetBinContent(iDeltaPhi,iDeltaEta,scaledLeadingContent);
+            fBackgroundOverlap->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,iDeltaEta,scaledSubleadingContent);
+            
+          } // Bins that are actually filled
+          
+        } // DeltaEta loop
+      } // DeltaPhi loop
+    } // Reasonable error if
+    
+  } // Adjusting the background if*/
+  
   // Subtract the generated background from the histogram including the background
   sprintf(histogramName,"%sBackgroundSubtracted",leadingHistogramWithBackground->GetName());
   TH2D *backgroundSubtractedHistogram = (TH2D*)leadingHistogramWithBackground->Clone(histogramName);
@@ -693,6 +746,65 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
   
   // Return the background subtracted histogram with negative values removed
   return backgroundSubtractedHistogram;
+}
+
+/*
+ * Get the adjustment factors such that if leading and subleading backgrounds are multiplied by them, they match nicely in the middle
+ *
+ *  Arguments:
+ *   TH1 *leadingBackground = Background histogram for the leading side
+ *   TH1 *leadingBackgroundOverlap = Overlapping bins from leading and subleading side
+ *
+ *  return: std::tuple<double,double> Where the first number is factor for leading side and the second for subleading side
+ */
+std::tuple<double,double> DijetMethods::GetBackgroundAdjustmentFactors(TH1 *leadingBackground, TH1 *leadingBackgroundOverlap) const{
+  
+  // Set the yield in overlapping bins to zero
+  double leadingOverlap = 0;
+  double leadingOverlapError = 0;
+  double subleadingOverlap = 0;
+  double subleadingOverlapError = 0;
+  
+  // Get the number of deltaPhi bins in the background histogram
+  int nDeltaPhiBins = leadingBackground->GetNbinsX();
+  
+  // Calculate the yield in the overlapping bins
+  for(int iDeltaPhi = nDeltaPhiBins/2 - fnOverlapBins + 1; iDeltaPhi <= nDeltaPhiBins/2; iDeltaPhi++){
+    leadingOverlap += leadingBackground->GetBinContent(iDeltaPhi);
+    leadingOverlapError += leadingBackground->GetBinError(iDeltaPhi);
+    subleadingOverlap += leadingBackgroundOverlap->GetBinContent(iDeltaPhi);
+    subleadingOverlapError += leadingBackgroundOverlap->GetBinError(iDeltaPhi);
+  }
+  
+  for(int iDeltaPhi = nDeltaPhiBins/2 + 1; iDeltaPhi <= nDeltaPhiBins/2 + fnOverlapBins; iDeltaPhi++){
+    subleadingOverlap += leadingBackground->GetBinContent(iDeltaPhi);
+    subleadingOverlapError += leadingBackground->GetBinError(iDeltaPhi);
+    leadingOverlap += leadingBackgroundOverlap->GetBinContent(iDeltaPhi);
+    leadingOverlapError += leadingBackgroundOverlap->GetBinError(iDeltaPhi);
+  }
+  
+  // Calculate the scaling factor from the yields
+  double leadingScalingFactor = 1;
+  double subleadingScalingFactor = 1;
+  
+  double leadingToSubleadingRatio = leadingOverlap/subleadingOverlap;
+  double subleadingToLeadingRatio = subleadingOverlap/leadingOverlap;
+  double leadingToSubleadingRatioError = TMath::Sqrt(TMath::Power(leadingOverlapError/subleadingOverlap,2)+TMath::Power(leadingOverlap*subleadingOverlapError/TMath::Power(subleadingOverlap,2),2));
+  
+  if(leadingToSubleadingRatioError < 1){
+    
+    // Scale both sides to match in the middle
+    if(leadingToSubleadingRatio > 1){
+      leadingScalingFactor = 1 + ((leadingToSubleadingRatio-1)/2);
+      subleadingScalingFactor = 1 - ((1-subleadingToLeadingRatio)/2);
+    } else {
+      leadingScalingFactor = 1 - ((1-leadingToSubleadingRatio)/2);
+      subleadingScalingFactor = 1 + ((subleadingToLeadingRatio-1)/2);
+    }
+    
+  }
+  
+  return std::make_tuple(leadingScalingFactor,subleadingScalingFactor);
 }
 
 /*

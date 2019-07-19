@@ -8,6 +8,7 @@
 
 // C++ includes
 #include <iostream>
+#include <tuple>
 
 // Root includes
 #include <TH1.h>
@@ -68,6 +69,7 @@ public:
   
   // Getter for background error scaling factor
   double GetBackgroundErrorScalingFactor() const; // Getter for background error scaling factor
+  std::tuple<double,double> GetBackgroundAdjustmentFactors(TH1 *leadingBackground, TH1 *leadingBackgroundOverlap) const; // Getter for background adjustment factors
   
   // Setters for mixed event configuration
   void SetMixedEventFitRegion(const double etaRangeLow, const double etaRangeHigh = 0);  // Setter for deltaEta range used for normalizing the mixed event
