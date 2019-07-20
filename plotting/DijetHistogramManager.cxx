@@ -25,6 +25,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fLoadDijetHistograms(false),
   fLoad2DHistograms(false),
   fLoadJetPtClosureHistograms(false),
+  fCorrelationJetFlavor(0),
   fFirstLoadedCentralityBin(0),
   fLastLoadedCentralityBin(1),
   fFirstLoadedTrackPtBin(0),
@@ -294,6 +295,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fLoadDijetHistograms(in.fLoadDijetHistograms),
   fLoad2DHistograms(in.fLoad2DHistograms),
   fLoadJetPtClosureHistograms(in.fLoadJetPtClosureHistograms),
+  fCorrelationJetFlavor(in.fCorrelationJetFlavor),
   fFirstLoadedCentralityBin(in.fFirstLoadedCentralityBin),
   fLastLoadedCentralityBin(in.fLastLoadedCentralityBin),
   fFirstLoadedTrackPtBin(in.fFirstLoadedTrackPtBin),
@@ -849,13 +851,14 @@ void DijetHistogramManager::LoadHistograms(){
  *
  *   Histogram name: leadingJet/subleadingJet/anyJet
  *
- *     Axis index       Content of axis         Exception
- * ----------------------------------------------------------
- *       Axis 0             Jet pT
- *       Axis 1             Jet phi
- *       Axis 2             Jet eta
- *       Axis 3         Dijet asymmetry    (for anyJet: Centrality)
- *       Axis 4           Centrality       (for anyJet: Nothing)
+ *     Axis index           Content of axis                           Exception
+ * ----------------------------------------------------------------------------------------
+ *       Axis 0                 Jet pT
+ *       Axis 1                 Jet phi
+ *       Axis 2                 Jet eta
+ *       Axis 3             Dijet asymmetry                      (for anyJet: Centrality)
+ *       Axis 4               Centrality                         (for anyJet: Jet flavor)
+ *       Axis 5   Jet flavor (for MC) 1 = Quark, 2 = Gluon       (for anyJet: Nothing)
  */
 void DijetHistogramManager::LoadSingleJetHistograms(){
   
@@ -865,11 +868,12 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
   int higherCentralityBin = 0;
   
   // Define arrays to help find the histograms
-  int axisIndices[2] = {0};
-  int lowLimits[2] = {0};
-  int highLimits[2] = {0};
+  int axisIndices[3] = {0};
+  int lowLimits[3] = {0};
+  int highLimits[3] = {0};
   
-  int centralityIndex[] = {4,4,3,3}; // For jet histograms without dijet requirement, there are only three axes.
+  int jetFlavorIndex[] = {5,5,4,4};  // For jet histograms without dijet requirement, there is no dijet asymmetry axis
+  int centralityIndex[] = {4,4,3,3}; // For jet histograms without dijet requirement, there is no dijet asymmetry axis
   int nAxesArray[] = {2,2,1,1};      // Number of constraining axes. No asymmetry for histograms without dijet requirement
   int nAxes = 2;                     // Number of constraining axes for this iteration
   
@@ -896,21 +900,29 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
         
         if(nAxesArray[iJetCategory] == 1 && (iAsymmetry > 0 && iAsymmetry < fnAsymmetryBins)) continue; // Only fill histograms without asymmetry selection for inclusive jet histograms. Fill pT > 120 for asymmetry bin 0.
         
-        axisIndices[0] = centralityIndex[iJetCategory]; axisIndices[1] = 3;
-        lowLimits[0] = lowerCentralityBin; lowLimits[1] = iAsymmetry+1;
-        highLimits[0] = higherCentralityBin; highLimits[1] = iAsymmetry+1;
+        axisIndices[0] = centralityIndex[iJetCategory]; lowLimits[0] = lowerCentralityBin; highLimits[0] = higherCentralityBin; // Centrality
+        axisIndices[1] = 3;                             lowLimits[1] = iAsymmetry+1;       highLimits[1] = iAsymmetry+1;        // Asymmetry
         
         // For the last index of array, disable asymmetry contraint
         nAxes = nAxesArray[iJetCategory];
         if(iAsymmetry == fnAsymmetryBins) nAxes = 1;
         
+        if(fCorrelationJetFlavor == 1 || fCorrelationJetFlavor == 2){
+          nAxes++;
+          axisIndices[1] = jetFlavorIndex[iJetCategory]; lowLimits[1] = fCorrelationJetFlavor; highLimits[1] = fCorrelationJetFlavor;        // Jet flavor
+          axisIndices[2] = 3;                            lowLimits[2] = iAsymmetry+1;          highLimits[2] = iAsymmetry+1;        // Asymmetry
+        }
+        
         // Fill histograms without dijet asymmetry information with pT cut 120 to asymmetry bin 0
-        if(nAxes == 1 && iAsymmetry == 0){
-          nAxes = 2;           // Set the number of constraining axes to 2
+        if(iJetCategory > kSubleadingJet && iAsymmetry == 0){
+          nAxes++;           // Set the number of constraining axes to 2
           axisIndices[1] = 0;  // Set the second constraining axis to be the pT axis
           SetBinIndices("anyJet",1,lowPtBinIndex,highPtBinIndex,lowPtBinLimit,highPtBinLimit,0);  // Find the bin indices for pT
           lowLimits[1] = lowPtBinIndex[0];   // Set the obtained index for low pT bin
           highLimits[1] = highPtBinIndex[0]; // Set the obtained index for high pT bin
+          
+          // Set the third restriction axis to jet flavor. This is used as a restriction if specified
+          axisIndices[2] = jetFlavorIndex[iJetCategory]; lowLimits[2] = fCorrelationJetFlavor; highLimits[2] = fCorrelationJetFlavor;
         }
         
         // Always load single jet pT histograms
@@ -1082,16 +1094,17 @@ void DijetHistogramManager::LoadTrackHistograms(){
  *       Axis 0                        Track pT
  *       Axis 1             DeltaPhi between track and jet
  *       Axis 2             DeltaEta between track and jet
- *       Axis 3                    Dijet asymmetry
+ *       Axis 3                    Dijet asymmetry                  (skip this axis for inclusive jets)
  *       Axis 4                       Centrality
  *       Axis 5                    Correlation type
+ *       Axis 6          Jet flavor (for MC) 1 = Quark, 2 = Gluon
  */
 void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
   
   // Define arrays to help find the histograms
-  int axisIndices[5] = {0};
-  int lowLimits[5] = {0};
-  int highLimits[5] = {0};
+  int axisIndices[6] = {0};
+  int lowLimits[6] = {0};
+  int highLimits[6] = {0};
   int nRestrictionAxes;
   
   // Define helper variables
@@ -1140,14 +1153,28 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
             
             nRestrictionAxes = 4;
             
+            // If we select to look only quark or gluon initiated jets, add restriction to jet flavor axis
+            if(fCorrelationJetFlavor == 1 || fCorrelationJetFlavor == 2){
+              nRestrictionAxes = 5;
+              axisIndices[3] = 6; lowLimits[3] = fCorrelationJetFlavor; highLimits[3] = fCorrelationJetFlavor; // Jet flavor
+              axisIndices[4] = 3; lowLimits[4] = iAsymmetry+1;          highLimits[4] = iAsymmetry+1;          // Asymmetry
+            }
+            
             // Remove the asymmetry restriction for the last iAsymmetry bin. That will be asymmetry inclusive.
-            if(iAsymmetry == fnAsymmetryBins) nRestrictionAxes = 3;
+            if(iAsymmetry == fnAsymmetryBins) nRestrictionAxes -= 1;
             
             // Indexing is different for inclusive jet-track correlation, as they do not have dijet asymmetry
             if(iJetTrack >= kTrackInclusiveJet){
               axisIndices[0] = 4;
               axisIndices[1] = 3;
               nRestrictionAxes = 3;
+              
+              // If we select to look only quark or gluon initiated jets, add restriction to jet flavor axis
+              if(fCorrelationJetFlavor == 1 || fCorrelationJetFlavor == 2){
+                nRestrictionAxes = 4;
+                axisIndices[3] = 5; lowLimits[3] = fCorrelationJetFlavor; highLimits[3] = fCorrelationJetFlavor; // Jet flavor
+              }
+              
             }
             
             fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta] = FindHistogram(fInputFile,fJetTrackHistogramNames[iJetTrack],1,nRestrictionAxes,axisIndices,lowLimits,highLimits);
@@ -1159,8 +1186,16 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
               axisIndices[4] = 3; lowLimits[4] = iAsymmetry+1;                      highLimits[4] = iAsymmetry+1;                       // Asymmetry
               nRestrictionAxes = 5;
               
+              // If we select to look only quark or gluon initiated jets, add restriction to jet flavor axis
+              if(fCorrelationJetFlavor == 1 || fCorrelationJetFlavor == 2){
+                nRestrictionAxes = 6;
+                axisIndices[4] = 6; lowLimits[4] = fCorrelationJetFlavor; highLimits[4] = fCorrelationJetFlavor; // Jet flavor
+                axisIndices[5] = 3; lowLimits[5] = iAsymmetry+1;          highLimits[5] = iAsymmetry+1;          // Asymmetry
+              }
+              
               // No asymmetry restriction for inclusive jets or the last asymmetry bin
-              if(iJetTrack >= kTrackInclusiveJet || iAsymmetry == fnAsymmetryBins) nRestrictionAxes = 4;
+              if(iJetTrack >= kTrackInclusiveJet || iAsymmetry == fnAsymmetryBins) nRestrictionAxes -= 1;
+              if(iJetTrack >= kTrackInclusiveJet) axisIndices[4] = 5; // Different axis index for jet flavor for inclusive jets
               
               fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi] = FindHistogram(fInputFile,fJetTrackHistogramNames[iJetTrack],2,nRestrictionAxes,axisIndices,lowLimits,highLimits);
             } // DeltaPhi loop
@@ -2524,6 +2559,11 @@ void DijetHistogramManager::SetLoadTrackInclusiveJetCorrelationsPtWeighted(const
 void DijetHistogramManager::SetLoadAllTrackInclusiveJetCorrelations(const bool loadInclusive, const bool loadPtWeighted){
   SetLoadTrackInclusiveJetCorrelations(loadInclusive);
   SetLoadTrackInclusiveJetCorrelationsPtWeighted(loadPtWeighted);
+}
+
+// Setter for flavor selection for jets in jet-track correlations
+void DijetHistogramManager::SetCorrelationJetFlavor(const int iFlavor){
+  fCorrelationJetFlavor = iFlavor;
 }
 
  // Setter for loading two-dimensional histograms

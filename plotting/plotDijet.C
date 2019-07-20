@@ -187,12 +187,15 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     lastDrawnAsymmetryBin = selectedAsymmetryBin;
   }
   
+  // Jet flavor selection
+  int jetFlavor = 0;   // Select jet flavor: 0 = Any, 1 = Quark, 2 = Gluon
+  
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
@@ -302,6 +305,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetLoadAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations,drawPtWeightedTrackInclusiveJetCorrelations);
   histograms->SetLoad2DHistograms(true);
   histograms->SetLoadJetPtClosureHistograms(drawJetPtClosure);
+  histograms->SetCorrelationJetFlavor(jetFlavor);
 
   // Set the binning information
   histograms->SetCentralityBins(false,nCentralityBins,centralityBinBorders,setIndices);

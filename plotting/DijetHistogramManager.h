@@ -139,6 +139,7 @@ public:
   void SetLoadTrackInclusiveJetCorrelations(const bool loadOrNot);           // Setter for loading inclusive jet-track correlations
   void SetLoadTrackInclusiveJetCorrelationsPtWeighted(const bool loadOrNot); // Setter for leading pT weighted inclusive jet-track correlations
   void SetLoadAllTrackInclusiveJetCorrelations(const bool loadInclusive, const bool loadPtWeighted);        // Setter for loading all correlations related to tracks and inclusive jets
+  void SetCorrelationJetFlavor(const int iFlavor);  // For Monte Carlo, can select if we are looking for quark or gluon initiated jets
   
   // Setter for loading additional histograms
   void SetLoad2DHistograms(const bool loadOrNot);           // Setter for loading two-dimensional histograms
@@ -286,6 +287,7 @@ private:
   bool fLoadJetTrackCorrelations[knJetTrackCorrelations];  // Load the jet-track correlation histograms
   bool fLoad2DHistograms;                                  // Load also two-dimensional (eta,phi) and (deltaEta,deltaPhi) histograms
   bool fLoadJetPtClosureHistograms;                        // Load the jet pT closure histograms
+  int  fCorrelationJetFlavor;                              // Select the flavor for loaded jets (1 = Quark, 2 = Gluon)
   
   // ==============================================
   // ======== Ranges of histograms to load ========
