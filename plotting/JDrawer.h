@@ -11,6 +11,7 @@
 #include <TPad.h>
 #include <TString.h>
 #include <TH1.h>
+#include <TF1.h>
 #include <TGraph.h>
 #include <TLegend.h>
 
@@ -90,6 +91,49 @@ private:
    * TString ytit = Title of the y-axis
    */
   void SetHistogramStyle(TH1 *hid, TString xtit, TString ytit){
+    
+    hid->GetXaxis()->CenterTitle(1);    // Axis titles are centered
+    hid->GetYaxis()->CenterTitle(1);    // Axis titles are centered
+    hid->GetZaxis()->CenterTitle(1);    // Axis titles are centered
+    
+    hid->GetXaxis()->SetTitleOffset(fTitleOffsetX); // Give a small offset to the title so that it does overlap with axis
+    hid->GetYaxis()->SetTitleOffset(fTitleOffsetY); // Give a small offset to the title so that it does overlap with axis
+    hid->GetZaxis()->SetTitleOffset(fTitleOffsetZ); // Give a small offset to the title so that it does overlap with axis
+    
+    hid->GetXaxis()->SetTitleSize(fTitleSizeX); // Define the size of the title
+    hid->GetYaxis()->SetTitleSize(fTitleSizeY); // Define the size of the title
+    hid->GetZaxis()->SetTitleSize(fTitleSizeZ); // Define the size of the title
+    
+    hid->GetXaxis()->SetLabelOffset(fLabelOffsetX); // Give a small offset to the label so that it does overlap with axis
+    hid->GetYaxis()->SetLabelOffset(fLabelOffsetY); // Give a small offset to the label so that it does overlap with axis
+    hid->GetZaxis()->SetLabelOffset(fLabelOffsetZ); // Give a small offset to the label so that it does overlap with axis
+    
+    hid->GetXaxis()->SetLabelSize(fLabelSizeX); // Define the sixe of the label
+    hid->GetYaxis()->SetLabelSize(fLabelSizeY); // Define the sixe of the label
+    hid->GetZaxis()->SetLabelSize(fLabelSizeZ); // Define the sixe of the label
+    
+    hid->GetXaxis()->SetNdivisions(fDivisionsX); // Set the number of division markers
+    hid->GetYaxis()->SetNdivisions(fDivisionsY); // Set the number of division markers
+    
+    hid->GetXaxis()->SetTitle(xtit); // Set the axis title
+    hid->GetYaxis()->SetTitle(ytit); // Set the axis title
+    
+    hid->GetXaxis()->SetLabelFont(fFont); // Set the label font
+    hid->GetYaxis()->SetLabelFont(fFont); // Set the label font
+    hid->GetZaxis()->SetLabelFont(fFont); // Set the label font
+    hid->GetXaxis()->SetTitleFont(fFont); // Set the title font
+    hid->GetYaxis()->SetTitleFont(fFont); // Set the title font
+    hid->GetZaxis()->SetTitleFont(fFont); // Set the title font
+  }
+  
+  /*
+   * Trim the style of a function using the defined style values
+   *
+   * TF1 *hid = Function which is styled
+   * TString xtit = Title of the x-axis
+   * TString ytit = Title of the y-axis
+   */
+  void SetFunctionStyle(TF1 *hid, TString xtit, TString ytit){
     
     hid->GetXaxis()->CenterTitle(1);    // Axis titles are centered
     hid->GetYaxis()->CenterTitle(1);    // Axis titles are centered
@@ -332,6 +376,38 @@ public:
     CreateCanvas(xlow,xhigh,ylow,yhigh,xTitle,yTitle,title);
     graph->Draw(drawOption);
     
+  }
+  
+  /*
+   *  Draw a histogram to a canvas
+   *
+   *  TF1 *myFun = histogram to be drawn
+   *  char *xTitle = title for the x-axis
+   *  char *yTitle = title for the y-axis
+   *  char *title = title of the histogram
+   *  char *drawOption = options for drawing given in root documentation
+   */
+  void DrawFunction(TF1 *myFun, const char *xTitle, const char *yTitle, const char *title = "", const char *drawOption = ""){
+    // If no titles are given, keep the original ones
+    if(strcmp(xTitle, "") == 0) xTitle = myFun->GetXaxis()->GetTitle(); // To compare char*:s we need to use strcmp function provided by <cstring> library
+    if(strcmp(yTitle, "") == 0) yTitle = myFun->GetYaxis()->GetTitle();
+    if(strcmp(title, "") == 0) title = myFun->GetTitle();
+    
+    // Set up the histogram and draw it to canvas
+    CreateCanvas();
+    myFun->SetTitle(title);
+    SetFunctionStyle(myFun, xTitle, yTitle);
+    myFun->Draw(drawOption);
+  }
+  
+  /*
+   * Draw histogram without changing the titles
+   *
+   *  TF1 *myFun = function to be drawn
+   *  char *drawOption = options for drawing given in root documentation
+   */
+  void DrawFunction(TF1* myFun, const char *drawOption = ""){
+    DrawFunction(myFun,"","","",drawOption);
   }
   
   /*
