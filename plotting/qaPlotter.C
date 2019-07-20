@@ -437,10 +437,10 @@ void qaPlotter(){
   
   bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = false;              // Draw the QA plots for spillover correction
+  bool drawSpillover = true;              // Draw the QA plots for spillover correction
   bool drawSeagull = false;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
-  bool drawJetShapeCorrections = true;    // Draw the jet shape corrections as a function or R
+  bool drawJetShapeCorrections = false;    // Draw the jet shape corrections as a function or R
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations

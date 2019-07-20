@@ -51,9 +51,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -89,7 +89,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
@@ -102,8 +102,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
-  int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
+  bool drawBackground = false;
+  int backgroundStyle = 3; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
                            // Bit 2 = Draw background fit (int = 4)
@@ -142,7 +142,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27.root"
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = true;
+  bool applySeagullCorrection = false;
   if(preprocess) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
@@ -164,7 +164,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins;
@@ -198,7 +198,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Background subtraction
   double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
   double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
-  bool adjustBackground = true;        // Adjust background level based on differences on leading an subleading sides
+  bool adjustBackground = false;        // Adjust background level based on differences on leading an subleading sides
   int backgroundOverlapBins = 3;       // Number of bins around deltaPhi = Pi/2 used to calculate background adjustment
   
   // Jet shape

@@ -667,7 +667,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
             if(iCorrelationType == kMixedEvent && !fImproviseMixing) continue;
             
             // DeltaPhi histogram over whole eta
-            sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetName(),kWholeEta);
+            sprintf(histogramName,"%sDeltaPhiProjection%d", fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetName(), kWholeEta);
             nBins = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetNbinsY();
             fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta] = (TH1D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->ProjectionX(histogramName,1,nBins)->Clone();  // Exclude underflow and overflow bins by specifying range
             

@@ -28,8 +28,17 @@ void estimateSystematics(){
   const char* outputFileName = "systematicTest.root";
   
   // Data file from which the histograms needed for the systematic uncertainty estimation are read
-  TFile *dataFile = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_allCorrections_processed_2019-06-16.root");
-  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root");
+  TFile *dataFile = TFile::Open("data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root");
+  
+  // We need spillover file to estimate the systematic uncertainty form background fluctuations
+  TFile *spilloverFile = TFile::Open("data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root");
+  
+  // For the jet energy scale uncertainty, we look at correlations with 5 % varied leading jet threshold
+  TFile *lowJetCutFile = TFile::Open("data/dijetPbPb_pfCsJets_lowLeadingJetCut_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root");
+  TFile *highJetCutFile = TFile::Open("data/dijetPbPb_pfCsJets_highLeadingJetCut_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root");
+  
+  
+  
   DijetHistogramManager *dataHistograms = new DijetHistogramManager(dataFile);
   JffCorrector *spilloverReader = new JffCorrector();
   spilloverReader->ReadSpilloverFile(spilloverFile);
@@ -57,7 +66,7 @@ void estimateSystematics(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatio
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
