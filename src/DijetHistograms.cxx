@@ -330,15 +330,12 @@ void DijetHistograms::CreateHistograms(){
   }
   
   // Arrays for creating THnSparses
-  Int_t nBins4D[4];
   Int_t nBins5D[5];
   Int_t nBins6D[6];
   Int_t nBins7D[7];
-  Double_t lowBinBorder4D[4];
   Double_t lowBinBorder5D[5];
   Double_t lowBinBorder6D[6];
   Double_t lowBinBorder7D[7];
-  Double_t highBinBorder4D[4];
   Double_t highBinBorder5D[5];
   Double_t highBinBorder6D[6];
   Double_t highBinBorder7D[7];
@@ -374,33 +371,38 @@ void DijetHistograms::CreateHistograms(){
   // ======== THnSparses for leading and subleading jets ========
   
   // Axis 0 for the jet histogram: leading/subleading jet pT
-  nBins5D[0] = nPtBinsJet;         // nBins for leading/subleading jet pT
-  lowBinBorder5D[0] = minPtJet;    // low bin border for leading/subleading jet pT
-  highBinBorder5D[0] = maxPtJet;   // high bin border for leading/subleading jet pT
+  nBins6D[0] = nPtBinsJet;         // nBins for leading/subleading jet pT
+  lowBinBorder6D[0] = minPtJet;    // low bin border for leading/subleading jet pT
+  highBinBorder6D[0] = maxPtJet;   // high bin border for leading/subleading jet pT
   
   // Axis 1 for the jet histogram: leading/subleading jet phi
-  nBins5D[1] = nPhiBins;        // nBins for leading/subleading jet phi
-  lowBinBorder5D[1] = minPhi;   // low bin border for leading/subleading jet phi
-  highBinBorder5D[1] = maxPhi;  // high bin border for leading/subleading jet phi
+  nBins6D[1] = nPhiBins;        // nBins for leading/subleading jet phi
+  lowBinBorder6D[1] = minPhi;   // low bin border for leading/subleading jet phi
+  highBinBorder6D[1] = maxPhi;  // high bin border for leading/subleading jet phi
   
   // Axis 2 for the jet histogram: leading/subleading jet eta
-  nBins5D[2] = nEtaBins;        // nBins for leading/subleading jet eta
-  lowBinBorder5D[2] = minEta;   // low bin border for leading/subleading jet eta
-  highBinBorder5D[2] = maxEta;  // high bin border for leading/subleading jet eta
+  nBins6D[2] = nEtaBins;        // nBins for leading/subleading jet eta
+  lowBinBorder6D[2] = minEta;   // low bin border for leading/subleading jet eta
+  highBinBorder6D[2] = maxEta;  // high bin border for leading/subleading jet eta
   
   // Axis 3 for the jet histogram: asymmetry
-  nBins5D[3] = nWideAsymmetryBins;     // nBins for wide asymmetry bins
-  lowBinBorder5D[3] = minAsymmetry;    // low bin border for asymmetry
-  highBinBorder5D[3] = maxAsymmetry;   // high bin border for asymmetry
+  nBins6D[3] = nWideAsymmetryBins;     // nBins for wide asymmetry bins
+  lowBinBorder6D[3] = minAsymmetry;    // low bin border for asymmetry
+  highBinBorder6D[3] = maxAsymmetry;   // high bin border for asymmetry
   
   // Axis 4 for the jet histogram: centrality
-  nBins5D[4] = nWideCentralityBins;   // nBins for wide centrality bins
-  lowBinBorder5D[4] = minCentrality;  // low bin border for centrality
-  highBinBorder5D[4] = maxCentrality; // high bin border for centrality
+  nBins6D[4] = nWideCentralityBins;   // nBins for wide centrality bins
+  lowBinBorder6D[4] = minCentrality;  // low bin border for centrality
+  highBinBorder6D[4] = maxCentrality; // high bin border for centrality
+  
+  // Axis 5 for the jet histogram: jet flavor (quark/gluon)
+  nBins6D[5] = nClosureParticleTypeBins;        // nBins for jet flavor
+  lowBinBorder6D[5] = minClosureParticleType;   // low bin border for jet flavor
+  highBinBorder6D[5] = maxClosureParticleType;  // high bin border for jet flavor
   
   // Create the histograms for leading and subleading jets using the above binning information
-  fhLeadingDijet = new THnSparseF("leadingJet","leadingJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhLeadingDijet->Sumw2();
-  fhSubleadingDijet = new THnSparseF("subleadingJet","subleadingJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhSubleadingDijet->Sumw2();
+  fhLeadingDijet = new THnSparseF("leadingJet","leadingJet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhLeadingDijet->Sumw2();
+  fhSubleadingDijet = new THnSparseF("subleadingJet","subleadingJet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhSubleadingDijet->Sumw2();
   
   // Set custom dijet asymmetry bins for histograms
   fhLeadingDijet->SetBinEdges(3,wideAsymmetryBins);
@@ -451,28 +453,33 @@ void DijetHistograms::CreateHistograms(){
   // ======== THnSparse for all jets ========
   
   // Axis 0 for the any jet histogram: jet pT
-  nBins4D[0] = nPtBinsJet;         // nBins for any jet pT
-  lowBinBorder4D[0] = minPtJet;    // low bin border for any jet pT
-  highBinBorder4D[0] = maxPtJet;   // high bin border for any jet pT
+  nBins5D[0] = nPtBinsJet;         // nBins for any jet pT
+  lowBinBorder5D[0] = minPtJet;    // low bin border for any jet pT
+  highBinBorder5D[0] = maxPtJet;   // high bin border for any jet pT
   
   // Axis 1 for the any jet histogram: jet phi
-  nBins4D[1] = nPhiBins;        // nBins for any jet phi
-  lowBinBorder4D[1] = minPhi;   // low bin border for any jet phi
-  highBinBorder4D[1] = maxPhi;  // high bin border for any jet phi
+  nBins5D[1] = nPhiBins;        // nBins for any jet phi
+  lowBinBorder5D[1] = minPhi;   // low bin border for any jet phi
+  highBinBorder5D[1] = maxPhi;  // high bin border for any jet phi
   
   // Axis 2 for the any jet histogram: jet eta
-  nBins4D[2] = nEtaBins;        // nBins for any jet eta
-  lowBinBorder4D[2] = minEta;   // low bin border for any jet eta
-  highBinBorder4D[2] = maxEta;  // high bin border for any jet eta
+  nBins5D[2] = nEtaBins;        // nBins for any jet eta
+  lowBinBorder5D[2] = minEta;   // low bin border for any jet eta
+  highBinBorder5D[2] = maxEta;  // high bin border for any jet eta
   
   // Axis 3 for the any jet histogram: centrality
-  nBins4D[3] = nWideCentralityBins;   // nBins for wide centrality bins
-  lowBinBorder4D[3] = minCentrality;  // low bin border for centrality
-  highBinBorder4D[3] = maxCentrality; // high bin border for centrality
+  nBins5D[3] = nWideCentralityBins;   // nBins for wide centrality bins
+  lowBinBorder5D[3] = minCentrality;  // low bin border for centrality
+  highBinBorder5D[3] = maxCentrality; // high bin border for centrality
+  
+  // Axis 4 for the jet histogram: jet flavor (quark/gluon)
+  nBins5D[4] = nClosureParticleTypeBins;        // nBins for jet flavor
+  lowBinBorder5D[4] = minClosureParticleType;   // low bin border for jet flavor
+  highBinBorder5D[4] = maxClosureParticleType;  // high bin border for jet flavor
   
   // Create the histogram for all jets using the above binning information
-  fhAnyJet = new THnSparseF("anyJet","anyJet",4,nBins4D,lowBinBorder4D,highBinBorder4D); fhAnyJet->Sumw2();
-  fhLeadingJet = new THnSparseF("anyLeadingJet","anyLeadingJet",4,nBins4D,lowBinBorder4D,highBinBorder4D); fhLeadingJet->Sumw2();
+  fhAnyJet = new THnSparseF("anyJet","anyJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhAnyJet->Sumw2();
+  fhLeadingJet = new THnSparseF("anyLeadingJet","anyLeadingJet",5,nBins5D,lowBinBorder5D,highBinBorder5D); fhLeadingJet->Sumw2();
 
   // Set custom centrality bins for histograms
   fhAnyJet->SetBinEdges(3,wideCentralityBins);

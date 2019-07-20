@@ -626,9 +626,8 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentMixedEventFile;
   
   // Fillers for THnSparses
-  Double_t fillerJet[4];
-  Double_t fillerDijet[5];
-  Double_t fillerExtendedDijet[6];
+  Double_t fillerJet[5];
+  Double_t fillerDijet[6];
   
   //************************************************
   //      Find forest readers for data files
@@ -913,6 +912,7 @@ void DijetAnalyzer::RunAnalysis(){
         if(jetPt > leadingJetPt){
           leadingJetPt = jetPt;
           highestIndex = jetIndex;
+          leadingJetFlavor = jetFlavor;
         }
         
         // For jets within the specified eta range, collect any jet histograms and inclusive jet-track correlations
@@ -945,6 +945,7 @@ void DijetAnalyzer::RunAnalysis(){
             fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
             fillerJet[3] = centrality;              // Axis 3 = centrality
+            fillerJet[4] = jetFlavor;               // Axis 4 = flavor of the jet
             fHistograms->fhAnyJet->Fill(fillerJet,fTotalEventWeight); // Fill the data point to histogram
             
             // Remember the hishest pT filled to any jet histograms
@@ -1012,6 +1013,7 @@ void DijetAnalyzer::RunAnalysis(){
         fillerJet[1] = highestPhi;            // Axis 1 = any leading jet phi
         fillerJet[2] = highestEta;            // Axis 2 = any leading jet eta
         fillerJet[3] = centrality;            // Axis 3 = centrality
+        fillerJet[4] = leadingJetFlavor;      // Axis 4 = any leading jet flavor
         fHistograms->fhLeadingJet->Fill(fillerJet,fTotalEventWeight);
       }
       
@@ -1222,6 +1224,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[2] = leadingJetEta;                  // Axis 2: Leading jet eta
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
+          fillerDijet[5] = leadingJetFlavor;               // Axis 5: Leading jet flavor
           fHistograms->fhLeadingDijet->Fill(fillerDijet,fTotalEventWeight);    // Fill the data point to leading jet histogram
           
           // Fill the subleading jet histogram
@@ -1230,16 +1233,17 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[2] = subleadingJetEta;               // Axis 2: Subleading jet eta
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
+          fillerDijet[5] = subleadingJetFlavor;            // Axis 5: Subleading jet flavor
           fHistograms->fhSubleadingDijet->Fill(fillerDijet,fTotalEventWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
-          fillerExtendedDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
-          fillerExtendedDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
-          fillerExtendedDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
-          fillerExtendedDijet[3] = dijetAJ;                        // Axis 3: Asymmetry AJ
-          fillerExtendedDijet[4] = centrality;                     // Axis 4: Centrality
-          fillerExtendedDijet[5] = dijetXj;                        // Axis 5: Asymmetry xJ
-          fHistograms->fhDijet->Fill(fillerExtendedDijet,fTotalEventWeight);         // Fill the data point to dijet histogram
+          fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
+          fillerDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
+          fillerDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
+          fillerDijet[3] = dijetAJ;                        // Axis 3: Asymmetry AJ
+          fillerDijet[4] = centrality;                     // Axis 4: Centrality
+          fillerDijet[5] = dijetXj;                        // Axis 5: Asymmetry xJ
+          fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight);         // Fill the data point to dijet histogram
           
         }
         
