@@ -278,14 +278,14 @@ void closurePlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = false;          // Save the figures to a file
+  bool saveFigures = true;          // Save the figures to a file
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = true;       // Draw the tracking closures
+  bool drawTrackClosure = false;       // Draw the tracking closures
   
   bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
-  bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
+  bool drawJetKinematicsAsymmerty = true;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
   int ptRebin = 10;                  // Rebin for track pT closure histograms (there are 500 bins)
@@ -320,12 +320,12 @@ void closurePlotter(){
   // Open files containing the QA histograms
   DijetHistogramManager *inputManager[knCollisionSystems][knDataTypes];
   TFile *inputFile[knCollisionSystems][knDataTypes];
-  inputFile[kPp][kData] = TFile::Open("data/dijet_pp_highForest_pfJets_smoothedMixing_noCorrections_processed_2019-01-07.root");
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root");
+  inputFile[kPp][kData] = TFile::Open("data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root");
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root");
   // data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root
   // data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root
-  inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_processed_noCorrelations_2019-01-08.root");
-  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noCorrections_processed.root");
+  inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root");
+  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedCaloJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root
   
@@ -756,6 +756,7 @@ void closurePlotter(){
     char centralityString[100];
     char centralityName[100];
     char asymmetryString[100];
+    char compactAsymmetryString[100];
     char figureName[200];
     int markerStyleData = 20;
     int markerStyleMC = 34;
@@ -840,6 +841,17 @@ void closurePlotter(){
               sprintf(figureName,"figures/jetPhiKinematics_%s%s%s.pdf",inclusiveJetHeader[iJetType],systemString[iSystem].Data(),centralityName);
               gPad->GetCanvas()->SaveAs(figureName);
             }
+            
+            // Compare PbPb pT spectrum to pp pT spectrum
+            if(iSystem == kPbPb){
+              plotJetKinematics(drawer, jetPt[iJetType][kPbPb][kData][iCentrality], jetPt[iJetType][kPp][kData][0], "p_{T} (GeV)", "#frac{1}{N_{dijet}} #frac{dN}{dp_{T}} (1/GeV)", true, 1, 50, 0.08, 0.25, 0.25, inclusiveJetHeader[iJetType], centralityString, legendNames[iSystem][0], "pp", markerStyleData, markerColorData[iJetType], markerStyleMC, markerColorMC[iJetType]);
+              
+              // Save pT spectrum comparison between pp and PbPb
+              if(saveFigures){
+                sprintf(figureName, "figures/jetPtSystemComparison_%s%s.pdf", inclusiveJetHeader[iJetType], centralityName);
+                gPad->GetCanvas()->SaveAs(figureName);
+              }
+            }
           } // Jet type loop (leading/inclusive/subleading)
           
         } // Jet kinematics MC comparison if
@@ -873,7 +885,8 @@ void closurePlotter(){
           for(int iAsymmetry = 0; iAsymmetry < inputManager[iSystem][kData]->GetNAsymmetryBins() ; iAsymmetry++){
             
             // Define asymmetry strings
-            sprintf(asymmetryString,"%.2f < %s < %.2f",inputManager[iSystem][kData]->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry) ,inputManager[iSystem][kData]->GetCard()->GetAsymmetryBinType(), inputManager[iSystem][kData]->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry));
+            sprintf(asymmetryString,"%.1f < %s < %.1f",inputManager[iSystem][kData]->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry) ,inputManager[iSystem][kData]->GetCard()->GetAsymmetryBinType(), inputManager[iSystem][kData]->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry));
+            sprintf(compactAsymmetryString,"A%d",iAsymmetry);
             
             // Plot the kinematics figures for jet pT
             // Note: For jetPt 0 = leading and 2 = subleading and for jetPtDijet 0 = leading and 1 = subleading
@@ -881,7 +894,7 @@ void closurePlotter(){
             
             // Save the figures for jet pT
             if(saveFigures){
-              sprintf(figureName,"figures/jetPtAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, asymmetryString);
+              sprintf(figureName,"figures/jetPtAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, compactAsymmetryString);
               gPad->GetCanvas()->SaveAs(figureName);
             }
             
@@ -891,7 +904,7 @@ void closurePlotter(){
             
             // Save the figures for jet eta
             if(saveFigures){
-              sprintf(figureName, "figures/jetEtaAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, asymmetryString);
+              sprintf(figureName, "figures/jetEtaAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, compactAsymmetryString);
               gPad->GetCanvas()->SaveAs(figureName);
             }
             
@@ -901,7 +914,7 @@ void closurePlotter(){
             
             // Save the figures for jet phi
             if(saveFigures){
-              sprintf(figureName, "figures/jetPhiAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, asymmetryString);
+              sprintf(figureName, "figures/jetPhiAsymmetryKinematics_%s%s_%s.pdf", legendNames[iSystem][0], centralityName, compactAsymmetryString);
               gPad->GetCanvas()->SaveAs(figureName);
             }
             
