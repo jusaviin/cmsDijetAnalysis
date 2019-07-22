@@ -24,6 +24,9 @@
 #include "XiaoTrkCorr.h"
 #include "JffCorrection.h"
 #include "MixedEventLookoutTable.h"
+#include "JetCorrector.h"
+#include "JetUncertainty.h"
+#include "trackingEfficiency2018PbPb.h"
 
 class DijetAnalyzer{
   
@@ -83,6 +86,7 @@ private:
   JffCorrection *fJffCorrection;      // Jet fragmentation function correction for jet pT
   TF1 *fVzWeightFunction;             // Weighting function for vz. Needed for MC.
   TF1 *fCentralityWeightFunction;     // Weighting function for centrality. Needed for MC.
+  TrkEff2018PbPb *fTrackEfficiencyCorrector2018;  // Tracking efficiency corrector for 2018 data.
   
   
   // Analyzed data and forest types

@@ -279,12 +279,15 @@ void HighForestReader::Initialize(){
       fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
     }
   } else if (fDataType == kPbPb){ // PbPb
-    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
-    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPbMC){
-    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1);
+    // TODO: Define read mode for 2018 forest
+    //fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1); // 2015 syntax
+    //fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2015 syntax
+    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1); // 2018 syntax
+    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+  } /*else if (fDataType == kPbPbMC){
+     fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1);  // TODO: Do not apply trigger for MC
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else { // Local test
+  }*/ else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }
   fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
@@ -302,14 +305,19 @@ void HighForestReader::Initialize(){
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
+    // TODO: Define read mode from 2018 forest
     fSkimTree->SetBranchStatus("pprimaryVertexFilter",1);
     fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
-    fSkimTree->SetBranchStatus("pcollisionEventSelection",1);
-    fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
-    fSkimTree->SetBranchStatus("phfCoincFilter3",1);
-    fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
+    fSkimTree->SetBranchStatus("collisionEventSelectionAODv2",1); // 2018 syntax (or not v2?)
+    fSkimTree->SetBranchAddress("collisionEventSelectionAODv2",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch); // 2018 syntax (or not v2?)
+    fSkimTree->SetBranchStatus("phfCoincFilter3Th3",1); // 2018 syntax (of Th4?)
+    fSkimTree->SetBranchAddress("phfCoincFilter3Th3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch); // 2018 syntax (or Th4?)
+    //fSkimTree->SetBranchStatus("pcollisionEventSelection",1); // 2015 syntax
+    //fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch); // 2015 syntax
+    //fSkimTree->SetBranchStatus("phfCoincFilter3",1); // 2015 syntax
+    //fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch); // 2015 syntax
     fSkimTree->SetBranchStatus("pclusterCompatibilityFilter",1);
     fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
@@ -414,7 +422,9 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree");
     fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzer/pfTree");
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
-    fTrackTree = (TTree*)inputFile->Get("anaTrack/trackTree");
+    // TODO: Define read mode for 2018 data
+    // fTrackTree = (TTree*)inputFile->Get("anaTrack/trackTree"); // 2015 syntax
+    fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree"); // 2018 syntax
     if(fReadMode == 1){
       fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzer/pfTree"); // PYTHIA8+Hydjet
     } else {

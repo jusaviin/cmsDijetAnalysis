@@ -21,6 +21,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fJffCorrection(),
   fVzWeightFunction(0),
   fCentralityWeightFunction(0),
+  fTrackEfficiencyCorrector2018(),
   fDataType(-1),
   fForestType(0),
   fReadMode(0),
@@ -195,6 +196,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     
     // Track correction
     fTrackCorrection = new XiaoTrkCorr("trackCorrectionTables/xiaoCorrection/eta_symmetry_cymbalCorr_FineBin.root");
+    fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
     
     // Flag for PbPb data
     ppData = false;
@@ -398,6 +400,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   delete fTrackCorrection;
   delete fJffCorrection;
   if(fVzWeightFunction) delete fVzWeightFunction;
+  if(fTrackEfficiencyCorrector2018) delete fTrackEfficiencyCorrector2018;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
@@ -617,6 +620,9 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerTrack[4];            // Track histogram filler
   Double_t trackEfficiencyCorrection; // Track efficiency correction
   Int_t nTracks;                      // Number of tracks in an event
+  Double_t trackPt = 0;               // Track pT
+  Double_t trackEta = 0;              // Track eta
+  Double_t trackPhi = 0;              // Track phi
   
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
@@ -628,6 +634,14 @@ void DijetAnalyzer::RunAnalysis(){
   // Fillers for THnSparses
   Double_t fillerJet[5];
   Double_t fillerDijet[6];
+  
+  // For 2018 data, need to correct jet pT
+  vector<string> correctionFiles;
+  correctionFiles.push_back("jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt");
+  correctionFiles.push_back("jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt");
+  
+  JetCorrector jetCorrector2018(correctionFiles);
+  JetUncertainty jetUncertainty2018("jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt");
   
   //************************************************
   //      Find forest readers for data files
@@ -833,22 +847,23 @@ void DijetAnalyzer::RunAnalysis(){
       fPtHatWeight = GetPtHatWeight(ptHat);
       fTotalEventWeight = fVzWeight*fCentralityWeight*fPtHatWeight;
       
-      // Fill the event information histograms
-      if(fFillEventInformation){
-        fHistograms->fhVertexZ->Fill(vz);                            // z vertex distribution from all events
-        fHistograms->fhVertexZWeighted->Fill(vz,fVzWeight);          // z-vertex distribution weighted with the weight function
-        fHistograms->fhEvents->Fill(DijetHistograms::kAll);          // All the events looped over
-        fHistograms->fhCentrality->Fill(centrality);                 // Centrality filled from all events
-        fHistograms->fhCentralityWeighted->Fill(centrality,fCentralityWeight); // Centrality weighted with the centrality weighting function
-        fHistograms->fhPtHat->Fill(ptHat);                           // pT hat histogram
-        fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight);      // pT het histogram weighted with corresponding cross section and event number
-      }
+      fHistograms->fhEvents->Fill(DijetHistograms::kAll);          // All the events looped over
       
       //  ============================================
       //  ===== Apply all the event quality cuts =====
       //  ============================================
       
       if(!PassEventCuts(fJetReader,fFillEventInformation,DijetHistograms::kSameEvent)) continue;
+      
+      // Fill the event information histograms for the events that pass the event cuts
+      if(fFillEventInformation){
+        fHistograms->fhVertexZ->Fill(vz);                            // z vertex distribution from all events
+        fHistograms->fhVertexZWeighted->Fill(vz,fVzWeight);          // z-vertex distribution weighted with the weight function
+        fHistograms->fhCentrality->Fill(centrality);                 // Centrality filled from all events
+        fHistograms->fhCentralityWeighted->Fill(centrality,fCentralityWeight); // Centrality weighted with the centrality weighting function
+        fHistograms->fhPtHat->Fill(ptHat);                           // pT hat histogram
+        fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight);      // pT het histogram weighted with corresponding cross section and event number
+      }
       
       // ======================================
       // ===== Event quality cuts applied =====
@@ -907,6 +922,20 @@ void DijetAnalyzer::RunAnalysis(){
         //  ========================================
         //  ======= Jet quality cuts applied =======
         //  ========================================
+        
+        // TODO: This should only be applied if a flag for 2018 data is on
+        // For 2018 data: do a correction for the jet pT
+        jetCorrector2018.SetJetPT(jetPt);
+        jetCorrector2018.SetJetEta(jetEta);
+        jetCorrector2018.SetJetPhi(jetPhi);
+        
+        jetUncertainty2018.SetJetPT(jetPt);
+        jetUncertainty2018.SetJetEta(jetEta);
+        jetUncertainty2018.SetJetPhi(jetPhi);
+        
+        jetPtCorrected = jetCorrector2018.GetCorrectedPT();
+        jetPt = jetPtCorrected;
+        
         
         // Remember the highest jet pT
         if(jetPt > leadingJetPt){
@@ -1049,6 +1078,19 @@ void DijetAnalyzer::RunAnalysis(){
         //  ======= Jet quality cuts applied =======
         //  ========================================
         
+        // TODO: This should only be applied if a flag for 2018 data is on
+        // For 2018 data: do a correction for the jet pT
+        jetCorrector2018.SetJetPT(jetPt);
+        jetCorrector2018.SetJetEta(jetEta);
+        jetCorrector2018.SetJetPhi(jetPhi);
+        
+        jetUncertainty2018.SetJetPT(jetPt);
+        jetUncertainty2018.SetJetEta(jetEta);
+        jetUncertainty2018.SetJetPhi(jetPhi);
+        
+        jetPtCorrected = jetCorrector2018.GetCorrectedPT();
+        jetPt = jetPtCorrected;
+        
         if(jetPt > subleadingJetPt){
           subleadingJetPt = jetPt;
           secondHighestIndex = jetIndex;
@@ -1140,13 +1182,18 @@ void DijetAnalyzer::RunAnalysis(){
           if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
           
           // Get the efficiency correction
-          trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+          // TODO: Do the switch if 2018 data is used
+          trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+          trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+          trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+          //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack); // For 2015 data
+          trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin);
           
           // Fill track histograms
-          fillerTrack[0] = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);   // Axis 0: Track pT
-          fillerTrack[1] = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);  // Axis 1: Track phi
-          fillerTrack[2] = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);  // Axis 2: Track eta
-          fillerTrack[3] = centrality;                        // Axis 3: Centrality
+          fillerTrack[0] = trackPt;      // Axis 0: Track pT
+          fillerTrack[1] = trackPhi;     // Axis 1: Track phi
+          fillerTrack[2] = trackEta;     // Axis 2: Track eta
+          fillerTrack[3] = centrality;   // Axis 3: Centrality
           fHistograms->fhTrackInclusive->Fill(fillerTrack,trackEfficiencyCorrection*fTotalEventWeight);  // Fill the track histogram
           fHistograms->fhTrackInclusiveUncorrected->Fill(fillerTrack,fTotalEventWeight);                 // Fill the uncorrected track histogram
           
@@ -1325,6 +1372,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   
   // Event information
   Double_t centrality = fTrackReader[correlationType]->GetCentrality();
+  Int_t hiBin = fTrackReader[correlationType]->GetHiBin();
   
   // Variables for tracks
   Double_t trackPt;       // Track pT
@@ -1360,7 +1408,10 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     trackPt = fTrackReader[correlationType]->GetTrackPt(iTrack);
     trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);
     trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
-    trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);
+    
+    // TODO: Do a switch from 2015 to 2018 data
+    trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin); // 2018 syntax
+    //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);  // 2015 syntax
     
     // Calculate deltaEta and deltaPhi between track and leading and subleading jets
     deltaEtaTrackLeadingJet = leadingJetEta - trackEta;
