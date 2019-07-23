@@ -25,11 +25,11 @@ void compareDijetHistograms(){
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
-  bool drawTrackInclusiveJetCorrelations = true;
+  bool drawTrackInclusiveJetCorrelations = false;
   bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   
   bool enable2Dhistograms = (drawTrackLeadingJetCorrelations || drawUncorrectedTrackLeadingJetCorrelations || drawPtWeightedTrackLeadingJetCorrelations || drawTrackSubleadingJetCorrelations || drawUncorrectedTrackSubleadingJetCorrelations || drawPtWeightedTrackSubleadingJetCorrelations || drawTrackInclusiveJetCorrelations || drawPtWeightedTrackInclusiveJetCorrelations);
@@ -41,14 +41,14 @@ void compareDijetHistograms(){
   
   // Draw jet shape histograms
   bool drawJetShape = false;
-  bool drawJetShapeMCComparison = false;
+  bool drawJetShapeMCComparison = true;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = true;
+  bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
@@ -61,7 +61,7 @@ void compareDijetHistograms(){
   int eventMixingDistribution = DijetHistogramManager::kBackgroundSubtracted; // kCorrected kBackgroundSubtracted
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   const char* figureComment = "_subeNon0Match";
   
@@ -73,13 +73,13 @@ void compareDijetHistograms(){
   // Plotting style for 2D and 3D plots
   int colorPalette = kRainBow;
   const char* style2D = "colz";
-  const char* style3D = "colz";//"surf1";
+  const char* style3D = "surf1";
   
   // Settings for ratios
   bool useDifferenceInsteadOfRatio = false;
-  double minZoom = 0.95;
-  double maxZoom = 1.05;
-  TString ratioLabel = "Anti / color";
+  double minZoom = 0.5;
+  double maxZoom = 1.5;
+  TString ratioLabel = "RecoReco / RecoGen";
   
   // Scaling for histograms
   bool scaleHistograms = false; //ratioLabel.EqualTo("Data/MC",TString::kIgnoreCase);
@@ -126,10 +126,10 @@ void compareDijetHistograms(){
   const int nRebinDeltaPhi = 15;
   double rebinDeltaPhi[nRebinDeltaPhi+1] = {-1.5708,-1.26677,-1.06409,-0.861404,-0.658721,-0.456038,-0.253354,-0.0506708,0.0506708,0.253354,0.456038,0.658721,0.861404,1.06409,1.26677,1.5708};
   
-  const int nDatasets = 3;
-  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noJffCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_vetoedSeagullAndSymmetrizedSpillover_processed.root","data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_xjBins_seagullCheck_processed_2019-06-16.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xjBins_2019-06-12_onlySeagull_processed.root","data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_allCorrections_processed_2019-06-16.root","data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_allCorrections_alsoSubleadingSpillover_processed_2019-06-16.root","data/PbPbMC_GenGen_pfCsJets_noUncorr_matchedJets_sube0_5eveStrictMix_xjBins_onlySeagull_processed_2019-06-24.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlySymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndNoFitSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlyNecessarySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyOccasionalSeagull_processed.root",*/" data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_antimatchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_matchJets_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_matchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root"/*,"data/PbPbMC_RecoGen_pfCsJets_onlyLeading_sube0_matchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_sube0_matchJets_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_sube0_antimatchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_matchedLeadingJet_subeNon0_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-14.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedCaloJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root","data/PbPbMC_RecoGen_caloJets_noUncorr_matchedPfCsJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root""data/PbPbMC_RecoGen_skims_pfJets_noUncOrInc_5eveImprovedMix_subeNon0_2019-02-15_processed_noCorrections_newCodeTest.root","data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root","data/dijetPbPb_caloJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root","data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_notAdjustedBackground_processed_2019-02-15.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoGen_skims_caloJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-04-21.root","data/PbPbMC_GenGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_processed_2019-02-09.root","data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root","data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root"*/};
+  const int nDatasets = 2;
+  TString inputFileName[nDatasets] = {/*"data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noJffCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_vetoedSeagullAndSymmetrizedSpillover_processed.root","data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_xjBins_seagullCheck_processed_2019-06-16.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xjBins_2019-06-12_onlySeagull_processed.root","data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_allCorrections_processed_2019-06-16.root","data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_allCorrections_alsoSubleadingSpillover_processed_2019-06-16.root","data/PbPbMC_GenGen_pfCsJets_noUncorr_matchedJets_sube0_5eveStrictMix_xjBins_onlySeagull_processed_2019-06-24.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlySymmetrizedSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_improvedSeagullAndNoFitSpillover_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlyNecessarySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlySeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyOccasionalSeagull_processed.root"," data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_antimatchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_matchJets_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_matchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_sube0_matchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_sube0_matchJets_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_onlyLeading_sube0_antimatchLeading_improvisedMixing_noDijet_wtaAxis_processed_2019-07-16.root","data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_matchedLeadingJet_subeNon0_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-14.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedCaloJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root","data/PbPbMC_RecoGen_caloJets_noUncorr_matchedPfCsJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root""data/PbPbMC_RecoGen_skims_pfJets_noUncOrInc_5eveImprovedMix_subeNon0_2019-02-15_processed_noCorrections_newCodeTest.root","data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root","data/dijetPbPb_caloJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_noCorrections_processed.root","data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root","data/dijetPbPb_skims_pfJets_noUncorr_mixedEventNormalizedToPeak_noCorrections_processed_2019-02-12.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-15_firstTry.root","data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_quickTest_processed_2019-04-19.root","data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_notAdjustedBackground_processed_2019-02-15.root","data/dijetPbPb_skims_caloJets_noUncorr_improvedPoolMixing_noJetLimit_firstTry_noCorrections_onlyCentralLowPt_processed_2019-01-15.root","data/PbPbMC_RecoReco_pfCsJets_noUncOrInc_improvisedMixing_wtaAxis_allCorrections_processed_2019-07-12.root","data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root","data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root","data/PbPbMC_GenReco_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root","data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root","data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root","data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root",*/"data/dijet_ppMC_RecoReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_allCorrections_processed_2019-07-13.root",/*"data/dijet_ppMC_RecoReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root","data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root","data/dijet_ppMC_GenReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root",*/"data/dijet_ppMC_GenGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root"/*,"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root"*/};
   
-  TString legendComment[nDatasets] = {"Anti subeNon0","subeNon0","Match subeNon0"/*,"Match sube0","sube0","Anti sube0"*/};
+  TString legendComment[nDatasets] = {"RecoReco","RecoGen"};
   //TString legendComment[nDatasets] = {/*"All subevents",*/"Spillover",/*"SpilloverNoFit",*/"Sube0"/*,"SubeNon0","pfJets","caloJets"*/};
   
   bool loadProcessed = inputFileName[0].Contains("processed");

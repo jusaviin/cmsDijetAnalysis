@@ -85,13 +85,13 @@ void compareLongRangeAsymmetry(){
   TString pbpbUnadjustedFileName = "data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root";
   TString ppUnadjustedFileName = "data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root";
   
-  const bool drawFourierFit = false;
-  const bool drawFourierGraph = true;
+  const bool drawFourierFit = true;
+  const bool drawFourierGraph = false;
   
   const bool printChi2 = false;
   const bool printBackgroundAdjustmentUncertainty = false;
   
-  const bool saveFigures = false;
+  const bool saveFigures = true;
   TString saveComment = "";
   
   const int fourierV = 0;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
