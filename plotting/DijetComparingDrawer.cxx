@@ -978,6 +978,9 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   TString compactAsymmetryString = "";
   char namerX[100];
   
+  // Check if we are doing comparison for pp
+  bool isPp = fBaseHistograms->GetSystem().Contains("pp");
+  
   // Set the asymmetry string based on the selected asymmetry bin
   if(fAsymmetryBin >= 0 && fAsymmetryBin < fBaseHistograms->GetNAsymmetryBins()){
     asymmetryString = Form("%.2f < %s < %.2f", fBaseHistograms->GetCard()->GetLowBinBorderAsymmetry(fAsymmetryBin), fBaseHistograms->GetCard()->GetAsymmetryBinType(), fBaseHistograms->GetCard()->GetHighBinBorderAsymmetry(fAsymmetryBin));
@@ -991,7 +994,8 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   TH1D *comparisonSumRatio[knMaxRatios];
   
   // Canvas for the big closure plot
-  TCanvas *closureCanvas = new TCanvas(Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), 1000, 1800);
+  double canvasWidth = isPp ? 250 : 1000;
+  TCanvas *closureCanvas = new TCanvas(Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), canvasWidth, 1800);
   double nCentralityBins = fLastDrawnCentralityBin-fFirstDrawnCentralityBin+1;
   double nTrackPtBins = fLastDrawnTrackPtBin-fFirstDrawnTrackPtBin+1;
   closureCanvas->Divide(nCentralityBins,nTrackPtBins);
@@ -1006,6 +1010,10 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
       
       centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      if(isPp){
+        centralityString = "pp";
+        compactCentralityString = "_pp";
+      }
       
       // Loop over track pT bins
       for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
@@ -1063,9 +1071,12 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         
         // Style the histogram to nicely fit the big canvas
         SetHistogramStyle(closureHistogram,1,"#DeltaR");
+        closureHistogram->SetMarkerStyle(kFullCircle);
+        closureHistogram->SetMarkerSize(0.5);
+        closureHistogram->SetMarkerColor(kBlack);
         
         // Draw the ratio histogram to canvas
-        closureHistogram->Draw();
+        closureHistogram->Draw("p");
         
         // Draw a legend to the canvas
         legend = new TLegend(0.2,0.9,0.8,0.98);
@@ -1090,7 +1101,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         fRatioHistogram[iAdditional] = comparisonSumRatio[iAdditional];
       }
 
-      // Draw the track phi distributions to the upper panel of a split canvas plot
+      // Draw the pT summed jet shape to the upper panel of a split canvas plot
       sprintf(namerX,"#DeltaR");
       fMainHistogram->GetXaxis()->SetRangeUser(0,1);
       DrawToUpperPad(namerX, "P(#DeltaR)", fLogJetShape);
