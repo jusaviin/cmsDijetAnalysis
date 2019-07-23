@@ -16,8 +16,8 @@ class JffCorrector {
 
 public:
   
-  enum enumUncertaintySources{kBackgroundFluctuation, kTrackingEfficiency, kResidualTracking, kPairAcceptance, kBackgroundSubtraction, kTotal, knUncertaintySources};
-  TString uncertaintyName[knUncertaintySources] = {"backgroundFluctuation", "trackingEfficiency", "residualTracking", "pairAcceptance", "backgroundSubtraction", "total"};
+  enum enumUncertaintySources{kBackgroundFluctuation, kFragmentationBias, kJetEnergyScale, kTrackingEfficiency, kResidualTracking, kPairAcceptance, kBackgroundSubtraction, kTotal, knUncertaintySources};
+  TString uncertaintyName[knUncertaintySources] = {"backgroundFluctuation", "fragmentationBias", "jetEnergyScale", "trackingEfficiency", "residualTracking", "pairAcceptance", "backgroundSubtraction", "total"};
   
   JffCorrector();                                       // Default constructor
   JffCorrector(TFile *inputFile);                       // Constructor

@@ -195,7 +195,7 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
       for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){
         for(int iTrackPt = 0; iTrackPt < card->GetNTrackPtBins(); iTrackPt++){
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
-            histogramName = Form("jetShapeUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
+            histogramName = Form("%sUncertainty/jetShapeUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = (TH1D*) systematicFile->Get(histogramName.Data());
           } // Uncertainty source loop
         } // Track pT loop
