@@ -599,10 +599,10 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
             if(fTrackPtBinBorders[iTrackPtBin+1] < 100){ // Do not apply spillover correction to the highest pT bin
-              //if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
+              if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
                 correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
                 fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
-              //} // If for subleading jets
+              } // If for subleading jets
             } // If for track pT
           }
           
