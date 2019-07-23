@@ -1058,7 +1058,7 @@ void DijetDrawer::DrawJetShapeStack(){
             helperHistogram = (TH1D*)fHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt)->Clone();
             sumHistogram->Add(helperHistogram);
           } // track pT
-          shapeIntegral[iJetTrack][iAsymmetry][iCentrality] = sumHistogram->Integral(1,sumHistogram->FindBin(0.29),"width");
+          shapeIntegral[iJetTrack][iAsymmetry][iCentrality] = sumHistogram->Integral(1,sumHistogram->FindBin(0.99),"width");
         } // centrality
       } // Asymmetry loop
     } // jet-track categories
@@ -1111,7 +1111,7 @@ void DijetDrawer::DrawJetShapeStack(){
         legendX1 = 0; legendX2 = 0.99; legendY1 = 0.7; legendY2 = 1000; titleY = "P(#Deltar)";
         //legendX1 = 0; legendX2 = 0.99; legendY1 = 10000; legendY2 = 1000000; titleY = "P(#Deltar)"; // For binning plot
         if(fNormalizeJetShape){
-          legendY1 = 0.007; legendY2 = 20; titleY = "#rho(#Deltar)";
+          legendY1 = 0.005; legendY2 = 15; titleY = "#rho(#Deltar)";
         }
         jetShapeStack[iJetTrack][iAsymmetry][iCentrality]->setRange(legendX1, legendX2, "x");
         jetShapeStack[iJetTrack][iAsymmetry][iCentrality]->setRange(legendY1, legendY2, "y");
@@ -1136,10 +1136,14 @@ void DijetDrawer::DrawJetShapeStack(){
         systemLegend->AddEntry((TObject*) 0, systemLegendString.Data(), "");
         systemLegendString = asymmetryString + " " + centralityString;
         systemLegend->AddEntry((TObject*) 0, systemLegendString.Data(), "");
-        //systemLegend->Draw();
+        systemLegend->Draw();
         
         // Save the figure to a file
-        sprintf(namerX,"%sJetShape",fHistograms->GetJetTrackHistogramName(iJetTrack));
+        if(fNormalizeJetShape){
+          sprintf(namerX,"%sJetShapeNormalized",fHistograms->GetJetTrackHistogramName(iJetTrack));
+        } else {
+          sprintf(namerX,"%sJetShape",fHistograms->GetJetTrackHistogramName(iJetTrack));
+        }
         SaveFigure(namerX,compactCentralityString,compactTrackPtString,compactAsymmetryString);
         
       } // centrality loop
