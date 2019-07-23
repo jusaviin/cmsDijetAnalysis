@@ -282,10 +282,10 @@ void closurePlotter(){
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = false;       // Draw the tracking closures
+  bool drawTrackClosure = true;       // Draw the tracking closures
   
   bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
-  bool drawJetKinematicsAsymmerty = true;        // Draw the jet kinematics figures in different asymmetry bins
+  bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
   int ptRebin = 10;                  // Rebin for track pT closure histograms (there are 500 bins)
@@ -293,10 +293,10 @@ void closurePlotter(){
   
   // Read the number of bins from histogram manager
   const int nCentralityBins = 4; // Expected number of centrality bins
-  const int nTrackPtBins = 6; // Expected number of ttack pT bins
+  const int nTrackPtBins = 7; // Expected number of ttack pT bins
   const int nAsymmetryBins = 4; // Maximum number of asymmetry bins that can be in a file
   double centralityBinBorders[] = {0,10,30,50,100};       // Bin borders for centrality
-  double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};       // Bin borders for track pT
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};       // Bin borders for track pT
   
   // Select which bins to plot
   int firstCentralityBin = 0;
@@ -342,20 +342,20 @@ void closurePlotter(){
   // Open files for the closure tests
   DijetHistogramManager *closureManager[knCollisionSystems][knMonteCarloTypes];
   TFile *closureFile[knCollisionSystems][knMonteCarloTypes];
-  closureFile[kPp][kRecoReco] = TFile::Open("data/dijet_ppMC_RecoReco_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_noCorrections_processed_2019-01-15.root");
-  closureFile[kPp][kRecoGen] = TFile::Open("data/dijet_ppMC_RecoGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
-  closureFile[kPp][kGenReco] = TFile::Open("data/dijet_ppMC_GenReco_mergedSkims_Pythia6_processed_2018-08-16.root");
-  closureFile[kPp][kGenGen] = TFile::Open("data/dijet_ppMC_GenGen_mergedSkims_Pythia6_pfJets_processed_2018-09-15.root");
-  closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_xjBins_seagullCheck_processed_2019-06-16.root");
+  closureFile[kPp][kRecoReco] = TFile::Open("data/dijet_ppMC_RecoReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root");
+  closureFile[kPp][kRecoGen] = TFile::Open("data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root");
+  closureFile[kPp][kGenReco] = TFile::Open("data/dijet_ppMC_GenReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root");
+  closureFile[kPp][kGenGen] = TFile::Open("data/dijet_ppMC_GenGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root");
+  closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
   // data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_xjBins_seagullCheck_processed_2019-06-16.root
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root
-  closureFile[kPbPb][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xjBins_2019-06-12_onlySeagull_processed.root");
+  closureFile[kPbPb][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xjBins_2019-06-12_onlySeagull_processed.root
   // data/PbPbMC_RecoGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
   // data/PbPbMC_RecoGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
-  closureFile[kPbPb][kGenReco] = TFile::Open("data/PbPbMC_GenReco_skims_pfJets_noMixing_processed_2019-01-04.root");
-  closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_GenGen_skims_pfJets_noMixing_processed_2019-01-04.root");
+  closureFile[kPbPb][kGenReco] = TFile::Open("data/PbPbMC_GenReco_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
+  closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
   
   // Load the necessary histograms to histogram managers
   for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
@@ -596,56 +596,56 @@ void closurePlotter(){
     drawer->SetDefaultAppearanceSplitCanvas();
     
     // Bins: Dijet/inclusive, pp/PbPb, centrality, track pT
-    double phiZoom[2][2][4][7] =
-    // Track pT = 0.7-1  1-2   2-3   3-4   4-8   8-300   Inclusive
+    double phiZoom[2][2][4][8] =
+    // Track pT = 0.7-1  1-2   2-3   3-4   4-8    8-12  12-300   Inclusive
     // Dijet Pythia
-              {{{{  5,    6,   2.2,  1.4,  2.2,   1.6,        20   },
-                {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0} },
+              {{{{  5,    6,   2.2,  1.4,  2.2,   1.6,   1.6,       20   },
+                {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0} },
     // Inclusive Pythia
-                {{ 2.2,   3,    1,   0.5,   1,    0.6,        10   },
-                {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0}}},
+                {{ 2.2,   3,    1,   0.5,   1,    0.6,   0.6,      10   },
+                {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0}}},
     // Dijet Pythia+Hydjet Centrality 0-10 %
-                {{{350,  380,   60,   12,   6,     2,       800   },
+                {{{350,  380,   60,   12,   6,     2,    2,      800   },
     // Dijet Pythia+Hydjet Centrality 10-30 %
-                  {240,  240,   40,   8,   4.5,    2,       500   },
+                  {240,  240,   40,   8,   4.5,    2,    2,     500   },
     // Dijet Pythia+Hydjet Centrality 30-50 %
-                  { 90,   90,   18,   4,   3.4,    2,       220   },
+                  { 90,   90,   18,   4,   3.4,    2,    2,     220   },
     // Dijet Pythia+Hydjet Centrality 50-100 %
-                  { 40,   40,    7,   2,   2.6,    2,        78   }},
+                  { 40,   40,    7,   2,   2.6,    2,    2,     78   }},
     // Inclusive Pythia+Hydjet Centrality 0-10 %
-                 {{ 40,   44,    7,  1.4,  0.6,   0.15,       85   },
+                 {{ 40,   44,    7,  1.4,  0.6,   0.15,  0.15,   85   },
     // Inclusive Pythia+Hydjet Centrality 10-30 %
-                  { 40,   44,    8,  1.6,  0.8,   0.25,        90   },
+                  { 40,   44,    8,  1.6,  0.8,   0.25,  0.25,   90   },
     // Inclusive Pythia+Hydjet Centrality 30-50 %
-                  { 34,   34,    6,  1.5,   1,    0.45,        75   },
+                  { 34,   34,    6,  1.5,   1,    0.45,  0.45,    75   },
     // Inclusive Pythia+Hydjet Centrality 50-100 %
-                  { 15,   18,    3,   1,    1,    0.55,        40   }}}};
+                  { 15,   18,    3,   1,    1,    0.55,  0.55,    40   }}}};
     
     // Bins: Dijet/inclusive, pp/PbPb, centrality, track pT
-    double etaZoom[2][2][4][7] =
-    // Track pT = 0.7-1  1-2   2-3   3-4   4-8   8-300   Inclusive
+    double etaZoom[2][2][4][8] =
+    // Track pT = 0.7-1  1-2   2-3   3-4   4-8   8-12   12-300   Inclusive
     // Dijet Pythia
-             {{{{   6,   10,    4,   2.5,  4.5,   3.2,        32   },
-          {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0} },
+             {{{{   6,   10,    4,   2.5,  4.5,   3.2,    3.2,    32   },
+          {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0} },
       // Inclusive Pythia
-               {{   3,    5,   1.6,   1,   1.6,    1,        14   },
-         {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0},    {0,0,0,0,0,0,0}}},
+               {{   3,    5,   1.6,   1,   1.6,    1,     1,      14   },
+         {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0}}},
       // Dijet Pythia+Hydjet Centrality 0-10 %
-              {{{ 550,  550,   100,   20,  10,     4,       1200   },
+              {{{ 550,  550,   100,   20,  10,     4,     4,     1200   },
         // Dijet Pythia+Hydjet Centrality 10-30 %
-                { 300,  340,    70,   15,   9,     4,       750   },
+                { 300,  340,    70,   15,   9,     4,     4,     750   },
         // Dijet Pythia+Hydjet Centrality 30-50 %
-                { 130,  130,    30,    7,   6,     4,       330   },
+                { 130,  130,    30,    7,   6,     4,     4,     330   },
         // Dijet Pythia+Hydjet Centrality 50-100 %
-                {  50,   60,    12,    4,   5,     4,       120   }},
+                {  50,   60,    12,    4,   5,     4,     4,     120   }},
         // Inclusive Pythia+Hydjet Centrality 0-10 %
-                {{ 60,   60,    12,   2.4,  1,    0.3,       140   },
+                {{ 60,   60,    12,   2.4,  1,    0.3,    0.3,    140   },
           // Inclusive Pythia+Hydjet Centrality 10-30 %
-                 { 60,   60,    12,   2.6, 1.4,   0.4,       135   },
+                 { 60,   60,    12,   2.6, 1.4,   0.4,    0.4,    135   },
           // Inclusive Pythia+Hydjet Centrality 30-50 %
-                 { 50,   50,     8,   2.4, 1.8,   0.8,        120   },
+                 { 50,   50,     8,   2.4, 1.8,   0.8,    0.8,    120   },
           // Inclusive Pythia+Hydjet Centrality 50-100 %
-                 { 25,   25,     5,   1.6, 1.6,    1,        60   }}}};
+                 { 25,   25,     5,   1.6, 1.6,    1,     1,      60   }}}};
     
     if(bigClosureZoom){
       zoomerName = "bigZoom_";
