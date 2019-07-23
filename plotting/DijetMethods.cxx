@@ -1444,9 +1444,12 @@ double DijetMethods::EstimateSystematicsForPairAcceptanceCorrection(const TH1* d
   
   // Fit a constant to the specified ranges
   fitHistogram->Fit("pol0","","",-pairAcceptanceHighLimit,-pairAcceptanceLowLimit);
-  double negativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double negativeLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) negativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  
   fitHistogram->Fit("pol0","","",pairAcceptanceLowLimit,pairAcceptanceHighLimit);
-  double positiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double positiveLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) positiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
   
   // Return the absolute value of the diffence between the two levels.
   return TMath::Abs(positiveLevel-negativeLevel);
@@ -1470,13 +1473,20 @@ double DijetMethods::EstimateSystematicsForBackgroundSubtraction(const TH1* delt
   
   // Fit a constant to the specified ranges
   fitHistogram->Fit("pol0","","",-backgroundMidPoint,-backgroundLowLimit);
-  double innerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double innerNegativeLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) innerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  
   fitHistogram->Fit("pol0","","",-backgroundHighLimit,-backgroundMidPoint);
-  double outerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double outerNegativeLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) outerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  
   fitHistogram->Fit("pol0","","",backgroundLowLimit,backgroundMidPoint);
-  double innerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double innerPositiveLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) innerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  
   fitHistogram->Fit("pol0","","",backgroundMidPoint,backgroundHighLimit);
-  double outerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double outerPositiveLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) outerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
   
   // Calculate means for outer and inner levels
   double innerMean = TMath::Abs((innerNegativeLevel+innerPositiveLevel)/2.0);
