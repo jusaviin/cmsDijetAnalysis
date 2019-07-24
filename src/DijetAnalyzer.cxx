@@ -203,11 +203,21 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     
     // Common vz weight function used by UIC group for PbPb MC
     fVzWeightFunction = new TF1("fvz","pol6",-15,15);
-    fVzWeightFunction->SetParameters(1.18472,-0.132675,0.00857998,-0.000326085,-1.48786e-06,4.68665e-07,-7.32942e-09);
+    
+    // TODO: Nicer switching between 2015 and 2018 data
+    //fVzWeightFunction->SetParameters(1.18472,-0.132675,0.00857998,-0.000326085,-1.48786e-06,4.68665e-07,-7.32942e-09); // 2015
+    fVzWeightFunction->SetParameters(1.00656,-0.0193651, 0.000976851,-1.043e-05,-9.79808e-06,9.07733e-08,1.79165e-08); // 2018
+
     
     // Comment centrality weight function used by UIC group for PbPb MC
-    fCentralityWeightFunction = new TF1("fcent1","[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)",0,180);
-    fCentralityWeightFunction->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15);
+    
+    // TODO: Nicer switching between 2015 and 2018 data
+    
+    //fCentralityWeightFunction = new TF1("fcent1","[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)",0,180); // 2015
+    //fCentralityWeightFunction->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15); // 2015
+    
+    fCentralityWeightFunction = new TF1("fvz","pol6",0,90); // 2018
+    fCentralityWeightFunction->SetParameters(4.64945,-0.201337, 0.00435794,-7.00799e-05,8.18299e-07,-5.52604e-09,1.54472e-11); // 2018
     
     // Set the number of HiBins for mixing pool
     fMaximumMixingHiBin = FindMixingHiBin(200);  // 200 is the maximum number for HiBin in the forests
@@ -844,7 +854,12 @@ void DijetAnalyzer::RunAnalysis(){
       // Get the weighting for the event
       fVzWeight = GetVzWeight(vz);
       fCentralityWeight = GetCentralityWeight(hiBin);
-      fPtHatWeight = GetPtHatWeight(ptHat);
+      
+      // TODO: Better switching between 2015 and 2018 Monte Carlo
+      //fPtHatWeight = GetPtHatWeight(ptHat); // For 2015 MC
+      fPtHatWeight = fJetReader->GetJetWeight();
+      cout << "ptHat weight: " << fPtHatWeight << endl;
+      
       fTotalEventWeight = fVzWeight*fCentralityWeight*fPtHatWeight;
       
       fHistograms->fhEvents->Fill(DijetHistograms::kAll);          // All the events looped over
@@ -1187,7 +1202,11 @@ void DijetAnalyzer::RunAnalysis(){
           trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
           trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
           //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack); // For 2015 data
-          trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin);
+          if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) {
+            trackEfficiencyCorrection = 1;
+          } else {
+            trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin); // 2018 syntax
+          }
           
           // Fill track histograms
           fillerTrack[0] = trackPt;      // Axis 0: Track pT
@@ -1410,8 +1429,12 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
     
     // TODO: Do a switch from 2015 to 2018 data
-    trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin); // 2018 syntax
     //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);  // 2015 syntax
+    if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) {
+      trackEfficiencyCorrection = 1;
+    } else {
+      trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin); // 2018 syntax
+    }
     
     // Calculate deltaEta and deltaPhi between track and leading and subleading jets
     deltaEtaTrackLeadingJet = leadingJetEta - trackEta;
@@ -1740,7 +1763,10 @@ Double_t DijetAnalyzer::GetVzWeight(const Double_t vz) const{
  */
 Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
   if(fDataType != ForestReader::kPbPbMC) return 1;  // Centrality weighting only for PbPb MC
-  return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin) : 1;  // No weighting for the most peripheral centrality bins
+  
+  // TODO: Nicer switching between 2015 and 2018
+  //return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin) : 1;  // No weighting for the most peripheral centrality bins 2015
+  return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin/2.0) : 1;  // No weighting for the most peripheral centrality bins 2018
 }
 
 /*
@@ -1977,7 +2003,8 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
   
   // Cuts for track reconstruction quality
-  if(fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) return false; // Track reconstruction quality cut
+  // TODO: For some reason track layer hits is always zero in PbPb 2018 MC...
+  if(fDataType != ForestReader::kPbPbMC && (fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
   if(fTrackReader[correlationType]->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
   

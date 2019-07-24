@@ -248,6 +248,14 @@ void HighForestReader::Initialize(){
     fJetTree->SetBranchAddress("ngen",&fnMatchedJets,&fnMatchedJetsBranch);
   }
   
+  // Event weight from jet tree for 2018 MC
+  if(fDataType == kPbPbMC){
+    fJetTree->SetBranchStatus("weight",1);
+    fJetTree->SetBranchAddress("weight",&fJetWeight,&fJetWeightBranch);
+  } else {
+    fJetWeight = 1;
+  }
+  
   // Event selection summary
   //
   //         tree                      branch                         What it is
@@ -397,7 +405,7 @@ void HighForestReader::Initialize(){
 void HighForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Helper variable for finding the correct tree
-  const char *treeName[2] = {"none","none"};
+  const char *treeName[3] = {"none","none","none"};
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
@@ -410,7 +418,8 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     treeName[1] = "ak4PFJetAnalyzer/t";   // Tree for PF jets
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
     treeName[0] = "akPu4CaloJetAnalyzer/t";  // Tree for calo jets
-    treeName[1] = "akCs4PFJetAnalyzer/t";    // Tree for PF jets
+    treeName[1] = "akCs4PFJetAnalyzer/t";    // Tree for csPF jets
+    treeName[2] = "akPu4PFJetAnalyzer/t";    // Tree for puPF jets
   } else if (fDataType == kLocalTest){
     treeName[0] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
     treeName[1] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file

@@ -180,6 +180,13 @@ void GeneratorLevelForestReader::Initialize(){
     fJetTree->SetBranchAddress("nref",&fnMatchedJets,&fnTrackDegreesOfFreedomBranch); // Reuse a branch from ForestReader that is not otherwise needed here
   }
   
+  if(fDataType == kPbPbMC){
+    fJetTree->SetBranchStatus("weight",1);
+    fJetTree->SetBranchAddress("weight",&fJetWeight,&fJetWeightBranch);
+  } else {
+    fJetWeight = 1;
+  }
+  
   // Helper variable for choosing correct branches in HLT tree
   const char *branchNameHlt[2] = {"none","none"};
   
@@ -203,8 +210,10 @@ void GeneratorLevelForestReader::Initialize(){
     fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPbPbMC){
-    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1);
-    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    
+    fCaloJetFilterBit = 1; // No filtering for Monte carlo
+    //fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1); // Old filter
+    //fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch); // Old filter
   } else { // Local test
     fCaloJetFilterBit = 1;  // No filter for local test
   }
@@ -227,10 +236,17 @@ void GeneratorLevelForestReader::Initialize(){
     fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
-    fSkimTree->SetBranchStatus("pcollisionEventSelection",1);
-    fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch);
-    fSkimTree->SetBranchStatus("phfCoincFilter3",1);
-    fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch);
+    
+    // TODO: Nicer switching between 2018 and 2015
+    fSkimTree->SetBranchStatus("collisionEventSelectionAODv2",1); // 2018 syntax (or not v2?)
+    fSkimTree->SetBranchAddress("collisionEventSelectionAODv2",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch); // 2018 syntax (or not v2?)
+    fSkimTree->SetBranchStatus("phfCoincFilter3Th3",1); // 2018 syntax (of Th4?)
+    fSkimTree->SetBranchAddress("phfCoincFilter3Th3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch); // 2018 syntax (or Th4?)
+    //fSkimTree->SetBranchStatus("pcollisionEventSelection",1); // 2015 syntax
+    //fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch); // 2015 syntax
+    //fSkimTree->SetBranchStatus("phfCoincFilter3",1); // 2015 syntax
+    //fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch); // 2015 syntax
+    
     fSkimTree->SetBranchStatus("pclusterCompatibilityFilter",1);
     fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
@@ -268,7 +284,7 @@ void GeneratorLevelForestReader::Initialize(){
 void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Helper variable for finding the correct tree
-  const char *treeName[2] = {"none","none"};
+  const char *treeName[3] = {"none","none","none"};
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
@@ -282,6 +298,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
     treeName[0] = "akPu4CaloJetAnalyzer/t";  // Tree for calo jets
     treeName[1] = "akCs4PFJetAnalyzer/t";    // Tree for PF jets
+    treeName[2] = "akPu4PFJetAnalyzer/t";    // Tree for PF jets
   } else if (fDataType == kLocalTest){
     treeName[0] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
     treeName[1] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
