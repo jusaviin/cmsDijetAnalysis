@@ -858,7 +858,6 @@ void DijetAnalyzer::RunAnalysis(){
       // TODO: Better switching between 2015 and 2018 Monte Carlo
       //fPtHatWeight = GetPtHatWeight(ptHat); // For 2015 MC
       fPtHatWeight = fJetReader->GetJetWeight();
-      cout << "ptHat weight: " << fPtHatWeight << endl;
       
       fTotalEventWeight = fVzWeight*fCentralityWeight*fPtHatWeight;
       
@@ -1985,6 +1984,10 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(TMath::Abs(trackEta) >= fTrackEtaCut) return false;          // Eta cut
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kEtaCut);
   
+  // New cut for 2018 data based on track algorithm and MVA
+  if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98) return false;
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kTrackAlgorithm);
+  
   // Cut for high purity
   if(!fTrackReader[correlationType]->GetTrackHighPurity(iTrack)) return false;     // High purity cut
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kHighPurity);
@@ -1998,8 +2001,8 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceXY(iTrack)/fTrackReader[correlationType]->GetTrackVertexDistanceXYError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in xy-direction
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kVertexDistance);
   
-  // Cut for energy deposition in calorimeters for high pT tracks
-  if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) return false;  // For high pT tracks, require signal also in calorimeters
+  // Cut for energy deposition in calorimeters for high pT tracks (only for 2015)
+  //if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) return false;  // For high pT tracks, require signal also in calorimeters
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
   
   // Cuts for track reconstruction quality

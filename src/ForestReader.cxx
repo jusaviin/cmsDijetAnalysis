@@ -471,3 +471,13 @@ Int_t ForestReader::GetNParticleFlowCandidates() const{
   if(fReadMode == 1 && fDataType == kPpMC) return fnParticleFlowCandidates; // For PYTHIA8 forest
   return fParticleFlowCandidateIdVector->size();                            // Regular
 }
+
+// Getter for track algorithm
+Int_t ForestReader::GetTrackAlgorithm(Int_t iTrack) const{
+  return 0;
+}
+
+// Getter for track MVA
+Float_t ForestReader::GetTrackMVA(Int_t iTrack) const{
+  return 0;
+}

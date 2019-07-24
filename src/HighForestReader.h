@@ -61,6 +61,10 @@ public:
   Int_t GetTrackSubevent(Int_t iTrack) const;                // Getter for track subevent index (relevant only for generator level tracks)
   Int_t GetTrackMCStatus(Int_t iTrack) const;                // Getter for track MC status (only for generator level tracks)
   
+  // New variables for 2018 data
+  Int_t GetTrackAlgorithm(Int_t iTrack) const;               // Getter for track algorithm
+  Float_t GetTrackMVA(Int_t iTrack) const;                   // Getter for track MVA
+  
   // Check if generator level jet has a matching reconstructed jet
   Bool_t HasMatchingJet(Int_t iJet) const;      // Check if generator level jet has a matching reconstructed jet
   Float_t GetMatchedPt(Int_t iJet) const;       // Getter for matched generator level jet pT
@@ -86,6 +90,9 @@ private:
   TBranch *fnJetsBranch;         // Branch for number of jets in an event
   TBranch *fnMatchedJetsBranch;  // Branch for the number of generator level jets in an event
   TBranch *fnTracksBranch;       // Branch for number of tracks
+  
+  TBranch *fTrackAlgorithmBranch;    // Branch for track algorithm
+  TBranch *fTrackMVABranch;          // Branch for track MVA
   
   // Leaves for jet tree
   Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
@@ -115,6 +122,10 @@ private:
   UChar_t fnHitsTrackArray[fnMaxTrack] = {0};                 // Array for number of hits for the track
   Float_t fTrackEnergyEcalArray[fnMaxTrack] = {0};            // Array for track energy in ECal
   Float_t fTrackEnergyHcalArray[fnMaxTrack] = {0};            // Array for track energy in HCal
+  
+  // Additional leaves for 2018 PbPB track cuts
+  UChar_t fTrackAlgorithmArray[fnMaxTrack] = {0};             // Array for track algorithm
+  Float_t fTrackMVAArray[fnMaxTrack] = {0};                   // Array for track MVA
   
 };
 
