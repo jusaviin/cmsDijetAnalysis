@@ -444,30 +444,35 @@ Int_t ForestReader::GetNTracks() const{
 
 // Getter for particle flow candidate ID
 Int_t ForestReader::GetParticleFlowCandidateId(Int_t iCandidate) const{
+  if(fReadMode > 2000) return 0; // No PF candidates for 2018 data
   if(fReadMode == 1 && fDataType == kPpMC) return fParticleFlowCandidateIdArray[iCandidate];   // For PYTHIA8 forest
   return fParticleFlowCandidateIdVector->at(iCandidate);                                       // Regular
 }
 
 // Getter for particle flow candidate pT
 Float_t ForestReader::GetParticleFlowCandidatePt(Int_t iCandidate) const{
+  if(fReadMode > 2000) return 0; // No PF candidates for 2018 data
   if(fReadMode == 1 && fDataType == kPpMC) return fParticleFlowCandidatePtArray[iCandidate];  // For PYTHIA8 forest
   return fParticleFlowCandidatePtVector->at(iCandidate);                                      // Regular
 }
 
 // Getter for particle flow candidate phi
 Float_t ForestReader::GetParticleFlowCandidatePhi(Int_t iCandidate) const{
+  if(fReadMode > 2000) return 0; // No PF candidates for 2018 data
   if(fReadMode == 1 && fDataType == kPpMC) return fParticleFlowCandidatePhiArray[iCandidate];  // For PYTHIA8 forest
   return fParticleFlowCandidatePhiVector->at(iCandidate);                                      // Regular
 }
 
 // Getter for particle flow candidate eta
 Float_t ForestReader::GetParticleFlowCandidateEta(Int_t iCandidate) const{
+  if(fReadMode > 2000) return 0; // No PF candidates for 2018 data
   if(fReadMode == 1 && fDataType == kPpMC)  return fParticleFlowCandidateEtaArray[iCandidate];  // For PYTHIA8 forest
   return fParticleFlowCandidateEtaVector->at(iCandidate);                                       // Regular
 }
 
 // Getter number of particle flow candidates in an event
 Int_t ForestReader::GetNParticleFlowCandidates() const{
+  if(fReadMode > 2000) return 0; // No PF candidates for 2018 data
   if(fReadMode == 1 && fDataType == kPpMC) return fnParticleFlowCandidates; // For PYTHIA8 forest
   return fParticleFlowCandidateIdVector->size();                            // Regular
 }

@@ -237,18 +237,21 @@ void GeneratorLevelForestReader::Initialize(){
     fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
     
-    // TODO: Nicer switching between 2018 and 2015
-    fSkimTree->SetBranchStatus("collisionEventSelectionAODv2",1); // 2018 syntax (or not v2?)
-    fSkimTree->SetBranchAddress("collisionEventSelectionAODv2",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch); // 2018 syntax (or not v2?)
-    fSkimTree->SetBranchStatus("phfCoincFilter3Th3",1); // 2018 syntax (of Th4?)
-    fSkimTree->SetBranchAddress("phfCoincFilter3Th3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch); // 2018 syntax (or Th4?)
-    //fSkimTree->SetBranchStatus("pcollisionEventSelection",1); // 2015 syntax
-    //fSkimTree->SetBranchAddress("pcollisionEventSelection",&fCollisionEventSelectionFilterBit,&fCollisionEventSelectionBranch); // 2015 syntax
-    //fSkimTree->SetBranchStatus("phfCoincFilter3",1); // 2015 syntax
-    //fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch); // 2015 syntax
-    
+    // Some branches have different naming for 2015 and 2018 data
+    if(fReadMode > 2000){
+      fSkimTree->SetBranchStatus("collisionEventSelectionAODv2",1); // 2018 syntax (or not v2?)
+      fSkimTree->SetBranchAddress("collisionEventSelectionAODv2", &fCollisionEventSelectionFilterBit, &fCollisionEventSelectionBranch); // 2018 syntax (or not v2?)
+      fSkimTree->SetBranchStatus("phfCoincFilter3Th3",1); // 2018 syntax (of Th4?)
+      fSkimTree->SetBranchAddress("phfCoincFilter3Th3", &fHfCoincidenceFilterBit, &fHfCoincidenceBranch); // 2018 syntax (or Th4?)
+    } else {
+      fSkimTree->SetBranchStatus("pcollisionEventSelection",1); // 2015 syntax
+      fSkimTree->SetBranchAddress("pcollisionEventSelection", &fCollisionEventSelectionFilterBit, &fCollisionEventSelectionBranch); // 2015 syntax
+      fSkimTree->SetBranchStatus("phfCoincFilter3",1); // 2015 syntax
+      fSkimTree->SetBranchAddress("phfCoincFilter3",&fHfCoincidenceFilterBit,&fHfCoincidenceBranch); // 2015 syntax
+    }
+      
     fSkimTree->SetBranchStatus("pclusterCompatibilityFilter",1);
-    fSkimTree->SetBranchAddress("pclusterCompatibilityFilter",&fClusterCompatibilityFilterBit,&fClusterCompatibilityBranch);
+    fSkimTree->SetBranchAddress("pclusterCompatibilityFilter", &fClusterCompatibilityFilterBit, &fClusterCompatibilityBranch);
     fBeamScrapingFilterBit = 1;  // No beam scraping filter for PbPb
   } else { // Local test
     fPrimaryVertexFilterBit = 1;

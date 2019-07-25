@@ -104,7 +104,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fCard(newCard),
   fHistograms(0),
   fForestType(0),
-  fReadMode(0),
   fJetType(0),
   fMatchJets(false),
   fMatchDijet(false),
@@ -178,13 +177,14 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
+  fReadMode = fCard->Get("ReadMode");
   bool ppData = true;
   if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest){
     
     // Track correction
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
     
-    // Common vz weight function used by UIC group for pp MC
+    // Common vz weight function used by UIC group for pp MC 2015
     fVzWeightFunction = new TF1("fvz","gaus",-15,15);
     fVzWeightFunction->SetParameter(0,1.10477);
     fVzWeightFunction->SetParameter(1,2.52738);
@@ -204,20 +204,21 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     // Common vz weight function used by UIC group for PbPb MC
     fVzWeightFunction = new TF1("fvz","pol6",-15,15);
     
-    // TODO: Nicer switching between 2015 and 2018 data
-    //fVzWeightFunction->SetParameters(1.18472,-0.132675,0.00857998,-0.000326085,-1.48786e-06,4.68665e-07,-7.32942e-09); // 2015
-    fVzWeightFunction->SetParameters(1.00656,-0.0193651, 0.000976851,-1.043e-05,-9.79808e-06,9.07733e-08,1.79165e-08); // 2018
-
+    if(fReadMode < 2000){
+      fVzWeightFunction->SetParameters(1.18472, -0.132675, 0.00857998, -0.000326085, -1.48786e-06, 4.68665e-07, -7.32942e-09); // Parameters for 2015 MC
+    } else {
+      fVzWeightFunction->SetParameters(1.00656, -0.0193651, 0.000976851, -1.043e-05, -9.79808e-06, 9.07733e-08, 1.79165e-08); // Parameters for 2018 MC
+    }
     
     // Comment centrality weight function used by UIC group for PbPb MC
     
-    // TODO: Nicer switching between 2015 and 2018 data
-    
-    //fCentralityWeightFunction = new TF1("fcent1","[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)",0,180); // 2015
-    //fCentralityWeightFunction->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15); // 2015
-    
-    fCentralityWeightFunction = new TF1("fvz","pol6",0,90); // 2018
-    fCentralityWeightFunction->SetParameters(4.64945,-0.201337, 0.00435794,-7.00799e-05,8.18299e-07,-5.52604e-09,1.54472e-11); // 2018
+    if(fReadMode < 2000){ // Weight function for 2015 MC
+      fCentralityWeightFunction = new TF1("fcent1", "[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)", 0, 180); // 2015
+      fCentralityWeightFunction->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15); // 2015
+    } else { // Weight function for 2018 MC
+      fCentralityWeightFunction = new TF1("fvz","pol6",0,90); // 2018
+      fCentralityWeightFunction->SetParameters(4.64945,-0.201337, 0.00435794,-7.00799e-05,8.18299e-07,-5.52604e-09,1.54472e-11); // 2018
+    }
     
     // Set the number of HiBins for mixing pool
     fMaximumMixingHiBin = FindMixingHiBin(200);  // 200 is the maximum number for HiBin in the forests
@@ -645,13 +646,23 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerJet[5];
   Double_t fillerDijet[6];
   
-  // For 2018 data, need to correct jet pT
+  // For 2018 PbPb and 2017 pp data, we need to correct jet pT
+  const char *correctionFileRelative = "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt";
+  const char *correctionFileResidual = "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt";
+  const char *uncertaintyFile = "jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt";
+  
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
+    correctionFileRelative = "jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Relative_AK4PF.txt";
+    correctionFileResidual = "jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Residual_AK4PF.txt";
+    uncertaintyFile = "jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_Uncertainty_AK4PF.txt";
+  }
+  
   vector<string> correctionFiles;
-  correctionFiles.push_back("jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt");
-  correctionFiles.push_back("jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt");
+  correctionFiles.push_back(correctionFileRelative);
+  correctionFiles.push_back(correctionFileResidual);
   
   JetCorrector jetCorrector2018(correctionFiles);
-  JetUncertainty jetUncertainty2018("jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt");
+  JetUncertainty jetUncertainty2018(uncertaintyFile);
   
   //************************************************
   //      Find forest readers for data files
@@ -659,7 +670,6 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Select the reader for jets based on forest and MC correlation type
   fForestType = fCard->Get("ForestType");
-  fReadMode = fCard->Get("ReadMode");
   fJetType = fCard->Get("JetType");
   fMatchJets = (fCard->Get("MatchJets") >= 1);
   fMatchDijet = (fCard->Get("MatchJets") == 2 || fCard->Get("MatchJets") == 4);
@@ -855,9 +865,12 @@ void DijetAnalyzer::RunAnalysis(){
       fVzWeight = GetVzWeight(vz);
       fCentralityWeight = GetCentralityWeight(hiBin);
       
-      // TODO: Better switching between 2015 and 2018 Monte Carlo
-      //fPtHatWeight = GetPtHatWeight(ptHat); // For 2015 MC
-      fPtHatWeight = fJetReader->GetJetWeight();
+      // Event weight is different for 2015 and 2018 MC
+      if(fReadMode < 2000){
+        fPtHatWeight = GetPtHatWeight(ptHat); // 2015 MC
+      } else {
+        fPtHatWeight = fJetReader->GetJetWeight(); // 2018 MC
+      }
       
       fTotalEventWeight = fVzWeight*fCentralityWeight*fPtHatWeight;
       
@@ -937,7 +950,6 @@ void DijetAnalyzer::RunAnalysis(){
         //  ======= Jet quality cuts applied =======
         //  ========================================
         
-        // TODO: This should only be applied if a flag for 2018 data is on
         // For 2018 data: do a correction for the jet pT
         jetCorrector2018.SetJetPT(jetPt);
         jetCorrector2018.SetJetEta(jetEta);
@@ -948,7 +960,9 @@ void DijetAnalyzer::RunAnalysis(){
         jetUncertainty2018.SetJetPhi(jetPhi);
         
         jetPtCorrected = jetCorrector2018.GetCorrectedPT();
-        jetPt = jetPtCorrected;
+        
+        // Only do the correction for 2018 data and reconstructed Monte Carlo
+        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) jetPt = jetPtCorrected;
         
         
         // Remember the highest jet pT
@@ -1092,7 +1106,6 @@ void DijetAnalyzer::RunAnalysis(){
         //  ======= Jet quality cuts applied =======
         //  ========================================
         
-        // TODO: This should only be applied if a flag for 2018 data is on
         // For 2018 data: do a correction for the jet pT
         jetCorrector2018.SetJetPT(jetPt);
         jetCorrector2018.SetJetEta(jetEta);
@@ -1103,7 +1116,9 @@ void DijetAnalyzer::RunAnalysis(){
         jetUncertainty2018.SetJetPhi(jetPhi);
         
         jetPtCorrected = jetCorrector2018.GetCorrectedPT();
-        jetPt = jetPtCorrected;
+        
+        // Only do the correction for 2018 data and reconstructed Monte Carlo
+        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) jetPt = jetPtCorrected;
         
         if(jetPt > subleadingJetPt){
           subleadingJetPt = jetPt;
@@ -1196,16 +1211,10 @@ void DijetAnalyzer::RunAnalysis(){
           if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
           
           // Get the efficiency correction
-          // TODO: Do the switch if 2018 data is used
           trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
           trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
           trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
-          //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack); // For 2015 data
-          if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) {
-            trackEfficiencyCorrection = 1;
-          } else {
-            trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin); // 2018 syntax
-          }
+          trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
           
           // Fill track histograms
           fillerTrack[0] = trackPt;      // Axis 0: Track pT
@@ -1390,7 +1399,6 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   
   // Event information
   Double_t centrality = fTrackReader[correlationType]->GetCentrality();
-  Int_t hiBin = fTrackReader[correlationType]->GetHiBin();
   
   // Variables for tracks
   Double_t trackPt;       // Track pT
@@ -1427,13 +1435,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);
     trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
     
-    // TODO: Do a switch from 2015 to 2018 data
-    //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);  // 2015 syntax
-    if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) {
-      trackEfficiencyCorrection = 1;
-    } else {
-      trackEfficiencyCorrection = fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin); // 2018 syntax
-    }
+    // Get the efficiency correction
+    trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);
     
     // Calculate deltaEta and deltaPhi between track and leading and subleading jets
     deltaEtaTrackLeadingJet = leadingJetEta - trackEta;
@@ -1763,9 +1766,12 @@ Double_t DijetAnalyzer::GetVzWeight(const Double_t vz) const{
 Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
   if(fDataType != ForestReader::kPbPbMC) return 1;  // Centrality weighting only for PbPb MC
   
-  // TODO: Nicer switching between 2015 and 2018
-  //return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin) : 1;  // No weighting for the most peripheral centrality bins 2015
-  return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin/2.0) : 1;  // No weighting for the most peripheral centrality bins 2018
+  // Different range for centrality weight function for 2015 and 2018.
+  if(fReadMode < 2000){
+    return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin) : 1;  // No weighting for the most peripheral centrality bins 2015
+  } else {
+    return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin/2.0) : 1;  // No weighting for the most peripheral centrality bins 2018
+  }
 }
 
 /*
@@ -1985,7 +1991,7 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kEtaCut);
   
   // New cut for 2018 data based on track algorithm and MVA
-  if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98) return false;
+  if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98 && fReadMode > 2000) return false;
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kTrackAlgorithm);
   
   // Cut for high purity
@@ -2002,7 +2008,7 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kVertexDistance);
   
   // Cut for energy deposition in calorimeters for high pT tracks (only for 2015)
-  //if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) return false;  // For high pT tracks, require signal also in calorimeters
+  if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt)) && fReadMode < 2000) return false;  // For high pT tracks, require signal also in calorimeters
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
   
   // Cuts for track reconstruction quality
@@ -2029,12 +2035,21 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   // No correction for generator level tracks
   if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) return 1;
   
+  // For pp2017, currently flat efficiency of 85 % is used.
+  if(fReadMode > 2000 &&(fDataType == ForestReader::kPpMC || fDataType == ForestReader::kPp)) return 1/0.85;
+  
   // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
   Float_t trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
   Float_t trackR = 999;      // Distance of the track to current jet in the loop
   Float_t trackPt = fTrackReader[correlationType]->GetTrackPt(iTrack);    // Track pT
   Float_t trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);  // Track eta
   Float_t trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);  // Track phi
+  Int_t hiBin = fTrackReader[correlationType]->GetHiBin();                // hiBin for 2018 track correction
+  
+  // For PbPb2018, there is an efficiency table from which the correction comes
+  if(fReadMode > 2000) return fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin);
+  
+  // The rest gives a proper correction for 2015 data
   
   // For heavy ion correction, track RMin is not used
   if(fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC){
