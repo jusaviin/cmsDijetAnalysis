@@ -19,7 +19,10 @@ void checkSpilloverAsymmetry(){
   // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
   // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
   TString jffFileName = "data/jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root" ; // Can draw also JFF correction yield
-  TString dataFileName = "data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root"; // Compare also with uncorrected data
+  TString dataFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"; // Compare also with uncorrected data
+  // data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
+  // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root
+  // data/dijetPbPb_skims_pfJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-03-04.root
   
   bool drawAsymmetryComparison = false;
   bool drawFileComparison = false;
@@ -29,7 +32,7 @@ void checkSpilloverAsymmetry(){
   const char *firstFileComment = "EScheme";
   const char *secondFileComment = "WTA";
   
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -159,8 +162,8 @@ void checkSpilloverAsymmetry(){
       legend = new TLegend(0.60,0.65,0.85,0.9);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->SetHeader(Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
-      legend->AddEntry(dataYieldGraph[iCentrality],"Data uncorr","p");
-      legend->AddEntry(yieldGraph[iCentrality],"Spillover","p");
+      legend->AddEntry(dataYieldGraph[iCentrality],"Data","p");
+      legend->AddEntry(yieldGraph[iCentrality],"Spillover CS","p");
       legend->AddEntry(jffYieldGraph[iCentrality],"JFF","p");
       legend->Draw();
       
