@@ -437,10 +437,10 @@ void qaPlotter(){
   
   bool saveFigures = false;          // Save the figures to a file
   
-  bool drawSpillover = true;              // Draw the QA plots for spillover correction
+  bool drawSpillover = false;              // Draw the QA plots for spillover correction
   bool drawSeagull = false;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
-  bool drawJetShapeCorrections = false;    // Draw the jet shape corrections as a function or R
+  bool drawJetShapeCorrections = true;    // Draw the jet shape corrections as a function or R
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
@@ -483,7 +483,9 @@ void qaPlotter(){
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrectionsOrAdjust_processed_2019-01-09.root"
-  TFile *jffPbPbFile = TFile::Open("data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root");
+  TFile *jffPbPbFile = TFile::Open("data/jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root");
+  // data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
+  // jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root
   // "data/jffCorrection_PbPbMC_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_adjustedBackground_2018-11-27.root"
   TFile *jffPpFile = TFile::Open("data/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root");
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_smoothedMixing_adjustedBackground_2019-01-15.root"
@@ -499,6 +501,8 @@ void qaPlotter(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double asymmetryBinBorders[] = {0,0.5,0.75,1}; // Bin borders for asymmetry
   const char *saveNameComment = "";
+  
+  bool drawJffAsRatio = true;
   
   // Creata a dijet card for the JFF correction and setup asymmetry bins
   DijetCard* jffCard = new DijetCard(jffPbPbFile);
@@ -595,12 +599,18 @@ void qaPlotter(){
           // Asymmetry bins for the JFF correction
           for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
             
-            sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),jffAsymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
+            if(drawJffAsRatio){
+              sprintf(histogramNamer,"JetShape_%s/jffRatio_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack), dummyManager->GetJetTrackHistogramName(iJetTrack), jffAsymmetryName[iAsymmetry].Data(), iCentrality, iTrackPt);
+            } else { sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack), dummyManager->GetJetTrackHistogramName(iJetTrack), jffAsymmetryName[iAsymmetry].Data(), iCentrality, iTrackPt);
+            }
             correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) jffPbPbFile->Get(histogramNamer);
             
             // Jet shape histograms for pp JFF correction
             if(iCentrality == 0){
-              sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),jffAsymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
+              if(drawJffAsRatio){
+                sprintf(histogramNamer,"JetShape_%s/jffRatio_JetShape_%s_%sC%dT%d", dummyManager->GetJetTrackHistogramName(iJetTrack), dummyManager->GetJetTrackHistogramName(iJetTrack), jffAsymmetryName[iAsymmetry].Data(), iCentrality, iTrackPt);
+              } else { sprintf(histogramNamer,"JetShape_%s/jffCorrection_JetShape_%s_%sC%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),jffAsymmetryName[iAsymmetry].Data(),iCentrality,iTrackPt);
+              }
               correctionJetShape[0][iJetTrack][iAsymmetry][nCentralityBins][iTrackPt] = (TH1D*) jffPpFile->Get(histogramNamer);
             }
           }
@@ -1205,25 +1215,54 @@ void qaPlotter(){
     double asymmetryMin[10], asymmetryMax[10];
     double legendX1, legendY1;
     
-                         // Track pT    0.7-1   1-2    2-3    3-4    4-8  8-300
-    double defaultLowJffScale[8][6] = {{-0.4,  -1.25, -1.05, -0.95, -2.3, -7.8},  // Track-leading jet
-                                       {-0.4,  -1.25, -1.05, -0.95, -2.3, -7.8},  // Uncorrected track-leading jet
-                                       {-0.36, -1.9,  -2.6,  -3.4,   -13, -170},  // pT weighted track-leading jet
-                                       {-0.12, -0.26, -0.3,  -0.36, -1.7, -7.5},  // Track-subleading jet
-                                       {-0.08, -0.24, -0.3,  -0.36, -1.7, -7.5},  // Uncorrected track-subleading jet
-                                       {-0.14, -0.44, -1.2,  -1.4,   -11, -190},  // pT weighted track-subleading jet
-                                       {-0.36, -1.1,   -1,   -0.82, -2.1,  -7},   // Track-inclusive jet
-                                       {-0.3,  -1.6,  -2.4,  -2.8,  -12.5,-150}}; // pT weighted track-inclusive jet
+    //EScheme          // Track pT    0.7-1   1-2    2-3    3-4    4-8  8-300
+    double defaultLowJffScale[8][7] = {{-0.4,  -1.25, -1.05, -0.95, -2.3, -3, -7.8},  // Track-leading jet
+                                       {-0.4,  -1.25, -1.05, -0.95, -2.3, -2.3, -7.8},  // Uncorrected track-leading jet
+                                       {-0.36, -1.9,  -2.6,  -3.4,   -13, -13,  -170},  // pT weighted track-leading jet
+                                       {-0.12, -0.26, -0.3,  -0.36, -1.7, -1.7, -7.5},  // Track-subleading jet
+                                       {-0.08, -0.24, -0.3,  -0.36, -1.7, -1.7, -7.5},  // Uncorrected track-subleading jet
+                                       {-0.14, -0.44, -1.2,  -1.4,   -11, -11,  -190},  // pT weighted track-subleading jet
+                                       {-0.36, -1.1,   -1,   -0.82, -2.1,  -7,    -7},   // Track-inclusive jet
+                                       {-0.3,  -1.6,  -2.4,  -2.8,  -12.5, -12.5, -150}}; // pT weighted track-inclusive jet
     
                           // Track pT    0.7-1   1-2    2-3    3-4    4-8  8-300
-    double defaultHighJffScale[8][6] = {{ 0.07,  0.12,  0.1,   0.1,   0.2,  3.8},  // Track-leading jet
-                                        { 0.07,  0.12,  0.1,   0.1,   0.2,  3.8},  // Uncorrected track-leading jet
-                                        { 0.05,  0.2,   0.3,   0.6,    2,   120},  // pT weighted track-leading jet
-                                        { 0.16,  0.4,   0.38,  0.28,  0.9,  3.5},  // Track-subleading jet
-                                        { 0.14,  0.4,   0.38,  0.28,  0.9,  3.5},  // Uncorrected track-subleading jet
-                                        { 0.14,  0.6,   1.0,   1.0,   5.5,   80},  // pT weighted track-subleading jet
-                                        { 0.04,  0.08,  0.1,   0.1,   0.3,  3.8},  // Track-inclusive jet
-                                        { 0.03,  0.12,  0.2,   0.3,   1.4,  110}}; // pT weighted track-inclusive jet
+    double defaultHighJffScale[8][7] = {{ 0.07,  0.12,  0.1,   0.1,   0.2,  0.2, 3.8},  // Track-leading jet
+                                        { 0.07,  0.12,  0.1,   0.1,   0.2,  0.2, 3.8},  // Uncorrected track-leading jet
+                                        { 0.05,  0.2,   0.3,   0.6,    2,   2,   120},  // pT weighted track-leading jet
+                                        { 0.16,  0.4,   0.38,  0.28,  0.9,  0.9, 3.5},  // Track-subleading jet
+                                        { 0.14,  0.4,   0.38,  0.28,  0.9,  0.9, 3.5},  // Uncorrected track-subleading jet
+                                        { 0.14,  0.6,   1.0,   1.0,   5.5,   5.5, 80},  // pT weighted track-subleading jet
+                                        { 0.04,  0.08,  0.1,   0.1,   0.3,  0.3, 3.8},  // Track-inclusive jet
+                                        { 0.03,  0.12,  0.2,   0.3,   1.4,  1.4, 110}}; // pT weighted track-inclusive jet
+    
+      //WTA              // Track pT    0.7-1   1-2    2-3    3-4    4-8  8-12  12-300
+   /* double defaultLowJffScale[8][7] = {{-0.4,  -0.8,  -0.8,  -0.8,  -1.6, -1.8,  -4.5},  // Track-leading jet
+                                       {-0.4,  -1.25, -1.05, -0.95, -2.3, -2.5,  -7.8},  // Uncorrected track-leading jet
+                                       {-0.36, -1.9,  -2.6,  -3.4,   -13,  -13,  -170},  // pT weighted track-leading jet
+                                       {-0.12, -0.26, -0.3,  -0.36, -1.6, -1.8,  -4.5},  // Track-subleading jet
+                                       {-0.08, -0.24, -0.3,  -0.36, -1.6, -2.5,  -4.5},  // Uncorrected track-subleading jet
+                                       {-0.14, -0.44, -1.2,  -1.4,   -11, -11,   -190},  // pT weighted track-subleading jet
+                                       {-0.36, -1.1,   -1,   -0.82, -2.1,  -2.1,   -7},  // Track-inclusive jet
+                                       {-0.3,  -1.6,  -2.4,  -2.8,  -12.5,-12.5, -150}}; // pT weighted track-inclusive jet
+    
+                          // Track pT    0.7-1   1-2    2-3    3-4    4-8  8-12  12-300
+    double defaultHighJffScale[8][7] = {{ 0.1,   0.12,  0.1,   0.1,   0.2,  0.2,   1},  // Track-leading jet
+                                        { 0.07,  0.12,  0.1,   0.1,   0.2,  0.2,  0.2},  // Uncorrected track-leading jet
+                                        { 0.05,  0.2,   0.3,   0.6,    2,    2,   120},  // pT weighted track-leading jet
+                                        { 0.2,   0.25,  0.3,   0.28,  0.4,  0.4,   1},  // Track-subleading jet
+                                        { 0.14,  0.4,   0.38,  0.28,  0.9,  3.5,  3.5},  // Uncorrected track-subleading jet
+                                        { 0.14,  0.6,   1.0,   1.0,   5.5,   5.5,  80},  // pT weighted track-subleading jet
+                                        { 0.04,  0.08,  0.1,   0.1,   0.3,  0.3,  3.8},  // Track-inclusive jet
+                                        { 0.03,  0.12,  0.2,   0.3,   1.4,  1.4,  110}}; // pT weighted track-inclusive jet*/
+    
+    if(drawJffAsRatio){
+      for(int iTrackPt = 0; iTrackPt < 7; iTrackPt++){
+        for(int iSystem = 0; iSystem < 8; iSystem ++){
+          defaultLowJffScale[iSystem][iTrackPt] = 0.4;
+          defaultHighJffScale[iSystem][iTrackPt] = 1.6;
+        }
+      }
+    }
     
     const char* jffLegendName[] = {"Leading jet JFF","Leading jet JFF","p_{T}w leading jet JFF","Subleading jet JFF","Subleading jet JFF","p_{T}w subleading jet JFF","Inclusive jet JFF","p_{T}w inclusive jet JFF"};
     
