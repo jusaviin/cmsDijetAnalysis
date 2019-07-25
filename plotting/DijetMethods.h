@@ -43,9 +43,10 @@ public:
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   TF1* FourierFit(TH1D* backgroundDeltaPhi, const int maxVn); // Do a Fourier fit for the background deltaPhi distribution
+  TH1D* CombineDeltaPhi(const TH2D *leadingHistogramWithBackground, const TH2D *subleadingHistogramWithBackground, const double minDeltaEta, const double maxDeltaEta, const char* newName, const bool oneSide = false);
   
   // Project a region in one direction from a two-dimensional histogram
-  TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
+  TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName, const bool oneSide = false);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaPhi, const double maxDeltaPhi, const char* newName);  // Project deltaEta distribution out of a two-dimensional deltaPhi-deltaEta distribution
   int GetNBinsProjectedOver() const; // Get the number of bins projected over in the previously done projection
   

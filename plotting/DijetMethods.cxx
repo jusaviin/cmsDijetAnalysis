@@ -749,6 +749,41 @@ TH2D* DijetMethods::SubtractBackground(TH2D *leadingHistogramWithBackground, TH2
 }
 
 /*
+ * Combine deltaPhi distribution by taking near side from the two input histograms
+ *
+ *  Arguments:
+ *   const TH2D *leadingHistogramWithBackground = Histogram from which the near side of deltaPhi is taken
+ *   const TH2D *subleadingHistogramWithBackground = Histogram from which the away side of the deltaPhi is taken
+ *   const double minDeltaEta = Minimum deltaEta from wihch deltaPhi is projected
+ *   const double maxDeltaEta = Maximum deltaEta from which deltaPhi is projected
+ *   const char* newName = Name to be given to the new histogram
+ *   const bool oneSide = Do not do symmetric deltaEta projection
+ */
+TH1D* DijetMethods::CombineDeltaPhi(const TH2D *leadingHistogramWithBackground, const TH2D *subleadingHistogramWithBackground, const double minDeltaEta, const double maxDeltaEta, const char* newName, const bool oneSide){
+  
+  // Project the given region from the two-dimensional histograms
+  TH1D *nearSideProjection = ProjectRegionDeltaPhi(leadingHistogramWithBackground, minDeltaEta, maxDeltaEta, newName, oneSide);
+  TH1D *awaySideProjection = ProjectRegionDeltaPhi(subleadingHistogramWithBackground, minDeltaEta, maxDeltaEta, Form("%s2",newName), oneSide);
+  
+  // Set the near side of the away side projection as the away side of the near side projection
+  int nDeltaPhiBins = nearSideProjection->GetNbinsX();
+  double deltaPhiValueAway, deltaPhiErrorAway;
+  for(int iDeltaPhi = 1; iDeltaPhi <= nDeltaPhiBins/2; iDeltaPhi++){
+    
+    deltaPhiValueAway = awaySideProjection->GetBinContent(iDeltaPhi);
+    deltaPhiErrorAway = awaySideProjection->GetBinError(iDeltaPhi);
+    
+    nearSideProjection->SetBinContent(iDeltaPhi+nDeltaPhiBins/2,deltaPhiValueAway);
+    nearSideProjection->SetBinError(iDeltaPhi+nDeltaPhiBins/2,deltaPhiErrorAway);
+    
+  } // Loop over half of the deltaPhi bins
+  
+  // Return the combined deltaPhi distribution
+  return nearSideProjection;
+  
+}
+
+/*
  * Get the adjustment factors such that if leading and subleading backgrounds are multiplied by them, they match nicely in the middle
  *
  *  Arguments:
@@ -1205,13 +1240,14 @@ TH1D* DijetMethods::ProjectRegionDeltaEta(const TH2D* deltaPhiDeltaEtaHistogram,
  *   const double minDeltaEta = Minimum deltaEta value for the projected region
  *   const double maxDeltaEta = Maximum deltaEta value for the projected region
  *   const char* newName = Name that is added to the projected histogram
+ *   const bool oneSide = Only look at the given side of deltaEta, do not take symmetric region from the opposite side
  *
  *   return: DeltaPhi distribution projected from the input deltaEta region
  */
-TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName){
+TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName, const bool oneSide){
   
   // If the minimum is zero, do the projection from -maxDeltaEta to maxDeltaEta
-  bool oneRegion = (minDeltaEta < 0.01);
+  bool oneRegion = (TMath::Abs(minDeltaEta) < 0.01);
   
   // Start by finding the bin indices for the defined deltaEta region
   // Apply a little offset for the defined eta region borders to avoid bin border effects
@@ -1223,6 +1259,7 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram,
   // Calculate the number of deltaEta bins in the projected region
   fnBinsProjectedOver = highNegativeDeltaEtaBin-lowNegativeDeltaEtaBin+highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin+2;
   if(oneRegion) fnBinsProjectedOver = fnBinsProjectedOver-highNegativeDeltaEtaBin+lowPositiveDeltaEtaBin-1;
+  if(oneSide) fnBinsProjectedOver = highPositiveDeltaEtaBin-lowPositiveDeltaEtaBin-1;
   
   // Project out the deltaPhi distribution in the defined region
   char histogramName[200];
@@ -1230,6 +1267,8 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram,
   TH1D *projectedDeltaPhi;
   if(oneRegion) {
     projectedDeltaPhi = deltaPhiDeltaEtaHistogram->ProjectionX(histogramName,lowNegativeDeltaEtaBin,highPositiveDeltaEtaBin);
+  } else if (oneSide){
+    projectedDeltaPhi = deltaPhiDeltaEtaHistogram->ProjectionX(histogramName,lowPositiveDeltaEtaBin,highPositiveDeltaEtaBin);
   } else {
     projectedDeltaPhi = deltaPhiDeltaEtaHistogram->ProjectionX(histogramName,lowNegativeDeltaEtaBin,highNegativeDeltaEtaBin);
     projectedDeltaPhi->Add(deltaPhiDeltaEtaHistogram->ProjectionX("dummyName",lowPositiveDeltaEtaBin,highPositiveDeltaEtaBin));
