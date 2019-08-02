@@ -212,6 +212,38 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
   
 }
 
+// Read the histograms related to systematic uncertainties of long range correlations
+void JffCorrector::ReadLongRangeSystematicFile(const char *systematicFile){
+  
+  // Create a stream to read the input file
+  std::string lineInFile;
+  std::ifstream systematicUncertainties(systematicFile);
+  
+  // The first line contains binning information
+  std::getline(systematicUncertainties, lineInFile);
+  int nCentralityBins, nFlowComponents, nTrackPtBins;
+  
+  std::istringstream lineStream(lineInFile);
+  lineStream >> nCentralityBins;
+  lineStream >> nFlowComponents;
+  lineStream >> fSystematicAsymmetryBins;
+  lineStream >> nTrackPtBins;
+  
+  // Loop over the file and read all the uncertainties to the master table
+  for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+    for(int iFlow = 0; iFlow < nFlowComponents; iFlow++){
+      for(int iAsymmetry = 0; iAsymmetry <= fSystematicAsymmetryBins; iAsymmetry++){
+        std::getline(systematicUncertainties, lineInFile);
+        std::istringstream lineStream(lineInFile);
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          lineStream >> fLongRangeUncertaintyTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
+        } // Track pT loop
+      } // Asymmetry loop
+    } // Flow component loop
+  } // Centrality loop
+  
+}
+
 // Getter for JFF correction histograms for jet shape
 TH1D* JffCorrector::GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
   
@@ -240,7 +272,7 @@ TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCo
   return fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
 }
 
-// Getter for deltaEta-deltaPhi spillover correction histograms
+// Getter systematic uncertainty histogram for jet shapes
 TH1D* JffCorrector::GetJetShapeSystematicUncertainty(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry, int iUncertainty) const{
   
   // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
@@ -253,9 +285,24 @@ TH1D* JffCorrector::GetJetShapeSystematicUncertainty(const int iJetTrackCorrelat
   return fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
 }
 
+// Getter for absolute systematic uncertainty for long range correlations
+double JffCorrector::GetLongRangeSystematicUncertainty(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry >= fSystematicAsymmetryBins) iAsymmetry = fSystematicAsymmetryBins;
+  
+  // Return the uncertainty in the selected bin
+  return fLongRangeUncertaintyTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
+}
+
 // Getter for a name for the source of uncertainty
-TString JffCorrector::GetUncertaintyName(const int iUncertainty){
+TString JffCorrector::GetUncertaintyName(const int iUncertainty) const{
   return uncertaintyName[iUncertainty];
+}
+
+// Getter for a name for the source of long range uncertainty
+TString JffCorrector::GetLongRangeUncertaintyName(const int iUncertainty) const{
+  return longRangeUncertaintyName[iUncertainty];
 }
 
 // Return information, if correction is ready to be obtained

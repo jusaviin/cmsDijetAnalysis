@@ -2,6 +2,7 @@
 #include "DijetCard.h"
 #include "DijetMethods.h"
 #include "JDrawer.h"
+#include "JffCorrector.h"
 
 /*
  * Macro for estimating systematic uncertainties for long range correlation results
@@ -11,7 +12,7 @@
  *  - Fit projections over regions -2.5 < deltaEta < -1.5 and 1.5 < deltaEta < 2.5 and compare to nominal
  *  - Fit projections over regions 1.5 < |deltaEta| < 2 and 2 < |deltaEta| < 2.5 and compare to nominal
  *  - Fit projections before and after mixed event correction
- *  - Fir different v_{z} selection (lika positive and negative)
+ *  - Fit different v_{z} selection (like positive and negative)
  *
  *  The results will be saved to a file and also a slide with different contribution can be printed
  */
@@ -34,9 +35,14 @@ void estimateLongRangeSystematics(){
   const int nRefit = 4;    // Number of vn:s included in the refit
   int backgroundRebin = 4; // Rebin applied to the long range distributions
   
+  const char *outputFileName("data/vnUncertaintyNoVz2015.txt");
+  
   // ==================================================================
   // ====================== Configuration done ========================
   // ==================================================================
+  
+  // Make a JffCorrector to name the final corrections
+  JffCorrector *nameProvider = new JffCorrector();
   
   // Open the input files
   TFile *pbpbDataFile = TFile::Open(pbpbFileName);
@@ -109,27 +115,9 @@ void estimateLongRangeSystematics(){
   double closeEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   double farEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   
-  // Make a big table with all relative uncertainties
-  int nUncertainties = 4;
-  if(nUncertainties != 4){
-    cout << "Check the number of uncertainty sources!. Expected = " << nUncertainties << endl;
-    return;
-  }
-  const char *uncertaintyNames[4] = {"Same event","Relative shift","$\\eta$ side","$\\eta$ region"};
-  double relativeUncertaintyTable[nUncertainties][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double absoluteUncertaintyTable[nUncertainties][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  
-  // To pass the array as an argument, the numbers will need to be given by hand.
-  if(nAsymmetryBins != 3 || nCentralityBins != 4 || nTrackPtBins != 7){
-    cout << "Wrong binning for chi2/ndf and background uncertainty histograms!" << endl;
-    cout << "nAsymmetry = " << nAsymmetryBins << " expected = 3" << endl;
-    cout << "nCentralityBins = " << nCentralityBins << " expected = 4" << endl;
-    cout << "nTrackPtBins = " << nTrackPtBins << " expected = 7" << endl;
-    cout << "Fix the binning and the code will run again!" << endl;
-    return;
-  }
-  double chi2PerNdf[4][5][7];
-  double backgroundAdjustmentUncertainty[4][5][7];
+  // Make a big table with all relative and absolute uncertainties
+  double relativeUncertaintyTable[JffCorrector::knLongRangeUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double absoluteUncertaintyTable[JffCorrector::knLongRangeUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   
   // Read the histograms from the input files
   pbpbReader->SetLoadTrackLeadingJetCorrelations(true);
@@ -189,8 +177,6 @@ void estimateLongRangeSystematics(){
           
           // Track-subleading jet unadjusted background histogram for systematic uncertainty estimation
           leadingUnadjustedBackgroundOverlap[iAsymmetry][iCentrality][iTrackPt] = pbpbUnadjustedReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackgroundOverlap, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
-          
-          cout << "iAsymmetry: " << iAsymmetry << " iCerntrality: " << iCentrality << " iTrackPt: " << iTrackPt << endl;
           
           // Same event histograms
           deltaPhiDeltaEtaDistribution[0][0][iAsymmetry][iCentrality][iTrackPt] = pbpbReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
@@ -323,31 +309,72 @@ void estimateLongRangeSystematics(){
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         for(int iFlow = 0; iFlow < nRefit; iFlow++){
-          relativeUncertaintyTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(1-sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          absoluteUncertaintyTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           
-          relativeUncertaintyTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(1-masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          absoluteUncertaintyTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          // Put the value from same and mixed event comparison to the uncertainty tables
+          relativeUncertaintyTable[JffCorrector::kSameMixed][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(1-sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          absoluteUncertaintyTable[JffCorrector::kSameMixed][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           
+          // Put the value from background adjustment to the uncertainty tables
+          relativeUncertaintyTable[JffCorrector::kBackgroundGlue][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(1-masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          absoluteUncertaintyTable[JffCorrector::kBackgroundGlue][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          
+          // Put the value from comparison pasitive and negative eat sides to the uncertainty tables
           firstValue = TMath::Abs(1-positiveEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           secondValue = TMath::Abs(1-negativeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          relativeUncertaintyTable[2][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
+          relativeUncertaintyTable[JffCorrector::kEtaSide][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
           firstValue = TMath::Abs(positiveEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           secondValue = TMath::Abs(negativeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          absoluteUncertaintyTable[2][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
+          absoluteUncertaintyTable[JffCorrector::kEtaSide][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
+          // Put the value from comparing near and far eta region to the uncertainty tables
           firstValue = TMath::Abs(1-closeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           secondValue = TMath::Abs(1-farEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          relativeUncertaintyTable[3][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
+          relativeUncertaintyTable[JffCorrector::kEtaRegion][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
           firstValue = TMath::Abs(closeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           secondValue = TMath::Abs(farEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          absoluteUncertaintyTable[3][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
+          absoluteUncertaintyTable[JffCorrector::kEtaRegion][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
+          
+          // Put a placeholder value for different vz regions to the uncertainty tables
+          relativeUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;
+          absoluteUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;
+          
+          // Calculate the total uncertainty from all the sources combined
+          absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;
+          for(int iUncertainty = 0; iUncertainty < JffCorrector::kTotalLongRange; iUncertainty++){
+            absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] += TMath::Power(absoluteUncertaintyTable[iUncertainty][iAsymmetry][iCentrality][iTrackPt][iFlow], 2);
+          }
+          absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          
+          relativeUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] =  absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] / unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
         }
       }
     }
   } // Asymmetry loop
+  
+  // If an output file name is given, put the total uncertainties to an output file
+  if(strcmp(outputFileName, "") != 0){
+    std::ofstream outputFile;
+    outputFile.open(outputFileName);
+    
+    // Print first the information about number of bins
+    outputFile << nCentralityBins << " " << nRefit << " " << nAsymmetryBins << " " << nTrackPtBins << endl;
+    
+    // Next, print all the uncertainties in a specific order
+    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+      for(int iFlow = 0; iFlow < nRefit; iFlow++){
+        for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+          for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+            outputFile << absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] << " ";
+          } // Track pT loop
+          outputFile << endl;
+        } // Asymmetry loop
+      } // Flow component loop
+    } // Centrality loop
+    
+    outputFile.close();
+  }
   
   if(printUncertainties){
     
@@ -382,8 +409,8 @@ void estimateLongRangeSystematics(){
         
         // Print the relative uncertainties
         
-        for(int iUncertainty = 0; iUncertainty < nUncertainties; iUncertainty++){
-          cout << uncertaintyNames[iUncertainty];
+        for(int iUncertainty = 0; iUncertainty < JffCorrector::knLongRangeUncertaintySources; iUncertainty++){
+          cout << nameProvider->GetLongRangeUncertaintyName(iUncertainty);
           for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
             if(iCentrality == nCentralityBins - 1) continue;
             cout << " & $" << relativeUncertaintyTable[iUncertainty][nAsymmetryBins][iCentrality][iTrackPt][iFlow] << "$";
@@ -395,8 +422,8 @@ void estimateLongRangeSystematics(){
         
         // Print the absolute uncertainties
         
-        for(int iUncertainty = 0; iUncertainty < nUncertainties; iUncertainty++){
-          cout << uncertaintyNames[iUncertainty];
+        for(int iUncertainty = 0; iUncertainty < JffCorrector::knLongRangeUncertaintySources; iUncertainty++){
+          cout << nameProvider->GetLongRangeUncertaintyName(iUncertainty);
           for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
             if(iCentrality == nCentralityBins - 1) continue;
             cout << " & $" << absoluteUncertaintyTable[iUncertainty][nAsymmetryBins][iCentrality][iTrackPt][iFlow] << "$";
