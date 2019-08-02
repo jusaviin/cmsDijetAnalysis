@@ -30,6 +30,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fMatchDijet(false),
   fMatchLeadingJet(false),
   fDebugLevel(0),
+  fLocalRun(0),
   fVzWeight(1),
   fCentralityWeight(1),
   fPtHatWeight(1),
@@ -99,7 +100,7 @@ DijetAnalyzer::DijetAnalyzer() :
 /*
  * Custom constructor
  */
-DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationCard *newCard) :
+DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationCard *newCard, bool runLocal) :
   fFileNames(fileNameVector),
   fCard(newCard),
   fHistograms(0),
@@ -149,6 +150,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Amount of debugging messages
   fDebugLevel = fCard->Get("DebugLevel");
+  
+  // Flog for local running or CRAB running
+  fLocalRun = runLocal ? 1 : 0;
   
   // Jet axis type
   fJetAxis = fCard->Get("JetAxis");
@@ -278,6 +282,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fMatchDijet(in.fMatchDijet),
   fMatchLeadingJet(in.fMatchLeadingJet),
   fDebugLevel(in.fDebugLevel),
+  fLocalRun(in.fLocalRun),
   fVzWeight(in.fVzWeight),
   fCentralityWeight(in.fCentralityWeight),
   fPtHatWeight(in.fPtHatWeight),
@@ -354,6 +359,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fMatchDijet = in.fMatchDijet;
   fMatchLeadingJet = in.fMatchLeadingJet;
   fDebugLevel = in.fDebugLevel;
+  fLocalRun = in.fLocalRun;
   fVzWeight = in.fVzWeight;
   fCentralityWeight = in.fCentralityWeight;
   fPtHatWeight = in.fPtHatWeight;
@@ -573,7 +579,7 @@ void DijetAnalyzer::RunAnalysis(){
   Bool_t mixEvents = (fCard->Get("DoEventMixing") == 1);  // Do or do not do event mixing
   Bool_t mixWithPool = (fCard->Get("MixWithPool") == 1);  // Select whether to use mixing pool or directly vz and centrality difference in mixing file
   Bool_t onlyMix = (fCard->Get("OnlyMix") == 1); // Only fill mixed event histograms. Option to generate more mixing events and merge them with previous runs including same event histograms without duplicating same event statistics.
-
+  std::vector<TString> mixingFiles;  // List of mixing files
   
   // Variables for jets
   Double_t dijetAsymmetry = -99;    // Dijet asymmetry used for binning
@@ -647,22 +653,16 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerDijet[6];
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
-  const char *correctionFileRelative = "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt";
-  const char *correctionFileResidual = "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt";
-  const char *uncertaintyFile = "jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt";
-  
-  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
-    correctionFileRelative = "jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Relative_AK4PF.txt";
-    correctionFileResidual = "jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Residual_AK4PF.txt";
-    uncertaintyFile = "jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_Uncertainty_AK4PF.txt";
-  }
-  
+  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V1_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt", "Not applied", "Not applied", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt"};
+  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V1_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt"};
+
   vector<string> correctionFiles;
-  correctionFiles.push_back(correctionFileRelative);
-  correctionFiles.push_back(correctionFileResidual);
+  correctionFiles.push_back(correctionFileRelative[fDataType]);
+  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) correctionFiles.push_back(correctionFileResidual[fDataType]);
   
   JetCorrector jetCorrector2018(correctionFiles);
-  JetUncertainty jetUncertainty2018(uncertaintyFile);
+  JetUncertainty jetUncertainty2018(uncertaintyFile[fDataType]);
   
   //************************************************
   //      Find forest readers for data files
@@ -706,13 +706,25 @@ void DijetAnalyzer::RunAnalysis(){
   // If mixing events, create ForestReader for that. For PbPb and PbPbMC, the Forest in mixing file is a skim forest
   if(mixEvents){
     if(fDataType == ForestReader::kPbPb){
-      fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      if(fReadMode > 2000){
+        fTrackReader[DijetHistograms::kMixedEvent] = new MixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2018 mixing files
+      } else {
+        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2015 mixing files
+      }
     } else if(fDataType == ForestReader::kPbPbMC){
       if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
-        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+        if(fReadMode > 2000){
+          fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelMixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2018 syntax
+        } else {
+          fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2015 syntax
+        }
         
       } else {
-        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+        if(fReadMode > 2000){
+          fTrackReader[DijetHistograms::kMixedEvent] = new MixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2018 syntax
+        } else {
+          fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2015 syntax
+        }
       }
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
       if(fForestType == kSkimForest) {
@@ -727,8 +739,57 @@ void DijetAnalyzer::RunAnalysis(){
         fTrackReader[DijetHistograms::kMixedEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
       }
     }
-  }
-
+    
+    // If we are doing mixing, find and open the mixing file
+    // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
+    // This is done outside the file loop in the cases where mixing is not done from the same file as data
+    if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
+      
+      // 2018 syntax
+      if(fReadMode > 2000){
+        
+        // Define names for mixing file lists for different datasets
+        const char* fileListName[2][5] = {
+          {"none", "mixingFileList/PbPbData2018_MinBiasFiles.txt", "none", "mixingFileList/PbPbMC2018_MinBiasFiles.txt", "none"}, // Crab
+          {"none", "mixingFileList/mixingFilesPbPb.txt", "none", "mixingFileList/mixingFilesPbPbMC.txt", "none"}}; // Local test
+        
+        // Create a stream to read the input file
+        std::string lineInFile;
+        std::ifstream mixingFileStream(fileListName[fLocalRun][fDataType]);
+        while (std::getline(mixingFileStream,lineInFile)) {
+          mixingFiles.push_back(lineInFile);
+        }
+        fTrackReader[DijetHistograms::kMixedEvent]->ReadForestFromFileList(mixingFiles); // TODO: Testing new reader
+      
+      } else { // 2015 syntax
+        
+        if(fDataType == ForestReader::kPbPb){
+          const char* pbpbMixingFileNames[] = {"root://xrootd.rcac.purdue.edu//store/user/kumarv/UICWork/Data2015_PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root","root://xrootd.rcac.purdue.edu//store/user/kumarv/UICWork/Data2015_PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts_copy1.root"};
+          currentMixedEventFile = pbpbMixingFileNames[mixingFileIndex];
+        } else {
+          const char* pbpbMCMixingFileNames[] = {"root://xrootd.rcac.purdue.edu//store/user/wangx/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://xrootd.rcac.purdue.edu//store/user/jviinika/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root"};
+          currentMixedEventFile = pbpbMCMixingFileNames[mixingFileIndex];
+        }
+        
+        mixedEventFile = TFile::Open(currentMixedEventFile);
+        fTrackReader[DijetHistograms::kMixedEvent]->ReadForestFromFile(mixedEventFile);
+        
+      } // 2015 syntax if
+      
+      // Read the number of events in the mixing file
+      fnEventsInMixingFile = fTrackReader[DijetHistograms::kMixedEvent]->GetNEvents();
+      
+      // Prapare for event mixing based on the chosen method
+      if(mixWithPool){
+        CreateMixingPool();
+      } else {
+        PrepareMixingVectors();
+      }
+      
+    } // Mixing from different file than the data file
+    
+  } // If for mixing
+  
   //************************************************
   //       Main analysis loop over all files
   //************************************************
@@ -745,35 +806,17 @@ void DijetAnalyzer::RunAnalysis(){
     currentFile = fFileNames.at(iFile);
     inputFile = TFile::Open(currentFile);
     if(useDifferentReaderFotJetsAndTracks) copyInputFile = TFile::Open(currentFile);
-    
-    // If we are doing mixing, find and open the mixing file
-    // PbPb data has different data file for mixing, other data sets use the regular data files for mixing
-    if(mixEvents){
-      if(fDataType == ForestReader::kPbPb){
-        const char* pbpbMixingFileNames[] = {"root://xrootd.rcac.purdue.edu//store/user/kumarv/UICWork/Data2015_PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts.root","root://xrootd.rcac.purdue.edu//store/user/kumarv/UICWork/Data2015_PbPb_5TeV_MinBiasSkim/Data2015_finalTrkCut_1Mevts_copy1.root"};
-        currentMixedEventFile = pbpbMixingFileNames[mixingFileIndex];
-      } else if(fDataType == ForestReader::kPbPbMC){
-        const char* pbpbMCMixingFileNames[] = {"root://xrootd.rcac.purdue.edu//store/user/wangx/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root","root://xrootd.rcac.purdue.edu//store/user/jviinika/PbPbMC_Py6H_skim_looseTrkCuts_finalJFFs_lowPtGenPartCut_CymbalTune/Pythia6Hydjet_PbPbMC_cymbalTune_mixMerged.root"};
-        currentMixedEventFile = pbpbMCMixingFileNames[mixingFileIndex];
-      } else if(fDataType == ForestReader::kPpMC && fReadMode == 2){
-        MixedEventLookoutTable *mixingTable = new MixedEventLookoutTable(fDataType);
-        currentMixedEventFile = mixingTable->GetMixingFileName(currentFile);
-        delete mixingTable;
-      } else {
-        currentMixedEventFile = fFileNames.at(iFile);
-      }
-      mixedEventFile = TFile::Open(currentMixedEventFile);
-    }
 
+    // Mixing in the case we use the data file also for mixing (true for pp)
+    if(mixEvents && fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC){
+      currentMixedEventFile = fFileNames.at(iFile);
+      mixedEventFile = TFile::Open(currentMixedEventFile);
+      mixingFiles.push_back(currentMixedEventFile.Data());
+    }
+    
     // Check that the file exists
     if(!inputFile){
       cout << "Error! Could not find the file: " << currentFile.Data() << endl;
-      assert(0);
-    }
-    
-    // Check that the mixing file exists
-    if(!mixedEventFile && mixEvents){
-      cout << "Error! Could not find the mixing file: " << currentMixedEventFile.Data() << endl;
       assert(0);
     }
 
@@ -783,22 +826,27 @@ void DijetAnalyzer::RunAnalysis(){
       assert(0);
     }
     
-    // Check that the mixing file is open
-    if(mixEvents){
-      if(!mixedEventFile->IsOpen()){
-        cout << "Error! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
-        assert(0);
-      }
-    }
-    
     // Check that the file is not zombie
     if(inputFile->IsZombie()){
       cout << "Error! The following file is a zombie: " << currentFile.Data() << endl;
       assert(0);
     }
-
-    // Check that the file is not zombie
-    if(mixEvents){
+    
+    // Check that the mixing file exists if we are reading only single file
+    if(mixEvents && ((fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC) || fReadMode < 2000)){
+      
+      if(!mixedEventFile){
+        cout << "Error! Could not find the mixing file: " << currentMixedEventFile.Data() << endl;
+        assert(0);
+      }
+      
+      // Check that the mixing file is open
+      if(!mixedEventFile->IsOpen()){
+        cout << "Error! Could not open the mixing file: " << currentMixedEventFile.Data() << endl;
+        assert(0);
+      }
+      
+      // Check that the file is not zombie
       if(mixedEventFile->IsZombie()){
         cout << "Error! The following mixing file is a zombie: " << currentMixedEventFile.Data() << endl;
         assert(0);
@@ -807,7 +855,13 @@ void DijetAnalyzer::RunAnalysis(){
 
     // Print the used files
     if(fDebugLevel > 0) cout << "Reading from file: " << currentFile.Data() << endl;
-    if(fDebugLevel > 0 && mixEvents) cout << "Mixing file: " << currentMixedEventFile.Data() << endl;
+    if(fDebugLevel > 0 && mixEvents) {
+      cout << "Mixing files: " << currentMixedEventFile.Data() << endl;
+      for(std::vector<TString>::iterator mixIterator = mixingFiles.begin(); mixIterator != mixingFiles.end(); mixIterator++){
+        cout << *mixIterator << endl;
+      }
+      cout << endl;
+    }
     
     //************************************************
     //        Read forest and prepare mixing
@@ -819,7 +873,7 @@ void DijetAnalyzer::RunAnalysis(){
     nEvents = fJetReader->GetNEvents();
     
     // Read also the forest for event mixing and prepare mixing pool
-    if(mixEvents){
+    if(mixEvents && fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC){
       fTrackReader[DijetHistograms::kMixedEvent]->ReadForestFromFile(mixedEventFile);
       fnEventsInMixingFile = fTrackReader[DijetHistograms::kMixedEvent]->GetNEvents();
       
@@ -869,7 +923,7 @@ void DijetAnalyzer::RunAnalysis(){
       if(fReadMode < 2000){
         fPtHatWeight = GetPtHatWeight(ptHat); // 2015 MC
       } else {
-        fPtHatWeight = fJetReader->GetJetWeight(); // 2018 MC
+        fPtHatWeight = fJetReader->GetEventWeight(); // 2018 MC
       }
       
       fTotalEventWeight = fVzWeight*fCentralityWeight*fPtHatWeight;
@@ -1207,7 +1261,7 @@ void DijetAnalyzer::RunAnalysis(){
         nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
         for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
           
-          /// Check that all the trck cuts are passed
+          /// Check that all the track cuts are passed
           if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
           
           // Get the efficiency correction
@@ -1370,7 +1424,7 @@ void DijetAnalyzer::RunAnalysis(){
     // Close the input files after the event has been read
     inputFile->Close();
     if(useDifferentReaderFotJetsAndTracks) copyInputFile->Close();
-    if(mixEvents) mixedEventFile->Close();
+    if(mixEvents && fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC) mixedEventFile->Close();
     
   } // File loop
   
@@ -1427,7 +1481,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   Int_t nTracks = fTrackReader[correlationType]->GetNTracks();
   for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
     
-    // Check that all the trck cuts are passed
+    // Check that all the track cuts are passed
     if(!PassTrackCuts(iTrack,fHistograms->fhTrackCuts,correlationType)) continue;
     
     // Get the most important track information to variables
@@ -2012,8 +2066,8 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
   
   // Cuts for track reconstruction quality
-  // TODO: For some reason track layer hits is always zero in PbPb 2018 MC...
-  if(fDataType != ForestReader::kPbPbMC && (fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
+  // TODO: For some reason track layer hits is always zero in PbPb 2018 forests...
+  if(fReadMode < 2000 && (fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
   if(fTrackReader[correlationType]->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
   

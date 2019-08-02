@@ -27,6 +27,7 @@ public:
   
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
+  void ReadForestFromFileList(std::vector<TString> fileList);  // Read the forest from a file list
   void BurnForest();                           // Burn the forest
   void GetEvent(Int_t nEvent);                 // Get the nEventh event from the file
   

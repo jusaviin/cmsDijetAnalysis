@@ -8,6 +8,8 @@
 #include <bitset>
 #include <assert.h>   // Standard c++ debugging tool. Terminates the program if expression given evaluates to 0.
 #include <tuple>      // For returning several arguments in a transparent manner
+#include <fstream>
+#include <string>
 
 // Root includes
 #include <TString.h>
@@ -19,6 +21,8 @@
 #include "SkimForestReader.h"
 #include "GeneratorLevelForestReader.h"
 #include "GeneratorLevelSkimForestReader.h"
+#include "MixingForestReader.h"
+#include "GeneratorLevelMixingForestReader.h"
 #include "TrkCorrInterface.h"
 #include "TrkCorr.h"
 #include "XiaoTrkCorr.h"
@@ -44,7 +48,7 @@ public:
   
   // Constructors and destructor
   DijetAnalyzer(); // Default constructor
-  DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationCard *newCard); // Custom constructor
+  DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationCard *newCard, bool runLocal); // Custom constructor
   DijetAnalyzer(const DijetAnalyzer& in); // Copy constructor
   virtual ~DijetAnalyzer(); // Destructor
   DijetAnalyzer& operator=(const DijetAnalyzer& obj); // Equal sign operator
@@ -98,6 +102,7 @@ private:
   Bool_t fMatchDijet;                // Match reco and gen dijets (have the same leading and subleading jets for both reco and gen)
   Bool_t fMatchLeadingJet;           // Match reco and gen leading jets (in both cases the leading jet fulfills the requirements)
   Int_t fDebugLevel;                 // Amount of debug messages printed to console
+  Int_t fLocalRun;                   // Flag for running locally or on crab
   
   // Weights for filling the MC histograms
   Double_t fVzWeight;                // Weight for vz in MC

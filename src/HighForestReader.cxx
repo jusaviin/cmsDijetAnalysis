@@ -213,6 +213,13 @@ void HighForestReader::Initialize(){
   } else {
     fPtHat = 0; // We do not have pT hat information for real data
   }
+  // Event weight from jet tree for 2018 MC
+  if(fDataType == kPbPbMC && fReadMode > 2000){
+    fHeavyIonTree->SetBranchStatus("weight",1);
+    fHeavyIonTree->SetBranchAddress("weight",&fEventWeight,&fEventWeightBranch);
+  } else {
+    fEventWeight = 1;
+  }
   
   // Connect the branches to the jet tree
   const char *jetAxis[3] = {"jt","jt","WTA"};
@@ -262,14 +269,6 @@ void HighForestReader::Initialize(){
     
     fJetTree->SetBranchStatus("ngen",1);
     fJetTree->SetBranchAddress("ngen",&fnMatchedJets,&fnMatchedJetsBranch);
-  }
-  
-  // Event weight from jet tree for 2018 MC
-  if(fDataType == kPbPbMC && fReadMode > 2000){
-    fJetTree->SetBranchStatus("weight",1);
-    fJetTree->SetBranchAddress("weight",&fJetWeight,&fJetWeightBranch);
-  } else {
-    fJetWeight = 1;
   }
   
   // Event selection summary
@@ -439,7 +438,7 @@ void HighForestReader::Initialize(){
 void HighForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Helper variable for finding the correct tree
-  const char *treeName[3] = {"none","none","none"};
+  const char *treeName[4] = {"none","none","none","none"};
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
@@ -451,9 +450,10 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     treeName[0] = "ak4CaloJetAnalyzer/t"; // Tree for calo jets
     treeName[1] = "ak4PFJetAnalyzer/t";   // Tree for PF jets
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
-    treeName[0] = "akPu4CaloJetAnalyzer/t";  // Tree for calo jets
-    treeName[1] = "akCs4PFJetAnalyzer/t";    // Tree for csPF jets
-    treeName[2] = "akPu4PFJetAnalyzer/t";    // Tree for puPF jets
+    treeName[0] = "akPu4CaloJetAnalyzer/t";     // Tree for calo jets
+    treeName[1] = "akCs4PFJetAnalyzer/t";       // Tree for csPF jets
+    treeName[2] = "akPu4PFJetAnalyzer/t";       // Tree for puPF jets
+    treeName[3] = "akFlowPuCs4PFJetAnalyzer/t"; // Tree for flow subtracted csPF jets
   } else if (fDataType == kLocalTest){
     treeName[0] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
     treeName[1] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
@@ -487,6 +487,14 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
 }
 
 /*
+ * Connect a new tree to the reader
+ */
+void HighForestReader::ReadForestFromFileList(std::vector<TString> fileList){
+  TFile *inputFile = TFile::Open(fileList.at(0));
+  ReadForestFromFile(inputFile);
+}
+
+/*
  * Burn the current forest.
  */
 void HighForestReader::BurnForest(){
@@ -514,6 +522,11 @@ void HighForestReader::GetEvent(Int_t nEvent){
 
 // Getter for jet pT
 Float_t HighForestReader::GetJetPt(Int_t iJet) const{
+  
+  // TODO: For 2018, JEC is applied on the fly, so raw pT should be returned here
+  // If this is fixed in the forest, can return the regular pT instead
+  if(fReadMode > 2000) return fJetRawPtArray[iJet];
+  
   return fJetPtArray[iJet];
 }
 

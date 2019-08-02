@@ -17,7 +17,7 @@ using namespace std;
 class GeneratorLevelForestReader : public ForestReader{
   
 private:
-  static const Int_t fnMaxJet = 60;        // Maximum number of jets in an event
+  static const Int_t fnMaxJet = 250;        // Maximum number of jets in an event
   
 public:
   
@@ -30,6 +30,7 @@ public:
   
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
+  void ReadForestFromFileList(std::vector<TString> fileList);  // Read the forest from a file list
   void BurnForest();                           // Burn the forest  
   void GetEvent(Int_t nEvent);                 // Get the nEventh event from the file
   

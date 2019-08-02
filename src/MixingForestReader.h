@@ -1,39 +1,41 @@
-// Reader for jet trees from CMS data
+// Reader for trees needed in event mixing from CMS data
 //
 //===========================================================
-// HighForestReader.h
+// MixingForestReader.h
 //
 // Author: Jussi Viinikainen
 //===========================================================
 
-#ifndef HIGHFORESTREADER_H
-#define HIGHFORESTREADER_H
+#ifndef MIXINGFORESTREADER_H
+#define MIXINGFORESTREADER_H
 
 // Own includes
 #include "ForestReader.h"
 
 using namespace std;
 
-class HighForestReader : public ForestReader{
+class MixingForestReader : public ForestReader{
   
 private:
-  static const Int_t fnMaxJet = 250;        // Maximum number of jets in an event
   static const Int_t fnMaxTrack = 60000;   // Maximum number of tracks in an event
   
 public:
   
   // Constructors and destructors
-  HighForestReader();                                              // Default constructor
-  HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets); // Custom constructor
-  HighForestReader(const HighForestReader& in);                    // Copy constructor
-  virtual ~HighForestReader();                                     // Destructor
-  HighForestReader& operator=(const HighForestReader& obj);        // Equal sign operator
+  MixingForestReader();                                              // Default constructor
+  MixingForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets); // Custom constructor
+  MixingForestReader(const MixingForestReader& in);                    // Copy constructor
+  virtual ~MixingForestReader();                                     // Destructor
+  MixingForestReader& operator=(const MixingForestReader& obj);        // Equal sign operator
   
   // Methods
   void ReadForestFromFile(TFile *inputFile);   // Read the forest from a file
-  void ReadForestFromFileList(std::vector<TString> fileList);  // Read the forest from a file list
+  void ReadForestFromFileList(std::vector<TString> inputFileList);   // Read the forest from a file
   void BurnForest();                           // Burn the forest  
   void GetEvent(Int_t nEvent);                 // Get the nEventh event from the file
+  
+  // Getter for number of events
+  Int_t GetNEvents() const;                   // Get the number of events
   
   // Getters for leaves in jet tree
   Float_t GetJetPt(Int_t iJet) const;         // Getter for jet pT
@@ -77,35 +79,16 @@ private:
   
   // Methods
   void Initialize();       // Connect the branches to the tree
-  Int_t GetMatchingIndex(Int_t iJet) const; // Get the matching generator level jet index for the given reconstructed jet
 
   // Trees in the forest
-  TTree *fHeavyIonTree;    // Tree for heavy ion event information
-  TTree *fJetTree;         // Tree for jet information
-  TTree *fHltTree;         // Tree for high level trigger information
-  TTree *fSkimTree;        // Tree for event selection information
-  TTree *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
-  TTree *fParticleFlowCandidateTree;  // Tree for particle flow candidates
+  TChain *fHeavyIonTree;    // Tree for heavy ion event information
+  TChain *fSkimTree;        // Tree for event selection information
+  TChain *fTrackTree;       // Tree for tracks  PbPb: anaTrack/trackTree pp: ppTrack/trackTree GenParticles: HiGenParticleAna/hi
   
   // Non-common branches for all types of trees
-  TBranch *fnJetsBranch;         // Branch for number of jets in an event
-  TBranch *fnMatchedJetsBranch;  // Branch for the number of generator level jets in an event
   TBranch *fnTracksBranch;       // Branch for number of tracks
-  
   TBranch *fTrackAlgorithmBranch;    // Branch for track algorithm
   TBranch *fTrackMVABranch;          // Branch for track MVA
-  
-  // Leaves for jet tree
-  Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
-  Float_t fJetPhiArray[fnMaxJet] = {0};        // phis of all the jets in an event
-  Float_t fJetEtaArray[fnMaxJet] = {0};        // etas of all the jets in an event
-  Float_t fJetRawPtArray[fnMaxJet] = {0};      // raw jet pT for all the jets in an event
-  Float_t fJetMaxTrackPtArray[fnMaxJet] = {0}; // maximum track pT inside a jet for all the jets in an event
-  Float_t fJetRefPtArray[fnMaxJet] = {0};      // reference generator level pT for a reconstructed jet
-  Int_t fJetRefFlavorArray[fnMaxJet] = {0};    // flavor for initiating parton for the reference gen jet
-  Float_t fMatchedJetPtArray[fnMaxJet] = {0};  // pT:s of all the generator level jets in an event
-  Float_t fMatchedJetPhiArray[fnMaxJet] = {0}; // phis of all the generator level jets in an event
-  Float_t fMatchedJetEtaArray[fnMaxJet] = {0}; // etas of all the generator level jets in an event
   
   // Leaves for the track tree
   Float_t fTrackPtArray[fnMaxTrack] = {0};                    // Array for track pT:s

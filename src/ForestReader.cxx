@@ -25,7 +25,7 @@ ForestReader::ForestReader() :
   fJetMatchedPtBranch(0),
   fJetMatchedEtaBranch(0),
   fJetMatchedPhiBranch(0),
-  fJetWeightBranch(0),
+  fEventWeightBranch(0),
   fCaloJetFilterBranch(0),
   fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
@@ -58,7 +58,7 @@ ForestReader::ForestReader() :
   fPtHat(0),
   fnJets(0),
   fnMatchedJets(0),
-  fJetWeight(1),
+  fEventWeight(1),
   fCaloJetFilterBit(0),
   fCaloJetFilterBitPrescale(0),
   fPrimaryVertexFilterBit(0),
@@ -111,7 +111,7 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t 
   fJetMatchedPtBranch(0),
   fJetMatchedEtaBranch(0),
   fJetMatchedPhiBranch(0),
-  fJetWeightBranch(0),
+  fEventWeightBranch(0),
   fCaloJetFilterBranch(0),
   fCaloJetFilterPrescaleBranch(0),
   fPrimaryVertexBranch(0),
@@ -144,7 +144,7 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t 
   fPtHat(0),
   fnJets(0),
   fnMatchedJets(0),
-  fJetWeight(1),
+  fEventWeight(1),
   fCaloJetFilterBit(0),
   fCaloJetFilterBitPrescale(0),
   fPrimaryVertexFilterBit(0),
@@ -192,7 +192,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fJetMatchedPtBranch(in.fJetMatchedPtBranch),
   fJetMatchedEtaBranch(in.fJetMatchedEtaBranch),
   fJetMatchedPhiBranch(in.fJetMatchedPhiBranch),
-  fJetWeightBranch(in.fJetWeightBranch),
+  fEventWeightBranch(in.fEventWeightBranch),
   fCaloJetFilterBranch(in.fCaloJetFilterBranch),
   fCaloJetFilterPrescaleBranch(in.fCaloJetFilterPrescaleBranch),
   fPrimaryVertexBranch(in.fPrimaryVertexBranch),
@@ -225,7 +225,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fPtHat(in.fPtHat),
   fnJets(in.fnJets),
   fnMatchedJets(in.fnMatchedJets),
-  fJetWeight(in.fJetWeight),
+  fEventWeight(in.fEventWeight),
   fCaloJetFilterBit(in.fCaloJetFilterBit),
   fCaloJetFilterBitPrescale(in.fCaloJetFilterBitPrescale),
   fPrimaryVertexFilterBit(in.fPrimaryVertexFilterBit),
@@ -277,7 +277,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fJetMatchedPtBranch = in.fJetMatchedPtBranch;
   fJetMatchedEtaBranch = in.fJetMatchedEtaBranch;
   fJetMatchedPhiBranch = in.fJetMatchedPhiBranch;
-  fJetWeightBranch = in.fJetWeightBranch;
+  fEventWeightBranch = in.fEventWeightBranch;
   fCaloJetFilterBranch = in.fCaloJetFilterBranch;
   fCaloJetFilterPrescaleBranch = in.fCaloJetFilterPrescaleBranch;
   fPrimaryVertexBranch = in.fPrimaryVertexBranch;
@@ -310,7 +310,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fPtHat = in.fPtHat;
   fnJets = in.fnJets;
   fnMatchedJets = in.fnMatchedJets;
-  fJetWeight = in.fJetWeight;
+  fEventWeight = in.fEventWeight;
   fCaloJetFilterBit = in.fCaloJetFilterBit;
   fCaloJetFilterBitPrescale = in.fCaloJetFilterBitPrescale;
   fPrimaryVertexFilterBit = in.fPrimaryVertexFilterBit;
@@ -393,8 +393,8 @@ Float_t ForestReader::GetPtHat() const{
 }
 
 // Getter for pT hat
-Float_t ForestReader::GetJetWeight() const{
-  return fJetWeight;
+Float_t ForestReader::GetEventWeight() const{
+  return fEventWeight;
 }
 
 // Getter for calorimeter jet filter bit. Always 1 for MC (set in the initializer).

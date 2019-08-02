@@ -17,6 +17,7 @@
 // Root includes
 #include <TString.h>
 #include <TTree.h>
+#include <TChain.h>
 #include <TBranch.h>
 #include <TFile.h>
 
@@ -41,8 +42,9 @@ public:
   
   // Methods
   virtual void GetEvent(Int_t nEvent) = 0;                 // Get the nth event in tree
-  Int_t GetNEvents() const;                                // Get the number of events
+  virtual Int_t GetNEvents() const;                        // Get the number of events
   virtual void ReadForestFromFile(TFile *inputFile) = 0;   // Read the forest from a file
+  virtual void ReadForestFromFileList(std::vector<TString> fileList) = 0;   // Read the forest from a file list
   virtual void BurnForest() = 0;                           // Burn the forest
   
   // Getters for leaves in heavy ion tree
@@ -50,7 +52,7 @@ public:
   Float_t GetCentrality() const;      // Getter for centrality
   Int_t GetHiBin() const;             // Getter for CMS hiBin
   Float_t GetPtHat() const;           // Getter for pT hat
-  Float_t GetJetWeight() const;       // Getter for jet weight in 2018 MC
+  Float_t GetEventWeight() const;     // Getter for jet weight in 2018 MC
   
   // Getters for leaves in jet tree
   virtual Float_t GetJetPt(Int_t iJet) const = 0;         // Getter for jet pT
@@ -140,7 +142,7 @@ protected:
   TBranch *fJetMatchedPtBranch;  // Branch for the matched jet pT (reco to gen or vice versa)
   TBranch *fJetMatchedEtaBranch; // Branch for the matched jet eta (reco to gen or vice versa)
   TBranch *fJetMatchedPhiBranch; // Branch for the matched jet phi (reco to gen or vice versa)
-  TBranch *fJetWeightBranch;     // Branch for jet weight for 2018 MC
+  TBranch *fEventWeightBranch;     // Branch for jet weight for 2018 MC
   
   // Branches for HLT tree
   TBranch *fCaloJetFilterBranch;         // Branch for calo jet filter bit
@@ -186,7 +188,7 @@ protected:
   // Leaves for jet tree
   Int_t fnJets;          // number of jets in an event
   Int_t fnMatchedJets;   // number of matched jets in an event
-  Float_t fJetWeight;    // jet weight in the 2018 MC tree
+  Float_t fEventWeight;    // jet weight in the 2018 MC tree
   
   // Leaves for the HLT tree
   Int_t fCaloJetFilterBit;         // Filter bit for calorimeter jets

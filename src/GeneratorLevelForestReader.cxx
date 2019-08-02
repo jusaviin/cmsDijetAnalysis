@@ -134,12 +134,19 @@ void GeneratorLevelForestReader::Initialize(){
   fHeavyIonTree->SetBranchStatus("pthat",1);
   fHeavyIonTree->SetBranchAddress("pthat",&fPtHat,&fPtHatBranch); // pT hat only for MC
   
+  // Read event weight for 2018 simulation
+  if(fReadMode > 2000){
+    fHeavyIonTree->SetBranchStatus("weight",1);
+    fHeavyIonTree->SetBranchAddress("weight",&fEventWeight,&fEventWeightBranch);
+  } else {
+    fEventWeight = 1;
+  }
+  
   // Connect the branches to the jet tree
   const char *jetAxis[3] = {"jt","jt","WTA"};
   const char *genJetAxis[3] = {"","","WTA"};
   char branchName[30];
   
-  // TODO: Add WTA axis for generator level jets
   fJetTree->SetBranchStatus("*",0);
   fJetTree->SetBranchStatus("genpt",1);
   fJetTree->SetBranchAddress("genpt",&fJetPtArray,&fJetPtBranch);
@@ -178,13 +185,6 @@ void GeneratorLevelForestReader::Initialize(){
     
     fJetTree->SetBranchStatus("nref",1);
     fJetTree->SetBranchAddress("nref",&fnMatchedJets,&fnTrackDegreesOfFreedomBranch); // Reuse a branch from ForestReader that is not otherwise needed here
-  }
-  
-  if(fDataType == kPbPbMC){
-    fJetTree->SetBranchStatus("weight",1);
-    fJetTree->SetBranchAddress("weight",&fJetWeight,&fJetWeightBranch);
-  } else {
-    fJetWeight = 1;
   }
   
   // Helper variable for choosing correct branches in HLT tree
@@ -277,7 +277,7 @@ void GeneratorLevelForestReader::Initialize(){
   /*if(fDataType != kLocalTest && fReadMode == 0) {
     fTrackTree->SetBranchStatus("sta",1);
     fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test or PYTHIA8 forest
-  } */ // Quick test. New PbPb MC files do not have this branch TODO TODO DEBUG DEBUG XXXXXXXX
+  } */ // Quick test. New PbPb MC files do not have this branch
 
 }
 
@@ -287,7 +287,7 @@ void GeneratorLevelForestReader::Initialize(){
 void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Helper variable for finding the correct tree
-  const char *treeName[3] = {"none","none","none"};
+  const char *treeName[4] = {"none","none","none","none"};
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
@@ -299,9 +299,10 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
     treeName[0] = "ak4CaloJetAnalyzer/t"; // Tree for calo jets
     treeName[1] = "ak4PFJetAnalyzer/t";   // Tree for PF jets
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
-    treeName[0] = "akPu4CaloJetAnalyzer/t";  // Tree for calo jets
-    treeName[1] = "akCs4PFJetAnalyzer/t";    // Tree for PF jets
-    treeName[2] = "akPu4PFJetAnalyzer/t";    // Tree for PF jets
+    treeName[0] = "akPu4CaloJetAnalyzer/t";     // Tree for calo jets
+    treeName[1] = "akCs4PFJetAnalyzer/t";       // Tree for PF jets
+    treeName[2] = "akPu4PFJetAnalyzer/t";       // Tree for PF jets
+    treeName[3] = "akFlowPuCs4PFJetAnalyzer/t"; // Tree for flow subtracted csPF jets
   } else if (fDataType == kLocalTest){
     treeName[0] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
     treeName[1] = "ak4PFJetAnalyzer/t";  // Only PF jets in local test file
@@ -313,6 +314,14 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Connect branches to trees
   Initialize();
+}
+
+/*
+ * Connect a new tree to the reader
+ */
+void GeneratorLevelForestReader::ReadForestFromFileList(std::vector<TString> fileList){
+  TFile *inputFile = TFile::Open(fileList.at(0));
+  ReadForestFromFile(inputFile);
 }
 
 /*
@@ -336,7 +345,7 @@ void GeneratorLevelForestReader::GetEvent(Int_t nEvent){
   fSkimTree->GetEntry(nEvent);
   fTrackTree->GetEntry(nEvent);
   
-  // Read the numbers of tracks and jets for this event
+  // Read the numbers of tracks for this event
   fnTracks = fTrackPtArray->size();
 }
 
@@ -393,7 +402,7 @@ Int_t GeneratorLevelForestReader::GetTrackSubevent(Int_t iTrack) const{
 // Getter for track MC status
 Int_t GeneratorLevelForestReader::GetTrackMCStatus(Int_t iTrack) const{
   /*if(fDataType == kLocalTest || fReadMode == 1 || fReadMode == 2) return 1;
-  return fTrackStatusArray->at(iTrack);*/ // There is no status for MC tracks in new PbPb MC trees. TODO DEBUG
+  return fTrackStatusArray->at(iTrack);*/ // There is no status for MC tracks in new PbPb MC trees.
   return 1;
 }
 
@@ -464,17 +473,17 @@ Int_t GeneratorLevelForestReader::GetParticleFlowCandidateId(Int_t iCandidate) c
 
 // Getter for particle flow candidate pT (just regular tracks in generator level)
 Float_t GeneratorLevelForestReader::GetParticleFlowCandidatePt(Int_t iCandidate) const{
-  return fTrackPtArray->at(iCandidate); // Use regular generated particle pT for particle flow cnadidates
+  return fTrackPtArray->at(iCandidate); // Use regular generated particle pT for particle flow candidates
 }
 
 // Getter for particle flow candidate phi (just regular tracks in generator level)
 Float_t GeneratorLevelForestReader::GetParticleFlowCandidatePhi(Int_t iCandidate) const{
-  return fTrackPhiArray->at(iCandidate); // Use regular generated particle phi for particle flow cnadidates
+  return fTrackPhiArray->at(iCandidate); // Use regular generated particle phi for particle flow candidates
 }
 
 // Getter for particle flow candidate eta (just regular tracks in generator level)
 Float_t GeneratorLevelForestReader::GetParticleFlowCandidateEta(Int_t iCandidate) const{
-  return fTrackEtaArray->at(iCandidate); // Use regular generated particle eta for particle flow cnadidates
+  return fTrackEtaArray->at(iCandidate); // Use regular generated particle eta for particle flow candidates
 }
 
 // Getter number of particle flow candidates in an event (just regular tracks in generator level)

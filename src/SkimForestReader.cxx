@@ -324,6 +324,14 @@ void SkimForestReader::ReadForestFromFile(TFile *inputFile){
 }
 
 /*
+ * Connect a new tree to the reader
+ */
+void SkimForestReader::ReadForestFromFileList(std::vector<TString> fileList){
+  TFile *inputFile = TFile::Open(fileList.at(0));
+  ReadForestFromFile(inputFile);
+}
+
+/*
  * Burn the current forest.
  */
 void SkimForestReader::BurnForest(){
