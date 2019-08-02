@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
   DijetHistograms *histograms;
   
   // Run the analysis over the list of files
-  DijetAnalyzer *jetAnalysis = new DijetAnalyzer(fileNameVector, dijetCard);
+  DijetAnalyzer *jetAnalysis = new DijetAnalyzer(fileNameVector, dijetCard, runLocal);
   jetAnalysis->RunAnalysis();
   histograms = jetAnalysis->GetHistograms();
   
