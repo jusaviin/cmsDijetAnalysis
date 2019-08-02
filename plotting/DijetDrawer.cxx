@@ -301,6 +301,7 @@ void DijetDrawer::DrawDijetHistograms(){
     // === Dijet DeltaPhi ===
     drawnHistogram = fHistograms->GetHistogramDijetDeltaPhi(iCentrality);
     drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
+    drawnHistogram->SetMarkerStyle(34);
     fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{dijet}} #frac{dN}{d#Delta#varphi}"," ");
     legend = new TLegend(0.17,0.75,0.37,0.9);
     SetupLegend(legend,centralityString);
