@@ -973,6 +973,10 @@ void DijetAnalyzer::RunAnalysis(){
         jetEta = fJetReader->GetJetEta(jetIndex);
         jetFlavor = 0;
         
+        // For data, instead of jet flavor, mark positive vz with 1 and negative with 0
+        // This is used in one of the systematic checks for long range correlations
+        if((fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) && vz > 0) jetFlavor = 1;
+        
         //  ========================================
         //  ======== Apply jet quality cuts ========
         //  ========================================
@@ -1202,6 +1206,13 @@ void DijetAnalyzer::RunAnalysis(){
         if(fMatchJets){
           if(TMath::Abs(fJetReader->GetPartonFlavor(highestIndex)) == 21) leadingJetFlavor = 1; // 1 = Gluon jet
           if(TMath::Abs(fJetReader->GetPartonFlavor(secondHighestIndex)) == 21) subleadingJetFlavor = 1; // 1 = Gluon jet
+        }
+        
+        // For data, instead of jet flavor, mark positive vz with 1 and negative with 0
+        // This is used in one of the systematic checks for long range correlations
+        if((fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) && vz > 0){
+          leadingJetFlavor = 1;
+          subleadingJetFlavor = 1;
         }
         
         // Apply the JFF correction for leading and subleading jet pT only if we are using calo jets
