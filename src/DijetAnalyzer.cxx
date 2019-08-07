@@ -188,11 +188,19 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     // Track correction
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
     
+    // TODO: When 2017 pp correction is ready, update table here and also the efficiency correction logic later
+    fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
+    
     // Common vz weight function used by UIC group for pp MC 2015
-    fVzWeightFunction = new TF1("fvz","gaus",-15,15);
-    fVzWeightFunction->SetParameter(0,1.10477);
-    fVzWeightFunction->SetParameter(1,2.52738);
-    fVzWeightFunction->SetParameter(2,1.30296e1);
+    if(fReadMode < 2000){
+      fVzWeightFunction = new TF1("fvz","gaus",-15,15);  // Weight function for 2015 MC
+      fVzWeightFunction->SetParameter(0,1.10477);
+      fVzWeightFunction->SetParameter(1,2.52738);
+      fVzWeightFunction->SetParameter(2,1.30296e1);
+    } else {
+      fVzWeightFunction = new TF1("fvz","pol6",-15,15);  // Weight function for 2017 MC
+      fVzWeightFunction->SetParameters(0.973805, -0.00339418, 0.000757544, -1.37331e-06, -2.82953e-07, -3.06778e-10, 3.48615e-09);
+    }
     
     fCentralityWeightFunction = NULL;
     
@@ -889,7 +897,6 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
-    // Event loop
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
       
       //************************************************
@@ -1815,8 +1822,8 @@ void DijetAnalyzer::MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[
  */
 Double_t DijetAnalyzer::GetVzWeight(const Double_t vz) const{
   if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) return 1;  // No correction for real data
-  if(fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest) return 1.0/fVzWeightFunction->Eval(vz); // Weight for pp MC
-  if(fDataType == ForestReader::kPbPbMC) return fVzWeightFunction->Eval(vz); // Weight for PbPb MC
+  if((fDataType == ForestReader::kPpMC && fReadMode < 2000) || fDataType == ForestReader::kLocalTest) return 1.0/fVzWeightFunction->Eval(vz); // Weight for 2015 pp MC
+  if(fDataType == ForestReader::kPbPbMC || fDataType == ForestReader::kPpMC) return fVzWeightFunction->Eval(vz); // Weight for 2018 MC
   return -1; // Return crazy value for unknown data types, so user will not miss it
 }
 
