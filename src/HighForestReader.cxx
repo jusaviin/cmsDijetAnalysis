@@ -213,8 +213,8 @@ void HighForestReader::Initialize(){
   } else {
     fPtHat = 0; // We do not have pT hat information for real data
   }
-  // Event weight from jet tree for 2018 MC
-  if(fDataType == kPbPbMC && fReadMode > 2000){
+  // Event weight for 2018 MC
+  if((fDataType == kPbPbMC || fDataType == kPpMC) && fReadMode > 2000){
     fHeavyIonTree->SetBranchStatus("weight",1);
     fHeavyIonTree->SetBranchAddress("weight",&fEventWeight,&fEventWeightBranch);
   } else {
@@ -282,26 +282,20 @@ void HighForestReader::Initialize(){
   // skimanalysis/HltTree         pPAprimaryVertexFilter          Event selection for pp
   // skimanalysis/HltTree           pBeamScrapingFilter           Event selection for pp
   
-  // Helper variable for choosing correct branches in HLT tree
-  const char *branchNameHlt[2] = {"none","none"};
-  
   // Connect the branches to the HLT tree
   fHltTree->SetBranchStatus("*",0);
   if(fDataType == kPp){ // pp data
-    branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
-    branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1_v1";
-    fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
-    fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPpMC){
-    branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1ForPPRef_v1";
-    branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1ForPPRef_v1";
-    if(fReadMode == 0 || fReadMode == 2){
-      fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
-      fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
+    
+    if(fReadMode > 2000){
+      fHltTree->SetBranchStatus("HLT_HIAK4CaloJet80_v1",1); // 2017 syntax
+      fHltTree->SetBranchAddress("HLT_HIAK4CaloJet80_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
     } else {
-      fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
+      fHltTree->SetBranchStatus("HLT_AK4CaloJet80_Eta5p1_v1",1); // 2015 syntax
+      fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+      
     }
-  } else if (fDataType == kPbPb){ // PbPb
+    
+  }else if (fDataType == kPbPb){ // PbPb data
     
     // Trigger branch naming is different for 2018 and 2015 forests
     if(fReadMode > 2000){
@@ -311,8 +305,8 @@ void HighForestReader::Initialize(){
       fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1); // 2015 syntax
       fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2015 syntax
     }
-  } else { // Local test
-    fCaloJetFilterBit = 1;  // No filter for local test of PbPb MC forest
+  } else { // Local test or MC
+    fCaloJetFilterBit = 1;  // No filter for local test or MC forests
   }
   fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   
@@ -329,7 +323,7 @@ void HighForestReader::Initialize(){
     fHfCoincidenceFilterBit = 1; // No HF energy coincidence requirement for pp
     fClusterCompatibilityFilterBit = 1; // No cluster compatibility requirement for pp
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){ // PbPb data or MC
-
+    
     fSkimTree->SetBranchStatus("pprimaryVertexFilter",1);
     fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
@@ -398,8 +392,12 @@ void HighForestReader::Initialize(){
   // Additional information needed for 2018 track cuts
   fTrackTree->SetBranchStatus("trkAlgo",1);
   fTrackTree->SetBranchAddress("trkAlgo",&fTrackAlgorithmArray,&fTrackAlgorithmBranch);
-  fTrackTree->SetBranchStatus("trkMVA",1);
-  fTrackTree->SetBranchAddress("trkMVA",&fTrackMVAArray,&fTrackMVABranch);
+  
+  // Track MVA only in 2018 PbPb trees
+  if(fReadMode > 2000 && (fDataType == kPbPb || fDataType == kPbPbMC)){
+    fTrackTree->SetBranchStatus("trkMVA",1);
+    fTrackTree->SetBranchAddress("trkMVA",&fTrackMVAArray,&fTrackMVABranch);
+  }
   
   // Do not read the particle flow candidate tree for 2018 data
   if(fReadMode < 2000){
@@ -463,7 +461,11 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
   // The track tree and the particle flow candidate tree have different names for differant datasets
   if(fDataType == kPp || fDataType == kPpMC || fDataType == kLocalTest){
     fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree");
-    fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzer/pfTree");
+    
+    // No particle flow candidate tree for 2017 pp
+    if(fReadMode < 2000){
+      fParticleFlowCandidateTree = (TTree*)inputFile->Get("pfcandAnalyzer/pfTree");
+    }
   } else if (fDataType == kPbPb || fDataType == kPbPbMC){
     
     // Track tree has different name in 2018 data

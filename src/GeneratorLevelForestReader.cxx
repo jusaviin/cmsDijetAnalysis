@@ -198,14 +198,7 @@ void GeneratorLevelForestReader::Initialize(){
     fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
     fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
-    branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1ForPPRef_v1";
-    branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1ForPPRef_v1";
-    if(fReadMode == 0 || fReadMode == 2){
-      fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
-      fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);  // For Purdue high forest
-    } else {
-      fCaloJetFilterBit = 1; // This filter bit does not exist in the official PYTHIA8 dijet forest
-    }
+    fCaloJetFilterBit = 1; // No filtering for Monte Carlo
   } else if (fDataType == kPbPb){ // PbPb
     fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
