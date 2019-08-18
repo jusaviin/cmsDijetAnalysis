@@ -102,7 +102,7 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
   
   // Save the figures if selected to do so
   if(saveFigures){
-    sprintf(namer,"figures/jetPtClosure%s%sJet%s.pdf",saveComment,closureTypeName[iClosureType],centralitySaveName);
+    sprintf(namer,"figures/jet%s%sJet%s.pdf",saveComment,closureTypeName[iClosureType],centralitySaveName);
     gPad->GetCanvas()->SaveAs(namer);
   }
   
@@ -117,20 +117,21 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_noMixing_jetPtClosure_JECv4_processed_2019-08-11.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root
   // "data/PbPbMC_GenGen_pfJets_noCorrelations_jetPtClosure_processed_2019-06-25.root"
   // "data/PbPbMC_GenGen_pfCsJets_noCorrelations_jetPtClosure_eta1v3_2019-06-26_processed.root"
   
   bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
-  bool drawSubleadingClosure = false;    // Produce the closure plots for subleading jet pT
+  bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
   bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
   
   bool drawPtClosure = true;
-  bool drawEtaClosure = false;
+  bool drawEtaClosure = true;
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
-  bool saveFigures = false;  // Save the figures to file
+  bool saveFigures = true;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================
@@ -253,15 +254,15 @@ void constructJetPtClosures(){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       if(drawPtClosure){
-        drawClosureHistogram(hJetPtClosure[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 0, "", saveFigures);
+        drawClosureHistogram(hJetPtClosure[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 0, "PtClosure", saveFigures);
         
-        drawClosureHistogram(hJetPtClosureSigma[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 1, "", saveFigures);
+        drawClosureHistogram(hJetPtClosureSigma[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 1, "PtResolution", saveFigures);
       }
       
       if(drawEtaClosure){
-        drawClosureHistogram(hJetPtClosureEta[iClosureType][iCentrality], "#eta", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 0, "", saveFigures);
+        drawClosureHistogram(hJetPtClosureEta[iClosureType][iCentrality], "#eta", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 0, "EtaClosure", saveFigures);
         
-        drawClosureHistogram(hJetPtClosureSigmaEta[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 1, "", saveFigures);
+        drawClosureHistogram(hJetPtClosureSigmaEta[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 1, "EtaResolution", saveFigures);
         
       }
 
