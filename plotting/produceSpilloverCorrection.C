@@ -14,7 +14,7 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_subeNon0_wtaAxis_processed_2019-07-12.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_subeNon0_JECv4_noCorrections_processed_2019-08-09.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC_RecoGen_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_subeNon0_wtaAxis_processed_2019-07-12.root
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedDijets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-02.root
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root"
@@ -24,7 +24,7 @@ void produceSpilloverCorrection(){
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "spilloverTest.root"; // File name for the output file
+  TString outputFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root"; // File name for the output file
   // data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
@@ -35,9 +35,9 @@ void produceSpilloverCorrection(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatio
+  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatio
   
-  bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
+  bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -55,10 +55,16 @@ void produceSpilloverCorrection(){
   
   // DeltaR cut applied for symmetrized spillover histograms
   //   pT bin border           0.7  1   2   3   4   8  12  300 GeV
-  double spilloverRcut[4][7] = {{1.5,1.5,1.0,0.8,0.8,0.4,0.4},  // 0-10 % centrality
+  /*double spilloverRcut[4][7] = {{1.5,1.5,1.0,0.8,0.8,0.4,0.4},  // 0-10 % centrality
                                 {1.5,1.5,1.5,0.8,0.8,0.4,0.4},  // 10-30 % centrality
                                 {1.0,1.0,1.0,0.8,0.6,0.4,0.4},  // 30-50 % centrality
-                                {0.5,0.5,0.5,0.5,0.5,0.4,0.4}}; // 50-100 % centrality
+                                {0.5,0.5,0.5,0.5,0.5,0.4,0.4}}; // 50-100 % centrality*/
+  
+  // For spillover correction in 2018 data. To be studied more carefully after JECs are finalized
+  double spilloverRcut[4][7] = {{1.0,1.0,1.0,0.8,0.8,0.5,0.5},  // 0-10 % centrality
+                                {1.0,1.0,1.0,0.8,0.7,0.5,0.5},  // 10-30 % centrality
+                                {1.0,1.0,1.0,0.8,0.7,0.5,0.5},  // 30-50 % centrality
+                                {0.7,0.5,0.5,0.5,0.5,0.5,0.5}}; // 50-100 % centrality
   
   // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);

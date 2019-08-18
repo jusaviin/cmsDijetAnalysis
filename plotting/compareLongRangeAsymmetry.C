@@ -79,15 +79,19 @@ void compareLongRangeAsymmetry(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString pbpbFileName = "data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
-  TString ppFileName = "data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root";
+  TString pbpbFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing.root";
+  //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
+  TString ppFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_adjustedBackground_processed_2019-08-13.root";
+  //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root";
   
   // For systematic uncertainty estimation, need files in which the background is not adjusted between leading and subleading side
-  TString pbpbUnadjustedFileName = "data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root";
-  TString ppUnadjustedFileName = "data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root";
+  TString pbpbUnadjustedFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
+  //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root";
+  TString ppUnadjustedFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root";
+  //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root";
   
   // Name for the file from which systematic uncertainties are read
-  const char *uncertaintyFile = "data/vnUncertaintyNoVz2015.txt";
+  const char *uncertaintyFile = "data/vnUncertaintyPreliminaryNoVz2018.txt";
   
   // Open the PbPb input file and read bin numbers from it
   TFile *pbpbDataFile = TFile::Open(pbpbFileName);
@@ -95,7 +99,7 @@ void compareLongRangeAsymmetry(){
   const int nCentralityBins = pbpbReader->GetNCentralityBins();
   const int nTrackPtBins = pbpbReader->GetNTrackPtBins();
   const int nAsymmetryBins = pbpbReader->GetNAsymmetryBins();
-  double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
+  double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
@@ -111,7 +115,7 @@ void compareLongRangeAsymmetry(){
   int firstDrawnAsymmetryBin = 0;
   int lastDrawnAsymmetryBin = nAsymmetryBins-1;
   
-  const int fourierV = 3;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
+  const int fourierV = 0;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
   TString vString = "";
   TString vHeader = "V_{1} - V_{4}";
   if(fourierV > 0) {

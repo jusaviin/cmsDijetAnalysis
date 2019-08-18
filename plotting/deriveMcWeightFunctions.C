@@ -6,8 +6,10 @@
 void deriveMcWeightFunctions(){
 
   // Open files for MC and data
-  TFile *dataFile = TFile::Open("data/dijetPbPb2018_highForest_pfCsJets_noUncorr_wtaAxis_noMixing_onlyEventInfo_processed_2019-07-22.root");
-  TFile *mcFile = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_onlyEventInfo_2019-07-22.root");
+  //TFile *dataFile = TFile::Open("data/dijetPbPb2018_highForest_pfCsJets_noUncorr_wtaAxis_noMixing_onlyEventInfo_processed_2019-07-22.root");
+  TFile *dataFile = TFile::Open("data/ppData2017_highForest_pfJets_onlyJets_L2rel_wtaAxis_processed_2019-08-05.root");
+  //TFile *mcFile = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_onlyEventInfo_2019-07-22.root");
+  TFile *mcFile = TFile::Open("data/dijet_ppMC_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_processed_2019-08-06.root");
 
   // Read the histograms for vz and centrality
   TH1D *hVz[2];
@@ -21,7 +23,7 @@ void deriveMcWeightFunctions(){
   // Normalize all histograms to one
   for(int i = 0; i < 2; i++){
     hVz[i]->Scale(1/hVz[i]->Integral());
-    hCentrality[i]->Scale(1/hCentrality[i]->Integral());
+    //hCentrality[i]->Scale(1/hCentrality[i]->Integral());
   }
   
   // Draw the histogram before weighting
@@ -31,9 +33,9 @@ void deriveMcWeightFunctions(){
   hVz[1]->SetLineColor(kRed);
   hVz[1]->Draw("same");
 
-  drawer->DrawHistogram(hCentrality[0],"centrality","counts", " ");
-  hCentrality[1]->SetLineColor(kRed);
-  hCentrality[1]->Draw("same");
+  //drawer->DrawHistogram(hCentrality[0],"centrality","counts", " ");
+ // hCentrality[1]->SetLineColor(kRed);
+ // hCentrality[1]->Draw("same");
   
   // Do not draw over centrality
   drawer->CreateCanvas();
@@ -47,30 +49,30 @@ void deriveMcWeightFunctions(){
   // Calculate the ratio of the centrality histograms and fit it with a complicated function
   //TF1* fcent1= new TF1("fcent1","[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)",0,90);
   //fcent1->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15);
-  TH1D *hCentralityRatio = (TH1D*) hCentrality[0]->Clone();
+ /* TH1D *hCentralityRatio = (TH1D*) hCentrality[0]->Clone();
   hCentralityRatio->Divide(hCentrality[1]);
   hCentralityRatio->Fit("pol6","","",0,90);
   TF1 *centralityFit = hCentralityRatio->GetFunction("pol6");
-  
+  */
   // Draw the fitted ratios
   drawer->DrawHistogram(hVzRatio,"v_{z} (cm)","Ratio fit");
-  drawer->DrawHistogram(hCentralityRatio,"centrality","Ratio fit");
+  //drawer->DrawHistogram(hCentralityRatio,"centrality","Ratio fit");
   
   // Check with a small simulation that we regain data v_z and centrality
   double randomNumberVz, weigthVz;
-  double randomNumberCentrality, weigthCentrality;
+  //double randomNumberCentrality, weigthCentrality;
   TH1D *vzReconstructed = (TH1D*) hVz[0]->Clone("vzClone");
   vzReconstructed->Reset();
-  TH1D *centralityReconstructed = (TH1D*) hCentrality[0]->Clone("centralityClone");
-  centralityReconstructed->Reset();
+//  TH1D *centralityReconstructed = (TH1D*) hCentrality[0]->Clone("centralityClone");
+//  centralityReconstructed->Reset();
   for(int i = 0; i < 1000000; i++){
     randomNumberVz = hVz[1]->GetRandom();
     weigthVz = vzFit->Eval(randomNumberVz);
     vzReconstructed->Fill(randomNumberVz,weigthVz);
     
-    randomNumberCentrality = hCentrality[1]->GetRandom();
+    /*randomNumberCentrality = hCentrality[1]->GetRandom();
     weigthCentrality = centralityFit->Eval(randomNumberCentrality);
-    centralityReconstructed->Fill(randomNumberCentrality,weigthCentrality);
+    centralityReconstructed->Fill(randomNumberCentrality,weigthCentrality);*/
   }
   
   vzReconstructed->Scale(1.0/vzReconstructed->Integral());
@@ -78,8 +80,8 @@ void deriveMcWeightFunctions(){
   vzReconstructed->SetLineColor(kMagenta);
   vzReconstructed->Draw("same");
   
-  centralityReconstructed->Scale(1.0/centralityReconstructed->Integral());
+ /* centralityReconstructed->Scale(1.0/centralityReconstructed->Integral());
   drawer->DrawHistogram(hCentrality[0],"centrality","counts", " ");
   centralityReconstructed->SetLineColor(kMagenta);
-  centralityReconstructed->Draw("same");
+  centralityReconstructed->Draw("same");*/
 }

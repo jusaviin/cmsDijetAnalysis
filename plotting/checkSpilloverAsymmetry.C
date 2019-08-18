@@ -12,13 +12,13 @@ void checkSpilloverAsymmetry(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root";
+  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
   TString spilloverComparisonFileName = "spilloverCorrection_wtaAxis.root";
   // data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root
   // newSpilloverTest_symmetrizedDistribution_xj_radial.root
   // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
   // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
-  TString jffFileName = "data/jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root" ; // Can draw also JFF correction yield
+  TString jffFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root" ; // Can draw also JFF correction yield
   TString dataFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"; // Compare also with uncorrected data
   // data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root
@@ -32,7 +32,7 @@ void checkSpilloverAsymmetry(){
   const char *firstFileComment = "EScheme";
   const char *secondFileComment = "WTA";
   
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -43,7 +43,7 @@ void checkSpilloverAsymmetry(){
   const int nCentralityBins = 4;
   const int nTrackPtBins = 6;
   const int nAsymmetryBins = 3;
-  double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
+  double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
@@ -142,34 +142,39 @@ void checkSpilloverAsymmetry(){
     zeroLine->SetLineStyle(2);
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
 
-      dataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
+      /*dataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
       dataYieldGraph[iCentrality]->SetMarkerStyle(21);
       dataYieldGraph[iCentrality]->SetMarkerColor(kBlack);
-      drawer->DrawGraph(dataYieldGraph[iCentrality],0,12,-0.5,15,"p_{T} (GeV)","Yield","","psame");
+      drawer->DrawGraph(dataYieldGraph[iCentrality],0,12,-0.5,15,"p_{T} (GeV)","JFF yield","","psame");
       zeroLine->Draw();
+       */
 
       yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[iCentrality], yieldXerrors, yieldIntegralError[iCentrality]);
       yieldGraph[iCentrality]->SetMarkerStyle(21);
       yieldGraph[iCentrality]->SetMarkerColor(kRed);
-      yieldGraph[iCentrality]->Draw("psame");
-
-      jffYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, jffYieldIntegral[iCentrality], yieldXerrors, jffYieldIntegralError[iCentrality]);
+       drawer->DrawGraph(yieldGraph[iCentrality],0,12,-0.5,6,"p_{T} (GeV)","Spillover yield","","psame");
+      zeroLine->Draw();
+      //yieldGraph[iCentrality]->Draw("psame");
+      
+      /*jffYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, jffYieldIntegral[iCentrality], yieldXerrors, jffYieldIntegralError[iCentrality]);
       jffYieldGraph[iCentrality]->SetMarkerStyle(21);
       jffYieldGraph[iCentrality]->SetMarkerColor(kBlue);
-      jffYieldGraph[iCentrality]->Draw("psame");
+      drawer->DrawGraph(jffYieldGraph[iCentrality],0,12,-0.3,0.3,"p_{T} (GeV)","JFF yield","","psame");
+      //jffYieldGraph[iCentrality]->Draw("psame");
+      zeroLine->Draw();*/
 
       // Put the centrality bin to the canvas
       legend = new TLegend(0.60,0.65,0.85,0.9);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->SetHeader(Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
-      legend->AddEntry(dataYieldGraph[iCentrality],"Data","p");
-      legend->AddEntry(yieldGraph[iCentrality],"Spillover CS","p");
-      legend->AddEntry(jffYieldGraph[iCentrality],"JFF","p");
+      //legend->AddEntry(dataYieldGraph[iCentrality],"Data","p");
+      legend->AddEntry(yieldGraph[iCentrality],"Spillover","p");
+      //legend->AddEntry(jffYieldGraph[iCentrality],"JFF","p");
       legend->Draw();
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/correctionYieldComparison_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+        gPad->GetCanvas()->SaveAs(Form("figures/spilloverYield_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
       }
     }
     
