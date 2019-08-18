@@ -11,16 +11,23 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_JECv4_processed_2019-08-09.root";  // File from which the RecoGen histograms are read for the correction
+  // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_improvisedMixing_JECv2_processed_2019-08-13.root
+  // data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_JECv4_processed_2019-08-09.root
+  // data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root
   // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
   // "data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
   // data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString genGenFileName = "data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root";   // File from which the GenGen histograms are read for the correction
+  TString genGenFileName = "data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_JECv4_processed_2019-08-09.root";   // File from which the GenGen histograms are read for the correction
+  // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_improvisedMixing_JECv2_processed_2019-08-13.root
+  // data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_JECv4_processed_2019-08-09.root
+  // data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root
   // data/dijet_ppMC_GenGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
   // "data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
-  TString outputFileName = "data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root";   // File name for the output file
+  TString outputFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root";   // File name for the output file
+  // data/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   // data/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
   // "data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root"
   // "data/jffCorrection_ppMC_mergedSkims_Pythia6_pfJets_noJetLimit_fittedMC2_smoothedMixing_adjustedBackground_2019-01-15.root"
@@ -29,7 +36,7 @@ void produceJffCorrection(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
   
   // If 2D MC distribution give too much fluctuations to the results, can try different methods to reduce them
   int nRebin = 1;               // Rebin the histograms in order to reduce fluctuations
@@ -207,8 +214,8 @@ void produceJffCorrection(){
           jffRatioJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Divide(jffHelperJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
           // If we do rebinning, we need to go back to original binning in the end to be able to use the corrections
+          double binContent, binError;
           if(nRebin > 1){
-            double binContent, binError;
             double binPhi, binEta;
             int iRebinPhi, iRebinEta;
             for(int iDeltaPhi = 1; iDeltaPhi <= jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iDeltaPhi++){
@@ -236,6 +243,21 @@ void produceJffCorrection(){
             jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) jffCorrectionDeltaEtaDeltaPhiRebinner[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Clone();
             
           } // Rebinning if
+          
+          // Set the errors to zero. We do not want to add statistical errors from a correction. Correction comes with systematic errors.
+          // Also set the correction to zero is the value is smaller than the error
+          for(int iDeltaPhi = 1; iDeltaPhi <= jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iDeltaPhi++){
+            for(int iDeltaEta = 1; iDeltaEta <= jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsY(); iDeltaEta++){
+              binContent = jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinContent(iDeltaPhi,iDeltaEta);
+              binError = jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinError(iDeltaPhi,iDeltaEta);
+              if(binError > TMath::Abs(binContent)) jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(iDeltaPhi, iDeltaEta, 0);
+              jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi,iDeltaEta,0);
+            }
+          }
+          
+          // DEBUG TODO: Check that the high error bins are removed
+          jffCorrectionJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = fitter->GetJetShape(jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          
         } // Track pT loop
       } // Centrality loop
     } // Asymmetry loop
