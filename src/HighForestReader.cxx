@@ -284,7 +284,7 @@ void HighForestReader::Initialize(){
   
   // Connect the branches to the HLT tree
   fHltTree->SetBranchStatus("*",0);
-  if(fDataType == kPp){ // pp data
+  if(fDataType == kPp || (fDataType == kPpMC && fReadMode == 2019)){ // pp data
     
     if(fReadMode > 2000){
       fHltTree->SetBranchStatus("HLT_HIAK4CaloJet80_v1",1); // 2017 syntax
@@ -295,7 +295,7 @@ void HighForestReader::Initialize(){
       
     }
     
-  }else if (fDataType == kPbPb){ // PbPb data
+  }else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb data
     
     // Trigger branch naming is different for 2018 and 2015 forests
     if(fReadMode > 2000){
