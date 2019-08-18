@@ -48,14 +48,14 @@ void setStyleAndNormalize(TH1 *histogram, int iDataType){
   
   // Common style settings for all the figures
   int drawColor[3] = {kBlack,kRed,kBlue};
-  int goodStyle = 20;
+  int goodStyle[3] = {21,20,20};
   
   // Normalize the histogram to 1
   double integral = histogram->Integral();
   histogram->Scale(1.0/integral);
   
   // Put the histogram in the bench of a stylist
-  histogram->SetMarkerStyle(goodStyle);
+  histogram->SetMarkerStyle(goodStyle[iDataType]);
   histogram->SetMarkerColor(drawColor[iDataType]);
 }
 
@@ -282,10 +282,10 @@ void closurePlotter(){
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = true;       // Draw the tracking closures
+  bool drawTrackClosure = false;       // Draw the tracking closures
   
   bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
-  bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
+  bool drawJetKinematicsAsymmerty = true;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
   int ptRebin = 10;                  // Rebin for track pT closure histograms (there are 500 bins)
@@ -313,19 +313,26 @@ void closurePlotter(){
   /////////////////
   
   const char *legendNames[knCollisionSystems][knDataTypes+1] = {{"pp","Raw Pythia", "Weighted Pythia"},{"PbPb","Raw P+H", "Weighted P+H"}};
-  const char *monteCarloName[knCollisionSystems] = {"Pythia6","Pythia+Hydjet"};
+  const char *monteCarloName[knCollisionSystems] = {"Pythia8","Pythia+Hydjet"};
   const char *inclusiveLegend[2] = {"dijet","inclusive"};
   TString systemString[knCollisionSystems] = {"Pp","PbPb"};
   
   // Open files containing the QA histograms
   DijetHistogramManager *inputManager[knCollisionSystems][knDataTypes];
   TFile *inputFile[knCollisionSystems][knDataTypes];
-  inputFile[kPp][kData] = TFile::Open("data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root");
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root");
+  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13.root");
+  // data/ppData2017_highForest_pfJets_onlyJets_wtaAxis_processed_2019-08-05.root
+  // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_wtaAxis_processed_2019-08-13.root");
+  // data/dijetPbPb2018_highForest_flowPuCs4PfJets_noUncorr_wtaAxis_onlyJets_processed_2019-08-02.root
+  // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   // data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root
   // data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root
-  inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root");
-  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
+  inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoGen_Pythia8_pfJets_wtaAxis_vzCheck_onlyJets_JECv2_processed_2019-08-13.root");
+  // data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
+  // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
+  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_noCorrections_processed_2019-08-09.root");
+  // data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedCaloJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root
   
@@ -342,15 +349,23 @@ void closurePlotter(){
   // Open files for the closure tests
   DijetHistogramManager *closureManager[knCollisionSystems][knMonteCarloTypes];
   TFile *closureFile[knCollisionSystems][knMonteCarloTypes];
-  closureFile[kPp][kRecoReco] = TFile::Open("data/dijet_ppMC_RecoReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root");
-  closureFile[kPp][kRecoGen] = TFile::Open("data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root");
+  closureFile[kPp][kRecoReco] = TFile::Open("data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root");
+  // data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
+  // data/dijet_ppMC_RecoReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root
+  closureFile[kPp][kRecoGen] = TFile::Open("data/dijet_ppMC_RecoGen_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root");
+  // data/dijet_ppMC_RecoGen_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
+  // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
   closureFile[kPp][kGenReco] = TFile::Open("data/dijet_ppMC_GenReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root");
   closureFile[kPp][kGenGen] = TFile::Open("data/dijet_ppMC_GenGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root");
-  closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
+  closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_preprocessed_2019-08-09.root");
+  // data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_preprocessed_2019-08-09.root
+  // data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
   // data/PbPbMC_RecoReco_pfCsJets_noUncorr_5eveStrictMix_xjBins_seagullCheck_processed_2019-06-16.root
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root
-  closureFile[kPbPb][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root");
+  closureFile[kPbPb][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_noCorrections_JECv4_processed_2019-08-09.root");
+  // data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_noCorrections_JECv4_processed_2019-08-09.root
+  // data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xjBins_2019-06-12_onlySeagull_processed.root
   // data/PbPbMC_RecoGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
   // data/PbPbMC_RecoGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
@@ -595,58 +610,6 @@ void closurePlotter(){
     const char* zoomerName;
     drawer->SetDefaultAppearanceSplitCanvas();
     
-    // Bins: Dijet/inclusive, pp/PbPb, centrality, track pT
-    double phiZoom[2][2][4][8] =
-    // Track pT = 0.7-1  1-2   2-3   3-4   4-8    8-12  12-300   Inclusive
-    // Dijet Pythia
-              {{{{  5,    6,   2.2,  1.4,  2.2,   1.6,   1.6,       20   },
-                {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0} },
-    // Inclusive Pythia
-                {{ 2.2,   3,    1,   0.5,   1,    0.6,   0.6,      10   },
-                {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0}}},
-    // Dijet Pythia+Hydjet Centrality 0-10 %
-                {{{350,  380,   60,   12,   6,     2,    2,      800   },
-    // Dijet Pythia+Hydjet Centrality 10-30 %
-                  {240,  240,   40,   8,   4.5,    2,    2,     500   },
-    // Dijet Pythia+Hydjet Centrality 30-50 %
-                  { 90,   90,   18,   4,   3.4,    2,    2,     220   },
-    // Dijet Pythia+Hydjet Centrality 50-100 %
-                  { 40,   40,    7,   2,   2.6,    2,    2,     78   }},
-    // Inclusive Pythia+Hydjet Centrality 0-10 %
-                 {{ 40,   44,    7,  1.4,  0.6,   0.15,  0.15,   85   },
-    // Inclusive Pythia+Hydjet Centrality 10-30 %
-                  { 40,   44,    8,  1.6,  0.8,   0.25,  0.25,   90   },
-    // Inclusive Pythia+Hydjet Centrality 30-50 %
-                  { 34,   34,    6,  1.5,   1,    0.45,  0.45,    75   },
-    // Inclusive Pythia+Hydjet Centrality 50-100 %
-                  { 15,   18,    3,   1,    1,    0.55,  0.55,    40   }}}};
-    
-    // Bins: Dijet/inclusive, pp/PbPb, centrality, track pT
-    double etaZoom[2][2][4][8] =
-    // Track pT = 0.7-1  1-2   2-3   3-4   4-8   8-12   12-300   Inclusive
-    // Dijet Pythia
-             {{{{   6,   10,    4,   2.5,  4.5,   3.2,    3.2,    32   },
-          {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0} },
-      // Inclusive Pythia
-               {{   3,    5,   1.6,   1,   1.6,    1,     1,      14   },
-         {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0},    {0,0,0,0,0,0,0,0}}},
-      // Dijet Pythia+Hydjet Centrality 0-10 %
-              {{{ 550,  550,   100,   20,  10,     4,     4,     1200   },
-        // Dijet Pythia+Hydjet Centrality 10-30 %
-                { 300,  340,    70,   15,   9,     4,     4,     750   },
-        // Dijet Pythia+Hydjet Centrality 30-50 %
-                { 130,  130,    30,    7,   6,     4,     4,     330   },
-        // Dijet Pythia+Hydjet Centrality 50-100 %
-                {  50,   60,    12,    4,   5,     4,     4,     120   }},
-        // Inclusive Pythia+Hydjet Centrality 0-10 %
-                {{ 60,   60,    12,   2.4,  1,    0.3,    0.3,    140   },
-          // Inclusive Pythia+Hydjet Centrality 10-30 %
-                 { 60,   60,    12,   2.6, 1.4,   0.4,    0.4,    135   },
-          // Inclusive Pythia+Hydjet Centrality 30-50 %
-                 { 50,   50,     8,   2.4, 1.8,   0.8,    0.8,    120   },
-          // Inclusive Pythia+Hydjet Centrality 50-100 %
-                 { 25,   25,     5,   1.6, 1.6,    1,     1,      60   }}}};
-    
     if(bigClosureZoom){
       zoomerName = "bigZoom_";
     } else {
@@ -696,12 +659,12 @@ void closurePlotter(){
           
           // Save the figures for track pT closure
           if(saveFigures){
-            sprintf(figureName,"figures/trackPtClosure_%s%s%s%s.pdf",zoomerName,inclusiveJetHeader[iInclusive],systemString[iSystem].Data(),centralityName);
+            sprintf(figureName,"figures/trackPtClosure_%s%s%s%s.pdf", zoomerName, inclusiveJetHeader[iInclusive], systemString[iSystem].Data(), centralityName);
             gPad->GetCanvas()->SaveAs(figureName);
           }
           
           // Plot the closure for pT inclusive track eta
-          plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#eta", "#frac{dN}{d#eta}", false, trackAngleRebin, etaZoom[iSystem][iInclusive][iCentrality][nTrackPtBins], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+          plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#eta", "#frac{dN}{d#eta}", false, trackAngleRebin, trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins]->GetMaximum()*2.6, bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
           
           // Save the figures for track eta closure
           if(saveFigures){
@@ -710,7 +673,7 @@ void closurePlotter(){
           }
           
           // Plot the closure for pT inclusive track phi
-          plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#phi", "#frac{dN}{d#phi}", false, trackAngleRebin, phiZoom[iSystem][iInclusive][iCentrality][nTrackPtBins], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+          plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][nTrackPtBins], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][nTrackPtBins], "#phi", "#frac{dN}{d#phi}", false, trackAngleRebin, trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][nTrackPtBins]->GetMaximum()*2.6, bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
           
           // Save the figures for track phi closure
           if(saveFigures){
@@ -724,7 +687,7 @@ void closurePlotter(){
             sprintf(trackPtName,"_pT=%.0f-%.0f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
             
             // Closure plots for track eta
-            plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#eta", "#frac{dN}{d#eta}", false, trackAngleRebin, etaZoom[iSystem][iInclusive][iCentrality][iTrackPt], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+            plotTrackClosure(drawer, trackEta[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackEta[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#eta", "#frac{dN}{d#eta}", false, trackAngleRebin, trackEta[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt]->GetMaximum()*2.6, bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
             
             // Save the figures for track eta closure
             if(saveFigures){
@@ -733,7 +696,7 @@ void closurePlotter(){
             }
             
             // Closure plots for track phi
-            plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#phi", "#frac{dN}{d#phi}", false, trackAngleRebin, phiZoom[iSystem][iInclusive][iCentrality][iTrackPt], bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
+            plotTrackClosure(drawer, trackPhi[iInclusive][0][iSystem][kRecoGen][iCentrality][iTrackPt], trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt], trackPhi[iInclusive][1][iSystem][kRecoReco][iCentrality][iTrackPt], "#phi", "#frac{dN}{d#phi}", false, trackAngleRebin,  trackPhi[iInclusive][0][iSystem][kRecoReco][iCentrality][iTrackPt]->GetMaximum()*2.6, bigClosureZoom, 0.5, 0.5, header, centralityString, trackPtString);
             
             // Save the figures for track phi closure
             if(saveFigures){
