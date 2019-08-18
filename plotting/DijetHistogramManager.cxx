@@ -510,23 +510,15 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           
           connectedIndex = GetConnectedIndex(iJetTrack);
           
-          // The peak in the mixed event distribution can be seen the low pT bins ,especially in the central PbPb events
+          // The peak in the mixed event distribution can be seen the low pT bins, especially in the central PbPb events
           // The detector efficiency improves for higher pT tracks and the peak in event mixing disappers
           mixingPeakVisible = false;
-          if(((iTrackPtBin < 4 && iCentralityBin < 2) || (iTrackPtBin == 0 && iCentralityBin < 3)) && fAvoidMixingPeak) mixingPeakVisible = true;
-          
-          // For the peripheral bin, the maximum of the distribution due to hole in acceptance is in slightly negative deltaEta
-          if(iTrackPtBin == 0 && iCentralityBin == 3 && fAvoidMixingPeak){
-            fMethods->SetMixedEventFitRegion(-0.7,-0.35);
-          }
+          if(((iTrackPtBin < 5 && iCentralityBin < 2) || (iTrackPtBin < 4 && iCentralityBin == 2) || (iTrackPtBin < 3 && iCentralityBin == 3)) && fAvoidMixingPeak) mixingPeakVisible = true;
+          if(fCard->GetDataType().EqualTo("pp",TString::kIgnoreCase) && fAvoidMixingPeak) mixingPeakVisible = true;
           
           // Do the mixed event correction for the current jet-track correlation histogram
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iAsymmetry][iCentralityBin][iTrackPtBin],mixingPeakVisible);
           
-          // Reset the fit region for event mixing to default
-          if(iTrackPtBin == 0 && iCentralityBin == 3 && fAvoidMixingPeak){
-            fMethods->SetMixedEventFitRegion(fDefaultMixingDeltaEtaFitRange);
-          }
           
           // Remember the normalized mixed events distribution
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEventNormalized][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetNormalizedMixedEvent();
@@ -550,7 +542,8 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             if(iTrackPtBin > 4) seagullVeto = 2;
             
             // Special case. Some bins for RecoGen sube0 need special care. E-scheme axis, old xJ bins
-            if(fCard->GetSubeventCut() == 0 && fCard->GetDataType().EqualTo("PbPb MC RecoGen",TString::kIgnoreCase)){
+            // Special cases only relevant for 2015 MC
+            /*if(fCard->GetSubeventCut() == 0 && fCard->GetDataType().EqualTo("PbPb MC RecoGen",TString::kIgnoreCase)){
               
               // For subleading jet set veto for all bins above 4 GeV
               if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
@@ -587,6 +580,24 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             // the same correction is made as in sube0 and subeNon0 cases
             if(fCard->GetSubeventCut() == 2 && fCard->GetDataType().EqualTo("PbPb MC RecoGen",TString::kIgnoreCase)){
               if(iTrackPtBin == 0 && iCentralityBin == 1) seagullVeto = 1;
+            }*/
+            
+            // Special cases in some bins due to a dip in the middle
+            if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase)){
+              
+              // For subleading jet, use different seagull function in a couple of bins
+              if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+                if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin == 1) seagullMethod = 1;
+                if(iAsymmetry == 1 && iCentralityBin == 0 && iTrackPtBin == 1) seagullMethod = 1;
+              } else { // For leading, there are more bins to consider
+                
+                if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 5) seagullMethod = 1;
+                if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin == 1) seagullMethod = 1;
+                if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin < 5) seagullMethod = 1;
+                if(iAsymmetry == 0 && iCentralityBin == 1 && iTrackPtBin < 3) seagullMethod = 1;
+                if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin == 1) seagullMethod = 1;
+                
+              }
             }
             
             fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],seagullMethod,seagullVeto);
@@ -595,7 +606,9 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin] = (TH1D*)fMethods->GetBackgroundEta()->Clone();
             fSeagullFit[iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin] = (TF1*)fMethods->GetSeagullFit()->Clone();
           }
-          
+            
+            
+            
           // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
             if(fTrackPtBinBorders[iTrackPtBin+1] < 100){ // Do not apply spillover correction to the highest pT bin
@@ -1217,10 +1230,11 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
  * -----------------------------------------------------------
  *       Axis 0             Leading / subleading / inclusive
  *       Axis 1              Matched generator level jet pT
- *       Axis 2                         Jet eta
- *       Axis 3                       Centrality
- *       Axis 4                      Quark / gluon
- *       Axis 5             Matched reco to gen jet pT ratio
+ *       Axis 2               Matched reconstructed jet pT
+ *       Axis 3                         Jet eta
+ *       Axis 4                       Centrality
+ *       Axis 5                      Quark / gluon
+ *       Axis 6             Matched reco to gen jet pT ratio
  */
 void DijetHistogramManager::LoadJetPtClosureHistograms(){
   
@@ -1256,13 +1270,13 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
           nRestrictionAxes = 4;
           axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
           axisIndices[1] = 1; lowLimits[1] = iGenJetPt+1;    highLimits[1] = iGenJetPt+1;      // Gen jet pT
-          axisIndices[2] = 3; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
-          axisIndices[3] = 4; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
+          axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
+          axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
           
           // For the last closure particle bin no restrictions for quark/gluon jets
           if(iClosureParticle == DijetHistograms::knClosureParticleTypes) nRestrictionAxes = 3;
           
-        fhJetPtClosure[iClosureType][iGenJetPt][knJetEtaBins][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",5,nRestrictionAxes,axisIndices,lowLimits,highLimits);
+        fhJetPtClosure[iClosureType][iGenJetPt][knJetEtaBins][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
           
           // Eta binning for the closure histogram
           for(int iJetEta = 0; iJetEta < knJetEtaBins; iJetEta++){
@@ -1284,14 +1298,14 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
               // Setup the axes with restrictions
               nRestrictionAxes = 4;
               axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
-              axisIndices[1] = 2; lowLimits[1] = iJetEta+1;    highLimits[1] = iJetEta+1;          // Jet eta
-              axisIndices[2] = 3; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
-              axisIndices[3] = 4; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
+              axisIndices[1] = 3; lowLimits[1] = iJetEta+1;    highLimits[1] = iJetEta+1;          // Jet eta
+              axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
+              axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
               
               // For the last closure particle bin no restrictions for quark/gluon jets
               if(iClosureParticle == DijetHistograms::knClosureParticleTypes) nRestrictionAxes = 3;
               
-              fhJetPtClosure[iClosureType][knGenJetPtBins][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",5,nRestrictionAxes,axisIndices,lowLimits,highLimits);
+              fhJetPtClosure[iClosureType][knGenJetPtBins][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
             }
             
           } // Jet eta bin loop
@@ -1408,7 +1422,7 @@ TH1D* DijetHistogramManager::FindHistogram(TFile *inputFile, const char *name, i
   
   // Check that we are not trying to project a non-existing axis
   if(xAxis < histogramArray->GetNdimensions()){
-    projectedHistogram =(TH1D*) histogramArray->Projection(xAxis);
+    projectedHistogram = (TH1D*) histogramArray->Projection(xAxis);
     projectedHistogram->SetName(newName);
   
     // Apply bin width normalization to the projected histogram

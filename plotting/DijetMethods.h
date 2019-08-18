@@ -162,7 +162,7 @@ private:
   double* fRebinDeltaPhi; // Bin boundaries for the new deltaPhi bins
   
   // Private methods
-  double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter); // Find the normalization scale for the mixed event histogram
+  double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool findPeak); // Find the normalization scale for the mixed event histogram
   TF1* FitGauss(TH1D* fittedHistogram, double fitRange, double normalizationRange, double fixedYield, double fixedWidth);  // Fit a Gaussian function to a histogram and return the fit function
   TF1* FitGaussAndConstant(TH1D* fittedHistogram, double fitRange, double normalizationRange, double lowConstantRange, double highConstantRange, double fixedYield, double fixedWidth);  // Fit a Gaussian function together with a constant to a histogram and return the fit function
   TF1* FitDoubleGauss(TH1D* fittedHistogram, double fitRange, double normalizationRange);  // Fit a narrow and wide Gauss functions to a histogram and return the fit function

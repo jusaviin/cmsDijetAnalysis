@@ -278,6 +278,8 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
   
   // If configured to smoothen the mixing distribution, take an average in each phi slice
   // Do not do this if there is chance to expand peak to flat region
+  // TODO: For 2018, we might want to smoothen high deltaEta and leave low deltaEta be.
+  // Will have to see how the mixed events look like with new jet corrections
   if(fSmoothMixing && !avoidPeaks){
     
     // First project out phi and normalize the projection to one in the central region
@@ -314,26 +316,31 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
  *
  *  Arguments:
  *   const TH2D* mixedEventHistogram = Mixed event histogram from which the scale is seeked
- *   const bool onlyCenter = Normalize to the top of a possible peak in the center of the distribution
+ *   const bool findPeak = Find the highest 2x2 peak on the histogram and use that as normalization scale
  *
  *   return: Scale to be used for normalization
  */
-double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const bool onlyCenter){
+double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const bool findPeak){
   
   // In the 2D histograms deltaPhi is x-axis and deltaEta y-axis. We need deltaEta for the correction
   TH1D *hDeltaEtaMixed;
   int nBinsProjectedOver;
   double binSum;
+  double maxSum = 0;
   
-  if(onlyCenter){
+  if(findPeak){
     
-    // Use four bins around (0,0) to normalize the mixed event histogram
-    int referencePhiBin = mixedEventHistogram->GetXaxis()->FindBin(0.05);
-    int referenceEtaBin = mixedEventHistogram->GetYaxis()->FindBin(0.05);
-    binSum = mixedEventHistogram->GetBinContent(referencePhiBin,referenceEtaBin);
-    binSum += mixedEventHistogram->GetBinContent(referencePhiBin-1,referenceEtaBin);
-    binSum += mixedEventHistogram->GetBinContent(referencePhiBin,referenceEtaBin-1);
-    binSum += mixedEventHistogram->GetBinContent(referencePhiBin-1,referenceEtaBin-1);
+    // Find the highest 2x2 bin peak value from the histogram and use that as the normalization scale
+    for(int iDeltaPhi = 1; iDeltaPhi < mixedEventHistogram->GetNbinsX(); iDeltaPhi++){
+      for(int iDeltaEta = 1; iDeltaEta < mixedEventHistogram->GetNbinsY(); iDeltaEta++){
+        binSum = mixedEventHistogram->GetBinContent(iDeltaPhi,iDeltaEta);
+        binSum += mixedEventHistogram->GetBinContent(iDeltaPhi+1,iDeltaEta);
+        binSum += mixedEventHistogram->GetBinContent(iDeltaPhi,iDeltaEta+1);
+        binSum += mixedEventHistogram->GetBinContent(iDeltaPhi+1,iDeltaEta+1);
+        if(binSum > maxSum) maxSum = binSum;
+      }
+    }
+    binSum = maxSum;
     nBinsProjectedOver = 4;
     
   } else {
