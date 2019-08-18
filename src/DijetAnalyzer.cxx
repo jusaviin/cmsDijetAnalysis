@@ -199,7 +199,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       fVzWeightFunction->SetParameter(2,1.30296e1);
     } else {
       fVzWeightFunction = new TF1("fvz","pol6",-15,15);  // Weight function for 2017 MC
-      fVzWeightFunction->SetParameters(0.973805, -0.00339418, 0.000757544, -1.37331e-06, -2.82953e-07, -3.06778e-10, 3.48615e-09);
+      fVzWeightFunction->SetParameters(0.973805, 0.00339418, 0.000757544, -1.37331e-06, -2.82953e-07, -3.06778e-10, 3.48615e-09);
     }
     
     fCentralityWeightFunction = NULL;
@@ -661,9 +661,9 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerDijet[6];
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
-  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V1_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Relative_AK4PF.txt"};
-  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt", "Not applied", "Not applied", "jetEnergyCorrections/Autumn18_HI_V1_DATA_L2Residual_AK4PF.txt"};
-  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V1_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V1_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V1_DATA_Uncertainty_AK4PF.txt"};
+  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Residual_AK4PF.txt", "Not applied", "Not applied", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Residual_AK4PF.txt"};
+  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_Uncertainty_AK4PF.txt"};
 
   vector<string> correctionFiles;
   correctionFiles.push_back(correctionFileRelative[fDataType]);
@@ -1029,7 +1029,6 @@ void DijetAnalyzer::RunAnalysis(){
         // Only do the correction for 2018 data and reconstructed Monte Carlo
         if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) jetPt = jetPtCorrected;
         
-        
         // Remember the highest jet pT
         if(jetPt > leadingJetPt){
           leadingJetPt = jetPt;
@@ -1352,8 +1351,8 @@ void DijetAnalyzer::RunAnalysis(){
         // Dijet event information
         if(fFillEventInformation){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
-          fHistograms->fhVertexZDijet->Fill(vz,fVzWeight);
-          fHistograms->fhCentralityDijet->Fill(centrality,fCentralityWeight);
+          fHistograms->fhVertexZDijet->Fill(vz,fTotalEventWeight); // TODO: Total weight here instead of vz
+          fHistograms->fhCentralityDijet->Fill(centrality,fTotalEventWeight); // TODO: Total weight here instead of centrality
         }
         
         // Single jet and dijet histograms in dijet events
