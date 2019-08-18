@@ -4,6 +4,9 @@
 #include "JDrawer.h"
 #include "JffCorrector.h"
 
+// Function definition for background refitter
+TF1* refitBackground(TH1D *backgroundHistogram, int backgroundRebin, int nRefit);
+
 /*
  * Macro for estimating systematic uncertainties for long range correlation results
  *
@@ -23,19 +26,29 @@ void estimateLongRangeSystematics(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString pbpbFileName = "data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
-  TString ppFileName = "data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root";
+  TString pbpbFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing.root";
+  // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root
+  TString ppFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_adjustedBackground_processed_2019-08-13.root";
+  // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root
   
   // For systematic uncertainty estimation, need files in which the background is not adjusted between leading and subleading side
-  TString pbpbUnadjustedFileName = "data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root";
-  TString ppUnadjustedFileName = "data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root";
+  TString pbpbUnadjustedFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
+  // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
+  TString ppUnadjustedFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root";
+  // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
+  
+  // For the systemtic uncertainty, read also files where distributions are constructed only with positive or negative vz values
+  TString positiveVzPbPbFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_positiveVz_allCorrections_processed_2019-08-13_fiveJobsMissing.root";
+  TString negativeVzPbPbFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_negativeVz_allCorrections_processed_2019-08-13_fiveJobsMissing.root";
+  TString positiveVzPpFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_positiveVz_wtaAxis_allCorrections_processed_2019-08-13.root";
+  TString negativeVzPpFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_negativeVz_wtaAxis_allCorrections_processed_2019-08-13.root";
   
   const bool printUncertainties = true;
   
   const int nRefit = 4;    // Number of vn:s included in the refit
   int backgroundRebin = 4; // Rebin applied to the long range distributions
   
-  const char *outputFileName("data/vnUncertaintyNoVz2015.txt");
+  const char *outputFileName("data/vnUncertaintyPreliminary2018.txt");
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -52,16 +65,26 @@ void estimateLongRangeSystematics(){
   TFile *pbpbUnadjustedFile = TFile::Open(pbpbUnadjustedFileName);
   TFile *ppUnadjustedFile = TFile::Open(ppUnadjustedFileName);
   
+  // Open files for positive and negative vz
+  TFile *positiveVzPbPbFile = TFile::Open(positiveVzPbPbFileName);
+  TFile *negativeVzPbPbFile = TFile::Open(negativeVzPbPbFileName);
+  TFile *positiveVzPpFile = TFile::Open(positiveVzPpFileName);
+  TFile *negativeVzPpFile = TFile::Open(negativeVzPpFileName);
+  
   // Create readers for the histograms and define binning
   DijetHistogramManager *pbpbReader = new DijetHistogramManager(pbpbDataFile);
   DijetHistogramManager *ppReader = new DijetHistogramManager(ppDataFile);
   DijetHistogramManager *pbpbUnadjustedReader = new DijetHistogramManager(pbpbUnadjustedFile);
   DijetHistogramManager *ppUnadjustedReader = new DijetHistogramManager(ppUnadjustedFile);
+  DijetHistogramManager *pbpbPositiveVzReader = new DijetHistogramManager(positiveVzPbPbFile);
+  DijetHistogramManager *pbpbNegativeVzReader = new DijetHistogramManager(negativeVzPbPbFile);
+  DijetHistogramManager *ppPositiveVzReader = new DijetHistogramManager(positiveVzPpFile);
+  DijetHistogramManager *ppNegativeVzReader = new DijetHistogramManager(negativeVzPpFile);
   
   const int nCentralityBins = pbpbReader->GetNCentralityBins();
   const int nTrackPtBins = pbpbReader->GetNTrackPtBins();
   const int nAsymmetryBins = pbpbReader->GetNAsymmetryBins();
-  double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
+  double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
@@ -84,12 +107,16 @@ void estimateLongRangeSystematics(){
   TH1D *negativeEtaProjection[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];  // First bin: same/corrected
   TH1D *closeEtaProjection[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];     // First bin: same/corrected
   TH1D *farEtaProjection[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];       // First bin: same/corrected
+  TH1D *negativeVzProjection[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TH1D *positiveVzProjection[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
   
   // Fits to projections from different regions
   TF1 *positiveEtaFit[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];  // First bin: same/corrected
   TF1 *negativeEtaFit[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];  // First bin: same/corrected
   TF1 *closeEtaFit[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];     // First bin: same/corrected
   TF1 *farEtaFit[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];       // First bin: same/corrected
+  TF1 *positiveVzFit[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TF1 *negativeVzFit[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
   
   // Define arrays needed for systematic uncertainty estimation
   TH1D *leadingUnadjustedBackground[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
@@ -110,10 +137,15 @@ void estimateLongRangeSystematics(){
   double sameEventFlowTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   double sameEventFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   
+  // Tables for fit to different eta regions
   double positiveEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   double negativeEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   double closeEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   double farEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  
+  // Tables for fits to positive and negative vz distributions
+  double positiveVzTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double negativeVzTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   
   // Make a big table with all relative and absolute uncertainties
   double relativeUncertaintyTable[JffCorrector::knLongRangeUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
@@ -138,6 +170,22 @@ void estimateLongRangeSystematics(){
   ppUnadjustedReader->SetAsymmetryBinRange(0,nAsymmetryBins);
   ppUnadjustedReader->LoadProcessedHistograms();
   
+  pbpbPositiveVzReader->SetLoadTrackLeadingJetCorrelations(true);
+  pbpbPositiveVzReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  pbpbPositiveVzReader->LoadProcessedHistograms();
+  
+  pbpbNegativeVzReader->SetLoadTrackLeadingJetCorrelations(true);
+  pbpbNegativeVzReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  pbpbNegativeVzReader->LoadProcessedHistograms();
+  
+  ppPositiveVzReader->SetLoadTrackLeadingJetCorrelations(true);
+  ppPositiveVzReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  ppPositiveVzReader->LoadProcessedHistograms();
+  
+  ppNegativeVzReader->SetLoadTrackLeadingJetCorrelations(true);
+  ppNegativeVzReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  ppNegativeVzReader->LoadProcessedHistograms();
+  
   double backgroundLevel;
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     
@@ -155,6 +203,11 @@ void estimateLongRangeSystematics(){
           
           // Track-subleading jet unadjusted background histogram for systematic uncertainty estimation
           leadingUnadjustedBackgroundOverlap[iAsymmetry][nCentralityBins][iTrackPt] = ppUnadjustedReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackgroundOverlap, iAsymmetry, 0, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          // Long range distribution for positive and negative vz for systematic uncertainty estimation
+          negativeVzProjection[iAsymmetry][nCentralityBins][iTrackPt] = ppNegativeVzReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, 0, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          positiveVzProjection[iAsymmetry][nCentralityBins][iTrackPt] = ppPositiveVzReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, 0, iTrackPt, DijetHistogramManager::kWholeEta);
           
           // Same event histograms
           deltaPhiDeltaEtaDistribution[0][0][iAsymmetry][nCentralityBins][iTrackPt] = ppReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, 0, iTrackPt);
@@ -177,6 +230,11 @@ void estimateLongRangeSystematics(){
           
           // Track-subleading jet unadjusted background histogram for systematic uncertainty estimation
           leadingUnadjustedBackgroundOverlap[iAsymmetry][iCentrality][iTrackPt] = pbpbUnadjustedReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackgroundOverlap, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          // Long range distribution for positive and negative vz for systematic uncertainty estimation
+          negativeVzProjection[iAsymmetry][iCentrality][iTrackPt] = pbpbNegativeVzReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          positiveVzProjection[iAsymmetry][iCentrality][iTrackPt] = pbpbPositiveVzReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
           
           // Same event histograms
           deltaPhiDeltaEtaDistribution[0][0][iAsymmetry][iCentrality][iTrackPt] = pbpbReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
@@ -232,26 +290,11 @@ void estimateLongRangeSystematics(){
         refitter->FourierFit(sameEventLongRange[iAsymmetry][iCentrality][iTrackPt], nRefit);
         sameEventFit[iAsymmetry][iCentrality][iTrackPt] = sameEventLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
         
-        // Find the fourier fit function from the histogram
-        backgroundFit[iAsymmetry][iCentrality][iTrackPt] = background[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        unadjustedFit[iAsymmetry][iCentrality][iTrackPt] = leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        
-        // Fit the standard background distribution
-        background[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(backgroundFit[iAsymmetry][iCentrality][iTrackPt]);
-        background[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
-        background[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
-        
-        refitter->FourierFit(background[iAsymmetry][iCentrality][iTrackPt], nRefit);
-        backgroundFit[iAsymmetry][iCentrality][iTrackPt] = background[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        
-        // Fit also the unadjusted background to have same exactly the settings as for adjusted background
-        leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(unadjustedFit[iAsymmetry][iCentrality][iTrackPt]);
-        leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
-        leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
-        refitter->FourierFit(leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt], nRefit);
-        unadjustedFit[iAsymmetry][iCentrality][iTrackPt] = leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        
-        
+        // Refit the long range distributions
+        backgroundFit[iAsymmetry][iCentrality][iTrackPt] = refitBackground(background[iAsymmetry][iCentrality][iTrackPt], backgroundRebin, nRefit);
+        unadjustedFit[iAsymmetry][iCentrality][iTrackPt] = refitBackground(leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt], backgroundRebin, nRefit);
+        positiveVzFit[iAsymmetry][iCentrality][iTrackPt] = refitBackground(positiveVzProjection[iAsymmetry][iCentrality][iTrackPt], backgroundRebin, nRefit);
+        negativeVzFit[iAsymmetry][iCentrality][iTrackPt] = refitBackground(negativeVzProjection[iAsymmetry][iCentrality][iTrackPt], backgroundRebin, nRefit);
         
       } // asymmetry loop
     } // track pT loop
@@ -269,6 +312,9 @@ void estimateLongRangeSystematics(){
           
           sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
           sameEventFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          
+          positiveVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = positiveVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+          negativeVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = negativeVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
           
           for(int iType = 0; iType < 2; iType++){
             
@@ -311,8 +357,8 @@ void estimateLongRangeSystematics(){
         for(int iFlow = 0; iFlow < nRefit; iFlow++){
           
           // Put the value from same and mixed event comparison to the uncertainty tables
-          relativeUncertaintyTable[JffCorrector::kSameMixed][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(1-sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          absoluteUncertaintyTable[JffCorrector::kSameMixed][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          relativeUncertaintyTable[JffCorrector::kSameMixed][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;//TMath::Abs(1-sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          absoluteUncertaintyTable[JffCorrector::kSameMixed][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;//TMath::Abs(sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           
           // Put the value from background adjustment to the uncertainty tables
           relativeUncertaintyTable[JffCorrector::kBackgroundGlue][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(1-masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
@@ -336,9 +382,14 @@ void estimateLongRangeSystematics(){
           secondValue = TMath::Abs(farEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           absoluteUncertaintyTable[JffCorrector::kEtaRegion][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
-          // Put a placeholder value for different vz regions to the uncertainty tables
-          relativeUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;
-          absoluteUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;
+          // Put a value for different vz regions to the uncertainty tables
+          firstValue = TMath::Abs(1-positiveVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(1-negativeVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          relativeUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
+          
+          firstValue = TMath::Abs(positiveVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(negativeVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          absoluteUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
           // Calculate the total uncertainty from all the sources combined
           absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;
@@ -347,7 +398,7 @@ void estimateLongRangeSystematics(){
           }
           absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow]);
           
-          relativeUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] =  absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] / unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
+          relativeUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] =  TMath::Abs(absoluteUncertaintyTable[JffCorrector::kTotalLongRange][iAsymmetry][iCentrality][iTrackPt][iFlow] / unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
         }
       }
     }
@@ -447,3 +498,26 @@ void estimateLongRangeSystematics(){
   } // Printing uncertainties
 }
 
+/*
+ * Refit the background histogram with a Fourier fit
+ */
+TF1* refitBackground(TH1D *backgroundHistogram, int backgroundRebin, int nRefit){
+  
+  DijetMethods *refitter = new DijetMethods();
+  
+  // Find the fourier fit function from the histogram
+  TF1 *backgroundFit = backgroundHistogram->GetFunction("fourier");
+  
+  // Rebin the background and remove previous fit
+  backgroundHistogram->RecursiveRemove(backgroundFit);
+  backgroundHistogram->Rebin(backgroundRebin);
+  backgroundHistogram->Scale(1.0/backgroundRebin);
+  
+  // Make the new fit to the distribution
+  refitter->FourierFit(backgroundHistogram, nRefit);
+  backgroundFit = backgroundHistogram->GetFunction("fourier");
+  
+  // Delete the refitter and return the fitted function
+  delete refitter;
+  return backgroundFit;
+}
