@@ -64,10 +64,13 @@ private:
   // Data members
   bool fFileLoaded;                // Flag if the input file has been loaded
   int  fJffAsymmetryBins;          // Number of asymmetry bins in the JFF correction file
+  int  fJffTrackPtBins;            // Number of track pT bins in the JFF correction file
   bool fSpilloverLoaded;           // Flag if the spillover file has been loaded
   int  fSpilloverAsymmetryBins;    // Number of asymmetry bins in the spillover file
+  int  fSpilloverTrackPtBins;      // Number of track pT bins in the spillover file
   bool fSystematicErrorLoaded;     // Flag if a systematic error file has been loaded
   int  fSystematicAsymmetryBins;   // Number of asymmetry bins in the systematic uncertainty file
+  int  fSystematicTrackPtBins;     // Number of track pT bins in the systematic uncertainty file
 
   // JFF correction histograms for jet shape
   TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for jet shape

@@ -2904,26 +2904,76 @@ TH2D* DijetHistogramManager::GetHistogramTrackEtaPhi(const int iTrackType, const
 
 // Getter for deltaPhi between jet and track
 TH1D* DijetHistogramManager::GetHistogramJetTrackDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, int iAsymmetry, const int iCentrality, const int iTrackPt, const int iDeltaEta) const{
-  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry > fnAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // If number of pT bins is given as an argument, return a sum of all pT bins
+  if(iTrackPt == fnTrackPtBins){
+    TH1D *ptSumHistogram = (TH1D*) fhJetTrackDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][0][iDeltaEta]->Clone(Form("%s_ptSum", fhJetTrackDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][0][iDeltaEta]->GetName()));
+    for(int iTrackPt = 1; iTrackPt < fnTrackPtBins; iTrackPt++){
+      ptSumHistogram->Add(fhJetTrackDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][iTrackPt][iDeltaEta]);
+    }
+    return ptSumHistogram;
+  }
+  
   return fhJetTrackDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][iTrackPt][iDeltaEta];
 }
 
 // Getter for deltaEta between jet and track
 TH1D* DijetHistogramManager::GetHistogramJetTrackDeltaEta(const int iJetTrackCorrelation, const int iCorrelationType, int iAsymmetry, const int iCentrality, const int iTrackPt, const int iDeltaPhiRegion) const{
-  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry > fnAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // If number of pT bins is given as an argument, return a sum of all pT bins
+  if(iTrackPt == fnTrackPtBins){
+    TH1D *ptSumHistogram = (TH1D*) fhJetTrackDeltaEta[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][0][iDeltaPhiRegion]->Clone(Form("%s_ptSum", fhJetTrackDeltaEta[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][0][iDeltaPhiRegion]->GetName()));
+    for(int iTrackPt = 1; iTrackPt < fnTrackPtBins; iTrackPt++){
+      ptSumHistogram->Add(fhJetTrackDeltaEta[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][iTrackPt][iDeltaPhiRegion]);
+    }
+    return ptSumHistogram;
+  }
+  
   return fhJetTrackDeltaEta[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][iTrackPt][iDeltaPhiRegion];
 }
 
 // Getter for deltaEta and deltaPhi between jet and track
 TH2D* DijetHistogramManager::GetHistogramJetTrackDeltaEtaDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, int iAsymmetry, const int iCentrality, const int iTrackPt) const{
-  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry > fnAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // If number of pT bins is given as an argument, return a sum of all pT bins
+  if(iTrackPt == fnTrackPtBins){
+    TH2D *ptSumHistogram = (TH2D*) fhJetTrackDeltaEtaDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][0]->Clone(Form("%s_ptSum", fhJetTrackDeltaEtaDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][0]->GetName()));
+    for(int iTrackPt = 1; iTrackPt < fnTrackPtBins; iTrackPt++){
+      ptSumHistogram->Add(fhJetTrackDeltaEtaDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][iTrackPt]);
+    }
+    return ptSumHistogram;
+  }
+  
   return fhJetTrackDeltaEtaDeltaPhi[iJetTrackCorrelation][iCorrelationType][iAsymmetry][iCentrality][iTrackPt];
 }
 
 // Getters for jet shape histograms
 TH1D* DijetHistogramManager::GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, int iCentrality, const int iTrackPt) const{
-  if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry > fnAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  // No centrality selection for pp
   if(fSystemAndEnergy.Contains("pp")) iCentrality = 0;
+  
+  // If number of pT bins is given as an argument, return a sum of all pT bins
+  if(iTrackPt == fnTrackPtBins){
+    TH1D *ptSumHistogram = (TH1D*) fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][0]->Clone(Form("%s_ptSum", fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][0]->GetName()));
+    for(int iTrackPt = 1; iTrackPt < fnTrackPtBins; iTrackPt++){
+      ptSumHistogram->Add(fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt]);
+    }
+    return ptSumHistogram;
+  }
+  
   return fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
 }
 
