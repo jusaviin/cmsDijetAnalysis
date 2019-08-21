@@ -149,7 +149,7 @@ public:
   void SetCentralityBinRange(const int first, const int last); // Setter for centrality bin range
   void SetTrackPtBinRange(const int first, const int last);    // Setter for track pT bin range
   void SetAsymmetryBinRange(const int first, const int last);  // Setter for processing asymmetry bins
-  void SetPreprocess(const bool preprocess);                   // Setter for preprocessing (only load and write same and mixed event)
+  void SetPreprocess(const int preprocess);                    // Setter for preprocessing (only load and write same and/or mixed event)
   
   // Setter for used DijetMethods
   void SetDijetMethods(DijetMethods* newMethods); // Setter for used DijetMethods
@@ -301,6 +301,7 @@ private:
   int fFirstLoadedAsymmetryBin;   // First asymmetry bin that is loaded
   int fLastLoadedAsymmetryBin;    // Last asymmetry bin that is loaded
   bool fPreprocess;               // For preprocessing, only load and write same and mixed event
+  int fPreprocessLevel;           // Level of preprocessing: 0 = Only same event, 1 = Only mixed event, 2 = Same and mixed event
   
   // =============================================
   // ============ Binning information ============

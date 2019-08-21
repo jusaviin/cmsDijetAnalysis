@@ -33,6 +33,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fFirstLoadedAsymmetryBin(0),
   fLastLoadedAsymmetryBin(0),
   fPreprocess(false),
+  fPreprocessLevel(2),
   fnCentralityBins(kMaxCentralityBins),
   fnTrackPtBins(kMaxTrackPtBins),
   fnAsymmetryBins(kMaxAsymmetryBins),
@@ -303,6 +304,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fFirstLoadedAsymmetryBin(in.fFirstLoadedAsymmetryBin),
   fLastLoadedAsymmetryBin(in.fLastLoadedAsymmetryBin),
   fPreprocess(in.fPreprocess),
+  fPreprocessLevel(in.fPreprocessLevel),
   fnAsymmetryBins(in.fnAsymmetryBins),
   fAvoidMixingPeak(in.fAvoidMixingPeak),
   fImproviseMixing(in.fImproviseMixing),
@@ -1134,6 +1136,10 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
     for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
       if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){ // Data file contains only same and mixed event distributions
+        
+        if(fPreprocess && fPreprocessLevel == 0 && iCorrelationType == kMixedEvent) continue; // Skip mixed event if only same event is preprocessed
+        if(fPreprocess && fPreprocessLevel == 1 && iCorrelationType == kSameEvent && !fImproviseMixing) continue; // Skip same event in only mixed event is preprocessed
+        
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
           
           // Select the bin indices
@@ -1636,6 +1642,8 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
       
       // Only same and mixed event histograms are filled for preprocessing. Skip the rest.
       if(iCorrelationType > kMixedEvent && fPreprocess) continue;
+      if(iCorrelationType == kSameEvent && fPreprocessLevel == 1) continue;  // Skip same event, if only preprocessing mixed
+      if(iCorrelationType == kMixedEvent && fPreprocessLevel == 0) continue; // Skip mixed event, if only preprocessing same
       
       // Loop over asymmetry bins
       for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
@@ -1674,7 +1682,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     
   } // Jet-track correlation category loop
   
-  // Jet shape histograms are not producess in preprocessing
+  // Jet shape histograms are not produced in preprocessing
   if(!fPreprocess){
     
     // Write the jet shape histograms to the output file
@@ -2622,8 +2630,14 @@ void DijetHistogramManager::SetAsymmetryBinRange(const int first, const int last
 }
 
 // Setter for preprocessing (only load and write same and mixed event)
-void DijetHistogramManager::SetPreprocess(const bool preprocess){
-  fPreprocess = preprocess;
+void DijetHistogramManager::SetPreprocess(const int preprocess){
+  if(preprocess >= 0 && preprocess <= 2){
+    fPreprocess = true;
+    fPreprocessLevel = preprocess;
+  } else {
+    fPreprocess = false;
+    fPreprocessLevel = 2;
+  }
 }
 
 // Sanity check for set bins
