@@ -233,7 +233,11 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       
       // Draw the jet pT distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
-      sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{dp_{T}}  (1/GeV)",singleJetNormalizationName[iJetCategory]);
+      if(fApplyScaling){
+        sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{dp_{T}}  (1/GeV)",singleJetNormalizationName[iJetCategory]);
+      } else {
+        sprintf(namerY,"#frac{dN}{dp_{T}}  (1/GeV)");
+      }
       DrawToUpperPad(namerX, namerY, fLogPt);
       
       // Add a legend to the plot
@@ -255,7 +259,11 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       
       // Draw the jet phi distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s #varphi",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
-      sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{d#varphi}",singleJetNormalizationName[iJetCategory]);
+      if(fApplyScaling){
+        sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{d#varphi}",singleJetNormalizationName[iJetCategory]);
+      } else {
+        sprintf(namerY,"#frac{dN}{d#varphi}");
+      }
       DrawToUpperPad(namerX,namerY);
       
       // Add a legend to the plot
@@ -277,7 +285,11 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       
       // Draw the jet eta distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s #eta",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
-      sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{d#eta}",singleJetNormalizationName[iJetCategory]);
+      if(fApplyScaling){
+        sprintf(namerY,"#frac{1}{N_{%s}} #frac{dN}{d#eta}",singleJetNormalizationName[iJetCategory]);
+      } else {
+        sprintf(namerY,"#frac{dN}{d#eta}");
+      }
       DrawToUpperPad(namerX,namerY);
       
       // Add a legend to the plot
