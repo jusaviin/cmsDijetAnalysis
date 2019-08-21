@@ -25,12 +25,14 @@ void estimateSystematics(){
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "RECREATE";
-  const char* outputFileName = "systematicTestPp.root";
+  const char* outputFileName = "systematicTestPpUnmix.root";
   
   bool ppData = true; // Flag if we are estimating systematics for pp or PbPb
   
   TString dataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root";
   // dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
+  
+  TString unmixedFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_xjBins_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-13.root"; // TODO: Remove this after low and high cut have mixing
   
   TString spilloverFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
   // spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
@@ -46,6 +48,8 @@ void estimateSystematics(){
   if(ppData){
     dataFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root";
     
+    unmixedFileName = "data/ppData2017_highForest_pfJets_improvisedMixing_JECv2_wtaAxis_allCorrections_processed_2019-08-13.root"; // TODO: Remove this when mixing is ready for low ang high cut files
+    
     jffFileName = "data/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root";
     
     lowJetCutFileName = "data/ppData2017_highForest_pfJets_xjBins_improvisedMixing_lowJetPtCut_JECv2_wtaAxis_allCorrections_processed_2019-08-17.root";
@@ -55,6 +59,7 @@ void estimateSystematics(){
   
   // Data file from which the histograms needed for the systematic uncertainty estimation are read
   TFile *dataFile = TFile::Open(dataFileName);
+  TFile *unmixedFile = TFile::Open(unmixedFileName); // TODO: Remove this after low and high pT results have mixing
   
   // We need spillover file to estimate the systematic uncertainty form background fluctuations
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -70,6 +75,8 @@ void estimateSystematics(){
   const int nHistogramTypes = 3;
   DijetHistogramManager *dataHistograms[nHistogramTypes];
   dataHistograms[0] = new DijetHistogramManager(dataFile);
+  
+  DijetHistogramManager *unmixedManager = new DijetHistogramManager(unmixedFile); // TODO: Remove this after low and high pT results have mixing
 
   // Read spillover file
   JffCorrector *spilloverReader = new JffCorrector();
@@ -121,6 +128,18 @@ void estimateSystematics(){
     
     dataHistograms[iHistogramType]->LoadProcessedHistograms();
   }
+  
+  // TODO: Remove this after low and high cut files have mixing
+  unmixedManager->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
+  unmixedManager->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
+  unmixedManager->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
+  
+  unmixedManager->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
+  unmixedManager->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
+  unmixedManager->SetAsymmetryBinRange(firstDrawnAsymmetryBin,lastDrawnAsymmetryBin);
+  
+  unmixedManager->LoadProcessedHistograms();
+  // TODO: Remove until here after low ang high cut files have mixing
   
   // Create a DijetMethods to get the estimation of different uncertainties
   DijetMethods *methods = new DijetMethods();
@@ -235,20 +254,24 @@ void estimateSystematics(){
           // =============================================== //
           
           // TODO TODO TODO: No reliable estimate for 2018 data yet, use 5 % here for now (based on 2015 estimate)
-          helperHistogram = dataHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);/*
-          jetShapeLowCut = dataHistograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
-          jetShapeHighCut = dataHistograms[2]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
+          //helperHistogram = dataHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
+          helperHistogram = unmixedManager->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
+          jetShapeLowCut = (TH1D*) dataHistograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt)->Clone(Form("lowPtCutJetShape%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
+          jetShapeHighCut = (TH1D*) dataHistograms[2]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt)->Clone(Form("highPtCutJetShape%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
           
           // Calculate the difference between nominal jet shape and those calculated varying the leading jet cut
+          //jetShapeLowCut->Add(jetShapeHighCut,-1);   // TODO TODO TODO Check difference between low and high instead to nominal
+          // This is temporaty check because there is no mixing for low and high cut at the moment
           jetShapeLowCut->Add(helperHistogram,-1);
-          jetShapeHighCut->Add(helperHistogram,-1);*/
+          jetShapeHighCut->Add(helperHistogram,-1);
           
           // For each bin, assign the higher deviation as a systematic uncertainty
           for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kJetEnergyScale]->GetNbinsX(); iBin++){
-            /*lowUncertainty = TMath::Abs(jetShapeLowCut->GetBinContent(iBin));
+            //currentUncertainty = TMath::Abs(jetShapeLowCut->GetBinContent(iBin));
+            lowUncertainty = TMath::Abs(jetShapeLowCut->GetBinContent(iBin));
             highUncertainty = TMath::Abs(jetShapeHighCut->GetBinContent(iBin));
-            currentUncertainty = TMath::Max(lowUncertainty,highUncertainty);*/ // TODO TODO TODO After 2018 estimate comes, use it!
-            currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.05);
+            currentUncertainty = TMath::Max(lowUncertainty,highUncertainty); // TODO TODO TODO After 2018 estimate comes, use it!
+            //currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.05);
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kJetEnergyScale]->SetBinContent(iBin, currentUncertainty);
           }
           
@@ -256,7 +279,8 @@ void estimateSystematics(){
           // Estimate the uncertainty for tracking efficiency //
           // ================================================ //
           
-          //helperHistogram = dataHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
+          // TODO: This can be removed after low and high pt cut files have mixing
+          helperHistogram = dataHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
           
           // In each deltaR bin, assign one per cent of the bin value as the systematic uncertainty
           for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingEfficiency]->GetNbinsX(); iBin++){
