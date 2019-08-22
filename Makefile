@@ -17,7 +17,7 @@ LDFLAGS  += $(shell root-config --libs)
         
 # Use the following form if you have classes inherint TObject
 # HDRS += $(HDRSDICT) src/Class.h ... nanoDict.h       
-HDRS += src/ForestReader.h src/HighForestReader.h src/SkimForestReader.h src/GeneratorLevelForestReader.h src/GeneratorLevelSkimForestReader.h src/DijetHistograms.h src/DijetAnalyzer.h src/ConfigurationCard.h src/TrkCorr.h src/TrkSettings.h src/JffCorrection.h src/MixedEventLookoutTable.h src/XiaoTrkCorr.h src/TrkCorrInterface.h src/JetCorrector.h src/JetUncertainty.h src/trackingEfficiency2018PbPb.h src/MixingForestReader.h src/GeneratorLevelMixingForestReader.h
+HDRS += src/ForestReader.h src/HighForestReader.h src/SkimForestReader.h src/GeneratorLevelForestReader.h src/GeneratorLevelSkimForestReader.h src/DijetHistograms.h src/DijetAnalyzer.h src/ConfigurationCard.h src/TrkCorr.h src/TrkSettings.h src/JffCorrection.h src/MixedEventLookoutTable.h src/XiaoTrkCorr.h src/TrkCorrInterface.h src/JetCorrector.h src/JetUncertainty.h src/trackingEfficiency2018PbPb.h src/trackingEfficiency2017pp.h src/TrackingEfficiencyInterface.h src/MixingForestReader.h src/GeneratorLevelMixingForestReader.h
 
 SRCS = $(HDRS:.h=.cxx)
 OBJS = $(HDRS:.h=.o)

@@ -187,11 +187,11 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   bool ppData = true;
   if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest){
     
-    // Track correction
+    // Track correction for 2015 pp data
     fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
     
-    // TODO: When 2017 pp correction is ready, update table here and also the efficiency correction logic later
-    fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
+    // Track correction for 2017 pp data
+    fTrackEfficiencyCorrector2018 = new TrkEff2017pp(false, "trackCorrectionTables/pp2017/");
     
     // Common vz weight function used by UIC group for pp MC 2015
     if(fReadMode < 2000){
@@ -208,8 +208,10 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
     
-    // Track correction
+    // Track correction for 2015 PbPb data
     fTrackCorrection = new XiaoTrkCorr("trackCorrectionTables/xiaoCorrection/eta_symmetry_cymbalCorr_FineBin.root");
+    
+    // Track correction for 2018 PbPb data
     fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
     
     // Flag for PbPb data
@@ -2125,9 +2127,6 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   // No correction for generator level tracks
   if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) return 1;
   
-  // For pp2017, currently flat efficiency of 85 % is used.
-  if(fReadMode > 2000 &&(fDataType == ForestReader::kPpMC || fDataType == ForestReader::kPp)) return 1/0.85;
-  
   // Calculate minimum distance of a track to closest jet. This is needed for track efficiency correction
   Float_t trackRMin = 999;   // Initialize the minimum distance to a jet to some very large value
   Float_t trackR = 999;      // Distance of the track to current jet in the loop
@@ -2136,8 +2135,9 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   Float_t trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);  // Track phi
   Int_t hiBin = fTrackReader[correlationType]->GetHiBin();                // hiBin for 2018 track correction
   
-  // For PbPb2018, there is an efficiency table from which the correction comes
+  // For PbPb2018 and pp2017, there is an efficiency table from which the correction comes
   if(fReadMode > 2000) return fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin);
+  cout << "If we are here, thing are wrong!!!!!!!" << endl;
   
   // The rest gives a proper correction for 2015 data
   

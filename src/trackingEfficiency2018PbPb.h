@@ -7,12 +7,13 @@
 #include "TMath.h"
 #include <iostream>
 #include <string>
+#include "TrackingEfficiencyInterface.h"
 
-class TrkEff2018PbPb{
+class TrkEff2018PbPb : public TrackingEfficiencyInterface{
 public:
 
   TrkEff2018PbPb( std::string collectionName = "general", bool isQuiet_ = false ,std::string filePath = "");
-  ~TrkEff2018PbPb();
+  virtual ~TrkEff2018PbPb();
 
   float getCorrection(float pt, float eta, int hiBin);
   float getEfficiency( float pt, float eta, int hiBin, bool passesCheck = false);
