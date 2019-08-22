@@ -11,7 +11,7 @@ void graphFlow(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = false;          // Save the figures to a file
+  bool saveFigures = true;          // Save the figures to a file
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
@@ -27,7 +27,7 @@ void graphFlow(){
   /////////////////
   
   // Open files containing the background histograms with the fit
-  TFile *backgroundFile = TFile::Open("data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root");
+  TFile *backgroundFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root");
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager(backgroundFile);
@@ -35,7 +35,7 @@ void graphFlow(){
   // Histogram manager reads the number of track pT bins from the DijetCard, so they are automatically
   // updated based on how the backgroundFile is created
   const int nCentralityBins = 4;
-  const int nTrackPtBins = dummyManager->GetNTrackPtBins();
+  const int nTrackPtBins = 6;//dummyManager->GetNTrackPtBins();
   const int nFlowComponents = dummyManager->knFittedFlowComponents;
   
   // Todo: Read also bin borders from the Card
@@ -66,17 +66,17 @@ void graphFlow(){
      // pT 0.7-1,  1-2    2-3    3-4    4-8    8-300 GeV
      //              Centrality 0-10 %
     {{       1,     1,     1,     1,     1,     1    },   // v1
-     {     0.045, 0.065, 0.08,  0.09,  0.06,  0.04   },   // v2
+     {     0.045, 0.065, 0.08,  0.09,  0.08,  0.04   },   // v2
      {       1,     1,     1,     1,     1,     1    },   // v3
      {       1,     1,     1,     1,     1,     1    }},  // v4
      //              Centrality 10-30 %
     {{       1,     1,     1,     1,     1,     1    },   // v1
-     {      0.1,  0.14,  0.17,  0.19,  0.12,  0.075  },   // v2
+     {      0.1,  0.14,  0.17,  0.19,  0.155, 0.075  },   // v2
      {       1,     1,     1,     1,     1,     1    },   // v3
      {       1,     1,     1,     1,     1,     1    }},  // v4
      //              Centrality 30-50 %
     {{       1,     1,     1,     1,     1,     1    },   // v1
-     {     0.14,  0.175, 0.21,  0.225, 0.155,  0.1   },   // v2
+     {     0.14,  0.175, 0.21,  0.225, 0.18,   0.1   },   // v2
      {       1,     1,     1,     1,     1,     1    },   // v3
      {       1,     1,     1,     1,     1,     1    }},  // v4
      //              Centrality 50-100 %
