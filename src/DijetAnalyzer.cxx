@@ -59,6 +59,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fDeltaPhiCut(0),
   fMinimumMaxTrackPtFraction(0),
   fMaximumMaxTrackPtFraction(0),
+  fJetUncertaintyMode(0),
   fTrackEtaCut(0),
   fTrackMinPtCut(0),
   fMaxTrackPtRelativeError(0),
@@ -128,6 +129,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fDeltaPhiCut(0),
   fMinimumMaxTrackPtFraction(0),
   fMaximumMaxTrackPtFraction(0),
+  fJetUncertaintyMode(0),
   fTrackEtaCut(0),
   fTrackMinPtCut(0),
   fMaxTrackPtRelativeError(0),
@@ -317,6 +319,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fDeltaPhiCut(in.fDeltaPhiCut),
   fMinimumMaxTrackPtFraction(in.fMinimumMaxTrackPtFraction),
   fMaximumMaxTrackPtFraction(in.fMaximumMaxTrackPtFraction),
+  fJetUncertaintyMode(in.fJetUncertaintyMode),
   fTrackEtaCut(in.fTrackEtaCut),
   fTrackMinPtCut(in.fTrackMinPtCut),
   fMaxTrackPtRelativeError(in.fMaxTrackPtRelativeError),
@@ -394,6 +397,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fDeltaPhiCut = in.fDeltaPhiCut;
   fMinimumMaxTrackPtFraction = in.fMinimumMaxTrackPtFraction;
   fMaximumMaxTrackPtFraction = in.fMaximumMaxTrackPtFraction;
+  fJetUncertaintyMode = in.fJetUncertaintyMode;
   fTrackEtaCut = in.fTrackEtaCut;
   fTrackMinPtCut = in.fTrackMinPtCut;
   fMaxTrackPtRelativeError = in.fMaxTrackPtRelativeError;
@@ -524,6 +528,7 @@ void DijetAnalyzer::RunAnalysis(){
   fDeltaPhiCut = fCard->Get("DeltaPhiCut");       // DeltaPhi cut for the dijet system
   fMinimumMaxTrackPtFraction = fCard->Get("MinMaxTrackPtFraction");  // Cut for jets consisting only from soft particles
   fMaximumMaxTrackPtFraction = fCard->Get("MaxMaxTrackPtFraction");  // Cut for jets consisting only from one high pT particle
+  fJetUncertaintyMode = fCard->Get("JetUncertainty");  // Select whether to use nominal jet pT or vary it within uncertainties
   
   //****************************************
   //        Track selection cuts
@@ -1027,7 +1032,14 @@ void DijetAnalyzer::RunAnalysis(){
         jetPtCorrected = jetCorrector2018.GetCorrectedPT();
         
         // Only do the correction for 2018 data and reconstructed Monte Carlo
-        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) jetPt = jetPtCorrected;
+        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) {
+          jetPt = jetPtCorrected;
+          
+          // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
+          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - jetUncertainty2018.GetUncertainty().first);
+          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + jetUncertainty2018.GetUncertainty().second);
+          
+        }
         
         // Remember the highest jet pT
         if(jetPt > leadingJetPt){
@@ -1182,7 +1194,14 @@ void DijetAnalyzer::RunAnalysis(){
         jetPtCorrected = jetCorrector2018.GetCorrectedPT();
         
         // Only do the correction for 2018 data and reconstructed Monte Carlo
-        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) jetPt = jetPtCorrected;
+        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) {
+          jetPt = jetPtCorrected;
+          
+          // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
+          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - jetUncertainty2018.GetUncertainty().first);
+          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + jetUncertainty2018.GetUncertainty().second);
+          
+        }
         
         if(jetPt > subleadingJetPt){
           subleadingJetPt = jetPt;

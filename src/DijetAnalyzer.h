@@ -138,6 +138,7 @@ private:
   Double_t fDeltaPhiCut;               // DeltaPhi cut for the dijet system
   Double_t fMinimumMaxTrackPtFraction; // Cut for jets consisting only from soft particles
   Double_t fMaximumMaxTrackPtFraction; // Cut for jets consisting only from one high pT
+  Int_t fJetUncertaintyMode;           // Use uncertainty for jet pT. 0 = Nominal, 1 = Minus uncertainty, 2 = Plus uncertainty
   Double_t fTrackEtaCut;               // Eta cut around midrapidity
   Double_t fTrackMinPtCut;             // Minimum pT cut
   Double_t fMaxTrackPtRelativeError;   // Maximum relative error for pT
