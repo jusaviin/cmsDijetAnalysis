@@ -38,6 +38,7 @@ public:
     kDeltaPhiCut,               // Required deltaPhi separation between leading and subleading jets
     kMinMaxTrackPtFraction,     // Minimum fraction of jet pT taken by the highest pT track in jet
     kMaxMaxTrackPtFraction,     // Maximum fraction of jet pT taken by the highest pT track in jet
+    kJetUncertaintyMode,        // 0 = Nominal jet pT, 1 = pT minus uncertainty, 2 = pT plus uncertainty
     kTrackEtaCut,               // Eta cut for tracks
     kMinTrackPtCut,             // Minimum accepted track pT
     kMaxTrackPtRelativeError,   // Maximum relative error allowed for track pT
@@ -82,7 +83,7 @@ public:
 private:
   
   // Names for each entry read from the configuration card
-  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders","SpilloverFixGaussYield","SpilloverFixGaussWidth","SpilloverFitMethod","SpilloverUseIntegralYield"};
+  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","JetUncertainty","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders","SpilloverFixGaussYield","SpilloverFixGaussWidth","SpilloverFitMethod","SpilloverUseIntegralYield"};
   const char *fFileNameType[knFileNames] = {"input", "JFF correction","spillover correction"};
   const char *fFileNameSaveName[knFileNames] = {"InputFile", "JFFCorrectionFile","SpilloverCorrectionFile"};
   
