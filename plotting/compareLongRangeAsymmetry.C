@@ -91,7 +91,7 @@ void compareLongRangeAsymmetry(){
   //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root";
   
   // Name for the file from which systematic uncertainties are read
-  const char *uncertaintyFile = "data/vnUncertaintyPreliminaryNoVz2018.txt";
+  const char *uncertaintyFile = "data/vnUncertaintyPreliminary2018.txt";
   
   // Open the PbPb input file and read bin numbers from it
   TFile *pbpbDataFile = TFile::Open(pbpbFileName);

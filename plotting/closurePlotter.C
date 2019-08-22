@@ -278,14 +278,14 @@ void closurePlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = true;          // Save the figures to a file
+  bool saveFigures = false;          // Save the figures to a file
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = false;       // Draw the tracking closures
+  bool drawTrackClosure = true;       // Draw the tracking closures
   
   bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
-  bool drawJetKinematicsAsymmerty = true;        // Draw the jet kinematics figures in different asymmetry bins
+  bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
   int ptRebin = 10;                  // Rebin for track pT closure histograms (there are 500 bins)
