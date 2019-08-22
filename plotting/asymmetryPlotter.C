@@ -13,15 +13,24 @@ void asymmetryPlotter(){
   // Define files from which the xj distributions are read
   TString pbpbFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_wtaAxis_processed_2019-08-13.root";
   
+  TString ppFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root";
+  
   // For systematic uncertainty estimation, need also files where jet pT has been varied to be uncertainty either up or down
   TString pbpbUncertaintyPlusFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_JECv4plusUncertainty_onlyJets_wtaAxis_processed_2019-08-14.root";
   
   TString pbpbUncertaintyMinusFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_JECv4minusUncertainty_onlyJets_wtaAxis_preprocessed_2019-08-14.root";
   
+  TString ppUncertaintyPlusFileName = "data/ppData2017_highForest_pfJets_onlyJets_JetPtPlusUncertainty_JECv2_wtaAxis_processed_2019-08-22.root";
+  
+  TString ppUncertaintyMinusFileName = "data/ppData2017_highForest_pfJets_onlyJets_JetPtMinusUncertainty_JECv2_wtaAxis_processed_2019-08-22.root";
+  
   // Open the files
   TFile *pbpbFile = TFile::Open(pbpbFileName);
+  TFile *ppFile = TFile::Open(ppFileName);
   TFile *pbpbUncertaintyPlusFile = TFile::Open(pbpbUncertaintyPlusFileName);
   TFile *pbpbUncertaintyMinusFile = TFile::Open(pbpbUncertaintyMinusFileName);
+  TFile *ppUncertaintyPlusFile = TFile::Open(ppUncertaintyPlusFileName);
+  TFile *ppUncertaintyMinusFile = TFile::Open(ppUncertaintyMinusFileName);
   
   // Create histogram managers for the data files
   const int nHistogramTypes = 3;
@@ -30,11 +39,16 @@ void asymmetryPlotter(){
   dataHistograms[1] = new DijetHistogramManager(pbpbUncertaintyPlusFile);
   dataHistograms[2] = new DijetHistogramManager(pbpbUncertaintyMinusFile);
   
+  DijetHistogramManager *ppHistograms[nHistogramTypes];
+  ppHistograms[0] = new DijetHistogramManager(ppFile);
+  ppHistograms[1] = new DijetHistogramManager(ppUncertaintyPlusFile);
+  ppHistograms[2] = new DijetHistogramManager(ppUncertaintyMinusFile);
+  
   // Get the number of centrality bins from the file
   const int nCentralityBins = dataHistograms[0]->GetNCentralityBins();
   
   // Load the histograms for xj and systematic uncertainty estimation from the files
-  TH1D *xjDistribution[nHistogramTypes][nCentralityBins];
+  TH1D *xjDistribution[nHistogramTypes][nCentralityBins+1];
   for(int iHistogramType = 0; iHistogramType < nHistogramTypes; iHistogramType++){
     
     dataHistograms[iHistogramType]->SetLoadDijetHistograms(true);
@@ -53,15 +67,31 @@ void asymmetryPlotter(){
       xjDistribution[iHistogramType][iCentrality]->Scale(1.0/dataHistograms[iHistogramType]->GetPtIntegral(iCentrality));
       
     } // Centrality loop
+    
+    // Load also the pp histograms
+    
+    ppHistograms[iHistogramType]->SetLoadDijetHistograms(true);
+    ppHistograms[iHistogramType]->SetLoadLeadingJetHistograms(true);
+    
+    ppHistograms[iHistogramType]->SetCentralityBinRange(0,0);
+    
+    ppHistograms[iHistogramType]->LoadProcessedHistograms();
+    
+    // Read the xj distribution
+    xjDistribution[iHistogramType][nCentralityBins] = ppHistograms[iHistogramType]->GetHistogramDijetXj(0);
+    
+    // Scale the xj distribution by the number of dijets
+    xjDistribution[iHistogramType][nCentralityBins]->Scale(1.0/ppHistograms[iHistogramType]->GetPtIntegral(0));
+    
   } // Histogram type loop
   
   
   // Create an array of histograms to hold the systematic uncertainties
-  TH1D *xjUncertainty[nCentralityBins];
+  TH1D *xjUncertainty[nCentralityBins+1];
   
   // Estimate the uncertainty in each bin by taking the difference of runs with different uncertainties applied
   double nominalValue, plusValue, minusValue, currentUncertainty;
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     
     xjUncertainty[iCentrality] = (TH1D*) xjDistribution[0][iCentrality]->Clone(Form("xjUncertainty%d",iCentrality));
     
@@ -88,14 +118,21 @@ void asymmetryPlotter(){
   // Helper variables for centrality naming in figures
   TString centralityString;
   TString compactCentralityString;
-  TString systemAndEnergy = "PbPb 5.02 TeV";
+  TString systemAndEnergy;
   TLegend *legend;
   
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     
     // Define centrality strings
-    centralityString = Form("Cent: %.0f-%.0f%%", dataHistograms[0]->GetCentralityBinBorder(iCentrality), dataHistograms[0]->GetCentralityBinBorder(iCentrality+1));
-    compactCentralityString = Form("_C=%.0f-%.0f", dataHistograms[0]->GetCentralityBinBorder(iCentrality), dataHistograms[0]->GetCentralityBinBorder(iCentrality+1));
+    if(iCentrality == nCentralityBins){
+      centralityString = "";
+      compactCentralityString = "";
+      systemAndEnergy = "pp 5.02 TeV";
+    } else {
+      centralityString = Form("Cent: %.0f-%.0f%%", dataHistograms[0]->GetCentralityBinBorder(iCentrality), dataHistograms[0]->GetCentralityBinBorder(iCentrality+1));
+      compactCentralityString = Form("_C=%.0f-%.0f", dataHistograms[0]->GetCentralityBinBorder(iCentrality), dataHistograms[0]->GetCentralityBinBorder(iCentrality+1));
+      systemAndEnergy = "PbPb 5.02 TeV";
+    }
    
     // First, draw the systematic error bars
     xjUncertainty[iCentrality]->GetYaxis()->SetRangeUser(0,2.2);
