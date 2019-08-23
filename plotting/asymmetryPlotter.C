@@ -88,12 +88,17 @@ void asymmetryPlotter(){
   
   // Create an array of histograms to hold the systematic uncertainties
   TH1D *xjUncertainty[nCentralityBins+1];
+  double uncertaintyWeight;
+  double totalUncertainty[nCentralityBins+1];
   
   // Estimate the uncertainty in each bin by taking the difference of runs with different uncertainties applied
   double nominalValue, plusValue, minusValue, currentUncertainty;
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     
     xjUncertainty[iCentrality] = (TH1D*) xjDistribution[0][iCentrality]->Clone(Form("xjUncertainty%d",iCentrality));
+    
+    totalUncertainty[iCentrality] = 0;
+    uncertaintyWeight = 0;
     
     // ================================================ //
     //  Estimate the uncertainty from jet energy scale  //
@@ -105,7 +110,20 @@ void asymmetryPlotter(){
       minusValue = xjDistribution[2][iCentrality]->GetBinContent(iBin);
       currentUncertainty = TMath::Max(TMath::Abs(nominalValue-plusValue),TMath::Abs(nominalValue-minusValue));
       xjUncertainty[iCentrality]->SetBinError(iBin,currentUncertainty);
+      
+      // Find the minimum and maximum relative uncertainty in each centrality bin
+      if(nominalValue > 0){
+        
+        // Calculate the relative uncertainty and weight
+        uncertaintyWeight += nominalValue;
+        totalUncertainty[iCentrality] += currentUncertainty;
+        
+      } // Finding minimum and maximum relative uncertainty
+      
     } // Bin loop
+    
+    // Normalize the total uncertainty with the uncertainty weight to get the overall uncertainty of the distribution
+    totalUncertainty[iCentrality] /= uncertaintyWeight;
     
   } // Centrality loop
   
@@ -134,6 +152,11 @@ void asymmetryPlotter(){
       systemAndEnergy = "PbPb 5.02 TeV";
     }
    
+    // Print the minimum and maximum uncertainty in this bin
+    cout << centralityString.Data() << endl;
+    cout << "Total uncertainty: " << totalUncertainty[iCentrality] << endl;
+    cout << endl;
+    
     // First, draw the systematic error bars
     xjUncertainty[iCentrality]->GetYaxis()->SetRangeUser(0,2.2);
     xjUncertainty[iCentrality]->SetFillColorAlpha(29,0.25);
