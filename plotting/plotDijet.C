@@ -42,7 +42,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = true;
+  bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
@@ -51,7 +51,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -84,12 +84,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaPhi = true;
   bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
+  bool drawJetShape = false;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
@@ -102,7 +102,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = false;
+  bool drawBackground = true;
   int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -166,10 +166,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = 0;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int lastDrawnTrackPtBin = 2;
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
