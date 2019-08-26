@@ -818,6 +818,15 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // ===== Jet-track deltaEta =====
             if(fDrawJetTrackDeltaEta){
+              
+              // Illustration for systematic uncertainty estimation In central 2 < pT < 3 GeV bin
+              /*TLine *positiveLine = new TLine(-3,0.242662,3,0.242662);
+                TLine *negativeLine = new TLine(-3,0.242974,3,0.242974);
+                TLine *positiveLine = new TLine(-3,1.99738e-05,3,1.99738e-05);
+                TLine *negativeLine = new TLine(-3,9.69731e-06,3,9.69731e-06);
+                positiveLine->SetLineColor(kRed);
+                negativeLine->SetLineColor(kBlue);*/
+              
               for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
                 drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt, iDeltaPhi);
                 
@@ -842,6 +851,10 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
                 SetupLegend(legend,centralityString,trackPtString);
                 legend->Draw();
+                
+                // Illustration for systematic uncertainty estimation In central 2 < pT < 3 GeV bin
+                //positiveLine->Draw();
+                //negativeLine->Draw();
                 
                 // Save the figure to a file
                 sprintf(namerX,"%sDeltaEta",fHistograms->GetJetTrackHistogramName(iJetTrack));

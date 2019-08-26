@@ -13,13 +13,13 @@ void checkSpilloverAsymmetry(){
   // ==================================================================
   
   TString spilloverFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
-  TString spilloverComparisonFileName = "spilloverCorrection_wtaAxis.root";
+  TString spilloverComparisonFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
   // data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root
   // newSpilloverTest_symmetrizedDistribution_xj_radial.root
   // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
   // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
   TString jffFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root" ; // Can draw also JFF correction yield
-  TString dataFileName = "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"; // Compare also with uncorrected data
+  TString dataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root"; // Compare also with uncorrected data
   // data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root
   // data/dijetPbPb_skims_pfJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-03-04.root
@@ -27,12 +27,13 @@ void checkSpilloverAsymmetry(){
   bool drawAsymmetryComparison = false;
   bool drawFileComparison = false;
   bool draw2Dsample = false;   // Draw sample 2D distributions
-  bool drawIntegral = true;
+  bool drawIntegral = false;
+  bool drawExample = true;     // Draw example r-dependent spillover distributions
   
-  const char *firstFileComment = "EScheme";
+  const char *firstFileComment = "Spillover";
   const char *secondFileComment = "WTA";
   
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -261,6 +262,31 @@ void checkSpilloverAsymmetry(){
         }
       } // Track pt Loop
     } // Centrality loop
-  } // Asymmetry comparison if
+  } // File comparison if
+  
+  if(drawExample){
+    drawer->Reset();
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+
+        legend = new TLegend(0.5,0.55,0.9,0.8);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+        legend->SetHeader(Form("%.1f < p_{T} < %.1f, C: %.0f-%.0f %%",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1], centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
+        
+        
+        spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+        drawer->DrawHistogram(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],"#Deltar","P(#Deltar)"," ");
+        legend->AddEntry(spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt],firstFileComment,"l");
+
+        legend->Draw();
+        
+        if(saveFigures){
+          gPad->GetCanvas()->SaveAs(Form("figures/spilloverDeltaR_C=%.0f-%.0f_pT=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]));
+          
+          //gPad->GetCanvas()->SaveAs(Form("figures/spilloverAsymmetryFileComparison_C=%.0f-%.0f_pT=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]));
+        }
+      } // Track pt Loop
+    } // Centrality loop
+  } // Example drawing if
 }
 

@@ -12,6 +12,7 @@
 #include <TString.h>
 #include <TLegend.h>
 #include <TStyle.h>
+#include <TLine.h>
 
 // Own includes
 #include "JDrawer.h"

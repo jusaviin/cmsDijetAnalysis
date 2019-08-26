@@ -62,7 +62,11 @@ DijetMethods::DijetMethods() :
   fSpilloverYieldError(0),
   fJetShapeNormalizationMethod(kBinWidth),
   fnRebinDeltaEta(0),
-  fnRebinDeltaPhi(0)
+  fnRebinDeltaPhi(0),
+  fPairAcceptancePositiveLevel(0),
+  fPairAcceptanceNegativeLevel(0),
+  fBackgroundSubtractionInnerMean(0),
+  fBackgroundSubtractionOuterMean(0)
 {
   // Constructor
   fNormalizedMixedEventHistogram = NULL;
@@ -118,7 +122,11 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fSpilloverYieldError(in.fSpilloverYieldError),
   fJetShapeNormalizationMethod(in.fJetShapeNormalizationMethod),
   fhJetShapeCounts(in.fhJetShapeCounts),
-  fhJetShapeBinMap(in.fhJetShapeBinMap)
+  fhJetShapeBinMap(in.fhJetShapeBinMap),
+  fPairAcceptancePositiveLevel(in.fPairAcceptancePositiveLevel),
+  fPairAcceptanceNegativeLevel(in.fPairAcceptanceNegativeLevel),
+  fBackgroundSubtractionInnerMean(in.fBackgroundSubtractionInnerMean),
+  fBackgroundSubtractionOuterMean(in.fBackgroundSubtractionOuterMean)
 {
   // Copy constructor
   SetBinBoundaries(in.fnRBins,in.fRBins,fnRBins,&fRBins);
@@ -163,6 +171,10 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fSpilloverYieldError = in.fSpilloverYieldError;
   fhJetShapeCounts = in.fhJetShapeCounts;
   fhJetShapeBinMap = in.fhJetShapeBinMap;
+  fPairAcceptancePositiveLevel = in.fPairAcceptancePositiveLevel;
+  fPairAcceptanceNegativeLevel = in.fPairAcceptanceNegativeLevel;
+  fBackgroundSubtractionInnerMean = in.fBackgroundSubtractionInnerMean;
+  fBackgroundSubtractionOuterMean = in.fBackgroundSubtractionOuterMean;
   
   SetBinBoundaries(in.fnRBins,in.fRBins,fnRBins,&fRBins);
   SetBinBoundaries(in.fnRebinDeltaPhi,in.fRebinDeltaPhi,fnRebinDeltaPhi,&fRebinDeltaPhi);
@@ -1490,15 +1502,15 @@ double DijetMethods::EstimateSystematicsForPairAcceptanceCorrection(const TH1* d
   
   // Fit a constant to the specified ranges
   fitHistogram->Fit("pol0","","",-pairAcceptanceHighLimit,-pairAcceptanceLowLimit);
-  double negativeLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) negativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  fPairAcceptanceNegativeLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) fPairAcceptanceNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
   
   fitHistogram->Fit("pol0","","",pairAcceptanceLowLimit,pairAcceptanceHighLimit);
-  double positiveLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) positiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  fPairAcceptancePositiveLevel = 0;
+  if(fitHistogram->GetFunction("pol0")) fPairAcceptancePositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
   
   // Return the absolute value of the diffence between the two levels.
-  return TMath::Abs(positiveLevel-negativeLevel);
+  return TMath::Abs(fPairAcceptancePositiveLevel-fPairAcceptanceNegativeLevel);
   
 }
 
@@ -1535,12 +1547,12 @@ double DijetMethods::EstimateSystematicsForBackgroundSubtraction(const TH1* delt
   if(fitHistogram->GetFunction("pol0")) outerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
   
   // Calculate means for outer and inner levels
-  double innerMean = TMath::Abs((innerNegativeLevel+innerPositiveLevel)/2.0);
-  double outerMean = TMath::Abs((outerNegativeLevel+outerPositiveLevel)/2.0);
+  fBackgroundSubtractionInnerMean = TMath::Abs((innerNegativeLevel+innerPositiveLevel)/2.0);
+  fBackgroundSubtractionOuterMean = TMath::Abs((outerNegativeLevel+outerPositiveLevel)/2.0);
   
   // Return the larger deviation from zero
-  if(outerMean > innerMean) innerMean = outerMean;
-  return innerMean;
+  if(fBackgroundSubtractionOuterMean > fBackgroundSubtractionInnerMean) return fBackgroundSubtractionOuterMean;
+  return fBackgroundSubtractionInnerMean;
   
 }
 
@@ -1835,4 +1847,24 @@ void DijetMethods::SetBackgroundDeltaPhiRegion(const double minDeltaPhi, const d
 // Setter for the amount of rebin applied to deltaEta histogram before fit in seagull correction
 void DijetMethods::SetSeagullRebin(const int nRebin){
   fSeagullRebin = nRebin;
+}
+
+// Getter for positive level in pair acceptance systematic uncertainty estimation
+double DijetMethods::GetPairAcceptancePositiveLevel(){
+  return fPairAcceptancePositiveLevel;
+}
+
+// Getter for negative level in pair acceptance systematic uncertainty estimation
+double DijetMethods::GetPairAcceptanceNegativeLevel(){
+  return fPairAcceptanceNegativeLevel;
+}
+
+// Getter for inner mean in background subtraction systematic uncertainty estimation
+double DijetMethods::GetBackgroundSubtractionInnerMean(){
+  return fBackgroundSubtractionInnerMean;
+}
+
+// Getter for outer mean in background subtraction systematic uncertainty estimation
+double DijetMethods::GetBackgroundSubtractionOuterMean(){
+  return fBackgroundSubtractionOuterMean;
 }

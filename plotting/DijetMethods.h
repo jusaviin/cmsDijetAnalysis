@@ -55,6 +55,12 @@ public:
   double EstimateSystematicsForBackgroundSubtraction(const TH1* deltaEtaHistogram);
   void PropagateDeltaEtaToDeltaR(TH1* errorHistogram, const double deltaEtaError);
   
+  // Getters for QA values for systematic uncertaintie
+  double GetPairAcceptancePositiveLevel();
+  double GetPairAcceptanceNegativeLevel();
+  double GetBackgroundSubtractionInnerMean();
+  double GetBackgroundSubtractionOuterMean();
+  
   // Getters for produced distributions
   TH2D* GetNormalizedMixedEvent() const; // Getter for the most recent normalized mixed event histogram
   TH2D* GetBackground() const;           // Getter for the most recent background distribution used to subtract the background
@@ -160,6 +166,14 @@ private:
   double* fRebinDeltaEta; // Bin boundaries for the new deltaEta bins
   int fnRebinDeltaPhi;    // Number of new deltaPhi bins
   double* fRebinDeltaPhi; // Bin boundaries for the new deltaPhi bins
+  
+  // ==============================================
+  // ===== Systematic uncertainty estimation ======
+  // ==============================================
+  double fPairAcceptancePositiveLevel;
+  double fPairAcceptanceNegativeLevel;
+  double fBackgroundSubtractionInnerMean;
+  double fBackgroundSubtractionOuterMean;
   
   // Private methods
   double GetMixedEventScale(const TH2D* mixedEventHistogram, const bool findPeak); // Find the normalization scale for the mixed event histogram

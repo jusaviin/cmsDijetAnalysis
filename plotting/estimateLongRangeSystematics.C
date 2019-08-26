@@ -286,17 +286,17 @@ void estimateLongRangeSystematics(){
           // TODO: Temporary plotter to get some plots
           if(plotExample && iType == 1 && iAsymmetry == nAsymmetryBins && iCentrality == 0 && iTrackPt == 2){
             JDrawer *drawer = new JDrawer();
-            closeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
-            closeEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
-            farEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlue);
-            farEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlue);
-            drawer->DrawHistogram(closeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"#Delta#phi","#frac{dN}{d#Delta#phi}", " ");
-            farEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
+            positiveEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
+            positiveEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
+            negativeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlue);
+            negativeEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlue);
+            drawer->DrawHistogram(positiveEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"#Delta#phi","#frac{dN}{d#Delta#phi}", " ");
+            negativeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
             TLegend *legend = new TLegend(0.39,0.72,0.59,0.92);
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader("C: 0-10, 2 < p_{T} < 3 GeV");
-            legend->AddEntry(positiveEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"1.5 < |#eta| < 2.0","l");
-            legend->AddEntry(negativeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"2.0 < |#eta| < 2.5","l");
+            legend->AddEntry(positiveEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"1.5 < #Delta#eta < 2.5","l");
+            legend->AddEntry(negativeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"-2.5 < #Delta#eta < -1.5","l");
             legend->Draw();
             return;
           } // Drawing example plot
