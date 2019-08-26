@@ -103,8 +103,8 @@ void compareLongRangeAsymmetry(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
-  const bool drawFourierFit = false;
-  const bool drawFourierGraph = true;
+  const bool drawFourierFit = true;
+  const bool drawFourierGraph = false;
   
   const bool printChi2 = false;
   const bool printBackgroundAdjustmentUncertainty = false;
@@ -113,9 +113,9 @@ void compareLongRangeAsymmetry(){
   TString saveComment = "";
   
   int firstDrawnAsymmetryBin = 0;
-  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  int lastDrawnAsymmetryBin = nAsymmetryBins-1;
   
-  const int fourierV = 0;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
+  const int fourierV = 2;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
   TString vString = "";
   TString vHeader = "V_{1} - V_{4}";
   if(fourierV > 0) {
