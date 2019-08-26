@@ -10,6 +10,8 @@ void asymmetryPlotter(){
   // ========================= Configuration ==========================
   // ==================================================================
   
+  bool saveFigures = true;
+  
   // Define files from which the xj distributions are read
   TString pbpbFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_wtaAxis_processed_2019-08-13.root";
   
@@ -137,6 +139,7 @@ void asymmetryPlotter(){
   TString centralityString;
   TString compactCentralityString;
   TString systemAndEnergy;
+  TString compactSystemAndEnergy;
   TLegend *legend;
   
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
@@ -146,10 +149,12 @@ void asymmetryPlotter(){
       centralityString = "";
       compactCentralityString = "";
       systemAndEnergy = "pp 5.02 TeV";
+      compactSystemAndEnergy = "_pp5v02TeV";
     } else {
       centralityString = Form("Cent: %.0f-%.0f%%", dataHistograms[0]->GetCentralityBinBorder(iCentrality), dataHistograms[0]->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f", dataHistograms[0]->GetCentralityBinBorder(iCentrality), dataHistograms[0]->GetCentralityBinBorder(iCentrality+1));
       systemAndEnergy = "PbPb 5.02 TeV";
+      compactSystemAndEnergy = "_PbPb5v02TeV";
     }
    
     // Print the minimum and maximum uncertainty in this bin
@@ -159,7 +164,7 @@ void asymmetryPlotter(){
     
     // First, draw the systematic error bars
     xjUncertainty[iCentrality]->GetYaxis()->SetRangeUser(0,2.2);
-    xjUncertainty[iCentrality]->SetFillColorAlpha(29,0.25);
+    xjUncertainty[iCentrality]->SetFillColorAlpha(29,0.45);
     drawer->DrawHistogram(xjUncertainty[iCentrality],"x_{j}","#frac{1}{N_{dijet}} #frac{dN}{dx_{j}}", " ","E2");
     
     // Second, draw the data points on top of the systematic error bars
@@ -172,6 +177,10 @@ void asymmetryPlotter(){
     legend->AddEntry((TObject*) 0, systemAndEnergy.Data(), "");
     if(systemAndEnergy.Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
     legend->Draw();
+   
+    if(saveFigures){
+      gPad->GetCanvas()->SaveAs(Form("figures/asymmetryXj%s%s.pdf",compactSystemAndEnergy.Data(),compactCentralityString.Data()));
+    }
     
   }
   
