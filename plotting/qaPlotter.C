@@ -1388,6 +1388,13 @@ void qaPlotter(){
               for(int iAsymmetry = 0; iAsymmetry <= nJffAsymmetryBins; iAsymmetry++){
                 correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(asymmetryStyle[iAsymmetry]);
                 correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(asymmetryColor[iAsymmetry]);
+                
+                // TODO TODO: See how the errors should be properly handled. Need to set a small error to draw data points
+                if(iCentrality < nCentralityBins){
+                  for(int iBin = 0; iBin <= correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+                    correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin,0.0001);
+                  }
+                }
               }
               
               // Determine the drawing range for all bins from the first centrality bin
