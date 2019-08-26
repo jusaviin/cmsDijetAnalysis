@@ -48,7 +48,10 @@ void estimateLongRangeSystematics(){
   const int nRefit = 4;    // Number of vn:s included in the refit
   int backgroundRebin = 4; // Rebin applied to the long range distributions
   
-  const char *outputFileName("data/vnUncertaintyPreliminary2018.txt");
+  bool plotExample = true;
+  
+  const char *outputFileName("data/untest.txt");
+  // "data/vnUncertaintyPreliminary2018.txt"
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -279,6 +282,25 @@ void estimateLongRangeSystematics(){
           farEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
           refitter->FourierFit(farEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt], nRefit);
           farEtaFit[iType][iAsymmetry][iCentrality][iTrackPt] = farEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          
+          // TODO: Temporary plotter to get some plots
+          if(plotExample && iType == 1 && iAsymmetry == nAsymmetryBins && iCentrality == 0 && iTrackPt == 2){
+            JDrawer *drawer = new JDrawer();
+            closeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
+            closeEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
+            farEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlue);
+            farEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlue);
+            drawer->DrawHistogram(closeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"#Delta#phi","#frac{dN}{d#Delta#phi}", " ");
+            farEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
+            TLegend *legend = new TLegend(0.39,0.72,0.59,0.92);
+            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+            legend->SetHeader("C: 0-10, 2 < p_{T} < 3 GeV");
+            legend->AddEntry(positiveEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"1.5 < |#eta| < 2.0","l");
+            legend->AddEntry(negativeEtaProjection[iType][iAsymmetry][iCentrality][iTrackPt],"2.0 < |#eta| < 2.5","l");
+            legend->Draw();
+            return;
+          } // Drawing example plot
+          
         }
         
         // Get the long range correlations directly from the raw distribution
