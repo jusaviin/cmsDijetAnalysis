@@ -113,7 +113,7 @@ void compareLongRangeAsymmetry(){
   TString saveComment = "";
   
   int firstDrawnAsymmetryBin = 0;
-  int lastDrawnAsymmetryBin = nAsymmetryBins-1;
+  int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   const int fourierV = 0;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
   TString vString = "";
@@ -502,8 +502,8 @@ void compareLongRangeAsymmetry(){
     
     // Helper variables for finding track pT information
     int lowPtBin, highPtBin;
-    double yZoomForFlowLow[] = {-0.8,-0.005,-0.005,0.005};
-    double yZoomForFlowHigh[] = {0.1,0.2,0.05,0.05};
+    double yZoomForFlowLow[] = {-0.8,-0.005,-0.005,-0.005};
+    double yZoomForFlowHigh[] = {0.1,0.2,0.05,0.02};
     double legendY1, legendY2;
     
     TGraphErrors *flowGraphPt[nAsymmetryBins+1][nCentralityBins+1][nRefit];
@@ -558,7 +558,7 @@ void compareLongRangeAsymmetry(){
     
     // Draw the graphs as a function of pT
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-      for(int iFlow = 0; iFlow < 3; iFlow++){
+      for(int iFlow = 0; iFlow < 4; iFlow++){
         
         legendY1 = 0.6; legendY2 = 0.9;
         if(iFlow == 0){
@@ -576,14 +576,14 @@ void compareLongRangeAsymmetry(){
         
         // First, draw the systematic uncertainty bands to the canvas
         sprintf(namerY,"V_{%d}",iFlow+1);
-        drawer->DrawGraph(flowUncertaintyPt[0][iCentrality][iFlow], 0, 8, yZoomForFlowLow[iFlow], yZoomForFlowHigh[iFlow], "Track p_{T} (GeV)", namerY, " ", "2,same");
+        drawer->DrawGraph(flowUncertaintyPt[firstDrawnAsymmetryBin][iCentrality][iFlow], 0, 8, yZoomForFlowLow[iFlow], yZoomForFlowHigh[iFlow], "Track p_{T} (GeV)", namerY, " ", "2,same");
         
-        for(int iAsymmetry = 1; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin+1; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
           flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->Draw("2,same");
         }
         
         // After systematic uncertainties are drawn, draw the points on top of the bands
-        for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
           flowGraphPt[iAsymmetry][iCentrality][iFlow]->Draw("psame");
           if(iAsymmetry == nAsymmetryBins){
             legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],"x_{j} > 0.0","p");
