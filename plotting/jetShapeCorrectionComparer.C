@@ -1,5 +1,6 @@
 #include "DijetCard.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "JDrawer.h"
+#include "JffCorrector.h"
 
 /*
  * Compare jet shape corrections
@@ -7,29 +8,30 @@
 void jetShapeCorrectionComparer(){
   
   // Open the files for the JFF corrections
-  TFile *standardFile = TFile::Open("newPpTest2.root");
-  TFile *wtaFile = TFile::Open("ppTestWTA.root");
-  TFile *files[2] = {standardFile,wtaFile};
+  TFile *quarkFile = TFile::Open("data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *gluonFile = TFile::Open("data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *standardFile = TFile::Open("data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *files[3] = {quarkFile,gluonFile,standardFile};
   
   // Figure saving options
-  bool saveFigures = true;         // Flag to determine whather or not save the figures
+  bool saveFigures = false;         // Flag to determine whather or not save the figures
   bool drawCorrection = true;      // Draw the comparison of JFF corrections (RecoGen - GenGen) between two files
-  bool drawRatio = true;          // Draw the comparison of JFF ratios (RecoGen/GenGen) between two files
+  bool drawRatio = false;          // Draw the comparison of JFF ratios (RecoGen/GenGen) between two files
   
   // Configuration
   const int nCentralityBins = 4;
   const int nTrackPtBins = 6;
   double trackPtBorders[] = {0.7,1,2,3,4,8,300};
-  double centralityBinBorders[] = {0,10,30,50,100};
+  double centralityBinBorders[] = {0,10,30,50,90};
   
   // Jff correction histograms
   // First bin = Leading, pT weighted leading, subeading, pT weighted subleading
-  // Second bin = Standard, WTA
-  TH1D *jffCorrection[4][2][nCentralityBins][nTrackPtBins];
+  // Second bin = Quark, Gluon, Standard
+  TH1D *jffCorrection[4][3][nCentralityBins][nTrackPtBins];
   
   // All the variables needed for figure drawing
   JDrawer *drawer = new JDrawer();
-  drawer->SetDefaultAppearanceSplitCanvas();
+  //drawer->SetDefaultAppearanceSplitCanvas();
   TLegend *legend;
   TH1D* ratio;
   const char *headers[4] = {"Track-leading jet","p_{T}w track-leading jet","Track-subleading jet","p_{T}w track-subleading jet"};
@@ -40,7 +42,7 @@ void jetShapeCorrectionComparer(){
   double ratioZoomHigh[2] = {4,1.5};
   
   // Check if we are using pp or PbPb data
-  DijetCard *card = new DijetCard(standardFile);
+  DijetCard *card = new DijetCard(quarkFile);
   TString collisionSystem = card->GetDataType();
   bool ppData = (collisionSystem.Contains("pp") || collisionSystem.Contains("localTest"));
   
@@ -49,9 +51,13 @@ void jetShapeCorrectionComparer(){
   char centralityString[50];
   char compactCentralityString[50];
   bool notThisType[2] = {!drawCorrection,!drawRatio};
+
+  //JffCorrector *quarkCorrectionFinder = new JffCorrector();
+  //JffCorrector *gluonCorrectionFinder = new JffCorrector();
+  
   for(int iType = 0; iType < 2; iType++){
     if(notThisType[iType]) continue; // Only draw the selected types
-    for(int iFile = 0; iFile < 2; iFile++){
+    for(int iFile = 0; iFile < 3; iFile++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         if(ppData && (iCentrality > 0)) continue; // No centrality selection for pp
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
@@ -82,16 +88,22 @@ void jetShapeCorrectionComparer(){
         if(ppData && (iCentrality > 0)) continue; // No centrality selection for pp
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
-          // First, draw the standard leading JFF correction
-          drawer->CreateSplitCanvas();
+          // First, draw the only quark leading JFF correction
+          //drawer->CreateSplitCanvas();
           jffCorrection[iJetTrack][0][iCentrality][iTrackPt]->SetLineColor(kRed);
           jffCorrection[iJetTrack][0][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          drawer->DrawHistogramToUpperPad(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"#DeltaR",axisName[iType]," ");
+          //drawer->DrawHistogramToUpperPad(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"#DeltaR",axisName[iType]," ");
+          drawer->DrawHistogram(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"#DeltaR",axisName[iType]," ");
           
-          // Next, draw the WTA leading JFF correction
+          // Next, draw the only gluon JFF correction
           jffCorrection[iJetTrack][1][iCentrality][iTrackPt]->SetLineColor(kBlue);
           jffCorrection[iJetTrack][1][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
           jffCorrection[iJetTrack][1][iCentrality][iTrackPt]->Draw("same");
+          
+          // Finally, draw the regular JFF correction
+          jffCorrection[iJetTrack][2][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          jffCorrection[iJetTrack][2][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+          jffCorrection[iJetTrack][2][iCentrality][iTrackPt]->Draw("same");
           
           // Draw a legend to the canvas
           if(ppData){
@@ -107,16 +119,17 @@ void jetShapeCorrectionComparer(){
           legend->SetHeader(headers[iJetTrack]);
           legend->AddEntry((TObject*)0,centralityString,"");
           legend->AddEntry((TObject*)0,namer,"");
-          legend->AddEntry(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"Standard","l");
-          legend->AddEntry(jffCorrection[iJetTrack][1][iCentrality][iTrackPt],"WTA","l");
+          legend->AddEntry(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"Quarks","l");
+          legend->AddEntry(jffCorrection[iJetTrack][1][iCentrality][iTrackPt],"Gluons","l");
+          legend->AddEntry(jffCorrection[iJetTrack][2][iCentrality][iTrackPt],"Both","l");
           legend->Draw();
           
           // Normalize the smeared jet pT to have the same yield as the reco jet pT
-          sprintf(namer,"ratio%d%d",iJetTrack,iTrackPt);
+          /*sprintf(namer,"ratio%d%d",iJetTrack,iTrackPt);
           ratio = (TH1D*) jffCorrection[iJetTrack][1][iCentrality][iTrackPt]->Clone(namer);
           ratio->Divide(jffCorrection[iJetTrack][0][iCentrality][iTrackPt]);
           ratio->GetYaxis()->SetRangeUser(ratioZoomLow[iType],ratioZoomHigh[iType]);
-          drawer->DrawHistogramToLowerPad(ratio,"#DeltaR","WTA/standard"," ");
+          drawer->DrawHistogramToLowerPad(ratio,"#DeltaR","Color/standard"," ");*/
           
           if(saveFigures){
             gPad->GetCanvas()->SaveAs(Form("figures/jetShape%sComparison_%s%s_pT=%.0f-%.0f.pdf",comparisonType[iType],saveName[iJetTrack],compactCentralityString,trackPtBorders[iTrackPt],trackPtBorders[iTrackPt+1]));
