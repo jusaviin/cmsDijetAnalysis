@@ -48,7 +48,7 @@ void estimateLongRangeSystematics(){
   const int nRefit = 4;    // Number of vn:s included in the refit
   int backgroundRebin = 4; // Rebin applied to the long range distributions
   
-  bool plotExample = true;
+  bool plotExample = false;
   
   const char *outputFileName("data/untest.txt");
   // "data/vnUncertaintyPreliminary2018.txt"
