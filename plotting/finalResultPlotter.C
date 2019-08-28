@@ -279,7 +279,7 @@ void finalResultPlotter(){
   bool drawJetShapeSymmetricAsymmetricRatio = true;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   TString saveName;
   
@@ -298,12 +298,14 @@ void finalResultPlotter(){
   bool logJetShape = true;    // Jet shapes
   
   //int iAsymmetry = 0;
-  int iJetTrack = DijetHistogramManager::kPtWeightedTrackLeadingJet;  // DijetHistogramManager::kPtWeightedTrackSubleadingJet
+  int iJetTrack = DijetHistogramManager::kPtWeightedTrackSubleadingJet;  // DijetHistogramManager::kPtWeightedTrackSubleadingJet
   int lowestTrackPtBin = 0;
   
   TString asymmetryString[nAsymmetryBins+1];
+  TString asymmetrySaveString[nAsymmetryBins+1];
   for(int i = 0; i < nAsymmetryBins; i++){
     asymmetryString[i] = Form("   %.1f < x_{j} < %.1f",asymmetryBinBorders[i],asymmetryBinBorders[i+1]);
+    asymmetrySaveString[i] = Form("_A=%.1f-%.1f",asymmetryBinBorders[i],asymmetryBinBorders[i+1]);
   }
   asymmetryString[nAsymmetryBins] = "";
   
@@ -377,18 +379,20 @@ void finalResultPlotter(){
   }
   
   TH1D* ratioHistogram[nCentralityBins][nAsymmetryBins+1];
-  TH1D* asymmetryRatioHistogram[nCentralityBins+1];
+  TH1D* asymmetryRatioHistogram[nCentralityBins+1][nAsymmetryBins];
   
   // Create uncertainty histograms for the ratio using standard jet shape binning
   TH1D* ratioUncertainty[nCentralityBins][nAsymmetryBins+1];
-  TH1D* asymmetryRatioUncertainty[nCentralityBins+1];
+  TH1D* asymmetryRatioUncertainty[nCentralityBins+1][nAsymmetryBins];
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       ratioUncertainty[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("ratioUncertainty%d%d", iCentrality, iAsymmetry));
     }
   }
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-    asymmetryRatioUncertainty[iCentrality] = (TH1D*) sumHistogramPbPb[0][0]->Clone(Form("asymmetryRatioUncertainty%d", iCentrality));
+    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+      asymmetryRatioUncertainty[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[0][0]->Clone(Form("asymmetryRatioUncertainty%d%d", iCentrality, iAsymmetry));
+    }
   }
   
   JDrawer *drawer = new JDrawer();
@@ -420,9 +424,9 @@ void finalResultPlotter(){
         }
         
         ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
-        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetRangeUser(0,4);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetRangeUser(0,3);
         ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
-        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetRangeUser(0,4);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetRangeUser(0,3);
         ratioUncertainty[iCentrality][iAsymmetry]->SetFillColorAlpha(29,0.25);
         
         drawer->DrawHistogram(ratioUncertainty[iCentrality][iAsymmetry],"#Deltar","#rho(#Deltar)_{PbPb} / #rho(#Deltar)_{pp}", " ","E2");
@@ -451,67 +455,71 @@ void finalResultPlotter(){
   } // Ratio between pp and PbPb in different asymmetry bins
   
   if(drawJetShapeSymmetricAsymmetricRatio){
-    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-      
-      if(iCentrality == nCentralityBins){
-        asymmetryRatioHistogram[iCentrality] = (TH1D*) sumHistogramPp[2]->Clone(Form("ratioAsymmetry%d", iCentrality));
-        asymmetryRatioHistogram[iCentrality]->Divide(sumHistogramPp[0]);
-      } else {
-        asymmetryRatioHistogram[iCentrality] = (TH1D*) sumHistogramPbPb[iCentrality][2]->Clone(Form("ratioAsymmetry%d", iCentrality));
-        asymmetryRatioHistogram[iCentrality]->Divide(sumHistogramPbPb[iCentrality][0]);
-      }
-      
-      // Calculate the systemtic uncertainty for the ratio
-      for(int iBin = 1; iBin < asymmetryRatioUncertainty[iCentrality]->GetNbinsX(); iBin++){
+    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+        
         if(iCentrality == nCentralityBins){
-          ppValue = sumHistogramPp[0]->GetBinContent(iBin);
-          pbpbValue = sumHistogramPp[2]->GetBinContent(iBin);
-          ppUncertainty = uncertaintyHistogramPp[0]->GetBinContent(iBin);
-          pbpbUncertainty = uncertaintyHistogramPp[2]->GetBinContent(iBin);
+          asymmetryRatioHistogram[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPp[iAsymmetry]->Clone(Form("ratioAsymmetry%d%d", iCentrality, iAsymmetry));
+          asymmetryRatioHistogram[iCentrality][iAsymmetry]->Divide(sumHistogramPp[nAsymmetryBins]);
         } else {
-          ppValue = sumHistogramPbPb[iCentrality][0]->GetBinContent(iBin);
-          pbpbValue = sumHistogramPbPb[iCentrality][2]->GetBinContent(iBin);
-          ppUncertainty = uncertaintyHistogramPbPb[iCentrality][0]->GetBinContent(iBin);
-          pbpbUncertainty = uncertaintyHistogramPbPb[iCentrality][2]->GetBinContent(iBin);
+          asymmetryRatioHistogram[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("ratioAsymmetry%d%d", iCentrality, iAsymmetry));
+          asymmetryRatioHistogram[iCentrality][iAsymmetry]->Divide(sumHistogramPbPb[iCentrality][nAsymmetryBins]);
         }
-        ratioValue = asymmetryRatioHistogram[iCentrality]->GetBinContent(iBin);
-        ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2)+TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2));
-        asymmetryRatioUncertainty[iCentrality]->SetBinContent(iBin,ratioValue);
-        asymmetryRatioUncertainty[iCentrality]->SetBinError(iBin,ratioUncertaintyValue);
-      }
-      
-      asymmetryRatioHistogram[iCentrality]->GetXaxis()->SetRangeUser(0,1);
-      asymmetryRatioHistogram[iCentrality]->GetYaxis()->SetRangeUser(0,4);
-      asymmetryRatioUncertainty[iCentrality]->GetXaxis()->SetRangeUser(0,1);
-      asymmetryRatioUncertainty[iCentrality]->GetYaxis()->SetRangeUser(0,4);
-      asymmetryRatioUncertainty[iCentrality]->SetFillColorAlpha(29,0.25);
-      
-      drawer->DrawHistogram(asymmetryRatioUncertainty[iCentrality],"#Deltar","#rho(#Deltar)_{PbPb} / #rho(#Deltar)_{pp}", " ","E2");
-      oneLine->Draw();
-      asymmetryRatioHistogram[iCentrality]->SetLineColor(kBlack);
-      asymmetryRatioHistogram[iCentrality]->Draw("same");
-      
-      legend = new TLegend(0.25,0.73,0.45,0.88);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      if(iCentrality == nCentralityBins){
-        legend->SetHeader("pp  Track-leading jet");
-      } else {
-        legend->SetHeader(Form("C: %.0f-%.0f  Track-leading jet",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
-      }
-      legend->AddEntry(asymmetryRatioHistogram[iCentrality],"0.8 < x_{j} < 1.0 / 0.0 < x_{j} < 0.6","l");
-      legend->Draw();
-      
-      if(saveFigures){
+        
+        // Calculate the systemtic uncertainty for the ratio
+        for(int iBin = 1; iBin < asymmetryRatioUncertainty[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+          if(iCentrality == nCentralityBins){
+            ppValue = sumHistogramPp[nAsymmetryBins]->GetBinContent(iBin);
+            pbpbValue = sumHistogramPp[iAsymmetry]->GetBinContent(iBin);
+            ppUncertainty = uncertaintyHistogramPp[nAsymmetryBins]->GetBinContent(iBin);
+            pbpbUncertainty = uncertaintyHistogramPp[iAsymmetry]->GetBinContent(iBin);
+          } else {
+            ppValue = sumHistogramPbPb[iCentrality][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbValue = sumHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin);
+            ppUncertainty = uncertaintyHistogramPbPb[iCentrality][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbUncertainty = uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin);
+          }
+          ratioValue = asymmetryRatioHistogram[iCentrality][iAsymmetry]->GetBinContent(iBin);
+          ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2)+TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2));
+          asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetBinContent(iBin,ratioValue);
+          asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin,ratioUncertaintyValue);
+        }
+        
+        asymmetryRatioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+        asymmetryRatioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetRangeUser(0,3);
+        asymmetryRatioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+        asymmetryRatioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetRangeUser(0,3);
+        asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetFillColorAlpha(29,0.25);
+        
+        drawer->DrawHistogram(asymmetryRatioUncertainty[iCentrality][iAsymmetry],"#Deltar",Form("#rho(#Deltar) %.1f < x_{j} < %.1f / #rho(#Deltar) all x_{j}", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]), " ","E2");
+        oneLine->Draw();
+        asymmetryRatioHistogram[iCentrality][iAsymmetry]->SetLineColor(kBlack);
+        asymmetryRatioHistogram[iCentrality][iAsymmetry]->Draw("same");
+        
+        legend = new TLegend(0.25,0.73,0.45,0.88);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         if(iCentrality == nCentralityBins){
-          gPad->GetCanvas()->SaveAs(Form("figures/jetShapeAsymmetryRatio_%s_pp.pdf", pbpbHistograms->GetJetTrackHistogramName(iJetTrack)));
+          legend->SetHeader("pp  Track-subleading jet");
         } else {
-          saveName = Form("figures/jetShapeAsymmetryRatio_%s_C=%.0f-%.0f", pbpbHistograms->GetJetTrackHistogramName(iJetTrack), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
-          saveName.ReplaceAll(".","v");
-          gPad->GetCanvas()->SaveAs(Form("%s.%s",saveName.Data(),figureFormat));
+          legend->SetHeader(Form("C: %.0f-%.0f  Track-subleading jet",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
         }
-      } // Saving figures
-      
-    } // Centrality loop
+        legend->AddEntry(asymmetryRatioHistogram[iCentrality][iAsymmetry],Form("%.1f < x_{j} < %.1f / all x_{j}", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]),"l");
+        legend->Draw();
+        
+        if(saveFigures){
+          if(iCentrality == nCentralityBins){
+            saveName = Form("figures/jetShapeAsymmetryRatio_%s_pp%s", pbpbHistograms->GetJetTrackHistogramName(iJetTrack), asymmetrySaveString[iAsymmetry].Data());
+            saveName.ReplaceAll(".","v");
+            gPad->GetCanvas()->SaveAs(Form("%s.%s",saveName.Data(),figureFormat));
+          } else {
+            saveName = Form("figures/jetShapeAsymmetryRatio_%s_C=%.0f-%.0f%s", pbpbHistograms->GetJetTrackHistogramName(iJetTrack), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetrySaveString[iAsymmetry].Data());
+            saveName.ReplaceAll(".","v");
+            gPad->GetCanvas()->SaveAs(Form("%s.%s",saveName.Data(),figureFormat));
+          }
+        } // Saving figures
+        
+      } // Centrality loop
+    } // Asymmetry loop
   } // Draw asymmetry ratio
   
 }
