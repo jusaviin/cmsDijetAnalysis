@@ -50,6 +50,7 @@ public:
   void SetDrawTracks(const bool drawOrNot);            // Setter for drawing tracks
   void SetDrawTracksUncorrected(const bool drawOrNot); // Setter for drawing uncorrected tracks
   void SetDrawAllTracks(const bool drawTracks, const bool drawUncorrected); // Setter for drawing all track histograms
+  void SetDrawInclusiveTracks(const bool drawOrNot);   // Setter for drawing inclusive tracks
   
   // Setters for leading jet-track correlations
   void SetDrawTrackLeadingJetCorrelations(const bool drawOrNot);            // Setter for drawing leading jet-track correlations

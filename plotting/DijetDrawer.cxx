@@ -1262,6 +1262,11 @@ void DijetDrawer::SetDrawAllTracks(const bool drawTracks, const bool drawUncorre
   SetDrawTracksUncorrected(drawUncorrected);
 }
 
+// Setter for drawing inclusive tracks
+void DijetDrawer::SetDrawInclusiveTracks(const bool drawOrNot){
+  fDrawTracks[DijetHistogramManager::kInclusiveTrack] = drawOrNot;
+}
+
 // Setter for drawing leading jet-track correlations
 void DijetDrawer::SetDrawTrackLeadingJetCorrelations(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kTrackLeadingJet] = drawOrNot;
