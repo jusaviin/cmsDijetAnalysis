@@ -11,7 +11,7 @@
  *
  *  return: Gauss mean, Gauss sigma, Error for Gauss mean, Error for Gauss sigma
  */
-std::tuple<double,double,double,double> fitGauss(TH1* histogram){
+std::tuple<double,double,double,double> fitGauss(TH1* histogram, TString title = "", TString bin = "", TString saveName = ""){
   histogram->Fit("gaus","","",0.5,1.5);
   TF1 * gaussFit = histogram->GetFunction("gaus");
   
@@ -25,6 +25,22 @@ std::tuple<double,double,double,double> fitGauss(TH1* histogram){
     gaussSigma = gaussFit->GetParameter(2);
     gaussMeanError = gaussFit->GetParError(1);
     gaussSigmaError = gaussFit->GetParError(2);
+  }
+  
+  // If title is given, print the fit
+  if(!title.EqualTo("")){
+    JDrawer *temporaryDrawer = new JDrawer();
+    temporaryDrawer->DrawHistogram(histogram,"Reco p_{T} / Gen p_{T}","Counts", " ");
+    TLegend *legend = new TLegend(0.62,0.7,0.85,0.85);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->SetHeader(title);
+    legend->AddEntry(histogram,bin,"l");
+    legend->Draw();
+    
+    if(!saveName.EqualTo("")){
+      gPad->GetCanvas()->SaveAs(saveName);
+    }
+    
   }
   
   return std::make_tuple(gaussMean,gaussSigma,gaussMeanError,gaussSigmaError);
@@ -66,7 +82,9 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
   
   if(legendNzoom == 1){
     yZoomLow = 0;
-    yZoomHigh = 0.2;
+    yZoomHigh = 0.24;
+    legendX1 = 0.19;
+    legendX2 = 0.61;
     legendY1 = 0.18;
     legendY2 = 0.45;
   }
@@ -123,15 +141,15 @@ void constructJetPtClosures(){
   // "data/PbPbMC_GenGen_pfCsJets_noCorrelations_jetPtClosure_eta1v3_2019-06-26_processed.root"
   
   bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
-  bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
+  bool drawSubleadingClosure = false;    // Produce the closure plots for subleading jet pT
   bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
   
   bool drawPtClosure = true;
-  bool drawEtaClosure = true;
+  bool drawEtaClosure = false;
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
-  bool saveFigures = true;  // Save the figures to file
+  bool saveFigures = false;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================
@@ -199,7 +217,7 @@ void constructJetPtClosures(){
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
     minGenPt = (iClosureType == 0) ? 7 : 0; // Skip the first jet pT bins for leading jet closure
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    for(int iCentrality = 0; iCentrality < 1; iCentrality++){ // TODO Return to ncentrality
       for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
         if(drawPtClosure){
           for(int iGenJetPt = minGenPt; iGenJetPt < DijetHistogramManager::knGenJetPtBins; iGenJetPt++){
@@ -208,6 +226,7 @@ void constructJetPtClosures(){
             hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle] = closureHistograms->GetHistogramJetPtClosure(iClosureType, iGenJetPt, DijetHistogramManager::knJetEtaBins, iCentrality, iClosureParticle);
             
             // Fit a gauss to the histogram
+            //std::tie(gaussMean,gaussSigma,gaussMeanError,gaussSigmaError) = fitGauss(hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle],"Leading jet 0-10 %",Form("%.0f < Gen pT < %.0f", hJetPtClosure[iClosureType][iCentrality][iClosureParticle]->GetBinLowEdge(iGenJetPt+1), hJetPtClosure[iClosureType][iCentrality][iClosureParticle]->GetBinLowEdge(iGenJetPt+2)), Form("figures/jetLeadingJetPtFit_GenPt%d.pdf",iGenJetPt));
             std::tie(gaussMean,gaussSigma,gaussMeanError,gaussSigmaError) = fitGauss(hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle]);
             
             // Fill the histogram with the fit parameters
@@ -251,7 +270,7 @@ void constructJetPtClosures(){
   char centralitySaveName[100];
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    for(int iCentrality = 0; iCentrality < 1; iCentrality++){ // TODO Return to nCentalitre
       
       if(drawPtClosure){
         drawClosureHistogram(hJetPtClosure[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 0, "PtClosure", saveFigures);
