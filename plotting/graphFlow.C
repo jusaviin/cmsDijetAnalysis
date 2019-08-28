@@ -19,6 +19,8 @@ void graphFlow(){
   bool inclusiveJetTrack = false;    // Produce the correction for inclusive jet-track correlations
   bool drawSubleading = false;       // Draw the subleading side also
   
+  bool drawHydjet = true;
+  
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,(regularJetTrack&&drawSubleading),(uncorrectedJetTrack&&drawSubleading),(ptWeightedJetTrack&&drawSubleading),inclusiveJetTrack,inclusiveJetTrack};
   const char *titleAddition[DijetHistogramManager::knJetTrackCorrelations] = {"",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", $p_{\\mathrm{T}}$ weighted"};
   
@@ -28,6 +30,8 @@ void graphFlow(){
   
   // Open files containing the background histograms with the fit
   TFile *backgroundFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root");
+  
+  TFile *hydjetFile = TFile::Open("data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_subeNon0_JECv4_noCorrections_processed_2019-08-09.root");
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager(backgroundFile);
@@ -47,14 +51,18 @@ void graphFlow(){
   
   // Define needed histograms
   TH1D *backgroundDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
+  TH1D *hydjetDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *trackPt[nCentralityBins];
   
   // Create a double array to which all the vn:s are read
   double masterFlowTable[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents][nTrackPtBins];
   double masterFlowError[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents][nTrackPtBins];
+  double hydjetFlowTable[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents][nTrackPtBins];
+  double hydjetFlowError[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents][nTrackPtBins];
   double jetFlowTable[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents][nTrackPtBins];
   double jetFlowError[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents][nTrackPtBins];
   TF1 *fourierFit;
+  TF1 *hydjetFit;
   
   // Rough flow coefficients from paper arXiv:1201.3158. This does not have the same track pT or centrality bins
   // and values are read by eye, but they should be good enough to give an order of magnitude
@@ -97,9 +105,16 @@ void graphFlow(){
         
         fourierFit = backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetFunction("fourier");
         
+        sprintf(histogramNamer,"%s/%sDeltaPhi_Background_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        hydjetDeltaPhi[iJetTrack][iCentrality][iTrackPt] = (TH1D*) hydjetFile->Get(histogramNamer);
+        
+        hydjetFit = hydjetDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetFunction("fourier");
+        
         for(int iFlow = 0; iFlow < nFlowComponents; iFlow++){
           masterFlowTable[iJetTrack][iCentrality][iFlow][iTrackPt] = fourierFit->GetParameter(iFlow+1);
           masterFlowError[iJetTrack][iCentrality][iFlow][iTrackPt] = fourierFit->GetParError(iFlow+1);
+          hydjetFlowTable[iJetTrack][iCentrality][iFlow][iTrackPt] = hydjetFit->GetParameter(iFlow+1);
+          hydjetFlowError[iJetTrack][iCentrality][iFlow][iTrackPt] = hydjetFit->GetParError(iFlow+1);
           jetFlowTable[iJetTrack][iCentrality][iFlow][iTrackPt] = masterFlowTable[iJetTrack][iCentrality][iFlow][iTrackPt] / roughHadronicFlow[iCentrality][iFlow][iTrackPt];
           jetFlowError[iJetTrack][iCentrality][iFlow][iTrackPt] = masterFlowError[iJetTrack][iCentrality][iFlow][iTrackPt] / roughHadronicFlow[iCentrality][iFlow][iTrackPt];
         } // flow components
@@ -126,6 +141,7 @@ void graphFlow(){
   
   // Define graphs that will take inside them the flow values
   TGraphErrors *flowGraph[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents];
+  TGraphErrors *hydjetGraph[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents];
   TGraphErrors *jetFlowGraph[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nFlowComponents];
   TGraph *crudeGraph[nCentralityBins][nFlowComponents];
   TLegend *legend;
@@ -144,27 +160,34 @@ void graphFlow(){
         
         sprintf(namerY,"v_{%d}",iFlow+1);
         sprintf(namer,"Centrality: %.0f-%.0f%%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
-        drawer->CreateCanvas(0,7,0,0.6,"p_{T} (GeV)",namerY,namer);
+        drawer->CreateCanvas(0,7,0,0.1,"p_{T} (GeV)",namerY,namer);
         flowGraph[iJetTrack][iCentrality][iFlow]->Draw("psame");
+        
+        hydjetGraph[iJetTrack][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins,meanPt[iCentrality],hydjetFlowTable[iJetTrack][iCentrality][iFlow],graphErrors,hydjetFlowError[iJetTrack][iCentrality][iFlow]);
+        hydjetGraph[iJetTrack][iCentrality][iFlow]->SetMarkerStyle(21);
+        hydjetGraph[iJetTrack][iCentrality][iFlow]->SetMarkerColor(kMagenta);
+        if(drawHydjet) hydjetGraph[iJetTrack][iCentrality][iFlow]->Draw("psame");
         
         jetFlowGraph[iJetTrack][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins,meanPt[iCentrality],jetFlowTable[iJetTrack][iCentrality][iFlow],graphErrors,jetFlowError[iJetTrack][iCentrality][iFlow]);
         jetFlowGraph[iJetTrack][iCentrality][iFlow]->SetMarkerStyle(21);
         jetFlowGraph[iJetTrack][iCentrality][iFlow]->SetMarkerColor(kGreen+4);
-        jetFlowGraph[iJetTrack][iCentrality][iFlow]->Draw("psame");
+        //jetFlowGraph[iJetTrack][iCentrality][iFlow]->Draw("psame");
         
         crudeGraph[iCentrality][iFlow] = new TGraph(nTrackPtBins,meanPt[iCentrality],roughHadronicFlow[iCentrality][iFlow]);
         crudeGraph[iCentrality][iFlow]->SetMarkerStyle(21);
         crudeGraph[iCentrality][iFlow]->SetMarkerColor(kRed);
-        crudeGraph[iCentrality][iFlow]->Draw("psame");
+        //crudeGraph[iCentrality][iFlow]->Draw("psame");
         
         legend = new TLegend(0.2,0.7,0.5,0.9);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
-        sprintf(namer,"V_{%d} from fit",iFlow+1);
+        sprintf(namer,"Track-jet V_{%d}",iFlow+1);
         legend->AddEntry(flowGraph[iJetTrack][iCentrality][iFlow],namer,"p");
+        sprintf(namer,"Hydjet V_{%d}",iFlow+1);
+        if(drawHydjet) legend->AddEntry(hydjetGraph[iJetTrack][iCentrality][iFlow],namer,"p");
         sprintf(namer,"Calculated v_{%d}^{jet}",iFlow+1);
-        legend->AddEntry(jetFlowGraph[iJetTrack][iCentrality][iFlow],namer,"p");
+        //legend->AddEntry(jetFlowGraph[iJetTrack][iCentrality][iFlow],namer,"p");
         sprintf(namer,"Rough v_{%d}^{track}",iFlow+1);
-        legend->AddEntry(crudeGraph[iCentrality][iFlow],namer,"p");
+        //legend->AddEntry(crudeGraph[iCentrality][iFlow],namer,"p");
         legend->Draw();
         
       } // flow components
