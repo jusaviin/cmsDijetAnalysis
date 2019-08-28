@@ -282,9 +282,9 @@ void closurePlotter(){
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = true;       // Draw the tracking closures
+  bool drawTrackClosure = false;       // Draw the tracking closures
   
-  bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
+  bool drawJetKinematicsMcComparison = true;     // Draw the jet kinematics figures comparing data and simulation
   bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
@@ -320,10 +320,12 @@ void closurePlotter(){
   // Open files containing the QA histograms
   DijetHistogramManager *inputManager[knCollisionSystems][knDataTypes];
   TFile *inputFile[knCollisionSystems][knDataTypes];
-  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13.root");
+  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root");
+  // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13.root
   // data/ppData2017_highForest_pfJets_onlyJets_wtaAxis_processed_2019-08-05.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_wtaAxis_processed_2019-08-13.root");
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root");
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_wtaAxis_processed_2019-08-13.root
   // data/dijetPbPb2018_highForest_flowPuCs4PfJets_noUncorr_wtaAxis_onlyJets_processed_2019-08-02.root
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   // data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root
