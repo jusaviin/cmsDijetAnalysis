@@ -6,8 +6,12 @@
 data
 *.root
 
-# Ignore testing filelist
+# Ignore testing filelists
 testFileList.txt
+list*.txt
+
+# Ignore test macros
+test*.C
 
 # Ignore the figures folder
 figures
