@@ -141,14 +141,14 @@ void estimateLongRangeSystematics(){
   double sameEventFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   
   // Tables for fit to different eta regions
-  double positiveEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double negativeEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double closeEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double farEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double positiveEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit]; // First bin: value, error
+  double negativeEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit]; // First bin: value, error
+  double closeEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];    // First bin: value, error
+  double farEtaTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];      // First bin: value, error
   
   // Tables for fits to positive and negative vz distributions
-  double positiveVzTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double negativeVzTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double positiveVzTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];  // First bin: value, error
+  double negativeVzTable[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];  // First bin: value, error
   
   // Make a big table with all relative and absolute uncertainties
   double relativeUncertaintyTable[JffCorrector::knLongRangeUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
@@ -335,35 +335,42 @@ void estimateLongRangeSystematics(){
           sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
           sameEventFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
           
-          positiveVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = positiveVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
-          negativeVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = negativeVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+          positiveVzTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = positiveVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+          positiveVzTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = positiveVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          negativeVzTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = negativeVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+          negativeVzTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = negativeVzFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
           
-          for(int iType = 0; iType < 2; iType++){
-            
-            if(positiveEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]){
-              positiveEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = positiveEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
-            } else {
-              positiveEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
-            }
-            
-            if(negativeEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]){
-              negativeEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = negativeEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
-            } else {
-              negativeEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
-            }
-            
-            if(closeEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]){
-              closeEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = closeEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
-            } else {
-              closeEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
-            }
-            
-            if(farEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]){
-              farEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = farEtaFit[iType][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
-            } else {
-              farEtaTable[iType][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
-            }
-          } // Loop over same event and corrected
+          if(positiveEtaFit[1][iAsymmetry][iCentrality][iTrackPt]){
+            positiveEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = positiveEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+            positiveEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = positiveEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          } else {
+            positiveEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+            positiveEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+          }
+          
+          if(negativeEtaFit[1][iAsymmetry][iCentrality][iTrackPt]){
+            negativeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = negativeEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+            negativeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = negativeEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          } else {
+            negativeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+            negativeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+          }
+          
+          if(closeEtaFit[1][iAsymmetry][iCentrality][iTrackPt]){
+            closeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = closeEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+            closeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = closeEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          } else {
+            closeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+            closeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+          }
+          
+          if(farEtaFit[1][iAsymmetry][iCentrality][iTrackPt]){
+            farEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = farEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+            farEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = farEtaFit[1][iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          } else {
+            farEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+            farEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] = -999;
+          }
           
         } // flow components
       } // Asymmetry loop
@@ -387,30 +394,30 @@ void estimateLongRangeSystematics(){
           absoluteUncertaintyTable[JffCorrector::kBackgroundGlue][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Abs(masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           
           // Put the value from comparison pasitive and negative eat sides to the uncertainty tables
-          firstValue = TMath::Abs(1-positiveEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          secondValue = TMath::Abs(1-negativeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          firstValue = TMath::Abs(1-positiveEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(1-negativeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           relativeUncertaintyTable[JffCorrector::kEtaSide][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
-          firstValue = TMath::Abs(positiveEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          secondValue = TMath::Abs(negativeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          firstValue = TMath::Abs(positiveEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(negativeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           absoluteUncertaintyTable[JffCorrector::kEtaSide][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
           // Put the value from comparing near and far eta region to the uncertainty tables
-          firstValue = TMath::Abs(1-closeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          secondValue = TMath::Abs(1-farEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          firstValue = TMath::Abs(1-closeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(1-farEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           relativeUncertaintyTable[JffCorrector::kEtaRegion][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
-          firstValue = TMath::Abs(closeEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          secondValue = TMath::Abs(farEtaTable[1][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          firstValue = TMath::Abs(closeEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(farEtaTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           absoluteUncertaintyTable[JffCorrector::kEtaRegion][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
           // Put a value for different vz regions to the uncertainty tables
-          firstValue = TMath::Abs(1-positiveVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          secondValue = TMath::Abs(1-negativeVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          firstValue = TMath::Abs(1-positiveVzTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(1-negativeVzTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow]/unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           relativeUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
-          firstValue = TMath::Abs(positiveVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
-          secondValue = TMath::Abs(negativeVzTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          firstValue = TMath::Abs(positiveVzTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          secondValue = TMath::Abs(negativeVzTable[0][iAsymmetry][iCentrality][iTrackPt][iFlow] - unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
           absoluteUncertaintyTable[JffCorrector::kVzVariation][iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Max(firstValue,secondValue);
           
           // Calculate the total uncertainty from all the sources combined
