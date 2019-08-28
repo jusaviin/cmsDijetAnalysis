@@ -668,12 +668,12 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerDijet[6];
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
-  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt"};
-  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Residual_AK4PF.txt", "Not applied", "Not applied", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Residual_AK4PF.txt"};
-  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_Uncertainty_AK4PF.txt"};
+  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt", "Not applied", "Not applied", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt"};
+  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt"};
 
   vector<string> correctionFiles;
-  correctionFiles.push_back(correctionFileRelative[fDataType]);
+  //correctionFiles.push_back(correctionFileRelative[fDataType]);
   if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) correctionFiles.push_back(correctionFileResidual[fDataType]);
   
   JetCorrector jetCorrector2018(correctionFiles);
@@ -1067,8 +1067,8 @@ void DijetAnalyzer::RunAnalysis(){
           // Only fill the any jet histogram if selected
           if(fFillJetHistograms){
             
-            // Apply JFF correction for jet pT only if we are using calorimeter jets
-            if(fJetType == 0){
+            // Apply JFF correction for jet pT only if we are using calorimeter jets in 2015 data
+            if(fJetType == 0 && fReadMode < 2000){
               std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
               jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
             } else {
@@ -1102,10 +1102,10 @@ void DijetAnalyzer::RunAnalysis(){
             // Apply the JFF correction for inclusive jet pT only if we are using calorimeter jets
             // If we are using leading particle flow candidate axis, we need to determine the direction
             // of the leading particle flow candidate whether we do the correction or not.
-            if(fJetType == 0 || fJetAxis == 1){
+            if((fJetType == 0 && fReadMode < 2000) || fJetAxis == 1){
             std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
             }
-            if(fJetType == 0){
+            if(fJetType == 0 && fReadMode < 2000){
               jetPtCorrected = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,jetPt,jetEta);
             } else {
               jetPtCorrected = jetPt;
@@ -1245,11 +1245,11 @@ void DijetAnalyzer::RunAnalysis(){
         // Apply the JFF correction for leading and subleading jet pT only if we are using calo jets
         // Determine the directions of the leading particle flow candidates for the leading and subleading
         // jets also if leading particle flow candidate is used to estimate the jet axis
-        if(fJetType == 0 || fJetAxis == 1){
+        if((fJetType == 0 && fReadMode < 2000) || fJetAxis == 1){
           std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(leadingJetPhi,leadingJetEta);
-          if(fJetType == 0) leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
+          if(fJetType == 0 && fReadMode < 2000) leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
           std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(subleadingJetPhi,subleadingJetEta);
-          if(fJetType == 0) subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
+          if(fJetType == 0 && fReadMode < 2000) subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
         }
         
         // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info

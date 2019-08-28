@@ -312,6 +312,7 @@ void HighForestReader::Initialize(){
   
   // Connect the branches to the skim tree (different for pp and PbPb data and Monte Carlo)
   fSkimTree->SetBranchStatus("*",0);
+  // pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter
   if(fDataType == kPp || fDataType == kPpMC){ // pp data or MC
     fSkimTree->SetBranchStatus("pPAprimaryVertexFilter",1);
     fSkimTree->SetBranchAddress("pPAprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
@@ -328,13 +329,17 @@ void HighForestReader::Initialize(){
     fSkimTree->SetBranchAddress("pprimaryVertexFilter",&fPrimaryVertexFilterBit,&fPrimaryVertexBranch);
     fSkimTree->SetBranchStatus("HBHENoiseFilterResultRun2Loose",1);
     fSkimTree->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&fHBHENoiseFilterBit,&fHBHENoiseBranch);
+    //fHBHENoiseFilterBit = 1; // TODO: Test different event cuts
     
     // Branches with 2018 syntax
     if(fReadMode > 2000){
       fSkimTree->SetBranchStatus("collisionEventSelectionAODv2",1); // 2018 syntax (or not v2?)
       fSkimTree->SetBranchAddress("collisionEventSelectionAODv2", &fCollisionEventSelectionFilterBit, &fCollisionEventSelectionBranch); // 2018 syntax (or not v2?)
+      //fCollisionEventSelectionFilterBit = 1; // TODO: Test different event cuts
       fSkimTree->SetBranchStatus("phfCoincFilter3Th3",1); // 2018 syntax (of Th4?)
       fSkimTree->SetBranchAddress("phfCoincFilter3Th3", &fHfCoincidenceFilterBit, &fHfCoincidenceBranch); // 2018 syntax
+      //fSkimTree->SetBranchStatus("phfCoincFilter2Th4",1); // 2018 syntax (of Th4?) TODO: Test different event cuts
+      //fSkimTree->SetBranchAddress("phfCoincFilter2Th4", &fHfCoincidenceFilterBit, &fHfCoincidenceBranch); // 2018 syntax
     } else { // Banches with 2015 syntax
       fSkimTree->SetBranchStatus("pcollisionEventSelection",1); // 2015 syntax
       fSkimTree->SetBranchAddress("pcollisionEventSelection", &fCollisionEventSelectionFilterBit, &fCollisionEventSelectionBranch); // 2015 syntax
