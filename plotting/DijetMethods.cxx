@@ -1572,6 +1572,69 @@ void DijetMethods::PropagateDeltaEtaToDeltaR(TH1* errorHistogram, const double d
 }
 
 /*
+ * Rebin one dimensional histogram with asymmetric bin edges
+ *
+ * Arguments:
+ *  TH1D* histogramInNeedOfRebinning = Histogram to be rebinned
+ *  const int nBins = Number of bins for the rebinned histogram
+ *  const double* binEdges = Bin edges for the rebinned histogram
+ */
+TH1D* DijetMethods::RebinAsymmetric(TH1D* histogramInNeedOfRebinning, const int nBins, const double* binEdges){
+  
+  // First, check that the new bin boundaries are also bin boundaries in the original histogram
+  bool binsGood = CheckBinBoundaries(nBins,binEdges,histogramInNeedOfRebinning->GetXaxis());
+  if(!binsGood){
+    std::cout << "Cannot rebin histogram " << histogramInNeedOfRebinning->GetName() << " because given bin borders do not match with the bin borders of the original histogram!" << std::endl;
+    return histogramInNeedOfRebinning;
+  }
+  
+  // Clone the original histogram
+  TH1D *clonedHistogram = (TH1D*) histogramInNeedOfRebinning->Clone("_rebinned");
+  
+  // Set the new binning for histogram (destroys content in each bin)
+  clonedHistogram->SetBins(nBins,binEdges);
+  
+  // Make sure that each bin is set to zero
+  for(int iBin = 1; iBin <= clonedHistogram->GetNbinsX(); iBin++){
+    clonedHistogram->SetBinContent(iBin,0);
+    clonedHistogram->SetBinError(iBin,0);
+  }
+  
+  // Add the contents back to the histogram that was rebinned
+  double binContent, binError, binCenter, oldContent, oldError;
+  int newBin;
+  double binWidth;
+  for(int iBin = 1; iBin <= histogramInNeedOfRebinning->GetNbinsX(); iBin++){
+    
+    // Read the contents from the non-rebinned histogram
+    binWidth = histogramInNeedOfRebinning->GetBinWidth(iBin);
+    binContent = histogramInNeedOfRebinning->GetBinContent(iBin)*binWidth;  // Remove previous bin width normalization
+    binError = histogramInNeedOfRebinning->GetBinError(iBin)*binWidth;      // Remove previous bin width normalization
+    binCenter = histogramInNeedOfRebinning->GetBinCenter(iBin);
+    
+    // Add the contents to the rebinned histgram
+    newBin = clonedHistogram->FindBin(binCenter);
+    oldContent = clonedHistogram->GetBinContent(newBin);
+    oldError = clonedHistogram->GetBinError(newBin);
+    clonedHistogram->SetBinContent(newBin,binContent+oldContent);
+    clonedHistogram->SetBinError(newBin,TMath::Sqrt(binError*binError+oldError*oldError));
+  }
+  
+  // Normalize the bin contents to bin width
+  for(int iBin = 1; iBin <= clonedHistogram->GetNbinsX(); iBin++){
+    binWidth = clonedHistogram->GetBinWidth(iBin);
+    binContent = clonedHistogram->GetBinContent(iBin);
+    binError = clonedHistogram->GetBinError(iBin);
+    clonedHistogram->SetBinContent(iBin,binContent/binWidth);
+    clonedHistogram->SetBinError(iBin,binError/binWidth);
+  }
+  
+  // Return the rebinned histogram
+  return clonedHistogram;
+}
+
+
+/*
  * Rebin a two-dimensional deltaPhi-deltaEta histogram
  *
  *  Arguments:
@@ -1651,11 +1714,11 @@ TH2D* DijetMethods::RebinHistogram(TH2D *histogramInNeedOfRebinning){
  *  Arguments:
  *   const int nCheckedBins = Number of new bins to be checked
  *   const double *checkedBins = Bin boundaries to be checked
- *   TAxis *originalAxis = Original axis against with the new bins are checked
+ *   const TAxis *originalAxis = Original axis against with the new bins are checked
  *
  *   return: True, if all the new bin boundaries can be found from the original axis. False if not.
  */
-bool DijetMethods::CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, TAxis *originalAxis){
+bool DijetMethods::CheckBinBoundaries(const int nCheckedBins, const double *checkedBins, const TAxis *originalAxis){
   
   // Flag, if the current bin is a bin boundary in the histogram to be rebinned
   bool binOK = false;
