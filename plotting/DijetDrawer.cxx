@@ -666,7 +666,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
         centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
         compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
         
-        // Draw both the selected event correlation types (same event/mixed event/corrected)
+        // Draw the selected event correlation types (same event/mixed event/corrected/background subtracted/background)
         for(int iCorrelationType = 0; iCorrelationType < DijetHistogramManager::knCorrelationTypes; iCorrelationType++){
           if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
           
@@ -925,6 +925,142 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
 }
 
 /*
+ * Draw stack figures combining all pT bins for jet shape histograms
+ */
+void DijetDrawer::DrawDeltaEtaStack(){
+  
+  // Only draw the regular jet shape histograms to stack
+  if(!fDrawJetTrackDeltaEta) return;
+  
+  // Variable for the jet shape stack histograms
+  stackHist *deltaEtaStack[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins][fLastDrawnCentralityBin+1];
+  
+  // Helper variables for centrality naming in figures
+  TString centralityString;
+  TString compactCentralityString;
+  TString compactTrackPtString = "_ptStack";
+  TString asymmetryString;
+  TString compactAsymmetryString;
+  char namerX[100];
+  const char *titleY;
+  
+  // Helper variables for legend
+  TLegend *legend;
+  TLegend *systemLegend;
+  double legendX1;
+  double legendY1;
+  double legendX2;
+  double legendY2;
+  TString legendString[fLastDrawnTrackPtBin+1];
+  TString systemLegendString;
+  
+  // Helper variables for histograms added to stack
+  TH1D *addedHistogram;
+  TH1D *rebinnedHistogram;
+  TH2D *helperHistogram;
+  
+  // Logarithmic drawing for jet shape histograms
+  fDrawer->SetLogY(false);
+  fDrawer->SetRelativeCanvasSize(1,1);
+  
+  // Projector to get the deltaEta histogram out of the two-dimansional histogram
+  DijetMethods *projector = new DijetMethods();
+  double projectionRegion = 1;
+  const int nDeltaEtaBinsRebin = 21;
+  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
+  
+  // Loop over jet-track correlation categories
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+    
+    for(int iAsymmetry = fFirstDrawnAsymmetryBin; iAsymmetry <= fLastDrawnAsymmetryBin; iAsymmetry++){
+      
+      // Set the asymmetry string based on the selected asymmetry bin
+      if(iAsymmetry < fHistograms->GetNAsymmetryBins()){
+        asymmetryString = Form("%.1f < %s < %.1f", fHistograms->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry), fHistograms->GetCard()->GetAsymmetryBinType(), fHistograms->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry));
+        compactAsymmetryString = Form("_A=%.1f-%.1f", fHistograms->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry), fHistograms->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry));
+        compactAsymmetryString.ReplaceAll(".","v");
+      } else {
+        asymmetryString = "";
+        compactAsymmetryString = "";
+      }
+      
+      // Loop over centrality
+      for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+        
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality] = new stackHist(Form("deltaEtaStack%d%d%d",iJetTrack,iAsymmetry,iCentrality));
+        
+        if(fSystemAndEnergy.Contains("PbPb")){
+          centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+          compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+        } else {
+          centralityString = "";
+          compactCentralityString = "";
+        }
+        
+        // Loop over track pT bins
+        for(int iTrackPt = fLastDrawnTrackPtBin; iTrackPt >= fFirstDrawnTrackPtBin; iTrackPt--){
+          
+          // Set the correct track pT bins for the legend
+          legendString[iTrackPt] = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
+          
+          helperHistogram = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
+          
+          addedHistogram = projector->ProjectRegionDeltaEta(helperHistogram, -projectionRegion, projectionRegion, Form("DeltaEtaStack%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
+          
+          // Since we want to plot yield, we do not want to normalize over the number of bins projected over
+          // but simply look at the yield in certain region
+          addedHistogram->Scale(projector->GetNBinsProjectedOver());
+          
+          // The different pT bins can have different size, so we need to normalize the yield with the pT bin width
+          addedHistogram->Scale(1/(fHistograms->GetTrackPtBinBorder(iTrackPt+1) - fHistograms->GetTrackPtBinBorder(iTrackPt)));
+          
+          // Rebin the histogram to match the binning in the inclusive jet shape paper
+          rebinnedHistogram = projector->RebinAsymmetric(addedHistogram,nDeltaEtaBinsRebin,deltaEtaBinBordersRebin);
+          
+          // Add the scaled deltaEta hisrogram to the stack
+          deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->addHist(rebinnedHistogram);
+          
+        } // track pT bin loop
+        
+        // Set up the axes and draw the stack
+        fDrawer->CreateCanvas();
+        legendX1 = -1.5; legendX2 = 1.5; legendY1 = 0.0; legendY2 = 35; titleY = "#frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}";
+
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->setRange(legendX1, legendX2, "x");
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->setRange(legendY1, legendY2, "y");
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->drawStack("","hist",true);
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->hst->GetXaxis()->SetTitle("#Delta#eta");
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->hst->GetXaxis()->SetTitleOffset(1.05);
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->hst->GetYaxis()->SetTitle(titleY);
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->hst->GetYaxis()->SetTitleOffset(1.05);
+        deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->hst->Draw();
+        
+        // Get legend from the stack and draw also that
+        legendX1 = 0.45; legendX2 = 0.9; legendY1 = 0.55; legendY2 = 0.95;
+        legend = deltaEtaStack[iJetTrack][iAsymmetry][iCentrality]->makeLegend(legendString,legendX1,legendY1,legendX2,legendY2,false,fLastDrawnTrackPtBin+1);
+        //legend->Draw();
+        
+        systemLegend = new TLegend(0.15,0.77,0.65,0.89);
+        systemLegend->SetFillStyle(0);systemLegend->SetBorderSize(0);systemLegend->SetTextSize(0.05);systemLegend->SetTextFont(62);
+        systemLegendString = fSystemAndEnergy + " " + fHistograms->GetJetTrackAxisName(iJetTrack);
+        systemLegend->AddEntry((TObject*) 0, systemLegendString.Data(), "");
+        systemLegendString = asymmetryString + " " + centralityString;
+        systemLegend->AddEntry((TObject*) 0, systemLegendString.Data(), "");
+        systemLegend->Draw();
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sDeltaEta",fHistograms->GetJetTrackHistogramName(iJetTrack));
+        SaveFigure(namerX,compactCentralityString,compactTrackPtString,compactAsymmetryString);
+        
+      } // centrality loop
+    } // Asymmetry loop
+  } // jet-track loop
+  
+}
+
+
+/*
  * Drawer for track jet correlation histograms
  */
 void DijetDrawer::DrawJetShapeHistograms(){
@@ -1163,7 +1299,6 @@ void DijetDrawer::DrawJetShapeStack(){
       } // centrality loop
     } // Asymmetry loop
   } // jet-track loop
-  
   
 }
 

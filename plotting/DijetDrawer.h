@@ -18,6 +18,7 @@
 #include "JDrawer.h"
 #include "DijetHistogramManager.h"
 #include "stackHist.h"   // Xiao's histogram stacking class
+#include "DijetMethods.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -34,6 +35,7 @@ public:
   
   void DrawHistograms();          // Draw the histograms
   void DrawJetShapeStack();       // Draw stack figures combining all pT bins for jet shape histograms
+  void DrawDeltaEtaStack();       // Draw stacj figures combining all pT bins for deltaEta histograms
   
   // Setters for event information and dijets
   void SetDrawEventInformation(const bool drawOrNot); // Setter for drawing event information
