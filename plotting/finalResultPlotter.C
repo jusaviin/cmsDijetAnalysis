@@ -4,247 +4,347 @@
 #include "xCanvas.h"
 #include "JDrawer.h"
 
-void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager *pbpbHistograms){
+void drawFinalFigure();
+
+void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager *pbpbHistograms, JffCorrector *ppUncertaintyProvider, JffCorrector *pbpbUncertaintyProvider, int iJetTrack){
 
   const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
   const int nCentralityBins = pbpbHistograms->GetNCentralityBins();
+  const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
   
-  // Read the jet shape histograms to an array
-  TH1D *jetShapeArray[nTrackPtBins][nCentralityBins+1];
+  const char* jetShapeTitle[] = {"Leading jet shape","Subleading jet shape","Jet shape"};
+  const char* jetShapeSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
+  const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
+  const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   
-  for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-    jetShapeArray[iTrackPt][nCentralityBins] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, DijetHistogramManager::kPtWeightedTrackLeadingJet, DijetHistogramManager::kMaxAsymmetryBins, 0, iTrackPt);
+  // Temporary: Get the ratio between pp and PbPb jet shape
+  TH1D *sumHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
+  TH1D *sumHistogramPp[nAsymmetryBins+1];
+  TH1D *jetShapeArray[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
+  TH1D *uncertaintyHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
+  TH1D *uncertaintyHistogramPp[nAsymmetryBins+1];
+  TH1D *helperHistogram;
+  double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
+  double shapeIntegralPp[nAsymmetryBins+1];
+  
+  // Read the pT summed jet shape histograms
+  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      jetShapeArray[iTrackPt][iCentrality] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, DijetHistogramManager::kPtWeightedTrackLeadingJet, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt);
+      sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0)->Clone(Form("sumPbPb%d",iCentrality));
+      jetShapeArray[iCentrality][0][iAsymmetry] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0);
     }
+    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0)->Clone("sumPp");
+    jetShapeArray[nCentralityBins][0][iAsymmetry] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0);
   }
-  TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
-  stackHist *st[nCentralityBins+1];
-  //labels_PAS* lb = new labels_PAS();
-  TBox *box = new TBox();
-  TLatex *mainTitle = new TLatex();
   
-  TH1D* ratio[nCentralityBins];
-  //TH1D* ratio_auxi[4];
-  TLine *line = new TLine();
-  
-  TH1D* jetShapeSum[nCentralityBins+1];
-  char namer[100];
-  for(int iCentrality = 0; iCentrality < nCentralityBins+1; iCentrality++){
-    sprintf(namer,"jetShapeSum%d",iCentrality);
-    jetShapeSum[iCentrality] = (TH1D*) jetShapeArray[iCentrality][0]->Clone(namer);
+  // Sum the pT:s
+  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
-      jetShapeSum[iCentrality]->Add(jetShapeArray[iCentrality][iTrackPt]);
-    }
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        helperHistogram = (TH1D*)pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt)->Clone();
+        sumHistogramPbPb[iCentrality][iAsymmetry]->Add(helperHistogram);
+        jetShapeArray[iCentrality][iTrackPt][iAsymmetry] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt);
+      }
+      helperHistogram = (TH1D*)ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,0,iTrackPt)->Clone();
+      sumHistogramPp[iAsymmetry]->Add(helperHistogram);
+      jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, iTrackPt);
+    } // track pT
   }
   
-  for(int i = 0; i < nCentralityBins+1; i++){
-    //js_dr_err_all[i]->SetFillStyle(1001);
-    //js_dr_err_all[i]->SetFillColorAlpha(kGray+3,.4);
-    //js_dr_err_all[i]->SetMarkerStyle(20);
-    //js_dr_err_all[i]->SetMarkerSize(1.6);
-    //js_dr_err_all[i]->SetMarkerColor(kBlack);
-    //js_dr_err_all[i]->SetLineColor(kBlack);
+  // Normalize the jet shape histograms
+  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      shapeIntegralPbPb[iCentrality][iAsymmetry] = sumHistogramPbPb[iCentrality][iAsymmetry]->Integral(1,sumHistogramPbPb[iCentrality][iAsymmetry]->FindBin(0.99),"width");
+      sumHistogramPbPb[iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+      
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+      }
+      
+    }
     
-    st[i]= new stackHist(Form("st_%d",i));
-    st[i]->setRange(0., 0.99, "x");
-    st[i]->setRange(0.005, 30, "y");
-    int firstBin = 1;
-    int lastBin = jetShapeSum[i]->GetXaxis()->FindBin(0.99);
-    double fac = jetShapeSum[i]->Integral(firstBin,lastBin,"width");
-    cout<<fac<<endl;
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins ; iTrackPt++){
-      jetShapeArray[iTrackPt][i]->Scale(1.0/fac);
-      st[i]->addHist((TH1*) jetShapeArray[iTrackPt][i]);
+    shapeIntegralPp[iAsymmetry] = sumHistogramPp[iAsymmetry]->Integral(1,sumHistogramPp[iAsymmetry]->FindBin(0.99),"width");
+    sumHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
+    
+    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+      jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
     }
-    //js_dr_err_all[i]->Scale(1.0/fac);
-    jetShapeSum[i]->Scale(1.0/fac);
-    jetShapeSum[i]->SetMarkerColor(0);
+    
+    // Read the uncertainties for the pT summed jet shapes and scale them for jet shapes
+    uncertaintyHistogramPp[iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry);
+    uncertaintyHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
+    
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      uncertaintyHistogramPbPb[iCentrality][iAsymmetry] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry);
+      uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+    }
   }
   
-  for(int i=0 ;i<nCentralityBins; ++i){
-    ratio[i]=(TH1D*)jetShapeSum[i]->Clone(Form("js_ratio_%d",i));
-    ratio[i]->Divide(jetShapeSum[nCentralityBins]);
-    //ratio_auxi[i]=(TH1D*) js_dr_err_all[i]->Clone(Form("js_syst_ratio_%d",i));
-    //ratio_auxi[i]->Divide(js_dr_err_all[4]);
-    //ratio_auxi[i]->SetFillStyle(1001);
-    //ratio_auxi[i]->SetFillColorAlpha(kGray+3, .4);
-    //ratio_auxi[i]->SetMarkerColor(0);
-    //    ratio_auxi[i]->SetLineColor(kBlack);
+  TH1D* ratioHistogram[nCentralityBins][nAsymmetryBins+1];
+  TH1D* asymmetryRatioHistogram[nCentralityBins+1][nAsymmetryBins];
+  
+  // Create uncertainty histograms for the ratio using standard jet shape binning
+  TH1D* ratioUncertainty[nCentralityBins][nAsymmetryBins+1];
+  TH1D* asymmetryRatioUncertainty[nCentralityBins+1][nAsymmetryBins];
+  double ppValue, pbpbValue, ratioValue;
+  double ppUncertainty, pbpbUncertainty, ratioUncertaintyValue;
+  
+  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      ratioUncertainty[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("ratioUncertainty%d%d", iCentrality, iAsymmetry));
+      ratioHistogram[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("ratio%d%d", iCentrality, iAsymmetry));
+      ratioHistogram[iCentrality][iAsymmetry]->Divide(sumHistogramPp[iAsymmetry]);
+      
+      // Calculate the systemtic uncertainty for the ratio
+      for(int iBin = 1; iBin < ratioUncertainty[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+        ppValue = sumHistogramPp[iAsymmetry]->GetBinContent(iBin);
+        pbpbValue = sumHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin);
+        ppUncertainty = uncertaintyHistogramPp[iAsymmetry]->GetBinContent(iBin);
+        pbpbUncertainty = uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin);
+        ratioValue = ratioHistogram[iCentrality][iAsymmetry]->GetBinContent(iBin);
+        ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2)+TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2));
+        ratioUncertainty[iCentrality][iAsymmetry]->SetBinContent(iBin,ratioValue);
+        ratioUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin,ratioUncertaintyValue);
+      }
+      
+    }
   }
-  auto bigCanvas = new auxi_canvas("bigCanvas", "", 2500, 2000);
-  bigCanvas->SetMargin(0.06, 0.01, 0.08, 0.02);
-  bigCanvas->divide(3,4);
+  for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+      asymmetryRatioUncertainty[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[0][0]->Clone(Form("asymmetryRatioUncertainty%d%d", iCentrality, iAsymmetry));
+    }
+  }
   
-  //cout<<ratio_auxi[0]->GetName()<<endl;
-  //cout<<"err = "<<ratio_auxi[0]->GetBinError(ratio_auxi[0]->FindBin(0.95))<<endl;;
+  TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
+  stackHist *jetShapeStack[nCentralityBins+1][nAsymmetryBins+1];
   
-  for(int i=0; i<nCentralityBins; ++i){
-    bigCanvas->CD(8-i);
+  for(int iCentrality = 0; iCentrality < nCentralityBins+1; iCentrality++){
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      //js_dr_err_all[iCentrality]->SetFillStyle(1001);
+      //js_dr_err_all[iCentrality]->SetFillColorAlpha(kGray+3,.4);
+      //js_dr_err_all[iCentrality]->SetMarkerStyle(20);
+      //js_dr_err_all[iCentrality]->SetMarkerSize(1.6);
+      //js_dr_err_all[iCentrality]->SetMarkerColor(kBlack);
+      //js_dr_err_all[iCentrality]->SetLineColor(kBlack);
+      
+      jetShapeStack[iCentrality][iAsymmetry] = new stackHist(Form("st_%d",iCentrality));
+      jetShapeStack[iCentrality][iAsymmetry]->setRange(0.0, 0.99, "x");
+      jetShapeStack[iCentrality][iAsymmetry]->setRange(0.005, 30, "y");
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins ; iTrackPt++){
+        jetShapeStack[iCentrality][iAsymmetry]->addHist((TH1*) jetShapeArray[iCentrality][iTrackPt][iAsymmetry]);
+      }
+      //js_dr_err_all[iCentrality]->Scale(1.0/fac);
+      //jetShapeSum[iCentrality]->SetMarkerColor(0);
+    } // Asymmetry loop
+  } // Centrality loop
+  
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
+      ratioUncertainty[iCentrality][iAsymmetry]->SetFillStyle(1001);
+      ratioUncertainty[iCentrality][iAsymmetry]->SetFillColorAlpha(kGray+3, 0.4);
+      ratioUncertainty[iCentrality][iAsymmetry]->SetMarkerColor(0);
+      ratioUncertainty[iCentrality][iAsymmetry]->SetMarkerStyle(21);
+      ratioUncertainty[iCentrality][iAsymmetry]->SetLineColor(kBlack);
+    }
+  }
+  
+  // Draw all the distributions to big canvases
+  auxi_canvas *bigCanvas[nAsymmetryBins+1];
+  TBox *box[nAsymmetryBins+1];
+  TLatex *mainTitle[nAsymmetryBins+1];
+  TLine *line[nAsymmetryBins+1];
+  
+  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+    
+    bigCanvas[iAsymmetry] = new auxi_canvas(Form("bigCanvas%d",iAsymmetry), "", 2500, 2000);
+    bigCanvas[iAsymmetry]->SetMargin(0.06, 0.01, 0.08, 0.02);
+    bigCanvas[iAsymmetry]->divide(3,4);
+    
+    mainTitle[iAsymmetry] = new TLatex();
+    
+    for(int iCentrality=0; iCentrality < nCentralityBins; iCentrality++){
+      bigCanvas[iAsymmetry]->CD(8-iCentrality);
+      gPad->SetLogy();
+      jetShapeStack[iCentrality][iAsymmetry]->drawStack();
+      jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetNdivisions(505);
+      jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.08);
+      jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(0.9);
+      jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
+      jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
+      jetShapeStack[iCentrality][iAsymmetry]->hst->Draw();
+      //js_dr_err_all[iCentrality][iAsymmetry]->Draw("same e2");
+      if(iCentrality==3 ){
+        mainTitle[iAsymmetry]->SetTextFont(22);
+        mainTitle[iAsymmetry]->SetTextSize(.085);
+        mainTitle[iAsymmetry]->DrawLatexNDC(.35, 0.9, "PbPb");
+        mainTitle[iAsymmetry]->DrawLatexNDC(.35, .82, cent_lab[iCentrality]);
+      }
+      else {
+        mainTitle[iAsymmetry]->SetTextFont(22);
+        mainTitle[iAsymmetry]->SetTextSize(.09);
+        mainTitle[iAsymmetry]->DrawLatexNDC(.19, 0.9, "PbPb");
+        mainTitle[iAsymmetry]->DrawLatexNDC(.19, .82, cent_lab[iCentrality]);
+      }
+      bigCanvas[iAsymmetry]->CD(12-iCentrality);
+      //ratio[iCentrality]->GetYaxis()->SetNdivisions(505);
+      ratioHistogram[iCentrality][iAsymmetry]->SetTitle("");
+      ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitleOffset(1.1);
+      ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitle("#Deltar");
+      ratioHistogram[iCentrality][iAsymmetry]->SetAxisRange(0., 3.2, "Y");
+      ratioHistogram[iCentrality][iAsymmetry]->SetAxisRange(0, .99, "X");
+      if( iCentrality<3 )  {
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitleOffset(0.7);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitleSize(0.11);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetNdivisions(505);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetLabelSize(0.08);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetNdivisions(505);
+      }
+      if(iCentrality==3 ){
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitleOffset(0.92);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitleSize(0.086);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetNdivisions(505);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetLabelOffset(0.016);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetLabelSize(0.064);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetNdivisions(505);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetLabelOffset(0.02);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetLabelSize(0.07);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetTitleOffset(0.9);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetTitleSize(0.08);
+        ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->SetTitle("#rho(#Deltar)_{PbPb}/#rho(#Deltar)_{pp}");
+        mainTitle[iAsymmetry]->SetTextSize(0.073);
+        //mainTitle->DrawLatexNDC(.25, .92, "PbPb - pp");
+        //mainTitle->DrawLatexNDC(.25, .84, cent_lab[iCentrality]);
+      }
+      else{
+        //mainTitle->SetTextSize(0.09);
+        //mainTitle->DrawLatexNDC(.05, .92, "PbPb - pp");
+        //mainTitle->DrawLatexNDC(.05, .84, cent_lab[iCentrality]);
+      }
+      
+      ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->CenterTitle();
+      ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->CenterTitle();
+      ratioHistogram[iCentrality][iAsymmetry]->SetStats(0);
+      ratioHistogram[iCentrality][iAsymmetry]->Draw("same");
+      
+      line[iAsymmetry] = new TLine();
+      line[iAsymmetry]->SetLineStyle(2);
+      line[iAsymmetry]->DrawLine(0, 1, 1, 1);
+      
+      ratioUncertainty[iCentrality][iAsymmetry]->Draw("same e2");
+    }
+    bigCanvas[iAsymmetry]->CD(1);
     gPad->SetLogy();
-    st[i]->drawStack();
-    st[i]->hst->GetYaxis()->SetNdivisions(505);
-    st[i]->hst->GetYaxis()->SetLabelSize(0.08);
-    st[i]->hst->GetYaxis()->SetTitleOffset(.9);
-    st[i]->hst->GetYaxis()->SetTitleSize(0.1);
-    st[i]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
-    st[i]->hst->Draw();
-    //js_dr_err_all[i]->Draw("same e2");
-    if(i==3 ){
-      mainTitle->SetTextFont(22);
-      mainTitle->SetTextSize(.085);
-      mainTitle->DrawLatexNDC(.35, 0.9, "PbPb");
-      mainTitle->DrawLatexNDC(.35, .82, cent_lab[i]);
-    }
-    else {
-      mainTitle->SetTextFont(22);
-      mainTitle->SetTextSize(.09);
-      mainTitle->DrawLatexNDC(.19, 0.9, "PbPb");
-      mainTitle->DrawLatexNDC(.19, .82, cent_lab[i]);
-    }
-    bigCanvas->CD(12-i);
-    //ratio[i]->GetYaxis()->SetNdivisions(505);
-    ratio[i]->GetXaxis()->SetTitleOffset(1.1);
-    ratio[i]->GetXaxis()->SetTitle("#Deltar");
-    ratio[i]->SetAxisRange(0., 6.2, "Y");
-    ratio[i]->SetAxisRange(0, .99, "X");
-    if( i<3 )  {
-      ratio[i]->GetXaxis()->SetTitleOffset(0.7);
-      ratio[i]->GetXaxis()->SetTitleSize(0.11);
-      ratio[i]->GetXaxis()->SetNdivisions(505);
-      ratio[i]->GetXaxis()->SetLabelSize(0.08);
-      ratio[i]->GetYaxis()->SetNdivisions(505);
-    }
-    if(i==3 ){
-      ratio[i]->GetXaxis()->SetTitleOffset(0.92);
-      ratio[i]->GetXaxis()->SetTitleSize(0.086);
-      ratio[i]->GetXaxis()->SetNdivisions(505);
-      ratio[i]->GetXaxis()->SetLabelOffset(0.016);
-      ratio[i]->GetXaxis()->SetLabelSize(0.064);
-      ratio[i]->GetYaxis()->SetNdivisions(505);
-      ratio[i]->GetYaxis()->SetLabelOffset(0.02);
-      ratio[i]->GetYaxis()->SetLabelSize(0.07);
-      ratio[i]->GetYaxis()->SetTitleOffset(0.9);
-      ratio[i]->GetYaxis()->SetTitleSize(0.08);
-      ratio[i]->GetYaxis()->SetTitle("#rho(#Deltar)_{PbPb}/#rho(#Deltar)_{pp}");
-      mainTitle->SetTextSize(0.073);
-      //mainTitle->DrawLatexNDC(.25, .92, "PbPb - pp");
-      //mainTitle->DrawLatexNDC(.25, .84, cent_lab[i]);
-    }
-    else{
-      //mainTitle->SetTextSize(0.09);
-      //mainTitle->DrawLatexNDC(.05, .92, "PbPb - pp");
-      //mainTitle->DrawLatexNDC(.05, .84, cent_lab[i]);
-    }
-    ratio[i]->GetYaxis()->CenterTitle();
-    ratio[i]->GetXaxis()->CenterTitle();
-    ratio[i]->SetStats(0);
-    ratio[i]->Draw("same");
-    //ratio_auxi[i]->Draw("same e2");
-    line->SetLineStyle(2);
-    line->DrawLine(0, 1, 1, 1);
-  }
-  bigCanvas->CD(1);
-  gPad->SetLogy();
-  st[4]->drawStack();
-  st[4]->hst->GetYaxis()->SetNdivisions(505);
-  st[4]->hst->GetYaxis()->SetLabelSize(0.08);
-  st[4]->hst->GetYaxis()->SetTitleOffset(.9);
-  st[4]->hst->GetYaxis()->SetTitleSize(0.1);
-  st[4]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
-  mainTitle->SetTextSize(.085);
-  mainTitle->DrawLatexNDC(.35, .88, "pp reference");
-  //js_dr_err_all[4]->Draw("same e2");
-  
-  TLegend* lt1 = new TLegend(0.01,0.1,1.,0.5);
-  TLegend* lt2 = new TLegend(0.0,0.1,1.,0.5);
-  TLegend* lt3 = new TLegend(0.0,0.35,1 ,0.5);
-  TLegend* lt5 = new TLegend(0.01,0.5,1 ,.68);
-  //TLegend* lt4 = new TLegend(0.25,0.85,.85,0.95);
-  lt1->SetTextSize(0.07);
-  lt1->SetLineColor(kWhite);
-  lt1->SetFillColor(kWhite);
-  lt2->SetTextSize(0.07);
-  lt2->SetLineColor(kWhite);
-  lt2->SetFillColor(kWhite);
-  lt3->SetTextSize(0.07);
-  lt3->SetLineColor(kWhite);
-  lt3->SetFillColor(kWhite);
-  //lt4->SetTextSize(0.06);
-  //lt4->SetLineColor(kWhite);
-  //lt4->SetFillColor(kWhite);
-  lt5->SetTextSize(0.07);
-  lt5->SetLineColor(kWhite);
-  lt5->SetFillColor(kWhite);
-  
-  
-  lt1->AddEntry(st[4]->hist_trunk.at(0), "0.7 < p_{T}^{trk}< 1 GeV","f");
-  lt1->AddEntry(st[4]->hist_trunk.at(1), "1 < p_{T}^{trk}< 2 GeV","f");
-  lt1->AddEntry(st[4]->hist_trunk.at(2), "2 < p_{T}^{trk}< 3 GeV","f");
-  
-  lt2->AddEntry(st[4]->hist_trunk.at(3), "3 < p_{T}^{trk}< 4 GeV","f");
-  lt2->AddEntry(st[4]->hist_trunk.at(4), "4 < p_{T}^{trk}< 8 GeV","f");
-  lt2->AddEntry(st[4]->hist_trunk.at(5), "8 < p_{T}^{trk}< 12 GeV","f");
-  
-  
-  lt3->AddEntry(st[4]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
-  //lt3->AddEntry(st[4]->hist_trunk.at(7), "16 < p_{T}^{trk}< 20 GeV","f");
-  //lt3->AddEntry(st[4]->hist_trunk.at(8), "20 < p_{T}^{trk}< 300 GeV","f");
-  
-  //lt4->AddEntry(ratio_auxi[0], "#rho(#Deltar)_{PbPb}/#rho(#Deltar)_{pp}");
-  //lt4->AddEntry(ratio_auxi[0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
-  //bigCanvas->CD(9);
-  //lt4->Draw();
-  
-  //bigCanvas->CD(1);
-  //TLegend* lt6 = new TLegend(0.3,0.7,0.98,0.85);
-  //lt6->SetTextSize(0.07);
-  //lt6->SetLineColor(kWhite);
-  //lt6->SetFillColor(kWhite);
-  //lt6->AddEntry(js_dr_err_all[0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
-  //lt6->Draw();
-  
-  bigCanvas->CD(2);
-  //  lt5->AddEntry(js_dr_err_all[0], "0.7 < p_{T}^{track}< 20 GeV","lpfe");
-  //  lt5->Draw();
-  line->SetLineStyle(1);
-  line->DrawLineNDC(0, 0, 0, 1);
-  lt1->Draw();
-  bigCanvas->CD(3);
-  lt2->Draw();
-  bigCanvas->CD(4);
-  lt3->Draw();
-  
-  bigCanvas->cd(0);
-  mainTitle->SetTextFont(62);
-  mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(0.5, 0.94, "CMS");
-  
-  mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(0.6, 0.94, "Leading jet shapes");
-  
-  mainTitle->SetTextSize(0.03);
-  mainTitle->DrawLatexNDC(.4, .9, "pp 320 pb^{-1} (5.02 TeV)  PbPb 1.7 #nb^{-1} (5.02 TeV)");
-  mainTitle->SetTextSize(0.025);
-  mainTitle->DrawLatexNDC(.45, .86, "anti-k_{T} R=0.4 jets, p_{T}> 120 GeV, |#eta_{jet}|<1.6");
-  //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
-  box->SetFillColor(kWhite);
-  bigCanvas->cd(0);
-  box->DrawBox(0.285,.047, 0.3, 0.072);
-  mainTitle->SetTextSize(.025);
-  mainTitle->DrawLatex(0.29, 0.055, "0");
-  box->DrawBox(0.518,.047, 0.533, 0.072);
-  box->DrawBox(0.75,.047, 0.765, 0.072);
-  
-  mainTitle->DrawLatex(0.523, 0.055, "0");
-  mainTitle->DrawLatex(0.755, 0.055, "0");
-  mainTitle->DrawLatex(0.985, 0.055, "1");
-  
-  //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs("js_dr_normal_new.pdf");
-  //bigCanvas->SaveAs("js_dr_normal_v3.eps");
-  //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
+    jetShapeStack[4][iAsymmetry]->drawStack();
+    jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetNdivisions(505);
+    jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.08);
+    jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(0.9);
+    jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
+    jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
+    mainTitle[iAsymmetry]->SetTextSize(0.085);
+    mainTitle[iAsymmetry]->DrawLatexNDC(0.35, 0.88, "pp reference");
+    //js_dr_err_all[4]->Draw("same e2");
+    
+    TLegend* lt1 = new TLegend(0.01, 0.1, 1, 0.5);
+    TLegend* lt2 = new TLegend(0.0, 0.1, 1, 0.5);
+    TLegend* lt3 = new TLegend(0.0 ,0.35, 1, 0.5);
+    TLegend* lt5 = new TLegend(0.01, 0.5, 1, 0.68);
+    TLegend* lt4 = new TLegend(0.25, 0.85, 0.85, 0.95);
+    lt1->SetTextSize(0.07);
+    lt1->SetLineColor(kWhite);
+    lt1->SetFillColor(kWhite);
+    lt2->SetTextSize(0.07);
+    lt2->SetLineColor(kWhite);
+    lt2->SetFillColor(kWhite);
+    lt3->SetTextSize(0.07);
+    lt3->SetLineColor(kWhite);
+    lt3->SetFillColor(kWhite);
+    lt4->SetTextSize(0.06);
+    lt4->SetLineColor(kWhite);
+    lt4->SetFillColor(kWhite);
+    lt5->SetTextSize(0.07);
+    lt5->SetLineColor(kWhite);
+    lt5->SetFillColor(kWhite);
+    
+    
+    lt1->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(0), "0.7 < p_{T}^{trk}< 1 GeV","f");
+    lt1->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(1), "1 < p_{T}^{trk}< 2 GeV","f");
+    lt1->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(2), "2 < p_{T}^{trk}< 3 GeV","f");
+    
+    lt2->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(3), "3 < p_{T}^{trk}< 4 GeV","f");
+    lt2->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(4), "4 < p_{T}^{trk}< 8 GeV","f");
+    lt2->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(5), "8 < p_{T}^{trk}< 12 GeV","f");
+    
+    
+    lt3->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
+    //lt3->AddEntry(jetShapeStack[4]->hist_trunk.at(7), "16 < p_{T}^{trk}< 20 GeV","f");
+    //lt3->AddEntry(jetShapeStack[4]->hist_trunk.at(8), "20 < p_{T}^{trk}< 300 GeV","f");
+    
+    lt4->AddEntry(ratioUncertainty[0][iAsymmetry], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
+    bigCanvas[iAsymmetry]->CD(9);
+    lt4->Draw();
+    
+    //bigCanvas->CD(1);
+    //TLegend* lt6 = new TLegend(0.3,0.7,0.98,0.85);
+    //lt6->SetTextSize(0.07);
+    //lt6->SetLineColor(kWhite);
+    //lt6->SetFillColor(kWhite);
+    //lt6->AddEntry(js_dr_err_all[0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
+    //lt6->Draw();
+    
+    bigCanvas[iAsymmetry]->CD(2);
+    //  lt5->AddEntry(js_dr_err_all[0], "0.7 < p_{T}^{track}< 20 GeV","lpfe");
+    //  lt5->Draw();
+    line[iAsymmetry]->SetLineStyle(1);
+    line[iAsymmetry]->DrawLineNDC(0, 0, 0, 1);
+    lt1->Draw();
+    bigCanvas[iAsymmetry]->CD(3);
+    lt2->Draw();
+    bigCanvas[iAsymmetry]->CD(4);
+    lt3->Draw();
+    
+    double cmsPosition[] = {0.42,0.4,0.42};
+    double jetShapeTitlePosition[] = {0.52,0.5,0.52};
+    double xjPosition[] = {0.76,0.77,0.76};
+    double overallShift[] = {-0.02,-0.02,-0.02,0};
+    
+    bigCanvas[iAsymmetry]->cd(0);
+    mainTitle[iAsymmetry]->SetTextFont(62);
+    mainTitle[iAsymmetry]->SetTextSize(0.035);
+    mainTitle[iAsymmetry]->DrawLatexNDC(cmsPosition[iJetTrack/3]+overallShift[iAsymmetry], 0.94, "CMS");
+    
+    mainTitle[iAsymmetry]->SetTextFont(42);
+    mainTitle[iAsymmetry]->SetTextSize(0.035);
+    mainTitle[iAsymmetry]->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3]+overallShift[iAsymmetry], 0.94, jetShapeTitle[iJetTrack/3]);
+    
+    mainTitle[iAsymmetry]->SetTextFont(42);
+    mainTitle[iAsymmetry]->SetTextSize(0.035);
+    mainTitle[iAsymmetry]->DrawLatexNDC(xjPosition[iJetTrack/3]+overallShift[iAsymmetry], 0.94, xjString[iAsymmetry]);
+    
+    mainTitle[iAsymmetry]->SetTextSize(0.03);
+    mainTitle[iAsymmetry]->DrawLatexNDC(0.41, 0.9, "pp 320 pb^{-1} (5.02 TeV)  PbPb 1.7 nb^{-1} (5.02 TeV)");
+    mainTitle[iAsymmetry]->SetTextSize(0.025);
+    mainTitle[iAsymmetry]->DrawLatexNDC(0.375, 0.86, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+    //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
+    
+    box[iAsymmetry] = new TBox();
+    box[iAsymmetry]->SetFillColor(kWhite);
+    bigCanvas[iAsymmetry]->cd(0);
+    box[iAsymmetry]->DrawBox(0.285,.047, 0.3, 0.072);
+    mainTitle[iAsymmetry]->SetTextSize(.025);
+    mainTitle[iAsymmetry]->DrawLatex(0.29, 0.055, "0");
+    box[iAsymmetry]->DrawBox(0.518,.047, 0.533, 0.072);
+    box[iAsymmetry]->DrawBox(0.75,.047, 0.765, 0.072);
+    
+    mainTitle[iAsymmetry]->DrawLatex(0.523, 0.055, "0");
+    mainTitle[iAsymmetry]->DrawLatex(0.755, 0.055, "0");
+    mainTitle[iAsymmetry]->DrawLatex(0.985, 0.055, "1");
+    
+    //bigCanvas->SaveAs("js_dr_normal_new.eps");
+    bigCanvas[iAsymmetry]->SaveAs(Form("figures/finalJetShape_%s%s.pdf",jetShapeSaveName[iJetTrack/3],asymmetrySaveName[iAsymmetry]));
+    //bigCanvas->SaveAs("js_dr_normal_v3.eps");
+    //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
+    
+  } // Asymmetry loop for drawing the big canvas
 }
 
 /*
@@ -298,14 +398,14 @@ void finalResultPlotter(){
   bool logJetShape = true;    // Jet shapes
   
   //int iAsymmetry = 0;
-  int iJetTrack = DijetHistogramManager::kPtWeightedTrackSubleadingJet;  // DijetHistogramManager::kPtWeightedTrackSubleadingJet
+  int iJetTrack = DijetHistogramManager::kPtWeightedTrackLeadingJet;  // DijetHistogramManager::kPtWeightedTrackSubleadingJet
   int lowestTrackPtBin = 0;
   
   TString asymmetryString[nAsymmetryBins+1];
   TString asymmetrySaveString[nAsymmetryBins+1];
-  for(int i = 0; i < nAsymmetryBins; i++){
-    asymmetryString[i] = Form("   %.1f < x_{j} < %.1f",asymmetryBinBorders[i],asymmetryBinBorders[i+1]);
-    asymmetrySaveString[i] = Form("_A=%.1f-%.1f",asymmetryBinBorders[i],asymmetryBinBorders[i+1]);
+  for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+    asymmetryString[iAsymmetry] = Form("   %.1f < x_{j} < %.1f",asymmetryBinBorders[iAsymmetry],asymmetryBinBorders[iAsymmetry+1]);
+    asymmetrySaveString[iAsymmetry] = Form("_A=%.1f-%.1f",asymmetryBinBorders[iAsymmetry],asymmetryBinBorders[iAsymmetry+1]);
   }
   asymmetryString[nAsymmetryBins] = "";
   
@@ -327,7 +427,7 @@ void finalResultPlotter(){
   pbpbUncertaintyProvider->ReadSystematicFile(pbpbUncertaintyFile);
   
   // Plot the figures using Xiao's plotting macro
-  plotJetShapeXiao(ppHistograms,pbpbHistograms);
+  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, iJetTrack);
   return;
   
   // Temporary: Get the ratio between pp and PbPb jet shape
@@ -344,7 +444,7 @@ void finalResultPlotter(){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, lowestTrackPtBin)->Clone(Form("sumPbPb%d",iCentrality));
     }
-    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0)->Clone("sumPp");
+    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, lowestTrackPtBin)->Clone("sumPp");
   }
   
   // Sum the pT:s
