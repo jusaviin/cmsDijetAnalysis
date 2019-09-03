@@ -18,11 +18,11 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       jetShapeArray[iTrackPt][iCentrality] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, DijetHistogramManager::kPtWeightedTrackLeadingJet, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt);
     }
   }
-  TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-100%"};
+  TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
   stackHist *st[nCentralityBins+1];
   //labels_PAS* lb = new labels_PAS();
   TBox *box = new TBox();
-  auto tl = new TLatex();
+  TLatex *mainTitle = new TLatex();
   
   TH1D* ratio[nCentralityBins];
   //TH1D* ratio_auxi[4];
@@ -72,15 +72,15 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     //ratio_auxi[i]->SetMarkerColor(0);
     //    ratio_auxi[i]->SetLineColor(kBlack);
   }
-  auto c = new auxi_canvas("c", "", 2500, 2000);
-  c->SetMargin(0.06, 0.01, 0.08, 0.02);
-  c->divide(3,4);
+  auto bigCanvas = new auxi_canvas("bigCanvas", "", 2500, 2000);
+  bigCanvas->SetMargin(0.06, 0.01, 0.08, 0.02);
+  bigCanvas->divide(3,4);
   
   //cout<<ratio_auxi[0]->GetName()<<endl;
   //cout<<"err = "<<ratio_auxi[0]->GetBinError(ratio_auxi[0]->FindBin(0.95))<<endl;;
   
   for(int i=0; i<nCentralityBins; ++i){
-    c->CD(8-i);
+    bigCanvas->CD(8-i);
     gPad->SetLogy();
     st[i]->drawStack();
     st[i]->hst->GetYaxis()->SetNdivisions(505);
@@ -91,18 +91,18 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     st[i]->hst->Draw();
     //js_dr_err_all[i]->Draw("same e2");
     if(i==3 ){
-      tl->SetTextFont(22);
-      tl->SetTextSize(.085);
-      tl->DrawLatexNDC(.35, 0.9, "PbPb");
-      tl->DrawLatexNDC(.35, .82, cent_lab[i]);
+      mainTitle->SetTextFont(22);
+      mainTitle->SetTextSize(.085);
+      mainTitle->DrawLatexNDC(.35, 0.9, "PbPb");
+      mainTitle->DrawLatexNDC(.35, .82, cent_lab[i]);
     }
     else {
-      tl->SetTextFont(22);
-      tl->SetTextSize(.09);
-      tl->DrawLatexNDC(.19, 0.9, "PbPb");
-      tl->DrawLatexNDC(.19, .82, cent_lab[i]);
+      mainTitle->SetTextFont(22);
+      mainTitle->SetTextSize(.09);
+      mainTitle->DrawLatexNDC(.19, 0.9, "PbPb");
+      mainTitle->DrawLatexNDC(.19, .82, cent_lab[i]);
     }
-    c->CD(12-i);
+    bigCanvas->CD(12-i);
     //ratio[i]->GetYaxis()->SetNdivisions(505);
     ratio[i]->GetXaxis()->SetTitleOffset(1.1);
     ratio[i]->GetXaxis()->SetTitle("#Deltar");
@@ -127,14 +127,14 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       ratio[i]->GetYaxis()->SetTitleOffset(0.9);
       ratio[i]->GetYaxis()->SetTitleSize(0.08);
       ratio[i]->GetYaxis()->SetTitle("#rho(#Deltar)_{PbPb}/#rho(#Deltar)_{pp}");
-      tl->SetTextSize(0.073);
-      //tl->DrawLatexNDC(.25, .92, "PbPb - pp");
-      //tl->DrawLatexNDC(.25, .84, cent_lab[i]);
+      mainTitle->SetTextSize(0.073);
+      //mainTitle->DrawLatexNDC(.25, .92, "PbPb - pp");
+      //mainTitle->DrawLatexNDC(.25, .84, cent_lab[i]);
     }
     else{
-      //tl->SetTextSize(0.09);
-      //tl->DrawLatexNDC(.05, .92, "PbPb - pp");
-      //tl->DrawLatexNDC(.05, .84, cent_lab[i]);
+      //mainTitle->SetTextSize(0.09);
+      //mainTitle->DrawLatexNDC(.05, .92, "PbPb - pp");
+      //mainTitle->DrawLatexNDC(.05, .84, cent_lab[i]);
     }
     ratio[i]->GetYaxis()->CenterTitle();
     ratio[i]->GetXaxis()->CenterTitle();
@@ -144,7 +144,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     line->SetLineStyle(2);
     line->DrawLine(0, 1, 1, 1);
   }
-  c->CD(1);
+  bigCanvas->CD(1);
   gPad->SetLogy();
   st[4]->drawStack();
   st[4]->hst->GetYaxis()->SetNdivisions(505);
@@ -152,13 +152,13 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   st[4]->hst->GetYaxis()->SetTitleOffset(.9);
   st[4]->hst->GetYaxis()->SetTitleSize(0.1);
   st[4]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
-  tl->SetTextSize(.085);
-  tl->DrawLatexNDC(.35, .88, "pp reference");
+  mainTitle->SetTextSize(.085);
+  mainTitle->DrawLatexNDC(.35, .88, "pp reference");
   //js_dr_err_all[4]->Draw("same e2");
   
   TLegend* lt1 = new TLegend(0.01,0.1,1.,0.5);
   TLegend* lt2 = new TLegend(0.0,0.1,1.,0.5);
-  TLegend* lt3 = new TLegend(0.0,0.1,1 ,0.5);
+  TLegend* lt3 = new TLegend(0.0,0.35,1 ,0.5);
   TLegend* lt5 = new TLegend(0.01,0.5,1 ,.68);
   //TLegend* lt4 = new TLegend(0.25,0.85,.85,0.95);
   lt1->SetTextSize(0.07);
@@ -167,9 +167,9 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   lt2->SetTextSize(0.07);
   lt2->SetLineColor(kWhite);
   lt2->SetFillColor(kWhite);
-  //lt3->SetTextSize(0.07);
-  //lt3->SetLineColor(kWhite);
-  //lt3->SetFillColor(kWhite);
+  lt3->SetTextSize(0.07);
+  lt3->SetLineColor(kWhite);
+  lt3->SetFillColor(kWhite);
   //lt4->SetTextSize(0.06);
   //lt4->SetLineColor(kWhite);
   //lt4->SetFillColor(kWhite);
@@ -193,10 +193,10 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   
   //lt4->AddEntry(ratio_auxi[0], "#rho(#Deltar)_{PbPb}/#rho(#Deltar)_{pp}");
   //lt4->AddEntry(ratio_auxi[0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
-  //c->CD(9);
+  //bigCanvas->CD(9);
   //lt4->Draw();
   
-  //c->CD(1);
+  //bigCanvas->CD(1);
   //TLegend* lt6 = new TLegend(0.3,0.7,0.98,0.85);
   //lt6->SetTextSize(0.07);
   //lt6->SetLineColor(kWhite);
@@ -204,47 +204,47 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   //lt6->AddEntry(js_dr_err_all[0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
   //lt6->Draw();
   
-  c->CD(2);
+  bigCanvas->CD(2);
   //  lt5->AddEntry(js_dr_err_all[0], "0.7 < p_{T}^{track}< 20 GeV","lpfe");
   //  lt5->Draw();
   line->SetLineStyle(1);
   line->DrawLineNDC(0, 0, 0, 1);
   lt1->Draw();
-  c->CD(3);
+  bigCanvas->CD(3);
   lt2->Draw();
-  //c->CD(4);
-  //lt3->Draw();
+  bigCanvas->CD(4);
+  lt3->Draw();
   
-  c->cd(0);
-  tl->SetTextFont(62);
-  tl->SetTextSize(0.035);
-  tl->DrawLatexNDC(0.5, 0.94, "CMS");
+  bigCanvas->cd(0);
+  mainTitle->SetTextFont(62);
+  mainTitle->SetTextSize(0.035);
+  mainTitle->DrawLatexNDC(0.5, 0.94, "CMS");
   
-  tl->SetTextFont(42);
-  tl->SetTextSize(0.035);
-  tl->DrawLatexNDC(0.6, 0.94, "Jet shapes");
+  mainTitle->SetTextFont(42);
+  mainTitle->SetTextSize(0.035);
+  mainTitle->DrawLatexNDC(0.6, 0.94, "Leading jet shapes");
   
-  tl->SetTextSize(0.03);
-  tl->DrawLatexNDC(.4, .9, "pp 27.4 pb^{-1} (5.02 TeV)  PbPb 404 #mub^{-1} (5.02 TeV)");
-  tl->SetTextSize(0.025);
-  tl->DrawLatexNDC(.45, .86, "anti-k_{T} R=0.4 jets, p_{T}> 120 GeV, |#eta_{jet}|<1.6");
+  mainTitle->SetTextSize(0.03);
+  mainTitle->DrawLatexNDC(.4, .9, "pp 320 pb^{-1} (5.02 TeV)  PbPb 1.7 #nb^{-1} (5.02 TeV)");
+  mainTitle->SetTextSize(0.025);
+  mainTitle->DrawLatexNDC(.45, .86, "anti-k_{T} R=0.4 jets, p_{T}> 120 GeV, |#eta_{jet}|<1.6");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   box->SetFillColor(kWhite);
-  c->cd(0);
+  bigCanvas->cd(0);
   box->DrawBox(0.285,.047, 0.3, 0.072);
-  tl->SetTextSize(.025);
-  tl->DrawLatex(0.29, 0.055, "0");
+  mainTitle->SetTextSize(.025);
+  mainTitle->DrawLatex(0.29, 0.055, "0");
   box->DrawBox(0.518,.047, 0.533, 0.072);
   box->DrawBox(0.75,.047, 0.765, 0.072);
   
-  tl->DrawLatex(0.523, 0.055, "0");
-  tl->DrawLatex(0.755, 0.055, "0");
-  tl->DrawLatex(0.985, 0.055, "1");
+  mainTitle->DrawLatex(0.523, 0.055, "0");
+  mainTitle->DrawLatex(0.755, 0.055, "0");
+  mainTitle->DrawLatex(0.985, 0.055, "1");
   
-  //c->SaveAs("js_dr_normal_new.eps");
-  //c->SaveAs("js_dr_normal_new.pdf");
-  //c->SaveAs("js_dr_normal_v3.eps");
-  //c->SaveAs("js_dr_normal_v3.pdf");
+  //bigCanvas->SaveAs("js_dr_normal_new.eps");
+  bigCanvas->SaveAs("js_dr_normal_new.pdf");
+  //bigCanvas->SaveAs("js_dr_normal_v3.eps");
+  //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
 }
 
 /*
@@ -327,7 +327,8 @@ void finalResultPlotter(){
   pbpbUncertaintyProvider->ReadSystematicFile(pbpbUncertaintyFile);
   
   // Plot the figures using Xiao's plotting macro
-  //plotJetShapeXiao(ppHistograms,pbpbHistograms);
+  plotJetShapeXiao(ppHistograms,pbpbHistograms);
+  return;
   
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[nCentralityBins][nAsymmetryBins+1];

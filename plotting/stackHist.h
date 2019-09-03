@@ -1,5 +1,5 @@
 /*
- * Class for convanien drawing af stacked histograms
+ * Class for convanient drawing of stacked histograms
  * Code written by Xiao Wang
  */
 
@@ -56,13 +56,13 @@ class stackHist{
 		void addHist(TH1** h ,int num, float *weight = NULL);
 		void addDiff(TH1** h ,int num, float *weight = NULL);
 		TH1* sumOver();
-		TH1* drawStack(TString opt ="", TString addOpt = "hist");
+		TH1* drawStack(TString opt ="", TString addOpt = "hist", bool reverseColor = false);
 		TH1* drawDiff(TString opt ="", TString addOpt = "hist");
 		void stackConfig(THStack* hstt);
 		void setTitleSize(float, TString axis="x");
 		void setLabelSize(float, TString axis="x");
 		void setRange(float, float, TString ax = "x");
-		void setFillColor();
+		void setFillColor(bool reverseColor = false);
 		void drawSum(TString opt = "same");
 		TLegend* makeLegend(TString* tl_txt, float x1=0.1,float y1=0.05,float x2=0.9,float y2=0.9,\
 				bool isDiff = false, size_t n=0);
@@ -131,8 +131,8 @@ TH1* stackHist::sumOver(){
 	return hist_sum;
 }
 
-TH1* stackHist::drawStack(TString opt, TString addOpt ){
-	setFillColor();
+TH1* stackHist::drawStack(TString opt, TString addOpt, bool reverseColor){
+	setFillColor(reverseColor);
     if(opt == ""){
       for(auto it = hist_trunk.begin(); it !=hist_trunk.end(); ++it){
         hst->Add((TH1*)*it, addOpt);
@@ -203,36 +203,50 @@ void stackHist::stackConfig(THStack* hstt){
 	hstt->GetYaxis()->SetTitle(ytitle);
 }
 
-void stackHist::setFillColor(){
-	if( color_v ==NULL){
-		color_v = new vector<Color_t> (0);
-		color_v->push_back(kBlue-9);
-		color_v->push_back(kYellow-9);
-		color_v->push_back(kOrange+1);
-		color_v->push_back(kViolet-5);
-		color_v->push_back(kGreen+3);
-		color_v->push_back(kRed);
-		color_v->push_back(kRed+1);
-		color_v->push_back(kRed+2);
-		color_v->push_back(kRed+3);
-		color_v->push_back(kRed+4);
-	}
-	if(color_v->size()<hist_trunk.size()){
-		std::cout<<"color type isn't enough for the # of hists"<<std::endl;
-		return;	
-	}
-	else {
-		for(std::string::size_type i=0;i<hist_trunk.size();i++){
-			hist_trunk.at(i)->SetFillColor(color_v->at(i));
-		}
-		if(doDiff){
-			for(std::string::size_type i=0;i<hist_trunk_up.size();i++){
-				hist_trunk_up.at(i)->SetFillColor(color_v->at(i));
-				hist_trunk_down.at(i)->SetFillColor(color_v->at(i));
-			}
-		}
-	}
-	return;
+void stackHist::setFillColor(bool reverseColor){
+  if( color_v ==NULL){
+    color_v = new vector<Color_t> (0);
+    
+    if(reverseColor){
+      color_v->push_back(kRed);
+      color_v->push_back(kGreen+3);
+      color_v->push_back(kViolet-5);
+      color_v->push_back(kOrange+1);
+      color_v->push_back(kYellow-9);
+      color_v->push_back(kBlue-9);
+      color_v->push_back(kRed+1);
+      color_v->push_back(kRed+2);
+      color_v->push_back(kRed+3);
+      color_v->push_back(kRed+4);
+    } else {
+      color_v->push_back(kBlue-9);
+      color_v->push_back(kYellow-9);
+      color_v->push_back(kOrange+1);
+      color_v->push_back(kViolet-5);
+      color_v->push_back(kGreen+3);
+      color_v->push_back(kRed);
+      color_v->push_back(kRed+1);
+      color_v->push_back(kRed+2);
+      color_v->push_back(kRed+3);
+      color_v->push_back(kRed+4);
+    }
+  }
+  if(color_v->size()<hist_trunk.size()){
+    std::cout<<"color type isn't enough for the # of hists"<<std::endl;
+    return;
+  }
+  else {
+    for(std::string::size_type i=0;i<hist_trunk.size();i++){
+      hist_trunk.at(i)->SetFillColor(color_v->at(i));
+    }
+    if(doDiff){
+      for(std::string::size_type i=0;i<hist_trunk_up.size();i++){
+        hist_trunk_up.at(i)->SetFillColor(color_v->at(i));
+        hist_trunk_down.at(i)->SetFillColor(color_v->at(i));
+      }
+    }
+  }
+  return;
 }
 
 void stackHist::setRange(float a, float b, TString ax){
