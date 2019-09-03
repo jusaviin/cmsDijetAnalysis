@@ -210,6 +210,19 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
   char namerX[100];
   char namerY[100];
   const char* singleJetNormalizationName[4] = {"dijet","dijet","jet","jet"};
+  
+  // TODO: Do the RAA comparison nicer in some small plotter script
+  int nBinsForRaa = 13;  // For RAA comparison
+  double binBordersForRaa[] = {100,112,125,141,158,177,199,223,251,281,316,354,398,500}; // For RAA comparison
+  double raaBinContent[] = {0.4381,0.4633,0.4847,0.5023,0.5151,0.535,0.557,0.572,0.561,0.563,0.589,0.589,0.593};
+  double raaBinError[] = {0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.03,0.04,0.04};
+  TH1D *raaAtlas = new TH1D("raaA","RaaA",nBinsForRaa,binBordersForRaa); raaAtlas->Sumw2();
+  for(int iBin = 1; iBin <= nBinsForRaa; iBin++){
+    raaAtlas->SetBinContent(iBin,raaBinContent[iBin]);
+    raaAtlas->SetBinError(iBin,raaBinError[iBin]);
+  }
+  raaAtlas->SetLineColor(kBlack);
+  raaAtlas->Scale(3);
 
   // Loop over single jet categories
   for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
@@ -247,6 +260,11 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       
       // Draw the ratios to the lower portion of the split canvas
       DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
+      /*raaAtlas->Draw("same");  // TODO: Put this to some other script
+      legend = new TLegend(0.2,0.6,0.5,0.8);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.1);legend->SetTextFont(62);
+      legend->AddEntry(raaAtlas,"Atlas RAA x 3");
+      legend->Draw();*/
       
       // Save the figure to a file
       sprintf(namerX,"%sPtRatio",fBaseHistograms->GetSingleJetHistogramName(iJetCategory));

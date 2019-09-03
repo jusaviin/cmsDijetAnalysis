@@ -324,7 +324,10 @@ void closurePlotter(){
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13.root
   // data/ppData2017_highForest_pfJets_onlyJets_wtaAxis_processed_2019-08-05.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root");
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_onlyL2RelV4_wtaAxis_processed_2019-08-13.root");
+  // data/dijetPbPb2018_highForest_akFlowPu4CsPFJets_JECv5b_onlyJets_processed_2019-08-28.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_onlyL2RelV4_wtaAxis_processed_2019-08-13.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_wtaAxis_processed_2019-08-13.root
   // data/dijetPbPb2018_highForest_flowPuCs4PfJets_noUncorr_wtaAxis_onlyJets_processed_2019-08-02.root
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
@@ -334,6 +337,8 @@ void closurePlotter(){
   // data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
   // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
   inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_noCorrections_processed_2019-08-09.root");
+  // data/PbPbMC_RecoReco_akFlowPuCs4PfJets_onlyJets_JECv5b_processed_2019-08-28.root
+  // data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_noCorrections_processed_2019-08-09.root
   // data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedCaloJets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-03.root
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root

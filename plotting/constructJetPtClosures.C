@@ -135,7 +135,7 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_noMixing_jetPtClosure_JECv4_processed_2019-08-11.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC_GenGen_akFlowPuCs4PfJets_jetsNtracks_JECv5b_jetClosures_processed_2019-08-29.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root
   // "data/PbPbMC_GenGen_pfJets_noCorrelations_jetPtClosure_processed_2019-06-25.root"
   // "data/PbPbMC_GenGen_pfCsJets_noCorrelations_jetPtClosure_eta1v3_2019-06-26_processed.root"
@@ -217,7 +217,7 @@ void constructJetPtClosures(){
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
     minGenPt = (iClosureType == 0) ? 7 : 0; // Skip the first jet pT bins for leading jet closure
-    for(int iCentrality = 0; iCentrality < 1; iCentrality++){ // TODO Return to ncentrality
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
         if(drawPtClosure){
           for(int iGenJetPt = minGenPt; iGenJetPt < DijetHistogramManager::knGenJetPtBins; iGenJetPt++){
@@ -270,7 +270,7 @@ void constructJetPtClosures(){
   char centralitySaveName[100];
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
-    for(int iCentrality = 0; iCentrality < 1; iCentrality++){ // TODO Return to nCentalitre
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       if(drawPtClosure){
         drawClosureHistogram(hJetPtClosure[iClosureType][iCentrality], "Gen p_{T} (GeV)", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, 0, "PtClosure", saveFigures);

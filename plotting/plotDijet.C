@@ -43,7 +43,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
@@ -51,7 +51,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -84,7 +84,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = true;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
@@ -94,7 +94,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
   bool drawCorrected = false;
@@ -111,7 +111,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
                            // It follows that this number must be between 0 and 15.
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   TString figureNameSuffix = "";
   
@@ -169,7 +169,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int lastDrawnTrackPtBin = nTrackPtBins-2;
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -408,5 +408,6 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Draw the selected histograms
   resultDrawer->DrawHistograms();
   resultDrawer->DrawJetShapeStack();
+  resultDrawer->DrawDeltaEtaStack();
   
 }
