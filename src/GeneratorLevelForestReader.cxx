@@ -46,6 +46,11 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t rea
   fJetPtArray(),
   fJetPhiArray(),
   fJetEtaArray(),
+  fJetRefFlavorArray(),
+  fRecoJetPtArray(),
+  fRecoJetEtaArray(),
+  fRecoJetPhiArray(),
+  fRecoJetRawPtArray(),
   fTrackPtArray(0),
   fTrackPhiArray(0),
   fTrackEtaArray(0),
@@ -79,6 +84,11 @@ GeneratorLevelForestReader::GeneratorLevelForestReader(const GeneratorLevelFores
     fJetPtArray[i] = in.fJetPtArray[i];
     fJetPhiArray[i] = in.fJetPhiArray[i];
     fJetEtaArray[i] = in.fJetEtaArray[i];
+    fJetRefFlavorArray[i] = in.fJetRefFlavorArray[i];
+    fRecoJetPtArray[i] = in.fRecoJetPtArray[i];
+    fRecoJetEtaArray[i] = in.fRecoJetEtaArray[i];
+    fRecoJetPhiArray[i] = in.fRecoJetPhiArray[i];
+    fRecoJetRawPtArray[i] = in.fRecoJetRawPtArray[i];
   }
 }
 
@@ -108,6 +118,11 @@ GeneratorLevelForestReader& GeneratorLevelForestReader::operator=(const Generato
     fJetPtArray[i] = in.fJetPtArray[i];
     fJetPhiArray[i] = in.fJetPhiArray[i];
     fJetEtaArray[i] = in.fJetEtaArray[i];
+    fJetRefFlavorArray[i] = in.fJetRefFlavorArray[i];
+    fRecoJetPtArray[i] = in.fRecoJetPtArray[i];
+    fRecoJetEtaArray[i] = in.fRecoJetEtaArray[i];
+    fRecoJetPhiArray[i] = in.fRecoJetPhiArray[i];
+    fRecoJetRawPtArray[i] = in.fRecoJetRawPtArray[i];
   }
   
   return *this;
@@ -172,6 +187,8 @@ void GeneratorLevelForestReader::Initialize(){
     fJetTree->SetBranchAddress("refparton_flavor",&fJetRefFlavorArray,&fJetRefFlavorBranch);
     fJetTree->SetBranchStatus("jtpt",1);
     fJetTree->SetBranchAddress("jtpt",&fRecoJetPtArray,&fJetMatchedPtBranch);
+    fJetTree->SetBranchStatus("rawpt",1);
+    fJetTree->SetBranchAddress("rawpt",&fRecoJetRawPtArray,&fHighPurityTrackBranch); // Reuse a branch from ForestReader that is not otherwise needed here
     
     // If specified, select WTA axis for jet phi
     sprintf(branchName,"%sphi",jetAxis[fJetAxis]);
@@ -530,7 +547,8 @@ Float_t GeneratorLevelForestReader::GetMatchedPt(Int_t iJet) const{
   // If we did not find macth, something went wrong. Return -999
   if(matchingIndex == -1) return -999;
   
-  // Return the matching jet pT
+  // Return the matching jet pT. Need raw pT for reco jets before jet corrections are in the forest
+  if(fReadMode > 2000) return fRecoJetRawPtArray[matchingIndex];
   return fRecoJetPtArray[matchingIndex];
 }
 
@@ -546,7 +564,7 @@ Float_t GeneratorLevelForestReader::GetMatchedPhi(Int_t iJet) const{
   // If we did not find macth, something went wrong. Return -999
   if(matchingIndex == -1) return -999;
   
-  // Return the matching jet pT
+  // Return the matching jet phi
   return fRecoJetPhiArray[matchingIndex];
 }
 
@@ -562,7 +580,7 @@ Float_t GeneratorLevelForestReader::GetMatchedEta(Int_t iJet) const{
   // If we did not find macth, something went wrong. Return -999
   if(matchingIndex == -1) return -999;
   
-  // Return the matching jet pT
+  // Return the matching jet eta
   return fRecoJetEtaArray[matchingIndex];
 }
 

@@ -99,6 +99,7 @@ private:
   Float_t fRecoJetPtArray[fnMaxJet] = {0};     // Array for matched reconstructed jet pT
   Float_t fRecoJetEtaArray[fnMaxJet] = {0};    // Array for matched reconstructed jet pta
   Float_t fRecoJetPhiArray[fnMaxJet] = {0};    // Array for matched reconstructed jet phi
+  Float_t fRecoJetRawPtArray[fnMaxJet] = {0};  // Array for matched reconstructed jet raw pT
   
   // Leaves for the track tree
   vector<float> *fTrackPtArray;       // Array for track pT:s

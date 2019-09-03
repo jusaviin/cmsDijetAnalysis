@@ -22,6 +22,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fVzWeightFunction(0),
   fCentralityWeightFunction(0),
   fTrackEfficiencyCorrector2018(),
+  fJetCorrector2018(),
+  fJetUncertainty2018(),
   fDataType(-1),
   fForestType(0),
   fReadMode(0),
@@ -105,6 +107,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFileNames(fileNameVector),
   fCard(newCard),
   fHistograms(0),
+  fJetCorrector2018(),
+  fJetUncertainty2018(),
   fForestType(0),
   fJetType(0),
   fMatchJets(false),
@@ -432,6 +436,8 @@ DijetAnalyzer::~DijetAnalyzer(){
   delete fJffCorrection;
   if(fVzWeightFunction) delete fVzWeightFunction;
   if(fTrackEfficiencyCorrector2018) delete fTrackEfficiencyCorrector2018;
+  if(fJetCorrector2018) delete fJetCorrector2018;
+  if(fJetUncertainty2018) delete fJetUncertainty2018;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
@@ -553,6 +559,16 @@ void DijetAnalyzer::RunAnalysis(){
   fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
   Int_t mixingFileIndex = fCard->Get("MixingFileIndex");        // Select the used mixing file for PbPb MC
 
+  //****************************************
+  //       Jet selection and matching
+  //****************************************
+  fForestType = fCard->Get("ForestType");
+  fJetType = fCard->Get("JetType");
+  fMatchJets = (fCard->Get("MatchJets") >= 1);
+  fMatchDijet = (fCard->Get("MatchJets") == 2 || fCard->Get("MatchJets") == 4);
+  fMatchLeadingJet = (fCard->Get("MatchJets") == 3 || fCard->Get("MatchJets") == 5);
+  Bool_t reverseMatchVeto = (fCard->Get("MatchJets") == 4 || fCard->Get("MatchJets") == 5);
+  
   //**********************************************
   //    Turn off track cuts for generated tracks
   //**********************************************
@@ -581,7 +597,6 @@ void DijetAnalyzer::RunAnalysis(){
   Bool_t dijetFound = false;       // Is there a dijet in the event?
   Bool_t twoJetsFound = false;     // Are there two jets in the event?
   Bool_t matchVeto = false;        // Veto the found dijet because it did not match with Gen or Reco
-  Bool_t reverseMatchVeto = false; // Only look at events where dijet was found but not matched
   Double_t vz = 0;                 // Vertex z-position
   Double_t centrality = 0;         // Event centrality
   Int_t hiBin = 0;                 // CMS hiBin (centrality * 2)
@@ -668,28 +683,31 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerDijet[6];
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
-  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt"};
-  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt", "Not applied", "Not applied", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt"};
-  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V2_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V2_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt"};
+  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V3_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt", "Not applied PF", "Not applied PF", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt"};
+  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V3_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt"};
 
+  // For calo jets, use the correction files for calo jets (otherwise same name, but replace PF with Calo)
+  if(fJetType == 0){
+    size_t pfIndex = 0;
+    pfIndex = correctionFileRelative[fDataType].find("PF", pfIndex);
+    correctionFileRelative[fDataType].replace(pfIndex, 2, "Calo");
+    pfIndex = correctionFileResidual[fDataType].find("PF", pfIndex);
+    correctionFileResidual[fDataType].replace(pfIndex, 2, "Calo");
+    pfIndex = uncertaintyFile[fDataType].find("PF", pfIndex);
+    uncertaintyFile[fDataType].replace(pfIndex, 2, "Calo");
+  }
+  
   vector<string> correctionFiles;
-  //correctionFiles.push_back(correctionFileRelative[fDataType]);
+  correctionFiles.push_back(correctionFileRelative[fDataType]);
   if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) correctionFiles.push_back(correctionFileResidual[fDataType]);
   
-  JetCorrector jetCorrector2018(correctionFiles);
-  JetUncertainty jetUncertainty2018(uncertaintyFile[fDataType]);
+  fJetCorrector2018 = new JetCorrector(correctionFiles);
+  fJetUncertainty2018 = new JetUncertainty(uncertaintyFile[fDataType]);
   
   //************************************************
   //      Find forest readers for data files
   //************************************************
-  
-  // Select the reader for jets based on forest and MC correlation type
-  fForestType = fCard->Get("ForestType");
-  fJetType = fCard->Get("JetType");
-  fMatchJets = (fCard->Get("MatchJets") >= 1);
-  fMatchDijet = (fCard->Get("MatchJets") == 2 || fCard->Get("MatchJets") == 4);
-  fMatchLeadingJet = (fCard->Get("MatchJets") == 3 || fCard->Get("MatchJets") == 5);
-  reverseMatchVeto = (fCard->Get("MatchJets") == 4 || fCard->Get("MatchJets") == 5);
   
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
@@ -1023,23 +1041,23 @@ void DijetAnalyzer::RunAnalysis(){
         //  ========================================
         
         // For 2018 data: do a correction for the jet pT
-        jetCorrector2018.SetJetPT(jetPt);
-        jetCorrector2018.SetJetEta(jetEta);
-        jetCorrector2018.SetJetPhi(jetPhi);
+        fJetCorrector2018->SetJetPT(jetPt);
+        fJetCorrector2018->SetJetEta(jetEta);
+        fJetCorrector2018->SetJetPhi(jetPhi);
         
-        jetUncertainty2018.SetJetPT(jetPt);
-        jetUncertainty2018.SetJetEta(jetEta);
-        jetUncertainty2018.SetJetPhi(jetPhi);
+        fJetUncertainty2018->SetJetPT(jetPt);
+        fJetUncertainty2018->SetJetEta(jetEta);
+        fJetUncertainty2018->SetJetPhi(jetPhi);
         
-        jetPtCorrected = jetCorrector2018.GetCorrectedPT();
+        jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
         
         // Only do the correction for 2018 data and reconstructed Monte Carlo
-        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) {
+        if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
           jetPt = jetPtCorrected;
           
           // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
-          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - jetUncertainty2018.GetUncertainty().first);
-          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + jetUncertainty2018.GetUncertainty().second);
+          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
+          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
           
         }
         
@@ -1185,23 +1203,23 @@ void DijetAnalyzer::RunAnalysis(){
         //  ========================================
         
         // For 2018 data: do a correction for the jet pT
-        jetCorrector2018.SetJetPT(jetPt);
-        jetCorrector2018.SetJetEta(jetEta);
-        jetCorrector2018.SetJetPhi(jetPhi);
+        fJetCorrector2018->SetJetPT(jetPt);
+        fJetCorrector2018->SetJetEta(jetEta);
+        fJetCorrector2018->SetJetPhi(jetPhi);
         
-        jetUncertainty2018.SetJetPT(jetPt);
-        jetUncertainty2018.SetJetEta(jetEta);
-        jetUncertainty2018.SetJetPhi(jetPhi);
+        fJetUncertainty2018->SetJetPT(jetPt);
+        fJetUncertainty2018->SetJetEta(jetEta);
+        fJetUncertainty2018->SetJetPhi(jetPhi);
         
-        jetPtCorrected = jetCorrector2018.GetCorrectedPT();
+        jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
         
         // Only do the correction for 2018 data and reconstructed Monte Carlo
-        if(fReadMode > 2000 && !(fDataType == kGenGen || fDataType == kGenReco)) {
+        if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
           jetPt = jetPtCorrected;
           
           // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
-          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - jetUncertainty2018.GetUncertainty().first);
-          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + jetUncertainty2018.GetUncertainty().second);
+          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
+          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
           
         }
         
@@ -1610,18 +1628,36 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   
   // Find the pT of the matched gen jet and flavor of reference parton
   Float_t matchedGenPt = fJetReader->GetMatchedPt(jetIndex);
+  Float_t matchedGenEta = fJetReader->GetMatchedEta(jetIndex);
+  Float_t matchedGenPhi = fJetReader->GetMatchedPhi(jetIndex);
   Int_t referencePartonFlavor = fJetReader->GetPartonFlavor(jetIndex);
   
   // Find the centrality of the event and the pT of the reconstructed jet
   Double_t recoPt = fJetReader->GetJetPt(jetIndex);
   Double_t centrality = fJetReader->GetCentrality();
   Double_t jetEta = fJetReader->GetJetEta(jetIndex);
+  Double_t jetPhi = fJetReader->GetJetPhi(jetIndex);
   
-  // If we are using generator level jets, swap recoPt and genPt
+  // If we are using generator level jets, swap reco and gen variables
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
-    Double_t swapPt = matchedGenPt;
+    Double_t swapper = matchedGenPt;
     matchedGenPt = recoPt;
-    recoPt = swapPt;
+    recoPt = swapper;
+    swapper = matchedGenEta;
+    matchedGenEta = jetEta;
+    jetEta = swapper;
+    swapper = matchedGenPhi;
+    matchedGenPhi = jetPhi;
+    jetPhi = swapper;
+  }
+  
+  // For 2018 data, we need to correct the reconstructed pT with jet energy correction
+  fJetCorrector2018->SetJetPT(recoPt);
+  fJetCorrector2018->SetJetEta(jetEta);
+  fJetCorrector2018->SetJetPhi(jetPhi);
+  
+  if(fReadMode > 2000){
+    recoPt = fJetCorrector2018->GetCorrectedPT();
   }
   
   // Define index for parton flavor using algoritm: [-6,-1] U [1,6] -> kQuark, 21 -> kGluon, anything else -> -1
@@ -2105,7 +2141,7 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   
   // Cuts for track reconstruction quality
   // TODO: For some reason track layer hits is always zero in PbPb 2018 forests...
-  if(fReadMode < 2000 && (fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
+  if(fReadMode < 2000 && ( fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
   if(fTrackReader[correlationType]->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
   
