@@ -2847,25 +2847,29 @@ TH1D* DijetHistogramManager::GetHistogramCentralityDijet() const{
 // Getters for single jet histograms
 
 // Getter for jet pT histograms
-TH1D* DijetHistogramManager::GetHistogramJetPt(const int iJetType, const int iCentrality, int iAsymmetry) const{
+TH1D* DijetHistogramManager::GetHistogramJetPt(const int iJetType, int iCentrality, int iAsymmetry) const{
+  if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
   if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetPt[iJetType][iCentrality][iAsymmetry];
 }
 
 // Getter for jet phi histograms
-TH1D* DijetHistogramManager::GetHistogramJetPhi(const int iJetType, const int iCentrality, int iAsymmetry) const{
+TH1D* DijetHistogramManager::GetHistogramJetPhi(const int iJetType, int iCentrality, int iAsymmetry) const{
+  if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
   if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetPhi[iJetType][iCentrality][iAsymmetry];
 }
 
 // Getter for jet eta histograms
-TH1D* DijetHistogramManager::GetHistogramJetEta(const int iJetType, const int iCentrality, int iAsymmetry) const{
+TH1D* DijetHistogramManager::GetHistogramJetEta(const int iJetType, int iCentrality, int iAsymmetry) const{
+  if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
   if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetEta[iJetType][iCentrality][iAsymmetry];
 }
 
 // Getter for 2D eta-phi histogram for jets
-TH2D* DijetHistogramManager::GetHistogramJetEtaPhi(const int iJetType, const int iCentrality, int iAsymmetry) const{
+TH2D* DijetHistogramManager::GetHistogramJetEtaPhi(const int iJetType, int iCentrality, int iAsymmetry) const{
+  if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
   if(iAsymmetry == kMaxAsymmetryBins) iAsymmetry = fnAsymmetryBins;
   return fhJetEtaPhi[iJetType][iCentrality][iAsymmetry];
 }

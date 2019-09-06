@@ -202,10 +202,10 @@ public:
   TH1D* GetHistogramCentralityDijet() const;    // Getter for centrality histogram in dijet events
   
   // Getters for single jet histograms
-  TH1D* GetHistogramJetPt(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;     // Jet pT histograms
-  TH1D* GetHistogramJetPhi(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;    // Jet phi histograms
-  TH1D* GetHistogramJetEta(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;    // Jet eta histograms
-  TH2D* GetHistogramJetEtaPhi(const int iJetType, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const; // 2D eta-phi histogram for jets
+  TH1D* GetHistogramJetPt(const int iJetType, int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;     // Jet pT histograms
+  TH1D* GetHistogramJetPhi(const int iJetType, int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;    // Jet phi histograms
+  TH1D* GetHistogramJetEta(const int iJetType, int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;    // Jet eta histograms
+  TH2D* GetHistogramJetEtaPhi(const int iJetType, int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const; // 2D eta-phi histogram for jets
   
   // Getters for dijet histograms
   TH1D* GetHistogramDijetDeltaPhi(const int iCentrality) const;                                  // Dijet deltaPhi histograms
