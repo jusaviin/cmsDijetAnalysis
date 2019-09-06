@@ -299,8 +299,8 @@ void HighForestReader::Initialize(){
     
     // Trigger branch naming is different for 2018 and 2015 forests
     if(fReadMode > 2000){
-      fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1); // 2018 syntax
-      fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+      fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet80Eta5p1_v1",1); // 2018 syntax
+      fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet80Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
     } else {
       fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1); // 2015 syntax
       fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2015 syntax

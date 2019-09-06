@@ -2141,7 +2141,7 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   
   // Cuts for track reconstruction quality
   // TODO: For some reason track layer hits is always zero in PbPb 2018 forests...
-  if(fReadMode < 2000 && ( fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
+  if(/*fReadMode < 2000 &&*/ ( fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
   if(fTrackReader[correlationType]->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
   
