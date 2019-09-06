@@ -4,7 +4,7 @@
 #include "JDrawer.h"
 
 /*
- * Macro for producing the JFF correction from PYTHIA simulation results
+ * Macro for comparing spillover corrections from different sources
  */
 void compareSpillover(){
   
@@ -12,14 +12,14 @@ void compareSpillover(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root";
-  TString spilloverPuFileName = "spilloverTest2018.root";
+  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
+  TString spilloverPuFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root";
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   TString dataPuFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_JECv1_5eveMix_wtaAxis_noCorrections_processed_2019-08-03_mostStats.root"; // Can draw also JFF correction yield
   // data/dijetPbPb_skims_pfJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-03-04.root
   TString dataFileName = "data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root"; // Compare also with uncorrected data
 
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -117,7 +117,7 @@ void compareSpillover(){
       dataYieldPuIntegral[iCentrality][iTrackPt] -= yieldPuIntegral[iCentrality][iTrackPt];
     }*/
     
-    dataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
+    /*dataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
     dataYieldGraph[iCentrality]->SetMarkerStyle(21);
     dataYieldGraph[iCentrality]->SetMarkerColor(kBlack);
     drawer->DrawGraph(dataYieldGraph[iCentrality],0,8,-0.5,15,"p_{T} (GeV)","Yield","","psame");
@@ -126,14 +126,14 @@ void compareSpillover(){
     dataYieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldPuIntegral[iCentrality], yieldXerrors, dataYieldPuIntegralError[iCentrality]);
     dataYieldPuGraph[iCentrality]->SetMarkerStyle(21);
     dataYieldPuGraph[iCentrality]->SetMarkerColor(kGreen+2);
-    dataYieldPuGraph[iCentrality]->Draw("psame");
+    dataYieldPuGraph[iCentrality]->Draw("psame");*/
     
     yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[iCentrality], yieldXerrors, yieldIntegralError[iCentrality]);
     yieldGraph[iCentrality]->SetMarkerStyle(20);
     yieldGraph[iCentrality]->SetMarkerColor(kRed);
-    //drawer->DrawGraph(yieldGraph[iCentrality],0,8,-0.5,15,"p_{T} (GeV)","Yield","","psame");
-    yieldGraph[iCentrality]->Draw("psame");
-    //zeroLine->Draw();
+    drawer->DrawGraph(yieldGraph[iCentrality],0,8,-0.5,15,"p_{T} (GeV)","Yield","","psame");
+    //yieldGraph[iCentrality]->Draw("psame");
+    zeroLine->Draw();
     
     yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldPuIntegral[iCentrality], yieldXerrors, yieldPuIntegralError[iCentrality]);
     yieldPuGraph[iCentrality]->SetMarkerStyle(20);
@@ -144,15 +144,15 @@ void compareSpillover(){
     legend = new TLegend(0.35,0.65,0.85,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
     legend->SetHeader(Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
-    legend->AddEntry(dataYieldGraph[iCentrality],"Data CS 2015","p");
-    legend->AddEntry(dataYieldPuGraph[iCentrality],"Data flowCS 2018","p");
-    legend->AddEntry(yieldGraph[iCentrality],"Spillover CS 2015","p");
-    legend->AddEntry(yieldPuGraph[iCentrality],"Spillover flowCS 2018","p");
+    //legend->AddEntry(dataYieldGraph[iCentrality],"Data CS 2015","p");
+    //legend->AddEntry(dataYieldPuGraph[iCentrality],"Data flowCS 2018","p");
+    legend->AddEntry(yieldGraph[iCentrality],"Spillover No trigger","p");
+    legend->AddEntry(yieldPuGraph[iCentrality],"Spillover Jet 100","p");
     legend->Draw();
     
     // Save the figures into a file
     if(saveFigures){
-      gPad->GetCanvas()->SaveAs(Form("figures/spilloverSubtractedDataComparisonPuCs_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+      gPad->GetCanvas()->SaveAs(Form("figures/spilloverTriggerComparison_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
     }
     
   }

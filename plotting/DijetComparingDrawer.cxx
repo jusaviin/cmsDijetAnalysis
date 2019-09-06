@@ -1210,11 +1210,11 @@ void DijetComparingDrawer::FindScalingFactors(int iJetCategory, int iCentrality,
   TH1D *scaleReader;
   scaleReader = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
   fScalingFactors[0] = scaleReader->Integral("width");
-  //fScalingFactors[0] = scaleReader->Integral(scaleReader->FindBin(50),scaleReader->GetNbinsX(),"width"); // XXXXX
+  //fScalingFactors[0] = scaleReader->Integral(scaleReader->FindBin(200),scaleReader->GetNbinsX(),"width"); // XXXXX
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     scaleReader = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
     fScalingFactors[1+iAdditional] = scaleReader->Integral("width");
-    //fScalingFactors[1+iAdditional] = scaleReader->Integral(scaleReader->FindBin(50),scaleReader->GetNbinsX(),"width"); // XXXXX
+    //fScalingFactors[1+iAdditional] = scaleReader->Integral(scaleReader->FindBin(200),scaleReader->GetNbinsX(),"width"); // XXXXX
   }
   //cout << "For iCentrality = " << iCentrality << " Reco / Gen = " << fScalingFactors[0]/fScalingFactors[1] << endl;
   

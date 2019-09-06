@@ -278,7 +278,7 @@ void closurePlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = false;          // Save the figures to a file
+  bool saveFigures = true;          // Save the figures to a file
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
@@ -295,8 +295,11 @@ void closurePlotter(){
   const int nCentralityBins = 4; // Expected number of centrality bins
   const int nTrackPtBins = 7; // Expected number of ttack pT bins
   const int nAsymmetryBins = 4; // Maximum number of asymmetry bins that can be in a file
-  double centralityBinBorders[] = {0,10,30,50,100};       // Bin borders for centrality
+  double centralityBinBorders[] = {0,10,30,50,90};       // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};       // Bin borders for track pT
+  
+  // Normalize to high pT
+  bool normalizeToHighPt = false;  // If the trigger is inefficient, we can try to normalize only to high pT to look at the shape there
   
   // Select which bins to plot
   int firstCentralityBin = 0;
@@ -320,11 +323,11 @@ void closurePlotter(){
   // Open files containing the QA histograms
   DijetHistogramManager *inputManager[knCollisionSystems][knDataTypes];
   TFile *inputFile[knCollisionSystems][knDataTypes];
-  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root");
+  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_noMixing_onlyJets_JECv3_wtaAxis_processed_2019-08-30.root");
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13.root
   // data/ppData2017_highForest_pfJets_onlyJets_wtaAxis_processed_2019-08-05.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_onlyL2RelV4_wtaAxis_processed_2019-08-13.root");
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPu4CsPFJets_JECv5b_onlyJets_processed_2019-08-28.root");
   // data/dijetPbPb2018_highForest_akFlowPu4CsPFJets_JECv5b_onlyJets_processed_2019-08-28.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_onlyL2RelV4_wtaAxis_processed_2019-08-13.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root
@@ -333,10 +336,10 @@ void closurePlotter(){
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   // data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root
   // data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root
-  inputFile[kPp][kMC] = TFile::Open("data/dijet_ppMC_RecoGen_Pythia8_pfJets_wtaAxis_vzCheck_onlyJets_JECv2_processed_2019-08-13.root");
+  inputFile[kPp][kMC] = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_JECv3_processed_2019-08-30.root");
   // data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
   // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
-  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_noCorrections_processed_2019-08-09.root");
+  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC_RecoReco_akFlowPuCs4PfJets_onlyJets_JECv5b_processed_2019-08-29.root");
   // data/PbPbMC_RecoReco_akFlowPuCs4PfJets_onlyJets_JECv5b_processed_2019-08-28.root
   // data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_noCorrections_processed_2019-08-09.root
   // data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
@@ -455,7 +458,11 @@ void closurePlotter(){
 
           // Read jet pT histograms
           jetPt[iJetType][iSystem][iDataType][iCentrality] = inputManager[iSystem][iDataType]->GetHistogramJetPt(jetTypeIndex[iJetType], iCentrality, asymmetryBinIndex[iJetType]);
-          normalizationFactor = 1.0/jetPt[iJetType][iSystem][iDataType][iCentrality]->Integral("width");
+          if(normalizeToHighPt){
+            normalizationFactor = 1.0/jetPt[iJetType][iSystem][iDataType][iCentrality]->Integral(jetPt[iJetType][iSystem][iDataType][iCentrality]->FindBin(200), jetPt[iJetType][iSystem][iDataType][iCentrality]->GetNbinsX(), "width");
+          } else {
+            normalizationFactor = 1.0/jetPt[iJetType][iSystem][iDataType][iCentrality]->Integral("width");
+          }
           jetPt[iJetType][iSystem][iDataType][iCentrality]->Scale(normalizationFactor);
           
           // Read jet eta histograms and scale them with the number of jets
@@ -475,7 +482,11 @@ void closurePlotter(){
           
           // Read jet pT histograms in dijet asymmetry bins
           jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality] = inputManager[iSystem][kData]->GetHistogramJetPt(iJetType, iCentrality, iAsymmetry);
-          normalizationFactor = 1.0/jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Integral("width");
+          if(normalizeToHighPt){
+            normalizationFactor = 1.0/jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Integral(jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->FindBin(200), jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->GetNbinsX(), "width");
+          } else {
+            normalizationFactor = 1.0/jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Integral("width");
+          }
           jetPtDijet[iJetType][iAsymmetry][iSystem][iCentrality]->Scale(normalizationFactor);
           
           // Read jet eta histograms in dijet asymmetry bins and scale them with the number of jets

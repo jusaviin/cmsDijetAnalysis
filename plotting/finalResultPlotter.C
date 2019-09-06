@@ -4,8 +4,6 @@
 #include "xCanvas.h"
 #include "JDrawer.h"
 
-void drawFinalFigure();
-
 void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager *pbpbHistograms, JffCorrector *ppUncertaintyProvider, JffCorrector *pbpbUncertaintyProvider, int iJetTrack){
 
   const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
@@ -398,7 +396,7 @@ void finalResultPlotter(){
   bool logJetShape = true;    // Jet shapes
   
   //int iAsymmetry = 0;
-  int iJetTrack = DijetHistogramManager::kPtWeightedTrackLeadingJet;  // DijetHistogramManager::kPtWeightedTrackSubleadingJet
+  int iJetTrack = DijetHistogramManager::kPtWeightedTrackSubleadingJet;  // DijetHistogramManager::kPtWeightedTrackSubleadingJet
   int lowestTrackPtBin = 0;
   
   TString asymmetryString[nAsymmetryBins+1];

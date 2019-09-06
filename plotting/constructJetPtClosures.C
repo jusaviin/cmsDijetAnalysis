@@ -64,7 +64,7 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
   // Create a new drawer and define bin borders and drawing style
   JDrawer *drawer = new JDrawer();
   drawer->SetCanvasSize(700,700);
-  double centralityBinBorders[5] = {0,10,30,50,100};
+  double centralityBinBorders[5] = {0,10,30,50,90};
   char centralityString[100];
   char centralitySaveName[100];
   char namer[200];
@@ -135,21 +135,22 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC_GenGen_akFlowPuCs4PfJets_jetsNtracks_JECv5b_jetClosures_processed_2019-08-29.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_jetsNtracks_jetClosures_JECv3_processed_2019-09-03.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_GenGen_akFlowPuCs4PfJets_jetsNtracks_JECv5b_jetClosures_processed_2019-09-03.root
   // data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root
   // "data/PbPbMC_GenGen_pfJets_noCorrelations_jetPtClosure_processed_2019-06-25.root"
   // "data/PbPbMC_GenGen_pfCsJets_noCorrelations_jetPtClosure_eta1v3_2019-06-26_processed.root"
   
   bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
-  bool drawSubleadingClosure = false;    // Produce the closure plots for subleading jet pT
-  bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
+  bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
+  bool drawInclusiveClosure = true;     // Produce the closure plots for inclusive jet pT
   
   bool drawPtClosure = true;
-  bool drawEtaClosure = false;
+  bool drawEtaClosure = true;
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
-  bool saveFigures = false;  // Save the figures to file
+  bool saveFigures = true;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================
@@ -172,7 +173,7 @@ void constructJetPtClosures(){
   // Find the correct number of centrality and track pT bins
   const int nCentralityBins = ppData ? 1 : closureHistograms->GetNCentralityBins();
   const int nTrackPtBins = closureHistograms->GetNTrackPtBins();
-  double centralityBinBorders[5] = {0,10,30,50,100};  // Bin borders for centrality
+  double centralityBinBorders[5] = {0,10,30,50,90};  // Bin borders for centrality
   
   // Initialize reco/gen ratio and closure histograms
   TH1D *hRecoGenRatio[DijetHistograms::knClosureTypes][DijetHistogramManager::knGenJetPtBins][nCentralityBins][DijetHistograms::knClosureParticleTypes+1];
@@ -239,7 +240,8 @@ void constructJetPtClosures(){
         } // pT closure if
         
         if(drawEtaClosure){
-          for(int iJetEta = 0; iJetEta < DijetHistogramManager::knJetEtaBins; iJetEta++){
+          // For eta, bins from 9 to nBins-9 cover the ragion -1.6 < eta < 1.6
+          for(int iJetEta = 9; iJetEta < DijetHistogramManager::knJetEtaBins-9; iJetEta++){
             
             // Read the reco/gen histogram from the file
             hRecoGenRatioEta[iClosureType][iJetEta][iCentrality][iClosureParticle] = closureHistograms->GetHistogramJetPtClosure(iClosureType, DijetHistogramManager::knGenJetPtBins, iJetEta, iCentrality, iClosureParticle);
