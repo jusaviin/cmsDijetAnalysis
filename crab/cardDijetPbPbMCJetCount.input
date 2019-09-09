@@ -1,32 +1,31 @@
 # Configuration card for leading-subleading jet analysis
 
 # Data type for the analysis
-DataType 2  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
+DataType 3  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
 McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
-MatchJets 1 # 1 = Match generator level jets with reconstructed jets, 0 = Do not do that
+MatchJets 0 # 1 = Match generator level jets with reconstructed jets, 0 = Do not do that
 
 # Specify the forest type in the selected data files and choose forest readers based on this
 ForestType 0 # 0 = High Forest, 1 = Skim Forest
-ReadMode 0   # 0 = Regular forest, 1 = official PYTHIA8 forest, 2 = Dhanush's PYTHIA8 forest
+ReadMode 0   # 0 = Regular forest, 1 = PYTHIA8 forest
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
-FilledHistograms 111  # Bit 0 = Event information histograms      (to set: 1)
+FilledHistograms 111 # Bit 0 = Event information histograms      (to set: 1)
                     # Bit 1 = Jet histograms                    (to set: 2)
                     # Bit 2 = Track histograms                  (to set: 4)
                     # Bit 3 = Regular jet-track correlation     (to set: 8)
                     # Bit 4 = Uncorrected jet-track correlation (to set: 16)
                     # Bit 5 = pT weighted jet track correlation (to set: 32)
                     # Bit 6 = Inclusive jet-track correlation   (to set: 64)
-                    # Bit 7 = Jet pT closure histograms         (to set: 128)
                     # Examples: All = 127, All but inclusive jet-track = 63
                     # Event info and pT weighted correlation = 39
                     # Regular and uncorrected correlation = 24
 
 # Cuts for dijets
 JetType 1                  # 0 = Calo jets, 1 = PF jets
-JetAxis 0                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate, 2 = WTA axis
+JetAxis 0                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
 MaxPtCut 5020              # Maximum pT of a leading jet accepted in the analysis
@@ -44,8 +43,8 @@ MaxTrackPtRelativeError 0.3 # Maximum relative error allowed for track pT
 VertexMaxDistance 3         # TODO: Understand what this cut means
 CalorimeterSignalLimitPt 20 # Require signal in calorimeters for all track above this pT
 HighPtEtFraction 0.5        # For high pT tracks, require Et to be at least this fraction of pT
-Chi2QualityCut 100000       # Maximum accepted chi2/(nDof*nHits) for tracks
-MinimumTrackHits 0          # Require this many hits for each track
+Chi2QualityCut 0.15         # Maximum accepted chi2/(nDof*nHits) for tracks
+MinimumTrackHits 11         # Require this many hits for each track
 SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
 
 # Cuts for event selection
@@ -61,13 +60,13 @@ AsymmetryBinEdges   0 0.5 0.75 1                        # Dijet asymmetry binnin
 PtHatBinEdges       0 30 50 80 120 170 220 280 370 460  # pT hat binning
 
 # Event mixing
-DoEventMixing 0          # 0 = Do not mix events. 1 = Generate mixed events
+DoEventMixing 1          # 0 = Do not mix events. 1 = Generate mixed events
 OnlyMix 0                # 0 = Fill mixed and same event histograms. 1 = Only fill mixed event histograms
-MixWithPool 0            # 0 = Do mixing without pool. 1 = Do mixing with pool
-NMixedEventsPerDijet 20  # Number of events mixed with each dijet event
+MixWithPool 1            # 0 = Do mixing without pool. 1 = Do mixing with pool
+NMixedEventsPerDijet 10  # Number of events mixed with each dijet event
 VzTolerance 0.5          # Maximum vz distance for event to be accepted in mixing
 MixingVzBinWidth 1       # Width of vz bins used for mixing in cm
-MixingHiBinWidth 5       # Number of centrality bins combined in a single mixing bin
+MixingHiBinWidth 1       # Number of centrality bins combined in a single mixing bin
 MixingPoolDepth 400      # Number of events selected for mixing for each vz and centrality bin
 MixingFileIndex 0        # Choose location of mixing file for PbPb (0-5) or PbPbMC (0-6)
 

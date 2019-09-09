@@ -5,6 +5,7 @@ echo "This is job number $1"
 # The line below only reads the value from the above format
 CARD=${2#*=}
 OUTPUT=${3#*=}
+LOCATION=${4#*=}
 
 # Untar the input file list
 tar xf input_files.tar.gz
@@ -16,4 +17,4 @@ tar -xvzf dijet5TeV.tar.gz
 make
 
 # Run the code
-./dijetAnalysis $1 $CARD $OUTPUT
+./dijetAnalysis $1 $CARD $OUTPUT $LOCATION

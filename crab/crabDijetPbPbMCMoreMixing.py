@@ -1,15 +1,15 @@
 from WMCore.Configuration import Configuration
 config = Configuration()
 
-correlationType = 'GenGen'
-infoString = 'Pythia6_pfCsJets_wtaAxis_matchJets_2019-07-21'
-inputFile='ppMC_Pythia6_wtaForest.txt'
-card='cardDijetPpMCwta.input'
-output='dijet_ppMC_'+correlationType+'_'+infoString+'.root'
+system = 'RecoGen'
+infoString = 'skims_pfJets_noUncorr_5moreMixedEvents_xj_2019-03-22_combine4_failed'
+card='cardDijetPbPbMCMoreMixing.input'
+output='PbPbMC_' + system + '_' + infoString + '.root'
+inputFile='PbPbMC_Pythia6HydjetCymbal_list_combine04_toResubmit.txt'
 fileLocation='0'  # Locations: 0 = Purdue, 1 = CERN, 2 = Search with xrootd
 
 config.section_("General")
-config.General.requestName = 'ppMC_'+correlationType+'_'+infoString
+config.General.requestName = 'PbPbMC_' + system + '_' + infoString
 config.General.workArea = config.General.requestName 
 
 config.section_("JobType")
@@ -19,15 +19,15 @@ config.JobType.scriptExe = 'compileAndRun.sh'
 config.JobType.scriptArgs = ['card='+card,'output='+output,'location='+fileLocation]
 config.JobType.inputFiles = ['FrameworkJobReport.xml','dijet5TeV.tar.gz',card]
 config.JobType.outputFiles = [output]
-config.JobType.maxJobRuntimeMin = 800
-config.JobType.maxMemoryMB = 1800
+config.JobType.maxJobRuntimeMin = 1440
+config.JobType.maxMemoryMB = 2500
 
 config.section_("Data")
 config.Data.userInputFiles = open(inputFile).readlines() 
 config.Data.splitting = 'FileBased'
-config.Data.unitsPerJob = 2
+config.Data.unitsPerJob = 1
 config.Data.totalUnits = len(config.Data.userInputFiles)
-config.Data.outputPrimaryDataset = 'diJetTestPpMCHistograms'
+config.Data.outputPrimaryDataset = 'diJetPbPbMCHistograms'
 config.Data.outLFNDirBase = '/store/user/jviinika/'+config.General.requestName
 config.Data.publication = False
 

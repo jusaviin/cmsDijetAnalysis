@@ -2,8 +2,10 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 card = 'cardDijetPp.input'
-infoString = 'dijet_pp_highForest_part3_2018-07-27'
+infoString = 'dijet_pp_highForest_pfJets_highJetLimit_noUncorr_wtaAxis_2019-07-13'
 output = infoString + '.root'
+inputFile = 'ppData_HIHardProbes-Run2015E-PromptReco-v1.txt'
+fileLocation='2'  # Locations: 0 = Purdue, 1 = CERN, 2 = Search with xrootd
 
 config.section_("General")
 config.General.requestName = infoString
@@ -13,23 +15,23 @@ config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'PSet.py'
 config.JobType.scriptExe = 'compileAndRun.sh'
-config.JobType.scriptArgs = ['card='+card,'output='+output]
+config.JobType.scriptArgs = ['card='+card,'output='+output,'location='+fileLocation]
 config.JobType.inputFiles = ['FrameworkJobReport.xml','dijet5TeV.tar.gz',card]
 config.JobType.outputFiles = [output]
-config.JobType.maxJobRuntimeMin = 400
-config.JobType.maxMemoryMB = 2500
+config.JobType.maxJobRuntimeMin = 600
+config.JobType.maxMemoryMB = 1600
 
 config.section_("Data")
-config.Data.userInputFiles = open('pp_5TeVdata_forest.txt').readlines() 
+config.Data.userInputFiles = open(inputFile).readlines() 
 config.Data.splitting = 'FileBased'
-config.Data.unitsPerJob = 10
+config.Data.unitsPerJob = 1
 config.Data.totalUnits = len(config.Data.userInputFiles)
-config.Data.outputPrimaryDataset = 'diJetTestPpHistograms'
+config.Data.outputPrimaryDataset = 'diJetPpHistograms'
 config.Data.outLFNDirBase = '/store/user/jviinika/'+config.General.requestName
 config.Data.publication = False
 
 config.section_("Site")
-config.Site.whitelist = ['T2_US_Purdue']
+config.Site.whitelist = ['T2_US_*']
 config.Site.storageSite = 'T3_US_FNALLPC'
 
 #"really" force crab to only run at whitelisted sites
