@@ -684,20 +684,22 @@ void DijetAnalyzer::RunAnalysis(){
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
   std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V3_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt"};
-  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt", "Not applied PF", "Not applied PF", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt", "CorrectionNotAppliedPF.txt", "CorrectionNotAppliedPF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt"};
   std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V3_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt"};
-
+  
   // For calo jets, use the correction files for calo jets (otherwise same name, but replace PF with Calo)
   if(fJetType == 0){
     size_t pfIndex = 0;
     pfIndex = correctionFileRelative[fDataType].find("PF", pfIndex);
     correctionFileRelative[fDataType].replace(pfIndex, 2, "Calo");
+    pfIndex = 0;
     pfIndex = correctionFileResidual[fDataType].find("PF", pfIndex);
     correctionFileResidual[fDataType].replace(pfIndex, 2, "Calo");
+    pfIndex = 0;
     pfIndex = uncertaintyFile[fDataType].find("PF", pfIndex);
     uncertaintyFile[fDataType].replace(pfIndex, 2, "Calo");
   }
-  
+    
   vector<string> correctionFiles;
   correctionFiles.push_back(correctionFileRelative[fDataType]);
   if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) correctionFiles.push_back(correctionFileResidual[fDataType]);
@@ -2141,7 +2143,7 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   
   // Cuts for track reconstruction quality
   // TODO: For some reason track layer hits is always zero in PbPb 2018 forests...
-  if(/*fReadMode < 2000 &&*/ ( fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
+  if(fReadMode < 2000 && ( fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
   if(fTrackReader[correlationType]->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
   
