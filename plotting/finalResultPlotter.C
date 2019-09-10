@@ -25,6 +25,11 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
   double shapeIntegralPp[nAsymmetryBins+1];
   
+  // Open a file to include results from inclusive jet analysis HIN-16-020
+  TFile *inclusiveResultFile = TFile::Open("data/publishedResults/JS5TeV_HIN_16_020.root");
+  TH1D *sumHistogramPbPbInclusive[nCentralityBins];
+  TH1D *sumHistogramPpInclusive;
+  
   // Read the pT summed jet shape histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -47,6 +52,31 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       sumHistogramPp[iAsymmetry]->Add(helperHistogram);
       jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, iTrackPt);
     } // track pT
+  }
+  
+  // Read the histograms from the inclusive jet shape analysis
+  sumHistogramPpInclusive = (TH1D*) inclusiveResultFile->Get("JS_pp_0")->Clone(Form("inclusiveJetShape%d", iJetTrack));
+  
+  for(int iTrackPt = 1; iTrackPt < 9; iTrackPt++){
+    helperHistogram = (TH1D*) inclusiveResultFile->Get(Form("JS_pp_%d",iTrackPt));
+    sumHistogramPpInclusive->Add(helperHistogram);
+  }
+  
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    sumHistogramPbPbInclusive[iCentrality] = (TH1D*) inclusiveResultFile->Get(Form("JS_pb_0_%d",iCentrality))->Clone(Form("inclusiveJetShape%d%d", iJetTrack, iCentrality));
+    
+    for(int iTrackPt = 1; iTrackPt < 9; iTrackPt++){
+      helperHistogram = (TH1D*) inclusiveResultFile->Get(Form("JS_pb_%d_%d",iTrackPt,iCentrality));
+      sumHistogramPbPbInclusive[iCentrality]->Add(helperHistogram);
+    }
+  }
+  
+  // Normalize the histograms from the inclusive jet shape analysis
+  sumHistogramPpInclusive->Scale(1.0/sumHistogramPpInclusive->Integral(1, sumHistogramPpInclusive->FindBin(0.99) ,"width"));
+  sumHistogramPpInclusive->SetLineColor(kMagenta);
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    sumHistogramPbPbInclusive[iCentrality]->Scale(1.0/sumHistogramPbPbInclusive[iCentrality]->Integral(1, sumHistogramPbPbInclusive[iCentrality]->FindBin(0.99) ,"width"));
+    sumHistogramPbPbInclusive[iCentrality]->SetLineColor(kMagenta);
   }
   
   // Normalize the jet shape histograms
@@ -154,7 +184,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     
-    bigCanvas[iAsymmetry] = new auxi_canvas(Form("bigCanvas%d",iAsymmetry), "", 2500, 2000);
+    bigCanvas[iAsymmetry] = new auxi_canvas(Form("bigCanvas%d%d",iAsymmetry,iJetTrack), "", 2500, 2000);
     bigCanvas[iAsymmetry]->SetMargin(0.06, 0.01, 0.08, 0.02);
     bigCanvas[iAsymmetry]->divide(3,4);
     
@@ -170,6 +200,9 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
       jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
       jetShapeStack[iCentrality][iAsymmetry]->hst->Draw();
+      if(iAsymmetry == nAsymmetryBins && iJetTrack == 2){
+        sumHistogramPbPbInclusive[iCentrality]->Draw("same");
+      }
       //js_dr_err_all[iCentrality][iAsymmetry]->Draw("same e2");
       if(iCentrality==3 ){
         mainTitle[iAsymmetry]->SetTextFont(22);
@@ -238,6 +271,9 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(0.9);
     jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
     jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
+    if(iAsymmetry == nAsymmetryBins && iJetTrack == 2){
+      sumHistogramPpInclusive->Draw("same");
+    }
     mainTitle[iAsymmetry]->SetTextSize(0.085);
     mainTitle[iAsymmetry]->DrawLatexNDC(0.35, 0.88, "pp reference");
     //js_dr_err_all[4]->Draw("same e2");
@@ -358,7 +394,8 @@ void finalResultPlotter(){
   TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root");
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root");
+  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-05.root");
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_testNoJffCorr_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
@@ -425,7 +462,8 @@ void finalResultPlotter(){
   pbpbUncertaintyProvider->ReadSystematicFile(pbpbUncertaintyFile);
   
   // Plot the figures using Xiao's plotting macro
-  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, iJetTrack);
+  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
+  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
   return;
   
   // Temporary: Get the ratio between pp and PbPb jet shape

@@ -7,10 +7,12 @@
 
 void plotDeltaEtaXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager *pbpbHistograms, JffCorrector *ppUncertaintyProvider, JffCorrector *pbpbUncertaintyProvider, int iJetTrack){
 
+  // Determine the number of bins from the histogram manager
   const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
   const int nCentralityBins = pbpbHistograms->GetNCentralityBins();
   const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
   
+  // Define labels and plotting layout
   const char* deltaEtaTitle[] = {"Particle yield vs. leading #Delta#eta","Particle yield vs. subleading #Delta#eta","Particle yield vs. #Delta#eta"};
   const char* deltaEtaSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
@@ -18,13 +20,16 @@ void plotDeltaEtaXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   double deltaEtaZoom[] = {30,40,30};
   double subtractionZoom[] = {10,18,10};
   
+  // Open a file to include results from inclusive jet analysis HIN-16-020
+  TFile *inclusiveResultFile = TFile::Open("data/publishedResults/officialHist_py_deta_16_020.root");
+  
   // Methods for doing stuff
   DijetMethods *projector = new DijetMethods();
   double projectionRegion = 1;  // Region in deltaPhi which is used to project the deltaEta peak
   const int nDeltaEtaBinsRebin = 21;
   const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
   
-  // Temporary: Get the ratio between pp and PbPb jet shape
+  // Histograms needed to calculate the stacked deltaEta distributions
   TH1D *sumHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *sumHistogramPp[nAsymmetryBins+1];
   TH1D *deltaEtaArray[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
@@ -36,7 +41,10 @@ void plotDeltaEtaXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
   double shapeIntegralPp[nAsymmetryBins+1];
   
-  // Read the pT summed jet shape histograms
+  // Histgrams for comparison with inclusive results
+  TH1D *sumHistogramInclusive[nCentralityBins+1];
+  
+  // Read two dimensional deltaEta-deltaPhi histograms and project the deltaEta yields out from them
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
@@ -118,6 +126,33 @@ void plotDeltaEtaXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       deltaEtaArray[nCentralityBins][iTrackPt][iAsymmetry] = (TH1D*) rebinnedHistogram->Clone(Form("deltaEtaArray%d%d%d", nCentralityBins, iAsymmetry, iTrackPt));
     } // track pT
   }
+  
+  // Read the inclusive histograms to make a comparison to the published results
+  int inclusiveCentralityBins[] = {0,10,30,50,100};
+  int inclusiveTrackPtBins[] = {0,1,2,3,4,8,12};
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    
+    sumHistogramInclusive[iCentrality] = (TH1D*) inclusiveResultFile->Get(Form("Proj_dEta_PbPb_Cent%d_Cent%d_TrkPt07_TrkPt1_Rebin_rebin", inclusiveCentralityBins[iCentrality], inclusiveCentralityBins[iCentrality+1]))->Clone(Form("inclusiveResults%d", iCentrality));
+    
+    for(int iTrackPt = 1; iTrackPt < 6; iTrackPt++){
+      
+      addedHistogram = (TH1D*) inclusiveResultFile->Get(Form("Proj_dEta_PbPb_Cent%d_Cent%d_TrkPt%d_TrkPt%d_Rebin_rebin", inclusiveCentralityBins[iCentrality], inclusiveCentralityBins[iCentrality+1], inclusiveTrackPtBins[iTrackPt], inclusiveTrackPtBins[iTrackPt+1]));
+      
+      sumHistogramInclusive[iCentrality]->Add(addedHistogram);
+      
+    } // Track pT loop for published inclusive results
+    
+  } // Centrality loop for published inclusive results
+  
+  sumHistogramInclusive[nCentralityBins] = (TH1D*) inclusiveResultFile->Get("Proj_dEta_pp_TrkPt07_TrkPt1_Rebin_rebin")->Clone("inclusiveResultsPp");
+  
+  for(int iTrackPt = 1; iTrackPt < 6; iTrackPt++){
+    
+    addedHistogram = (TH1D*) inclusiveResultFile->Get(Form("Proj_dEta_pp_TrkPt%d_TrkPt%d_Rebin_rebin", inclusiveTrackPtBins[iTrackPt], inclusiveTrackPtBins[iTrackPt+1]));
+    
+    sumHistogramInclusive[nCentralityBins]->Add(addedHistogram);
+    
+  } // Track pT loop for published inclusive results
   
   // Find the uncertainties for the deltaEta histograms TODO: Need these in file (just produce also as a function of deltaEta, not just r)
   /*for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
@@ -216,7 +251,7 @@ void plotDeltaEtaXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     
-    bigCanvas[iAsymmetry] = new auxi_canvas(Form("bigCanvas%d",iAsymmetry), "", 2500, 2000);
+    bigCanvas[iAsymmetry] = new auxi_canvas(Form("bigCanvas%d%d",iAsymmetry,iJetTrack), "", 2500, 2000);
     bigCanvas[iAsymmetry]->SetMargin(0.075, 0.01, 0.08, 0.02);
     bigCanvas[iAsymmetry]->divide(3,4);
     
@@ -231,6 +266,9 @@ void plotDeltaEtaXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("Y = #frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
       deltaEtaStack[iCentrality][iAsymmetry]->hst->Draw();
+      if(iAsymmetry == nAsymmetryBins && iJetTrack == 0){
+        sumHistogramInclusive[iCentrality]->Draw("same");
+      }
       //js_dr_err_all[iCentrality][iAsymmetry]->Draw("same e2");
       if(iCentrality==3 ){
         mainTitle[iAsymmetry]->SetTextFont(22);
@@ -303,6 +341,9 @@ void plotDeltaEtaXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     deltaEtaStack[4][iAsymmetry]->hst->GetYaxis()->SetTitle("Y = #frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
     mainTitle[iAsymmetry]->SetTextSize(0.085);
     mainTitle[iAsymmetry]->DrawLatexNDC(0.35, 0.88, "pp reference");
+    if(iAsymmetry == nAsymmetryBins && iJetTrack == 0){
+      sumHistogramInclusive[nCentralityBins]->Draw("same");
+    }
     //js_dr_err_all[4]->Draw("same e2");
     
     TLegend* lt1 = new TLegend(0.01, 0.1, 1, 0.5);
@@ -417,7 +458,11 @@ void finalDeltaEtaPlotter(){
   TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root");
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root");
+  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-05.root");
+  // data/dijetPbPb2018_highForest_akPu4CaloJets_jet80trigger_5eveMix_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-09.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root
+  // dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_testNoJffCorr_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
@@ -486,6 +531,7 @@ void finalDeltaEtaPlotter(){
   pbpbUncertaintyProvider->ReadSystematicFile(pbpbUncertaintyFile);
   
   // Plot the figures using Xiao's plotting macro
-  plotDeltaEtaXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, iJetTrack);
+  plotDeltaEtaXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kTrackLeadingJet);
+  plotDeltaEtaXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kTrackSubleadingJet);
   
 }
