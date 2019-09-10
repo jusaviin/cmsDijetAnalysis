@@ -456,10 +456,12 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   // If we want to use exponential in some bins, redifine the seagull fit
   // Note that we want to have the same background level estimation in both cases
   if(normalizationMethod == 1){
-    fSeagullFit = new TF1("seagullFit",seagullExp,-3,3,3);
-    double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
+    fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
+    fSeagullFit = new TF1("seagullFitExp",seagullExp,-3,3,3);
+    initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
     fSeagullFit->SetParameters(initialLevel,-1,-1);
     fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,3);
+    backgroundLevel = fSeagullFit->GetParameter(0); // TODO: Check if this or constant fit is beta
   }
   
   // Apply the correction to the input 2D histogram

@@ -111,6 +111,13 @@ int DijetCard::GetSubeventCut() const{
 }
 
 /*
+ *  Getter for jet type
+ */
+int DijetCard::GetJetType() const{
+  return (*fCardEntries[kJetType])[1];
+}
+
+/*
  * Get the number of bins for internal index
  * If no vector is found in the index, return 0.
  */

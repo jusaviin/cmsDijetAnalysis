@@ -515,8 +515,13 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           // The peak in the mixed event distribution can be seen the low pT bins, especially in the central PbPb events
           // The detector efficiency improves for higher pT tracks and the peak in event mixing disappers
           mixingPeakVisible = false;
-          if(((iTrackPtBin < 5 && iCentralityBin < 2) || (iTrackPtBin < 4 && iCentralityBin == 2) || (iTrackPtBin < 3 && iCentralityBin == 3)) && fAvoidMixingPeak) mixingPeakVisible = true;
+          if(((iTrackPtBin < 5 && iCentralityBin < 2) || (iTrackPtBin < 4 && iCentralityBin == 2)/* || (iTrackPtBin < 3 && iCentralityBin == 3)*/) && fAvoidMixingPeak) mixingPeakVisible = true; // TODO: For Calo80 trigger
           if(fCard->GetDataType().EqualTo("pp",TString::kIgnoreCase) && fAvoidMixingPeak) mixingPeakVisible = true;
+          
+          // For calo jets in the central low pT bin, different fit region
+          if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) /*&& fCard->GetJetType() == 0*/){ // TODO: For Calo80 trigger
+            if(iCentralityBin == 0 && iTrackPtBin == 0) fMethods->SetMixedEventFitRegion(-0.65,-0.45);
+          }
           
           // Do the mixed event correction for the current jet-track correlation histogram
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iAsymmetry][iCentralityBin][iTrackPtBin],mixingPeakVisible);
@@ -527,6 +532,11 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           
           // Scale the histograms with the number of jets/dijets
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Scale(scalingFactor);
+          
+          // For calo jets in the central low pT bin, reset fit region
+          if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) && fCard->GetJetType() == 0){
+            if(iCentralityBin == 0 && iTrackPtBin == 0) fMethods->SetMixedEventFitRegion(fDefaultMixingDeltaEtaFitRange);
+          }
           
           // Apply the seagull correction after the mixed event correction
           if(fApplySeagullCorrection){
@@ -585,7 +595,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             }*/
             
             // Special cases in some bins due to a dip in the middle
-            if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase)){
+            if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) && fCard->GetJetType() > 0){
               
               // For subleading jet, use different seagull function in a couple of bins
               if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){

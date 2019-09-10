@@ -129,7 +129,8 @@ public:
   int GetNDeltaPhiBins() const;   // Get the number of deltaPhi bins
   double GetLowBinBorderDeltaPhi(const int iBin) const;  // Get the low border of i:th deltaPhi bin
   double GetHighBinBorderDeltaPhi(const int iBin) const; // Get the high border of i:th deltaPhi bin
-  int GetSubeventCut() const;     // Get theindex for used subevent cut
+  int GetSubeventCut() const;     // Get the index for used subevent cut
+  int GetJetType() const;         // Get the jet type index
   
   void AddOneDimensionalVector(int entryIndex, float entryContent); // Add one dimensional vector to the card
   void AddVector(int entryIndex, int dimension, double *contents); // Add a vector to the card
