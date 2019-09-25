@@ -40,7 +40,7 @@ public:
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
   TH1D* RebinAsymmetric(TH1D *histogramInNeedOfRebinning, const int nBins, const double* binEdges); // Asymmetric rebinning for one-dimensional histograms
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
-  TH2D* SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR); // Symmetrize eta and phi in a histogram up to given maximum radius
+  TH2D* SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue = 0); // Symmetrize eta and phi in a histogram up to given maximum radius
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   TF1* FourierFit(TH1D* backgroundDeltaPhi, const int maxVn); // Do a Fourier fit for the background deltaPhi distribution

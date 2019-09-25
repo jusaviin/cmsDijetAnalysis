@@ -869,10 +869,11 @@ std::tuple<double,double> DijetMethods::GetBackgroundAdjustmentFactors(TH1 *lead
  * Arguments:
  *  const TH2D *histogramToBeSymmetrized = Histogram that is symmetrized
  *  const double maxR = Maximum radius until which the histogram is symmetrized around zero
+ *  const double fillValue = Value that is filled to the region after symmetrization
  *
  *  return: Symmetrized two-dimensional histogram
  */
-TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR){
+TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue){
 
   // Clone the given histogram to get the original binning
   TH2D *symmetrizedHistogram = (TH2D*) histogramToBeSymmetrized->Clone(Form("%sSymmetrized",histogramToBeSymmetrized->GetName()));
@@ -907,7 +908,7 @@ TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, co
       
       // If the bins are out of specified range, set the content to zero
       if(TMath::Sqrt(binCenterEta*binCenterEta+binCenterPhi*binCenterPhi) > maxR){
-        symmetrizedHistogram->SetBinContent(iPhi,iEta,0);
+        symmetrizedHistogram->SetBinContent(iPhi,iEta,fillValue);
         symmetrizedHistogram->SetBinError(iPhi,iEta,0);
         continue;
       }
