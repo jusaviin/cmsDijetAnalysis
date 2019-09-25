@@ -82,7 +82,7 @@ private:
   const char* fCompactDeltaEtaString[knDeltaEtaBins] = {"","_SignalDeltaEta","_BackgroundDeltaEta"};
   
   // Naming for closure particle
-  const char* fClosureParticleName[DijetHistograms::knClosureParticleTypes+1] = {"_quark","_qluon",""};
+  const char* fClosureParticleName[DijetHistograms::knClosureParticleTypes+1] = {"_quark","_gluon",""};
   
 public:
   
@@ -155,9 +155,10 @@ public:
   void SetDijetMethods(DijetMethods* newMethods); // Setter for used DijetMethods
   
   // Setters for corrections
-  void SetJffCorrection(TFile *jffFile, const bool applyCorrection);             // Setter for JFF corrector and flag
-  void SetSpilloverCorrection(TFile* spilloverFile, const bool applyCorrection); // Setter for spillover corrector and flag
-  void SetSeagullCorrection(const bool applyCorrection);                         // Setter for seagull correction flag
+  void SetJffCorrection(TFile *jffFile, const bool applyCorrection);              // Setter for JFF corrector and flag
+  void SetSpilloverCorrection(TFile* spilloverFile, const bool applyCorrection);  // Setter for spillover corrector and flag
+  void SetTrackDeltaRCorrection(TFile* trackingFile, const bool applyCorrection); // Setter for residual tracking corrector and flag
+  void SetSeagullCorrection(const bool applyCorrection);                          // Setter for seagull correction flag
   
   // Getters for number of bins in histograms
   int GetNCentralityBins() const; // Getter for the number of centrality bins
@@ -272,9 +273,10 @@ private:
   // ==============================================
   // =========== Flags for corrections ============
   // ==============================================
-  bool fApplyJffCorrection;       // Flag for applying the JFF correction
-  bool fApplySpilloverCorrection; // Flag for applying the spillover correction
-  bool fApplySeagullCorrection;   // Flag for applying the seagull correction
+  bool fApplyJffCorrection;         // Flag for applying the JFF correction
+  bool fApplySpilloverCorrection;   // Flag for applying the spillover correction
+  bool fApplyTrackDeltaRCorrection; // Floag for applying the residual tracking correction
+  bool fApplySeagullCorrection;     // Flag for applying the seagull correction
   
   // ==============================================
   // ======== Flags for histograms to load ========

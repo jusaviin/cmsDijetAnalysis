@@ -20,6 +20,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fCompactSystemAndEnergy(""),
   fApplyJffCorrection(false),
   fApplySpilloverCorrection(false),
+  fApplyTrackDeltaRCorrection(false),
   fApplySeagullCorrection(false),
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
@@ -291,6 +292,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fJffCorrectionFinder(in.fJffCorrectionFinder),
   fApplyJffCorrection(in.fApplyJffCorrection),
   fApplySpilloverCorrection(in.fApplySpilloverCorrection),
+  fApplyTrackDeltaRCorrection(in.fApplyTrackDeltaRCorrection),
   fApplySeagullCorrection(in.fApplySeagullCorrection),
   fLoadEventInformation(in.fLoadEventInformation),
   fLoadDijetHistograms(in.fLoadDijetHistograms),
@@ -493,6 +495,56 @@ void DijetHistogramManager::DoMixedEventCorrection(){
   int seagullMethod = 0;
   int seagullVeto = 0;
   
+  // Scaling between 2015 track corrected 2018 data and 2015 data
+  //double adhocScaling[4][7] = {{0.877542,0.979924,0.990815,0.968924,0.999984,1.03039,1.32551},
+  //  {0.925379,0.98422,0.988945,0.998242,1.00873,1.03255,1.47666},
+  //  {0.933784,0.983396,0.999575,1.00524,1.0192,1.31162,1.14933},
+  //  {0.957907,0.970919,1.04941,1.03117,1.06246,0.635813,0.324361}};
+  
+  // Scaling between GenReco and GenGen when using preliminary 2018 tracking corrections
+  /*double adhocScaling[8][4][7] = {
+    // Track leading jet
+   {{0.933534,0.923471,0.928508,0.965153,0.994163,1.03308,1.15982},
+    {0.949723,0.941912,0.94348,0.964134,0.9827,0.98694,0.985603},
+    {0.964838,0.944398,0.942302,0.948071,1.0099,0.956383,0.984015},
+    {0.96042,0.949255,0.938635,0.956557,0.990716,0.955202,0.954151}},
+    // Track leading jet uncorrected
+    {{0.933534,0.923471,0.928508,0.965153,0.994163,1.03308,1.15982},
+      {0.949723,0.941912,0.94348,0.964134,0.9827,0.98694,0.985603},
+      {0.964838,0.944398,0.942302,0.948071,1.0099,0.956383,0.984015},
+      {0.96042,0.949255,0.938635,0.956557,0.990716,0.955202,0.954151}},
+    // Track leading jet pT weighted
+    {{0.931685,0.922993,0.929281,0.965768,0.999474,1.04316,1.15687},
+      {0.948133,0.940998,0.943826,0.964012,0.984125,0.989819,0.986169},
+      {0.963668,0.943321,0.9425,0.949242,1.01277,0.957892,0.974359},
+      {0.959403,0.949049,0.939345,0.957687,0.998084,0.960043,0.980222}},
+    // Track subleading jet
+    {{0.937442,0.927105,0.932349,0.950155,1.00166,0.964861,1.03566},
+      {0.952669,0.941149,0.946347,0.957547,0.985631,0.966487,1.02245},
+      {0.961164,0.946763,0.940661,0.950375,0.987578,0.948474,0.95664},
+      {0.958883,0.95217,0.939519,0.956224,0.95832,0.987987,0.967687}},
+    // Track subleading jet uncorrected
+    {{0.937442,0.927105,0.932349,0.950155,1.00166,0.964861,1.03566},
+      {0.952669,0.941149,0.946347,0.957547,0.985631,0.966487,1.02245},
+      {0.961164,0.946763,0.940661,0.950375,0.987578,0.948474,0.95664},
+      {0.958883,0.95217,0.939519,0.956224,0.95832,0.987987,0.967687}},
+    // Track subleading jet pT weighted
+    {{0.935813,0.926429,0.933676,0.950313,1.00322,0.968713,1.00149},
+      {0.951496,0.940209,0.946799,0.958105,0.988613,0.965009,1.00722},
+      {0.960325,0.945441,0.941354,0.951188,0.986857,0.950594,0.949458},
+      {0.958516,0.951122,0.938692,0.956113,0.959789,0.984907,0.948665}},
+    // Track inclusive jet
+    {{0.934835,0.924132,0.930518,0.964818,0.999248,1.04429,1.05226},
+      {0.949176,0.942222,0.943571,0.96463,0.994701,0.967011,0.983666},
+      {0.962891,0.944827,0.941482,0.951249,0.984401,0.971457,0.947795},
+      {0.958078,0.948855,0.937786,0.950999,0.97116,0.975773,0.964952}},
+    // Track inclusive jet pT weighted
+    {{0.932995,0.923732,0.931318,0.965353,1.00353,1.04492,1.03136},
+      {0.947682,0.941387,0.944095,0.964577,0.997384,0.966972,0.976298},
+      {0.961837,0.943571,0.941557,0.952448,0.986052,0.967809,0.936593},
+      {0.957171,0.948606,0.938302,0.952082,0.973484,0.975877,0.959331}}
+  };*/  // Ad hoc scaling to match Reco and Gen particle levels at large angles
+  
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
@@ -619,7 +671,15 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             fSeagullFit[iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin] = (TF1*)fMethods->GetSeagullFit()->Clone();
           }
             
-            
+          
+          // TODO TODO TODO TEST TEST TEST Ad-hoc scaling to the 2015 and 2018 track levels match
+          //fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Scale(adhocScaling[iJetTrack][iCentralityBin][iTrackPtBin]);
+          
+          // Apply the residual tracking correction to the mixed event corrected deltaEta-deltaPhi distribution
+          if(fApplyTrackDeltaRCorrection && fJffCorrectionFinder->TrackingCorrectionReady()){
+            correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiTrackDeltaRCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Divide(correctionHistogram);
+          }
             
           // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
@@ -2682,6 +2742,14 @@ void DijetHistogramManager::SetSpilloverCorrection(TFile *spilloverFile, const b
   fApplySpilloverCorrection = applyCorrection;
   if(fApplySpilloverCorrection){
     fJffCorrectionFinder->ReadSpilloverFile(spilloverFile);
+  }
+}
+
+// Setter for residual tracking correction
+void DijetHistogramManager::SetTrackDeltaRCorrection(TFile *trackingFile, const bool applyCorrection){
+  fApplyTrackDeltaRCorrection = applyCorrection;
+  if(fApplyTrackDeltaRCorrection){
+    fJffCorrectionFinder->ReadTrackDeltaRFile(trackingFile);
   }
 }
 
