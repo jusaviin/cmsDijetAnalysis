@@ -38,6 +38,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fColorPalette(kRainBow),
   fStyle2D("colz"),
   fStyle3D("surf1"),
+  fRebinJetPt(false),
   fFirstDrawnCentralityBin(0),
   fLastDrawnCentralityBin(0),
   fFirstDrawnTrackPtBin(0),
@@ -223,6 +224,13 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
   }
   raaAtlas->SetLineColor(kBlack);
   raaAtlas->Scale(3);
+  
+  // Rebin borders for jet pT
+  //const int nJetPtRebin = 49;
+  //double jetPtRebinBorders[] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,170,180,190,200,210,220,230,240,260,280,300,325,350,375,400,450,500};
+  const int nJetPtRebin = 25;
+  double jetPtRebinBorders[] = {120,125,130,135,140,145,150,155,160,170,180,190,200,210,220,230,240,260,280,300,325,350,375,400,450,500};
+  DijetMethods *rebinner = new DijetMethods();
 
   // Loop over single jet categories
   for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
@@ -237,12 +245,21 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
       // Select logarithmic drawing for pT
       fDrawer->SetLogY(fLogPt);
       
-      if(fApplyScaling) FindScalingFactors(iJetCategory, iCentrality, fAsymmetryBin);
+      if(fApplyScaling) FindScalingFactors("jetPt", iJetCategory, iCentrality, fAsymmetryBin);
       
       // === Jet pT ===
       
       // Prepare the jet pT histograms and ratio to be drawn
       PrepareRatio("jetPt", 1, iJetCategory, iCentrality, fAsymmetryBin);
+      
+      if(fRebinJetPt){
+        fMainHistogram = rebinner->RebinAsymmetric(fMainHistogram,nJetPtRebin,jetPtRebinBorders);
+        for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+          fComparisonHistogram[iAdditional] = rebinner->RebinAsymmetric(fComparisonHistogram[iAdditional],nJetPtRebin,jetPtRebinBorders);
+          fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(Form("thisRatio%d",iAdditional));
+          fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
+        }
+      }
       
       // Draw the jet pT distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -359,6 +376,9 @@ void DijetComparingDrawer::DrawTrackHistograms(){
       for(int iCorrelationType = 0; iCorrelationType <= DijetHistogramManager::kMixedEvent; iCorrelationType++){
         if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
 
+        if(fApplyScaling) FindScalingFactors("jetPt", DijetHistogramManager::kLeadingJet, iCentrality, DijetHistogramManager::kMaxAsymmetryBins);
+        //if(fApplyScaling) FindScalingFactors("trackPt", iTrackType, iCorrelationType, iCentrality);
+        
         // Prepare the track pT histograms and ratio to be drawn
         PrepareRatio("trackPt", 4, iTrackType, iCorrelationType, iCentrality);
         
@@ -382,7 +402,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
 
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fBaseHistograms->GetNTrackPtBins(); iTrackPt++){
-
+          
           // Draw the selected track pT bins and the special bin containing integrated distributions
           if(iTrackPt > fLastDrawnTrackPtBin && iTrackPt != fBaseHistograms->GetNTrackPtBins()) continue;
 
@@ -405,7 +425,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           // Draw the track phi distributions to the upper panel of a split canvas plot
           sprintf(namerX,"%s #varphi",fBaseHistograms->GetTrackAxisName(iTrackType));
           DrawToUpperPad(namerX, "#frac{dN}{d#varphi}"); // TODO: Add correlation type to title
-
+          
           // Add a legend to the plot
           legend = new TLegend(0.24,0.11,0.44,0.26);
           SetupLegend(legend,centralityString,trackPtString);
@@ -421,7 +441,7 @@ void DijetComparingDrawer::DrawTrackHistograms(){
           SaveFigure(namerX,compactCentralityString,fBaseHistograms->GetCompactCorrelationTypeString(iCorrelationType),compactTrackPtString);
 
           // === Track eta ===
-
+          
           // Set nice position for the legend
           legendY1 = 0.20; legendY2 = legendY1+0.15;
           if(iTrackPt == fBaseHistograms->GetNTrackPtBins()){
@@ -697,6 +717,10 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
   TString compactTrackPtString;
   char namerX[100];
   
+  // TODO TEST TODO TEST Extract ad hoc factors
+  //TF1 *fun1 = new TF1("myFun","pol0",-2.5,-1.5);
+  //TF1 *fun2 = new TF1("noreFun","pol0",1.5,2.5);
+  
   // Loop over jet-track correlation categories
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
@@ -707,7 +731,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
       centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
 
-      FindScalingFactors(iJetTrack/3, iCentrality, DijetHistogramManager::kMaxAsymmetryBins);
+      FindScalingFactors("jetPt", iJetTrack/3, iCentrality, DijetHistogramManager::kMaxAsymmetryBins);
       
       // Draw only selected event correlation types
       for(int iCorrelationType = 0; iCorrelationType < DijetHistogramManager::knCorrelationTypes; iCorrelationType++){
@@ -771,7 +795,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
 
               // Do not draw the deltaEta histograms for background because they are flat by construction
               if(iCorrelationType == DijetHistogramManager::kBackground) continue;
-
+              
               PrepareRatio("jettrackdeltaeta", 4, iJetTrack, iCorrelationType, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt, iDeltaPhi, -3, 3);
               
               // Draw the track phi distributions to the upper panel of a split canvas plot
@@ -797,6 +821,13 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
               fDrawer->SetGridY(true);
               DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
               fDrawer->SetGridY(false);
+              
+              // TODO TEST TODO TEST Get an ad hoc scaling factor lul
+              /*if(iDeltaPhi == 1){
+                fRatioHistogram[0]->Fit(fun1,"","",-2.5,-1.5);
+                fRatioHistogram[0]->Fit(fun2,"","",1.5,2.5);
+                cout << "Scaling factor for C" << iCentrality << "T" << iTrackPt << " is: " << 2.0/(fun1->GetParameter(0)+fun2->GetParameter(0)) << endl;
+              }*/
               
               // Save the figure to a file
               sprintf(namerX,"%sDeltaEtaComparison",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
@@ -1200,19 +1231,20 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
 /*
  * Find the scaling factors for drawn distributions from the jet pT distribution
  *
+ *  const char* histogramName = Name of the histogram that is integrated
  *  int iJetCategory = Index for the catogery of jets we are looking at
  *  int iCentrality = Index for the centrality bin of the jet
  *  int iAsymmetry = Index for the asymmetry bin of the jet
  */
-void DijetComparingDrawer::FindScalingFactors(int iJetCategory, int iCentrality, int iAsymmetry){
+void DijetComparingDrawer::FindScalingFactors(const char*  histogramName, int iJetCategory, int iCentrality, int iAsymmetry){
   
   // Helper variable for reading the normalization scales
   TH1D *scaleReader;
-  scaleReader = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
+  scaleReader = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(histogramName, iJetCategory, iCentrality, iAsymmetry)->Clone();
   fScalingFactors[0] = scaleReader->Integral("width");
   //fScalingFactors[0] = scaleReader->Integral(scaleReader->FindBin(200),scaleReader->GetNbinsX(),"width"); // XXXXX
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
-    scaleReader = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram("jetPt",iJetCategory,iCentrality,iAsymmetry)->Clone();
+    scaleReader = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(histogramName, iJetCategory, iCentrality, iAsymmetry)->Clone();
     fScalingFactors[1+iAdditional] = scaleReader->Integral("width");
     //fScalingFactors[1+iAdditional] = scaleReader->Integral(scaleReader->FindBin(200),scaleReader->GetNbinsX(),"width"); // XXXXX
   }
@@ -1645,6 +1677,11 @@ void DijetComparingDrawer::SetSaveFigures(const bool saveOrNot, const char *form
 // Set if we should scale the histograms with their integral before comparing them
 void DijetComparingDrawer::SetApplyScaling(const bool applyScaling){
   fApplyScaling = applyScaling;
+}
+
+// Tell if we want to rebin the jet pT histograms
+void DijetComparingDrawer::SetJetPtRebin(const bool doRebin){
+  fRebinJetPt = doRebin;
 }
 
 // Setter for logarithmic pT axis

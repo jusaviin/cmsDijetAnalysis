@@ -105,8 +105,9 @@ public:
   void SetLogJetShape(const bool isLog);    // Setter for logarithmic jet shape drawing
   void SetLogAxes(const bool pt, const bool correlation, const bool jetShape); // Setter for logarithmic axes
   
-  // Setter for scaling the histograms
+  // Setter for scaling and rebinning the histograms
   void SetApplyScaling(const bool applyScaling); // Set if we should scale the histograms with their integral before comparing them
+  void SetJetPtRebin(const bool doRebin);  // Tell if we want to rebin the jet pT histograms
   
   // Setters for ratio plots
   void SetUseDifferenceInRatioPlot(const bool useDifference);  // Setter for plotting difference instead of ratio to lower pad
@@ -189,6 +190,9 @@ private:
   const char* fStyle2D;   // Used option for two-dimensional drawing style
   const char* fStyle3D;   // Used option for three-dimensional drawing style
   
+  // Rebinning
+  bool fRebinJetPt;       // Rebin the single jet pT distributions
+  
   // Drawn centrality bins
   int fFirstDrawnCentralityBin;  // First centrality bin that is drawn
   int fLastDrawnCentralityBin;   // Last centrality bin that is drawn
@@ -219,7 +223,7 @@ private:
   std::tuple<double,double> GetHistogramAverageAndDifferenceInRegion(TH1D *histogram, const double maxZoomValue, const int nZoomBins, const bool bothSides); // Get the average and absolute difference from a histogram in the specific area
   
   // Find the per jet scaling factor
-  void FindScalingFactors(int iJetCategory, int iCentrality, int iAsymmetry);
+  void FindScalingFactors(const char* histogramName, int iJetCategory, int iCentrality, int iAsymmetry);
   
   
 };
