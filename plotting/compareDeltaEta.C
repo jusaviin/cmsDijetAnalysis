@@ -11,11 +11,25 @@ void compareDeltaEta(){
   // ========================= Configuration ==========================
   // ==================================================================
   
+  const int nFilesToCompare = 2;
+  
   // Open data files for pp and PbPb data
   TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root");
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-05.root");
+  TFile *pbpbFile[nFilesToCompare];
+  
+  pbpbFile[0] = TFile::Open("data/dijetPbPb2018_akPu4CaloJets_eschemeAxis_improvisedMixing_oldJetAndTrackCorrections_deltaRCheck_allCorrectionsWithOldJEC_processed_2019-09-21.root");
+  pbpbFile[1] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_allCorrections_newTryOnSeagull_JECv4_processed_2019-08-13_fiveJobsMissing.root");
+  //pbpbFile[2] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root");
+  //pbpbFile[3] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_allCorrections_newTryOnSeagull_JECv4_processed_2019-08-13_fiveJobsMissing.root");
+  
+  // data/dijetPbPb2018_akPu4CaloJets_jet100trig_eschemeAxis_improvisedMixing_centFix_oldJetAndTrackCorr_allCorrectionsWithJEC2015_processed_2019-09-22.root
+  // data/dijetPbPb2018_akPu4CaloJets_jet100trig_eschemeAxis_improvisedMixing_centFix_oldJetAndTrackCorr_adhocScaling_allCorrectionsWithJEC2015_processed_2019-09-22.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PFJets_jet80Trigger_5eveMixingFromWTA_allCorrections_eschemeAxis_JECv5b_processed_2019-09-10.root
+  // data/dijetPbPb_akPu4CaloJets_eschemeAxis_allCorrectionsWith2018WtaMC_noUncorr_improvisedMixing_processed_2019-09-14.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_25eveMix_allCorrections_calo80Trigger_wtaAxis_JECv5b_processed_2019-09-10.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_weightedJffCorrection_wtaAxis_JECv5b_processed_2019-09-05.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-05.root
   // data/dijetPbPb2018_highForest_akPu4CaloJets_jet80Trigger_5eveMix_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-08-30.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_wtaAxis_allCorrections_JECv5b_processed_2019-09-05_part5missing.root
@@ -27,19 +41,22 @@ void compareDeltaEta(){
   
   // Create histogram managers for pp and PbPb
   DijetHistogramManager *ppHistograms = new DijetHistogramManager(ppFile);
-  DijetHistogramManager *pbpbHistograms = new DijetHistogramManager(pbpbFile);
+  DijetHistogramManager *pbpbHistograms[nFilesToCompare];
+  for(int iFile = 0; iFile < nFilesToCompare; iFile++){
+    pbpbHistograms[iFile] = new DijetHistogramManager(pbpbFile[iFile]);
+  }
   // Choose which figure sets to draw
   bool drawJetShapePptoPbPbRatio = false;
   bool drawJetShapeSymmetricAsymmetricRatio = true;
   
   // Choose if you want to write the figures to pdf file
-  const int nHistogramTypesToCompare = 2;
+  const int nHistogramTypesToCompare = 1;
   bool saveFigures = false;
   
   // Get the number of asymmetry bins
-  const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
-  const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
-  const int nCentralityBins = pbpbHistograms->GetNCentralityBins();
+  const int nAsymmetryBins = pbpbHistograms[0]->GetNAsymmetryBins();
+  const int nTrackPtBins = pbpbHistograms[0]->GetNTrackPtBins();
+  const int nCentralityBins = pbpbHistograms[0]->GetNCentralityBins();
   
   double centralityBinBorders[] = {0,10,30,50,90};
   double asymmetryBinBorders[] = {0,0.6,0.8,1};
@@ -50,25 +67,24 @@ void compareDeltaEta(){
   bool logCorrelation = true; // track-jet deltaPhi-deltaEta distributions
   bool logJetShape = true;    // Jet shapes
   
-  int iJetTrack = DijetHistogramManager::kTrackLeadingJet;  // DijetHistogramManager::kTrackSubleadingJet
-  //int iJetTrack = DijetHistogramManager::kTrackInclusiveJet;
-  
   // ==================================================================
   // ===================== Configuration ready ========================
   // ==================================================================
   
-  // Load only jet shape histograms from these
+  // Load leading and inclusive correlation histograms from the files
   ppHistograms->SetLoadTrackLeadingJetCorrelations(true);
   ppHistograms->SetLoadTrackInclusiveJetCorrelations(true);
   ppHistograms->SetLoad2DHistograms(true);
   ppHistograms->SetAsymmetryBinRange(0,nAsymmetryBins);
   ppHistograms->LoadProcessedHistograms();
   
-  pbpbHistograms->SetLoadTrackLeadingJetCorrelations(true);
-  pbpbHistograms->SetLoadTrackInclusiveJetCorrelations(true);
-  pbpbHistograms->SetLoad2DHistograms(true);
-  pbpbHistograms->SetAsymmetryBinRange(0,nAsymmetryBins);
-  pbpbHistograms->LoadProcessedHistograms();
+  for(int iFile = 0; iFile < nFilesToCompare; iFile++){
+    pbpbHistograms[iFile]->SetLoadTrackLeadingJetCorrelations(true);
+    pbpbHistograms[iFile]->SetLoadTrackInclusiveJetCorrelations(true);
+    pbpbHistograms[iFile]->SetLoad2DHistograms(true);
+    pbpbHistograms[iFile]->SetAsymmetryBinRange(0,nAsymmetryBins);
+    pbpbHistograms[iFile]->LoadProcessedHistograms();
+  }
   
   // Open a file to include results from inclusive jet analysis HIN-16-020
   TFile *inclusiveResultFile = TFile::Open("data/publishedResults/officialHist_py_deta_16_020.root");
@@ -80,8 +96,8 @@ void compareDeltaEta(){
   const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
   
   // Histograms needed to calculate the stacked deltaEta distributions
-  int jetTrackTypes[] = {DijetHistogramManager::kTrackLeadingJet,DijetHistogramManager::kTrackInclusiveJet};
-  TH1D *deltaEtaArray[nHistogramTypesToCompare][nCentralityBins+1][nTrackPtBins];
+  int jetTrackTypes[] = {DijetHistogramManager::kTrackInclusiveJet,DijetHistogramManager::kTrackInclusiveJet};
+  TH1D *deltaEtaArray[nFilesToCompare][nHistogramTypesToCompare][nCentralityBins+1][nTrackPtBins];
   TH2D *helperHistogram;
   TH1D *addedHistogram;
   TH1D *rebinnedHistogram;
@@ -93,20 +109,22 @@ void compareDeltaEta(){
   for(int iFilledHistograms = 0; iFilledHistograms < nHistogramTypesToCompare; iFilledHistograms++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-        
-        helperHistogram = pbpbHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(jetTrackTypes[iFilledHistograms], DijetHistogramManager::kBackgroundSubtracted, nAsymmetryBins, iCentrality, iTrackPt);
-        
-        addedHistogram = projector->ProjectRegionDeltaEta(helperHistogram, -projectionRegion, projectionRegion, Form("DeltaEtaStack%d%d%d%d",iFilledHistograms,nAsymmetryBins,iCentrality,iTrackPt));
-        
-        // Since we want to plot yield, we do not want to normalize over the number of bins projected over
-        // but simply look at the yield in certain region
-        addedHistogram->Scale(projector->GetNBinsProjectedOver());
-        
-        // The different pT bins can have different size, so we need to normalize the yield with the pT bin width
-        addedHistogram->Scale(1/(pbpbHistograms->GetTrackPtBinBorder(iTrackPt+1) - pbpbHistograms->GetTrackPtBinBorder(iTrackPt)));
-        
-        // Rebin the histogram to match the binning in the inclusive jet shape paper
-        deltaEtaArray[iFilledHistograms][iCentrality][iTrackPt] = (TH1D*) projector->RebinAsymmetric(addedHistogram, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin)->Clone(Form("deltaEtaArray%d%d%d", iFilledHistograms, iCentrality, iTrackPt));
+        for(int iFile = 0; iFile < nFilesToCompare; iFile++){
+          
+          helperHistogram = pbpbHistograms[iFile]->GetHistogramJetTrackDeltaEtaDeltaPhi(jetTrackTypes[iFilledHistograms], DijetHistogramManager::kBackgroundSubtracted, nAsymmetryBins, iCentrality, iTrackPt);
+          
+          addedHistogram = projector->ProjectRegionDeltaEta(helperHistogram, -projectionRegion, projectionRegion, Form("DeltaEtaStack%d%d%d%d%d",iFilledHistograms,nAsymmetryBins,iCentrality,iTrackPt,iFile));
+          
+          // Since we want to plot yield, we do not want to normalize over the number of bins projected over
+          // but simply look at the yield in certain region
+          addedHistogram->Scale(projector->GetNBinsProjectedOver());
+          
+          // The different pT bins can have different size, so we need to normalize the yield with the pT bin width
+          addedHistogram->Scale(1/(pbpbHistograms[iFile]->GetTrackPtBinBorder(iTrackPt+1) - pbpbHistograms[iFile]->GetTrackPtBinBorder(iTrackPt)));
+          
+          // Rebin the histogram to match the binning in the inclusive jet shape paper
+          deltaEtaArray[iFile][iFilledHistograms][iCentrality][iTrackPt] = (TH1D*) projector->RebinAsymmetric(addedHistogram, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin)->Clone(Form("deltaEtaArray%d%d%d%d", iFilledHistograms, iCentrality, iTrackPt, iFile));
+        } // File loop
       } // Centrality loop
       
       helperHistogram = ppHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(jetTrackTypes[iFilledHistograms], DijetHistogramManager::kBackgroundSubtracted, nAsymmetryBins, 0, iTrackPt);
@@ -121,7 +139,7 @@ void compareDeltaEta(){
       addedHistogram->Scale(1/(ppHistograms->GetTrackPtBinBorder(iTrackPt+1) - ppHistograms->GetTrackPtBinBorder(iTrackPt)));
       
       // Rebin the histogram to match the binning in the inclusive jet shape paper
-      deltaEtaArray[iFilledHistograms][nCentralityBins][iTrackPt] = (TH1D*) projector->RebinAsymmetric(addedHistogram, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin)->Clone(Form("deltaEtaArray%d%d%d", iFilledHistograms, nCentralityBins, iTrackPt));
+      deltaEtaArray[0][iFilledHistograms][nCentralityBins][iTrackPt] = (TH1D*) projector->RebinAsymmetric(addedHistogram, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin)->Clone(Form("deltaEtaArray%d%d%d", iFilledHistograms, nCentralityBins, iTrackPt));
     } // Track pT loop
   } // Filled histogram loop
 
@@ -150,10 +168,10 @@ void compareDeltaEta(){
   TString compactTrackString;
   
   TString figureName;
-  int veryNiceColors[] = {kBlue,kRed};
-  const char* labels[] = {"Leading jets","Inclusive jets"};
+  int veryNiceColors[] = {kBlue,kRed,kRed,kGreen+3};
+  const char* labels[] = {"Delta R","Old FlowPF","Calo100","Calo100 TRG spill"};
   
-  for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     
     if(iCentrality == nCentralityBins){
       centralityString = "pp";
@@ -171,8 +189,10 @@ void compareDeltaEta(){
       inclusiveDeltaEtaArray[iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-2,2);
       drawer->DrawHistogram(inclusiveDeltaEtaArray[iCentrality][iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
       for(int iFilledHistograms = 0; iFilledHistograms < nHistogramTypesToCompare; iFilledHistograms++){
-        deltaEtaArray[iFilledHistograms][iCentrality][iTrackPt]->SetLineColor(veryNiceColors[iFilledHistograms]);
-        deltaEtaArray[iFilledHistograms][iCentrality][iTrackPt]->Draw("same");
+        for(int iFile = 0; iFile < nFilesToCompare; iFile++){
+          deltaEtaArray[iFile][iFilledHistograms][iCentrality][iTrackPt]->SetLineColor(veryNiceColors[iFile]);
+          deltaEtaArray[iFile][iFilledHistograms][iCentrality][iTrackPt]->Draw("same");
+        }
       }
       
       legend = new TLegend(0.6,0.6,0.9,0.9);
@@ -181,13 +201,15 @@ void compareDeltaEta(){
       legend->AddEntry((TObject*) 0,trackString.Data(),"");
       legend->AddEntry(inclusiveDeltaEtaArray[iCentrality][iTrackPt],"Published inclusive","l");
       for(int iFilledHistograms = 0; iFilledHistograms < nHistogramTypesToCompare; iFilledHistograms++){
-        legend->AddEntry(deltaEtaArray[iFilledHistograms][iCentrality][iTrackPt],labels[iFilledHistograms],"l");
+        for(int iFile = 0; iFile < nFilesToCompare; iFile++){
+          legend->AddEntry(deltaEtaArray[iFile][iFilledHistograms][iCentrality][iTrackPt],labels[iFile],"l");
+        }
       }
       legend->Draw();
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/deltaEtaInclusiveComparison%s%s.pdf", compactCentralityString.Data(), compactTrackString.Data()));
+        gPad->GetCanvas()->SaveAs(Form("figures/deltaEtaMainComparison%s%s.pdf", compactCentralityString.Data(), compactTrackString.Data()));
       }
       
     } // Track pT loop

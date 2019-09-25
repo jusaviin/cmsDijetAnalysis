@@ -9,7 +9,7 @@ void jffProjectionExplorer(){
   
   // Open the files for the JFF corrections
   const int nFiles = 1;
-  TFile *standardFile = TFile::Open("newPpTest4.root");
+  TFile *standardFile = TFile::Open("data/jffCorrection_PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_oldJEC_symmetrizedAndBackgroundSubtracted_2019-09-23.root");
   TFile *rebinFile = TFile::Open("newPbPbTest.root");
   TFile *fitFile = TFile::Open("newPbPbTestSameEvent2.root");
   TFile *files[] = {standardFile,rebinFile,fitFile};
@@ -17,10 +17,10 @@ void jffProjectionExplorer(){
   
   // Styling option for different files
   int fileColors[] = {kRed, kBlue, kGreen+3, kMagenta, kCyan};
-  const char* fileLegend[] = {"PF Jets","PF jets","sameEvent2","Other method","Another method"};
+  const char* fileLegend[] = {"2018 Calo with JEC2015","PF jets","sameEvent2","Other method","Another method"};
   
   // Figure saving options
-  bool saveFigures = true;         // Flag to determine whather or not save the figures
+  bool saveFigures = false;         // Flag to determine whather or not save the figures
   
   // Configuration
   const int nCentralityBins = 4;
@@ -42,7 +42,7 @@ void jffProjectionExplorer(){
   bool drawInclusivePtWeighted = false;
   
   // Draw old inclusive
-  bool drawOldInclusive = false;
+  bool drawOldInclusive = true;
   
   // Choose angles to draw
   bool drawDeltaEta = false;

@@ -11,7 +11,10 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyGluonJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_noCorrections_sube0_oldJEC_processed_2019-09-23.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_sube0_eschemeAxis_JECv5b_processed_2019-09-10.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_jetWeighting_noCorrections_sube0_wtaAxis_JECv5b_processed_2019-09-11.root
+  // data/PbPbMC_RecoGen_akPu4CaloJets_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_JECv5b_processed_2019-09-08.root
   // data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyGluonJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyQuarkJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_improvisedMixing_JECv2_processed_2019-08-13.root
   // data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_JECv4_processed_2019-08-09.root
@@ -20,7 +23,8 @@ void produceJffCorrection(){
   // "data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
   // data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString genGenFileName = "data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyGluonJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root";   // File from which the GenGen histograms are read for the correction
+  TString genGenFileName = "data/PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_noCorrections_sube0_oldJEC_processed_2019-09-23.root";   // File from which the GenGen histograms are read for the correction
+  // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_sube0_eschemeAxis_JECv5b_processed_2019-09-10.root
   // data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyGluonJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root
   // data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyQuarkJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_improvisedMixing_JECv2_processed_2019-08-13.root
@@ -29,7 +33,7 @@ void produceJffCorrection(){
   // data/dijet_ppMC_GenGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
   // "data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
-  TString outputFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root";   // File name for the output file
+  TString outputFileName = "data/jffCorrection_PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_oldJEC_symmetrizedAndBackgroundSubtracted_2019-09-23.root";   // File name for the output file
   // data/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   // data/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
   // "data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root"

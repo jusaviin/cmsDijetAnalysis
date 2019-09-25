@@ -135,7 +135,8 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_jetsNtracks_jetClosures_JECv3_processed_2019-09-03.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC_GenGen_akPu4CaloJet_jetClosures_noMixing_matchedJets_eschemeAxis_oldJEC_processed_2019-09-20.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_GenGen_akPu4CaloJet_jetClosures_noMixing_matchedJets_eschemeAxis_oldJEC_processed_2019-09-20.root
   // data/PbPbMC_GenGen_akFlowPuCs4PfJets_jetsNtracks_JECv5b_jetClosures_processed_2019-09-03.root
   // data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root
   // "data/PbPbMC_GenGen_pfJets_noCorrelations_jetPtClosure_processed_2019-06-25.root"
@@ -150,7 +151,7 @@ void constructJetPtClosures(){
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
-  bool saveFigures = true;  // Save the figures to file
+  bool saveFigures = false;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================
