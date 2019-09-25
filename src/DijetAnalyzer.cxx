@@ -24,6 +24,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
+  fTrackPreCorrector(), // TODO: Remove this after final track corrections are good enough
   fDataType(-1),
   fForestType(0),
   fReadMode(0),
@@ -207,7 +208,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       fVzWeightFunction = new TF1("fvz","pol6",-15,15);  // Weight function for 2017 MC
       fVzWeightFunction->SetParameters(0.973805, 0.00339418, 0.000757544, -1.37331e-06, -2.82953e-07, -3.06778e-10, 3.48615e-09);
     }
-    
+    fTrackPreCorrector = NULL; // TODO: Remove this after 2018 track corrections are decent
     fCentralityWeightFunction = NULL;
     
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
@@ -217,6 +218,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     
     // Track correction for 2018 PbPb data
     fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
+    
+    // Initialize the class for weighting tracks from 2018 data to match 2015
+    fTrackPreCorrector = new TrackPreCorrector("trackCorrectionTables/preCorrection/minimumBiasTrackRatio.root"); // TODO: Remove this after 2018 track corrections are good enough
     
     // Flag for PbPb data
     ppData = false;
@@ -247,6 +251,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     fTrackCorrection = new TrkCorr(""); // Bad data type, no corrections initialized
     fVzWeightFunction = NULL;
     fCentralityWeightFunction = NULL;
+    fTrackPreCorrector = NULL; // TODO: Remove this after 2018 track corrections are decent
   }
   
   // Initialize the class for JFF correction
@@ -438,6 +443,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fTrackEfficiencyCorrector2018) delete fTrackEfficiencyCorrector2018;
   if(fJetCorrector2018) delete fJetCorrector2018;
   if(fJetUncertainty2018) delete fJetUncertainty2018;
+  if(fTrackPreCorrector) delete fTrackPreCorrector;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
@@ -683,9 +689,9 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerDijet[6];
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
-  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V3_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Relative_AK4PF.txt"};
-  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_L2Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt", "CorrectionNotAppliedPF.txt", "CorrectionNotAppliedPF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_L2Residual_AK4PF.txt"};
-  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V3_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V3_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V5b_DATA_Uncertainty_AK4PF.txt"};
+  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V4_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_L2L3Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2L3Residual_AK4PF.txt", "CorrectionNotAppliedPF.txt", "CorrectionNotAppliedPF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2L3Residual_AK4PF.txt"};
+  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V4_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_Uncertainty_AK4PF.txt"};
   
   // For calo jets, use the correction files for calo jets (otherwise same name, but replace PF with Calo)
   if(fJetType == 0){
@@ -698,11 +704,15 @@ void DijetAnalyzer::RunAnalysis(){
     pfIndex = 0;
     pfIndex = uncertaintyFile[fDataType].find("PF", pfIndex);
     uncertaintyFile[fDataType].replace(pfIndex, 2, "Calo");
+    
+    correctionFileRelative[1] = "jetEnergyCorrections/75X_dataRun2_v13_L2Relative_AKPu4Calo_stabbed.txt";
+    correctionFileRelative[3] = "jetEnergyCorrections/75X_dataRun2_v13_L2Relative_AKPu4Calo_stabbed.txt";
+    
   }
     
   vector<string> correctionFiles;
   correctionFiles.push_back(correctionFileRelative[fDataType]);
-  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) correctionFiles.push_back(correctionFileResidual[fDataType]);
+  if(fJetType > 0 && (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp))  correctionFiles.push_back(correctionFileResidual[fDataType]);
   
   fJetCorrector2018 = new JetCorrector(correctionFiles);
   fJetUncertainty2018 = new JetUncertainty(uncertaintyFile[fDataType]);
@@ -1267,9 +1277,9 @@ void DijetAnalyzer::RunAnalysis(){
         // jets also if leading particle flow candidate is used to estimate the jet axis
         if((fJetType == 0 && fReadMode < 2000) || fJetAxis == 1){
           std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(leadingJetPhi,leadingJetEta);
-          if(fJetType == 0 && fReadMode < 2000) leadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
+          if(fJetType == 0 && fReadMode < 2000) leadingJetPt =   fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,leadingJetPt,leadingJetEta);
           std::tie(nParticleFlowCandidatesInThisJet,subleadingParticleFlowCandidatePhi,subleadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(subleadingJetPhi,subleadingJetEta);
-          if(fJetType == 0 && fReadMode < 2000) subleadingJetPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
+          if(fJetType == 0 && fReadMode < 2000) subleadingJetPt =  fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
         }
         
         // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info
@@ -1380,7 +1390,7 @@ void DijetAnalyzer::RunAnalysis(){
       
       // If a dijet is found and not vetoed, fill some information to fHistograms
       if(dijetFound && !matchVeto){
-        
+                
         matchedDijetCounter++;
         
         // Histograms for jet pT closure
@@ -1633,6 +1643,7 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   Float_t matchedGenEta = fJetReader->GetMatchedEta(jetIndex);
   Float_t matchedGenPhi = fJetReader->GetMatchedPhi(jetIndex);
   Int_t referencePartonFlavor = fJetReader->GetPartonFlavor(jetIndex);
+  //Int_t hiBin = fJetReader->GetHiBin();
   
   // Find the centrality of the event and the pT of the reconstructed jet
   Double_t recoPt = fJetReader->GetJetPt(jetIndex);
@@ -1660,6 +1671,15 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   
   if(fReadMode > 2000){
     recoPt = fJetCorrector2018->GetCorrectedPT();
+  }
+  
+  // Apply JFF correction for jet pT only if we are using calorimeter jets in 2015 data
+  if(fJetType == 0 && fReadMode < 2000){
+    int nParticleFlowCandidatesInThisJet;
+    double leadingParticleFlowCandidatePhi;
+    double leadingParticleFlowCandidateEta;
+    std::tie(nParticleFlowCandidatesInThisJet,leadingParticleFlowCandidatePhi,leadingParticleFlowCandidateEta) = GetNParticleFlowCandidatesInJet(jetPhi,jetEta);
+    recoPt = fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,recoPt,jetEta);
   }
   
   // Define index for parton flavor using algoritm: [-6,-1] U [1,6] -> kQuark, 21 -> kGluon, anything else -> -1
@@ -1894,7 +1914,7 @@ Double_t DijetAnalyzer::GetVzWeight(const Double_t vz) const{
  *   return: Multiplicative correction factor for the given CMS hiBin
  */
 Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
-  if(fDataType != ForestReader::kPbPbMC) return 1;  // Centrality weighting only for PbPb MC
+  if(fDataType != ForestReader::kPbPbMC) return 1;
   
   // Different range for centrality weight function for 2015 and 2018.
   if(fReadMode < 2000){
@@ -2175,7 +2195,6 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   
   // For PbPb2018 and pp2017, there is an efficiency table from which the correction comes
   if(fReadMode > 2000) return fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin);
-  cout << "If we are here, thing are wrong!!!!!!!" << endl;
   
   // The rest gives a proper correction for 2015 data
   
@@ -2201,7 +2220,17 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   } // If for heavy ions
     
   // Find and return the track efficiency correction
-  return fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, fTrackReader[correlationType]->GetHiBin(), trackRMin);
+  
+  // Weight the 2018 tracks to match 2015 tracks. TODO: Remove this after 2018 track correction is usable
+  double preWeight = 1;
+  if(fTrackPreCorrector && fReadMode > 2000){
+    preWeight = fTrackPreCorrector->GetTrackWeight(trackPt, trackEta, trackPhi, hiBin/2.0);
+  }
+  
+  double trackEfficiency = 1;
+  trackEfficiency = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
+  
+  return preWeight*trackEfficiency;
   
 }
 
