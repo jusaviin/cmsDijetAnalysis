@@ -16,7 +16,10 @@ JffCorrector::JffCorrector() :
   fSpilloverTrackPtBins(0),
   fSystematicErrorLoaded(false),
   fSystematicAsymmetryBins(0),
-  fSystematicTrackPtBins(0)
+  fSystematicTrackPtBins(0),
+  fTrackingCorrectionLoaded(false),
+  fTrackingAsymmetryBins(0),
+  fTrackingPtBins(0)
 {
   
   // JFF correction histograms for jet shape
@@ -27,6 +30,7 @@ JffCorrector::JffCorrector() :
           fhJetShapeCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+          fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = NULL;
           } // Uncertainty source loop
@@ -54,6 +58,16 @@ JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile)
 }
 
 /*
+ * Constructor
+ */
+JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile, TFile *trackingFile)
+{
+  ReadInputFile(inputFile);
+  ReadSpilloverFile(spilloverFile);
+  ReadTrackDeltaRFile(trackingFile);
+}
+
+/*
  * Copy constructor
  */
 JffCorrector::JffCorrector(const JffCorrector& in) :
@@ -65,7 +79,10 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
   fSpilloverTrackPtBins(in.fSpilloverTrackPtBins),
   fSystematicErrorLoaded(in.fSystematicErrorLoaded),
   fSystematicAsymmetryBins(in.fSystematicAsymmetryBins),
-  fSystematicTrackPtBins(in.fSystematicTrackPtBins)
+  fSystematicTrackPtBins(in.fSystematicTrackPtBins),
+  fTrackingCorrectionLoaded(in.fTrackingCorrectionLoaded),
+  fTrackingAsymmetryBins(in.fTrackingAsymmetryBins),
+  fTrackingPtBins(in.fTrackingPtBins)
 {
   // Copy constructor
   
@@ -77,6 +94,7 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
           fhJetShapeCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhJetShapeCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+          fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = in.fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
           } // Uncertainty source loop
@@ -93,7 +111,7 @@ JffCorrector::~JffCorrector(){
   
 }
 
-// Setter for input file
+// Read the JFF correction file
 void JffCorrector::ReadInputFile(TFile *inputFile){
   
   // Create histogram manager to find correct histogram naming in the input file
@@ -136,7 +154,7 @@ void JffCorrector::ReadInputFile(TFile *inputFile){
   delete namerHelper;
 }
 
-// Setter for spillover file
+// Read the spillover file
 void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   
   // Create histogram manager to find correct histogram naming in the input file
@@ -174,7 +192,45 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   delete namerHelper;
 }
 
-// Setter for spillover file
+// Read the residual tracking correction file
+void JffCorrector::ReadTrackDeltaRFile(TFile *trackFile){
+  
+  // Create histogram manager to find correct histogram naming in the input file
+  DijetHistogramManager *namerHelper = new DijetHistogramManager();
+  DijetCard *card = new DijetCard(trackFile);
+  fTrackingAsymmetryBins = card->GetNAsymmetryBins();
+  fTrackingPtBins = card->GetNTrackPtBins();
+  
+  // Load the correction histograms from the file
+  char histogramNamer[200];
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < fTrackingPtBins; iTrackPt++){
+        
+        sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/trackDeltaRCorrection_%sDeltaEtaDeltaPhi_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
+        
+        fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][fTrackingAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) trackFile->Get(histogramNamer);
+        
+        for(int iAsymmetry = 0; iAsymmetry < fTrackingAsymmetryBins; iAsymmetry++){
+          
+          sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/trackDeltaRCorrection_%sDeltaEtaDeltaPhi_A%dC%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
+          fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) trackFile->Get(histogramNamer);
+          
+        } // Asymmetry loop
+        
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation type loop
+  
+  // Raise the flag that input file has been loaded
+  fTrackingCorrectionLoaded = true;
+  
+  // Delete the helper objects
+  delete card;
+  delete namerHelper;
+}
+
+// Read the systematic uncertainty file
 void JffCorrector::ReadSystematicFile(TFile *systematicFile){
   
   // Create histogram manager to find correct histogram naming in the input file
@@ -298,6 +354,25 @@ TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCo
   return fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
 }
 
+// Getter for deltaEta-deltaPhi spillover correction histograms
+TH2D* JffCorrector::GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated correction
+  if(iAsymmetry < 0 || iAsymmetry > fTrackingAsymmetryBins) iAsymmetry = fTrackingAsymmetryBins;
+  
+  // If number of pT bins is given as an argument, return a sum of all pT bins
+  if(iTrackPt == fTrackingPtBins){
+    TH2D *ptSumHistogram = (TH2D*) fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][0]->Clone(Form("%s_ptSum", fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][0]->GetName()));
+    for(int iTrackPt = 1; iTrackPt < fTrackingPtBins; iTrackPt++){
+      ptSumHistogram->Add(fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt]);
+    }
+    return ptSumHistogram;
+  }
+  
+  // Return the correction in the selected bin
+  return fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
+}
+
 // Getter systematic uncertainty histogram for jet shapes
 TH1D* JffCorrector::GetJetShapeSystematicUncertainty(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry, int iUncertainty) const{
   
@@ -331,17 +406,22 @@ TString JffCorrector::GetLongRangeUncertaintyName(const int iUncertainty) const{
   return longRangeUncertaintyName[iUncertainty];
 }
 
-// Return information, if correction is ready to be obtained
+// Return information, if JFF correction is ready to be obtained
 bool JffCorrector::CorrectionReady(){
   return fFileLoaded;
 }
 
-// Return information, if correction is ready to be obtained
+// Return information, if spillover correction is ready to be obtained
 bool JffCorrector::SpilloverReady(){
   return fSpilloverLoaded;
 }
 
-// Return information, if correction is ready to be obtained
+// Return information, if residual tracking correction is ready to be obtained
+bool JffCorrector::TrackingCorrectionReady(){
+  return fTrackingCorrectionLoaded;
+}
+
+// Return information, if systematic uncertainties are ready to be obtained
 bool JffCorrector::SystematicsReady(){
   return fSystematicErrorLoaded;
 }

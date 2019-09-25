@@ -28,12 +28,14 @@ public:
   JffCorrector();                                       // Default constructor
   JffCorrector(TFile *inputFile);                       // Constructor
   JffCorrector(TFile *inputFile, TFile* spilloverFile); // Constructor
+  JffCorrector(TFile *inputFile, TFile* spilloverFile, TFile* trackingFile); // Constructor
   JffCorrector(const JffCorrector& in);                 // Copy constructor
   ~JffCorrector();                                      // Destructor
   
   // Setter for input file
   void ReadInputFile(TFile *inputFile);           // Read the histograms related to JFF correction
   void ReadSpilloverFile(TFile *spilloverFile);   // Read the histograms related to spillover correction
+  void ReadTrackDeltaRFile(TFile *trackFile);     // Read the histograms related to residual R-dependent tracking correction
   void ReadSystematicFile(TFile *systematicFile); // Read the histograms related to systematic uncertainties
   void ReadLongRangeSystematicFile(const char *systematicFile); // Read the histograms related to systematic uncertainties of long range correlations
   
@@ -41,6 +43,7 @@ public:
   TH1D* GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // Jet shape JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi spillover correction histograms
+  TH2D* GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   
   // Getters related to systematic uncertainties
   TString GetUncertaintyName(const int iUncertainty) const;
@@ -53,6 +56,7 @@ public:
   bool CorrectionReady();  // True if histograms loaded from file, otherwise false
   bool SpilloverReady();   // True if spillover correction is loaded, otherwise false
   bool SystematicsReady(); // True if systematic uncertainties are loaded, otherwise false
+  bool TrackingCorrectionReady(); // True if residual tracking correction in loaded
   
 private:
   
@@ -71,6 +75,9 @@ private:
   bool fSystematicErrorLoaded;     // Flag if a systematic error file has been loaded
   int  fSystematicAsymmetryBins;   // Number of asymmetry bins in the systematic uncertainty file
   int  fSystematicTrackPtBins;     // Number of track pT bins in the systematic uncertainty file
+  bool fTrackingCorrectionLoaded;  // Flag if the tracking correction had been loaded
+  int  fTrackingAsymmetryBins;     // Number of asymmetry bins in the residual tracking correction file
+  int  fTrackingPtBins;            // Number of track pT bins in the residual tracking correction file
 
   // JFF correction histograms for jet shape
   TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for jet shape
@@ -78,6 +85,9 @@ private:
   
   // Spillover correction
   TH2D *fhDeltaEtaDeltaPhiSpilloverCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
+  
+  // Residual tracking correction
+  TH2D *fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
   
   // Systematic uncertainty
   TH1D *fhJetShapeUncertainty[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][knUncertaintySources];
