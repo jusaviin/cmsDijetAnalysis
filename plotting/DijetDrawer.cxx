@@ -191,74 +191,78 @@ void DijetDrawer::DrawSingleJetHistograms(){
   for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
     if(!fDrawSingleJets[iJetCategory]) continue;  // Only draw selected jet categories
     
-    // Loop over centrality
-    for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
-      
-      centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
-      compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
-      
-      // Select logarithmic drawing for pT
-      fDrawer->SetLogY(fLogPt);
-      
-      // === Jet pT ===
-      drawnHistogram = fHistograms->GetHistogramJetPt(iJetCategory,iCentrality);
-      sprintf(namerX,"%s p_{T}  (GeV)",fHistograms->GetSingleJetAxisName(iJetCategory));
-      fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{dp_{T}}  (1/GeV)"," ");
-      legend = new TLegend(0.62,0.75,0.82,0.9);
-      SetupLegend(legend,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      sprintf(namerX,"%sPt",fHistograms->GetSingleJetHistogramName(iJetCategory));
-      SaveFigure(namerX,compactCentralityString);
-      
-      // Set linear drawing
-      fDrawer->SetLogY(false);
-      
-      // === Jet phi ===
-      drawnHistogram = fHistograms->GetHistogramJetPhi(iJetCategory,iCentrality);
-      sprintf(namerX,"%s #varphi",fHistograms->GetSingleJetAxisName(iJetCategory));
-      fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#varphi}"," ");
-      legend = new TLegend(0.62,0.75,0.82,0.9);
-      SetupLegend(legend,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      sprintf(namerX,"%sPhi",fHistograms->GetSingleJetHistogramName(iJetCategory));
-      SaveFigure(namerX,compactCentralityString);
-      
-      // === Jet eta ===
-      drawnHistogram = fHistograms->GetHistogramJetEta(iJetCategory,iCentrality);
-      sprintf(namerX,"%s #eta",fHistograms->GetSingleJetAxisName(iJetCategory));
-      fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#eta}"," ");
-      legend = new TLegend(0.4,0.20,0.82,0.35);
-      SetupLegend(legend,centralityString);
-      legend->Draw();
-      
-      // Save the figure to a file
-      sprintf(namerX,"%sEta",fHistograms->GetSingleJetHistogramName(iJetCategory));
-      SaveFigure(namerX,compactCentralityString);
-      
-      // Change the right margin better suited for 2D-drawing
-      fDrawer->SetRightMargin(0.1);
-      
-      // === Jet eta vs. phi ===
-      drawnHistogram2D = fHistograms->GetHistogramJetEtaPhi(iJetCategory,iCentrality);
-      sprintf(namerX,"%s #varphi",fHistograms->GetSingleJetAxisName(iJetCategory));
-      sprintf(namerY,"%s #eta",fHistograms->GetSingleJetAxisName(iJetCategory));
-      fDrawer->DrawHistogram(drawnHistogram2D,namerX,namerY," ",fStyle2D);
-      legend = new TLegend(0.17,0.78,0.37,0.93);
-      SetupLegend(legend,centralityString);
-      legend->Draw();
-      
-      // Save the figures to file
-      sprintf(namerX,"%sEtaPhi",fHistograms->GetSingleJetHistogramName(iJetCategory));
-      SaveFigure(namerX,compactCentralityString);
-      
-      // Change right margin back to 1D-drawing
-      fDrawer->SetRightMargin(0.06);
-      
-    } // Centrality loop
+    // Loop over asymmetry
+    for(int iAsymmetry = fFirstDrawnAsymmetryBin; iAsymmetry <= fLastDrawnAsymmetryBin; iAsymmetry++){
+
+      // Loop over centrality
+      for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+        
+        centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+        compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+        
+        // Select logarithmic drawing for pT
+        fDrawer->SetLogY(fLogPt);
+        
+        // === Jet pT ===
+        drawnHistogram = fHistograms->GetHistogramJetPt(iJetCategory,iCentrality,iAsymmetry);
+        sprintf(namerX,"%s p_{T}  (GeV)",fHistograms->GetSingleJetAxisName(iJetCategory));
+        fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{dp_{T}}  (1/GeV)"," ");
+        legend = new TLegend(0.62,0.75,0.82,0.9);
+        SetupLegend(legend,centralityString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sPt",fHistograms->GetSingleJetHistogramName(iJetCategory));
+        SaveFigure(namerX,compactCentralityString);
+        
+        // Set linear drawing
+        fDrawer->SetLogY(false);
+        
+        // === Jet phi ===
+        drawnHistogram = fHistograms->GetHistogramJetPhi(iJetCategory,iCentrality,iAsymmetry);
+        sprintf(namerX,"%s #varphi",fHistograms->GetSingleJetAxisName(iJetCategory));
+        fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#varphi}"," ");
+        legend = new TLegend(0.62,0.75,0.82,0.9);
+        SetupLegend(legend,centralityString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sPhi",fHistograms->GetSingleJetHistogramName(iJetCategory));
+        SaveFigure(namerX,compactCentralityString);
+        
+        // === Jet eta ===
+        drawnHistogram = fHistograms->GetHistogramJetEta(iJetCategory,iCentrality,iAsymmetry);
+        sprintf(namerX,"%s #eta",fHistograms->GetSingleJetAxisName(iJetCategory));
+        fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{dN}{d#eta}"," ");
+        legend = new TLegend(0.4,0.20,0.82,0.35);
+        SetupLegend(legend,centralityString);
+        legend->Draw();
+        
+        // Save the figure to a file
+        sprintf(namerX,"%sEta",fHistograms->GetSingleJetHistogramName(iJetCategory));
+        SaveFigure(namerX,compactCentralityString);
+        
+        // Change the right margin better suited for 2D-drawing
+        fDrawer->SetRightMargin(0.1);
+        
+        // === Jet eta vs. phi ===
+        drawnHistogram2D = fHistograms->GetHistogramJetEtaPhi(iJetCategory,iCentrality,iAsymmetry);
+        sprintf(namerX,"%s #varphi",fHistograms->GetSingleJetAxisName(iJetCategory));
+        sprintf(namerY,"%s #eta",fHistograms->GetSingleJetAxisName(iJetCategory));
+        fDrawer->DrawHistogram(drawnHistogram2D,namerX,namerY," ",fStyle2D);
+        legend = new TLegend(0.17,0.78,0.37,0.93);
+        SetupLegend(legend,centralityString);
+        legend->Draw();
+        
+        // Save the figures to file
+        sprintf(namerX,"%sEtaPhi",fHistograms->GetSingleJetHistogramName(iJetCategory));
+        SaveFigure(namerX,compactCentralityString);
+        
+        // Change right margin back to 1D-drawing
+        fDrawer->SetRightMargin(0.06);
+        
+      } // Centrality loop
+    } // Asymmetry loop
   } // Single jet category loop
 }
 
@@ -497,17 +501,18 @@ void DijetDrawer::DrawTrackHistograms(){
     
     // Find the normalization for the given track type
     trackTypeString = fHistograms->GetTrackHistogramName(iTrackType);
-    if(trackTypeString.Contains("Inclusive")){
-      numberOfEvents = fHistograms->GetNEvents();  // Normalize with the number of all events for inclusive histograms
-    } else {
-      numberOfEvents = fHistograms->GetNDijets();  // Normalize with the numbed of dijet events for tracks in dijet events
-    }
 
     // Loop over centrality
     for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
       
       centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+      
+      if(trackTypeString.Contains("Inclusive")){
+        numberOfEvents = fHistograms->GetNEvents();  // Normalize with the number of all events for inclusive histograms
+      } else {
+        numberOfEvents = fHistograms->GetPtIntegral(iCentrality);  // Normalize with the numbed of dijet events in the given centrality bin for tracks in dijet events
+      }
       
       // For tracks drawing only for same and mixed events. No additional corrections are applied.
       for(int iCorrelationType = 0; iCorrelationType <= DijetHistogramManager::kMixedEvent; iCorrelationType++){
@@ -1400,6 +1405,17 @@ void DijetDrawer::SetDrawAllTracks(const bool drawTracks, const bool drawUncorre
 // Setter for drawing inclusive tracks
 void DijetDrawer::SetDrawInclusiveTracks(const bool drawOrNot){
   fDrawTracks[DijetHistogramManager::kInclusiveTrack] = drawOrNot;
+}
+
+// Setter for drawing inclusive tracks
+void DijetDrawer::SetDrawInclusiveTracksUncorrected(const bool drawOrNot){
+  fDrawTracks[DijetHistogramManager::kUncorrectedInclusiveTrack] = drawOrNot;
+}
+
+// Setter for drawing inclusive tracks
+void DijetDrawer::SetDrawAllInclusiveTracks(const bool drawInclusive, const bool drawUncorrected){
+  SetDrawInclusiveTracks(drawInclusive);
+  SetDrawInclusiveTracksUncorrected(drawUncorrected);
 }
 
 // Setter for drawing leading jet-track correlations
