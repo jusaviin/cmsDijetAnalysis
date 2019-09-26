@@ -1643,7 +1643,7 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   Float_t matchedGenEta = fJetReader->GetMatchedEta(jetIndex);
   Float_t matchedGenPhi = fJetReader->GetMatchedPhi(jetIndex);
   Int_t referencePartonFlavor = fJetReader->GetPartonFlavor(jetIndex);
-  //Int_t hiBin = fJetReader->GetHiBin();
+  Int_t hiBin = fJetReader->GetHiBin();
   
   // Find the centrality of the event and the pT of the reconstructed jet
   Double_t recoPt = fJetReader->GetJetPt(jetIndex);
@@ -2141,6 +2141,13 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kEtaCut);
   
   // New cut for 2018 data based on track algorithm and MVA
+  // 6, 13, 14, 19. Remove all these and run.
+  //TODO TODO TEST TEST Try to exclude tracks from certain algorithms to see how the things look after that
+  
+  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6) return false;
+  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 13) return false;
+  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 14) return false;
+  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 19) return false;
   if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98 && fReadMode > 2000) return false;
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kTrackAlgorithm);
   
@@ -2157,13 +2164,17 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceXY(iTrack)/fTrackReader[correlationType]->GetTrackVertexDistanceXYError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in xy-direction
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kVertexDistance);
   
-  // Cut for energy deposition in calorimeters for high pT tracks (only for 2015)
-  if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt)) && fReadMode < 2000) return false;  // For high pT tracks, require signal also in calorimeters
+  // Cut for energy deposition in calorimeters for high pT tracks
+  if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) return false;  // For high pT tracks, require signal also in calorimeters
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
   
   // Cuts for track reconstruction quality
-  // TODO: For some reason track layer hits is always zero in PbPb 2018 forests...
-  if(fReadMode < 2000 && ( fTrackReader[correlationType]->GetTrackChi2(iTrack)/(1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack))/(1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut)) return false; // Track reconstruction quality cut
+  // TODO: Track layer hit number is missing from MC forests. Estimate it from NHits in this case. This should be removed after MC forests are rerun
+  if(fReadMode > 2000 && fDataType == ForestReader::kPbPbMC){
+    if( fTrackReader[correlationType]->GetTrackChi2(iTrack) / (1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack)) / (fTrackReader[correlationType]->GetNHitsTrack(iTrack) / 1.43) >= fChi2QualityCut) return false; // Track reconstruction quality cut
+  } else {
+    if( fTrackReader[correlationType]->GetTrackChi2(iTrack) / (1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack)) / (1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) return false; // Track reconstruction quality cut
+  }
   if(fTrackReader[correlationType]->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
   
@@ -2193,8 +2204,12 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   Float_t trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);  // Track phi
   Int_t hiBin = fTrackReader[correlationType]->GetHiBin();                // hiBin for 2018 track correction
   
+  // Weight factor only for 2017 pp MC as instructed be the tracking group
+  double preWeight = 1.0;
+  if(fReadMode > 2000 && fDataType == ForestReader::kPpMC) preWeight = 0.979;
+  
   // For PbPb2018 and pp2017, there is an efficiency table from which the correction comes
-  if(fReadMode > 2000) return fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin);
+  if(fReadMode > 2000) return preWeight * fTrackEfficiencyCorrector2018->getCorrection(trackPt, trackEta, hiBin);
   
   // The rest gives a proper correction for 2015 data
   
@@ -2222,7 +2237,7 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   // Find and return the track efficiency correction
   
   // Weight the 2018 tracks to match 2015 tracks. TODO: Remove this after 2018 track correction is usable
-  double preWeight = 1;
+  preWeight = 1;
   if(fTrackPreCorrector && fReadMode > 2000){
     preWeight = fTrackPreCorrector->GetTrackWeight(trackPt, trackEta, trackPhi, hiBin/2.0);
   }

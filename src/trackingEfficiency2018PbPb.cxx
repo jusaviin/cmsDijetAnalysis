@@ -86,7 +86,7 @@ TrkEff2018PbPb::TrkEff2018PbPb(std::string collectionName, bool isQuiet_, std::s
   std::cout << "Searching tracking corrections from folder: " << filePath << std::endl;
   
   if( collectionName.compare("general") == 0 ){
-    if(!isQuiet) std::cout << "TrkEff2018PbPb class opening in general tracks mode!  WARNING, THESE ARE STILL PRELIMINARY!" << std::endl;
+    if(!isQuiet) std::cout << "TrkEff2018PbPb class opening in general tracks mode!" << std::endl;
     
     trkEff = TFile::Open( (filePath + "2018PbPb_Efficiency_GeneralTracks_highPt.root").c_str(),"open");
     
@@ -107,7 +107,7 @@ TrkEff2018PbPb::TrkEff2018PbPb(std::string collectionName, bool isQuiet_, std::s
     
     
   } else if( collectionName.compare("pixel") == 0) {
-    if(!isQuiet) std::cout << "TrkEff2018PbPb class opening in pixel tracks mode!  WARNING, THESE ARE STILL PRELIMINARY!" << std::endl;
+    if(!isQuiet) std::cout << "TrkEff2018PbPb class opening in pixel tracks mode!" << std::endl;
     
     trkEff = TFile::Open( (filePath + "2018PbPb_Efficiency_PixelTracks.root").c_str(),"open");
     
@@ -121,12 +121,8 @@ TrkEff2018PbPb::TrkEff2018PbPb(std::string collectionName, bool isQuiet_, std::s
       effPix[4] = (TH2D*) trkEff->Get("Eff_50_100");
     }
     
-    
-  } else if( collectionName.compare("merged") == 0) {
-    if(!isQuiet) std::cout << "TrkEff2018PbPb class opening in merged tracks mode!  WARNING, THESE ARE STILL PRELIMINARY!" << std::endl;
-    
   } else {
-    std::cout << "Error! incorrect collectionName parameter in TrkEff2018PbPb constructor.  Please try 'general', 'pixel', or 'merged.'" << std::endl;
+    std::cout << "Error! Incorrect collectionName parameter in TrkEff2018PbPb constructor.  Please try 'general' or 'pixel'" << std::endl;
   }
 }
 
