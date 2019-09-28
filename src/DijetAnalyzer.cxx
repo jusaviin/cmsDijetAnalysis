@@ -575,11 +575,11 @@ void DijetAnalyzer::RunAnalysis(){
   fMatchLeadingJet = (fCard->Get("MatchJets") == 3 || fCard->Get("MatchJets") == 5);
   Bool_t reverseMatchVeto = (fCard->Get("MatchJets") == 4 || fCard->Get("MatchJets") == 5);
   
-  //**********************************************
-  //    Turn off track cuts for generated tracks
-  //**********************************************
+  //*************************************************************
+  //    Turn off certain track cuts for generated tracks and pp
+  //*************************************************************
   
-  if(fMcCorrelationType == kGenGen || fMcCorrelationType == kRecoGen){
+  if(fMcCorrelationType == kGenGen || fMcCorrelationType == kRecoGen || fReadMode == 2017){
     fCalorimeterSignalLimitPt = 10000;
     fChi2QualityCut = 10000;
     fMinimumTrackHits = 0;
@@ -1547,7 +1547,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   
   // Loop over all track in the event
   Int_t nTracks = fTrackReader[correlationType]->GetNTracks();
-  for(Int_t iTrack = 0; iTrack <nTracks; iTrack++){
+  for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
     
     // Check that all the track cuts are passed
     if(!PassTrackCuts(iTrack,fHistograms->fhTrackCuts,correlationType)) continue;
@@ -2143,12 +2143,12 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   // New cut for 2018 data based on track algorithm and MVA
   // 6, 13, 14, 19. Remove all these and run.
   //TODO TODO TEST TEST Try to exclude tracks from certain algorithms to see how the things look after that
-  
+
   //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6) return false;
   //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 13) return false;
   //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 14) return false;
   //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 19) return false;
-  if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98 && fReadMode > 2000) return false;
+  if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98 && fReadMode > 2017) return false; // Only apply this cut to 2018 PbPb
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kTrackAlgorithm);
   
   // Cut for high purity

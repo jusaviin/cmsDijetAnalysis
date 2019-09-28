@@ -63,7 +63,7 @@ public:
 private:
   
   // Private methods
-  void CorrelateTracksAndJets(const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlations
+  void CorrelateTracksAndJets(const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t correlationType, const Bool_t useInclusiveJets = false);  // Do jet-track correlation
   void MixTracksAndJets(const Double_t inclusiveJetInfo[60][4], const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
   void MixTracksAndJetsWithoutPool(const Double_t inclusiveJetInfo[60][4], const Double_t leadingJetInfo[4], const Double_t subleadingJetInfo[4], const Int_t avoidIndex, const Int_t nJetsInThisEvent, const Double_t vz, const Int_t hiBin, const Bool_t dijetInEvent); // Do jet-track correlations with mixed events
   void PrepareMixingVectors(); // Prepare mixing vectors in case we do mixing without pool
