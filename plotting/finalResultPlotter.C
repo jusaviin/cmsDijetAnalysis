@@ -15,12 +15,15 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   
+  const bool drawInclusive = false;
+  
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *sumHistogramPp[nAsymmetryBins+1];
   TH1D *jetShapeArray[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPp[nAsymmetryBins+1];
+  TH1D *sumUncertainty[nCentralityBins+1][nAsymmetryBins+1];
   TH1D *helperHistogram;
   double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
   double shapeIntegralPp[nAsymmetryBins+1];
@@ -85,6 +88,9 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       shapeIntegralPbPb[iCentrality][iAsymmetry] = sumHistogramPbPb[iCentrality][iAsymmetry]->Integral(1,sumHistogramPbPb[iCentrality][iAsymmetry]->FindBin(0.99),"width");
       sumHistogramPbPb[iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
       
+      // To draw the systematic uncertainties, clone the sum histograms to uncertainty histograms
+      sumUncertainty[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("sumUncertaintyPbPb%d%d", iCentrality, iAsymmetry));
+      
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
       }
@@ -94,6 +100,9 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     shapeIntegralPp[iAsymmetry] = sumHistogramPp[iAsymmetry]->Integral(1,sumHistogramPp[iAsymmetry]->FindBin(0.99),"width");
     sumHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
     
+    // To draw the systematic uncertainties, clone the sum histograms to uncertainty histograms
+    sumUncertainty[nCentralityBins][iAsymmetry] = (TH1D*) sumHistogramPp[iAsymmetry]->Clone(Form("sumUncertaintyPp%d", iAsymmetry));
+    
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
     }
@@ -102,9 +111,20 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     uncertaintyHistogramPp[iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry);
     uncertaintyHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
     
+    // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
+    for(int iBin = 1; iBin <= sumUncertainty[nAsymmetryBins][iAsymmetry]->GetNbinsX(); iBin++){
+      sumUncertainty[nAsymmetryBins][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPp[iAsymmetry]->GetBinContent(iBin));
+    }
+    
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       uncertaintyHistogramPbPb[iCentrality][iAsymmetry] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry);
       uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+      
+      // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
+      for(int iBin = 1; iBin <= sumUncertainty[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+        sumUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin));
+      }
+      
     }
   }
   
@@ -146,14 +166,16 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
   stackHist *jetShapeStack[nCentralityBins+1][nAsymmetryBins+1];
   
+  // Create the stacked jet shape histograms and set a good drawing style for the uncertainty histgorams
   for(int iCentrality = 0; iCentrality < nCentralityBins+1; iCentrality++){
     for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-      //js_dr_err_all[iCentrality]->SetFillStyle(1001);
-      //js_dr_err_all[iCentrality]->SetFillColorAlpha(kGray+3,.4);
-      //js_dr_err_all[iCentrality]->SetMarkerStyle(20);
-      //js_dr_err_all[iCentrality]->SetMarkerSize(1.6);
-      //js_dr_err_all[iCentrality]->SetMarkerColor(kBlack);
-      //js_dr_err_all[iCentrality]->SetLineColor(kBlack);
+      
+      sumUncertainty[iCentrality][iAsymmetry]->SetFillStyle(1001);
+      sumUncertainty[iCentrality][iAsymmetry]->SetFillColorAlpha(kGray+3,0.4);
+      sumUncertainty[iCentrality][iAsymmetry]->SetMarkerStyle(20);
+      sumUncertainty[iCentrality][iAsymmetry]->SetMarkerSize(1.6);
+      sumUncertainty[iCentrality][iAsymmetry]->SetMarkerColor(kBlack);
+      sumUncertainty[iCentrality][iAsymmetry]->SetLineColor(kBlack);
       
       jetShapeStack[iCentrality][iAsymmetry] = new stackHist(Form("st_%d",iCentrality));
       jetShapeStack[iCentrality][iAsymmetry]->setRange(0.0, 0.99, "x");
@@ -200,10 +222,10 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
       jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
       jetShapeStack[iCentrality][iAsymmetry]->hst->Draw();
-      if(iAsymmetry == nAsymmetryBins && iJetTrack == 2){
+      if(iAsymmetry == nAsymmetryBins && iJetTrack == 2 && drawInclusive){
         sumHistogramPbPbInclusive[iCentrality]->Draw("same");
       }
-      //js_dr_err_all[iCentrality][iAsymmetry]->Draw("same e2");
+      sumUncertainty[iCentrality][iAsymmetry]->Draw("same e2");
       if(iCentrality==3 ){
         mainTitle[iAsymmetry]->SetTextFont(22);
         mainTitle[iAsymmetry]->SetTextSize(.085);
@@ -271,16 +293,16 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(0.9);
     jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
     jetShapeStack[4][iAsymmetry]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
-    if(iAsymmetry == nAsymmetryBins && iJetTrack == 2){
+    if(iAsymmetry == nAsymmetryBins && iJetTrack == 2 && drawInclusive){
       sumHistogramPpInclusive->Draw("same");
     }
     mainTitle[iAsymmetry]->SetTextSize(0.085);
     mainTitle[iAsymmetry]->DrawLatexNDC(0.35, 0.88, "pp reference");
-    //js_dr_err_all[4]->Draw("same e2");
+    sumUncertainty[4][iAsymmetry]->Draw("same e2");
     
     TLegend* lt1 = new TLegend(0.01, 0.1, 1, 0.5);
     TLegend* lt2 = new TLegend(0.0, 0.1, 1, 0.5);
-    TLegend* lt3 = new TLegend(0.0 ,0.35, 1, 0.5);
+    TLegend* lt3 = new TLegend(0.0 ,0.22, 1, 0.5);
     TLegend* lt5 = new TLegend(0.01, 0.5, 1, 0.68);
     TLegend* lt4 = new TLegend(0.25, 0.85, 0.85, 0.95);
     lt1->SetTextSize(0.07);
@@ -310,7 +332,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     
     
     lt3->AddEntry(jetShapeStack[4][iAsymmetry]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
-    //lt3->AddEntry(jetShapeStack[4]->hist_trunk.at(7), "16 < p_{T}^{trk}< 20 GeV","f");
+    lt3->AddEntry(sumUncertainty[4][iAsymmetry], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
     //lt3->AddEntry(jetShapeStack[4]->hist_trunk.at(8), "20 < p_{T}^{trk}< 300 GeV","f");
     
     lt4->AddEntry(ratioUncertainty[0][iAsymmetry], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
