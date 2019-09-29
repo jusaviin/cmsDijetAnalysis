@@ -24,11 +24,17 @@ void finalXjPlotter(){
   // For systematic uncertainty estimation, need also files where jet pT has been varied to be uncertainty either up or down
   TString pbpbUncertaintyPlusFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_JECv4plusUncertainty_onlyJets_wtaAxis_processed_2019-08-14.root";
   
-  TString pbpbUncertaintyMinusFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_JECv4minusUncertainty_onlyJets_wtaAxis_preprocessed_2019-08-14.root";
+  TString pbpbUncertaintyMinusFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_JECv4minusUncertainty_onlyJets_wtaAxis_processed_2019-08-14.root";
   
   TString ppUncertaintyPlusFileName = "data/ppData2017_highForest_pfJets_onlyJets_JetPtPlusUncertainty_JECv2_wtaAxis_processed_2019-08-22.root";
   
   TString ppUncertaintyMinusFileName = "data/ppData2017_highForest_pfJets_onlyJets_JetPtMinusUncertainty_JECv2_wtaAxis_processed_2019-08-22.root";
+  
+  // Also draw results from MC to the same figures
+  
+  TString ppMCFileName = "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_JECv3_processed_2019-08-30.root";
+  
+  TString pbpbMCFileName = "data/PbPbMC_RecoReco_akFlowPuCs4PfJets_onlyJets_JECv5b_processed_2019-08-29.root";
   
   // Open the files
   TFile *pbpbFile = TFile::Open(pbpbFileName);
@@ -38,17 +44,22 @@ void finalXjPlotter(){
   TFile *ppUncertaintyPlusFile = TFile::Open(ppUncertaintyPlusFileName);
   TFile *ppUncertaintyMinusFile = TFile::Open(ppUncertaintyMinusFileName);
   
+  TFile *ppMCFile = TFile::Open(ppMCFileName);
+  TFile *pbpbMCFile = TFile::Open(pbpbMCFileName);
+  
   // Create histogram managers for the data files
-  const int nHistogramTypes = 3;
+  const int nHistogramTypes = 4;
   DijetHistogramManager *dataHistograms[nHistogramTypes];
   dataHistograms[0] = new DijetHistogramManager(pbpbFile);
   dataHistograms[1] = new DijetHistogramManager(pbpbUncertaintyPlusFile);
   dataHistograms[2] = new DijetHistogramManager(pbpbUncertaintyMinusFile);
+  dataHistograms[3] = new DijetHistogramManager(pbpbMCFile);
   
   DijetHistogramManager *ppHistograms[nHistogramTypes];
   ppHistograms[0] = new DijetHistogramManager(ppFile);
   ppHistograms[1] = new DijetHistogramManager(ppUncertaintyPlusFile);
   ppHistograms[2] = new DijetHistogramManager(ppUncertaintyMinusFile);
+  ppHistograms[3] = new DijetHistogramManager(ppMCFile);
   
   // Get the number of centrality bins from the file
   const int nCentralityBins = dataHistograms[0]->GetNCentralityBins();
@@ -133,9 +144,6 @@ void finalXjPlotter(){
       xjUncertainty[iCentrality]->SetMarkerSize(1.6);
       xjUncertainty[iCentrality]->SetMarkerColor(kBlack);
       xjUncertainty[iCentrality]->SetLineColor(kBlack);
-      xjUncertainty[iCentrality]->GetXaxis()->CenterTitle(1);    // Axis titles are centered
-      xjUncertainty[iCentrality]->GetYaxis()->CenterTitle(1);    // Axis titles are centered
-      xjUncertainty[iCentrality]->GetYaxis()->SetRangeUser(0,2.2);
       
     } // Bin loop
     
@@ -156,39 +164,58 @@ void finalXjPlotter(){
   
   mainTitle = new TLatex();
   
+  TLegend *legend;
+  
   // Remove statistics box and title
   gStyle->SetOptStat(0);gStyle->SetOptTitle(0);
   
   for(int iCentrality=0; iCentrality <= nCentralityBins; iCentrality++){
     bigCanvas->CD(5-iCentrality);
-    xjUncertainty[iCentrality]->GetXaxis()->SetTitleOffset(1.1);
-    xjUncertainty[iCentrality]->GetXaxis()->SetTitle("x_{j}");
-    xjUncertainty[iCentrality]->GetYaxis()->SetNdivisions(505);
+    xjDistribution[3][iCentrality]->GetXaxis()->SetTitleOffset(1.1);
+    xjDistribution[3][iCentrality]->GetXaxis()->SetTitle("x_{j}");
+    xjDistribution[3][iCentrality]->GetYaxis()->SetNdivisions(505);
+    xjDistribution[3][iCentrality]->GetXaxis()->CenterTitle(1);    // Axis titles are centered
+    xjDistribution[3][iCentrality]->GetYaxis()->CenterTitle(1);    // Axis titles are centered
+    xjDistribution[3][iCentrality]->GetYaxis()->SetRangeUser(0,2.2);
     if(iCentrality == nCentralityBins){
-      xjUncertainty[iCentrality]->GetXaxis()->SetTitleOffset(0.68);
-      xjUncertainty[iCentrality]->GetXaxis()->SetTitleSize(0.11);
-      xjUncertainty[iCentrality]->GetXaxis()->SetNdivisions(505);
-      xjUncertainty[iCentrality]->GetXaxis()->SetLabelOffset(0.01);
-      xjUncertainty[iCentrality]->GetXaxis()->SetLabelSize(0.08);
-      xjUncertainty[iCentrality]->GetYaxis()->SetLabelSize(0.08);
-      xjUncertainty[iCentrality]->GetYaxis()->SetLabelOffset(0.01);
-      xjUncertainty[iCentrality]->GetYaxis()->SetTitleOffset(1.1);
-      xjUncertainty[iCentrality]->GetYaxis()->SetTitleSize(0.1);
-      xjUncertainty[iCentrality]->GetYaxis()->SetTitle("#frac{1}{N_{dijet}} #frac{dN}{dx_{j}}");
+      xjDistribution[3][iCentrality]->GetXaxis()->SetTitleOffset(0.68);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetTitleSize(0.11);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetNdivisions(505);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetLabelOffset(0.01);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetLabelSize(0.08);
+      xjDistribution[3][iCentrality]->GetYaxis()->SetLabelSize(0.08);
+      xjDistribution[3][iCentrality]->GetYaxis()->SetLabelOffset(0.01);
+      xjDistribution[3][iCentrality]->GetYaxis()->SetTitleOffset(1.1);
+      xjDistribution[3][iCentrality]->GetYaxis()->SetTitleSize(0.1);
+      xjDistribution[3][iCentrality]->GetYaxis()->SetTitle("#frac{1}{N_{dijet}} #frac{dN}{dx_{j}}");
     } else {
-      xjUncertainty[iCentrality]->GetXaxis()->SetTitleOffset(0.62);
-      xjUncertainty[iCentrality]->GetXaxis()->SetTitleSize(0.12);
-      xjUncertainty[iCentrality]->GetXaxis()->SetNdivisions(505);
-      xjUncertainty[iCentrality]->GetXaxis()->SetLabelSize(0.084);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetTitleOffset(0.62);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetTitleSize(0.12);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetNdivisions(505);
+      xjDistribution[3][iCentrality]->GetXaxis()->SetLabelSize(0.084);
       
     }
-    xjUncertainty[iCentrality]->Draw("e2");
+    
+    xjDistribution[3][iCentrality]->SetMarkerStyle(kOpenSquare);
+    xjDistribution[3][iCentrality]->SetMarkerColor(kRed);
+    xjDistribution[3][iCentrality]->SetLineColor(kRed);
+    xjDistribution[3][iCentrality]->Draw();
+    
+    xjUncertainty[iCentrality]->Draw("same,e2");
+    xjDistribution[0][iCentrality]->SetMarkerStyle(kFullCircle);
     xjDistribution[0][iCentrality]->Draw("same");
+    
     
     if(iCentrality == nCentralityBins){
       mainTitle->SetTextFont(22);
       mainTitle->SetTextSize(0.09);
       mainTitle->DrawLatexNDC(0.35, 0.9, "pp reference");
+      
+      legend = new TLegend(0.32,0.65,0.52,0.85);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.07);legend->SetTextFont(62);
+      legend->AddEntry(xjDistribution[0][iCentrality],"Data","p");
+      legend->AddEntry(xjDistribution[3][iCentrality],"MC","p");
+      legend->Draw();
     } else {
       mainTitle->SetTextFont(22);
       mainTitle->SetTextSize(0.09);
