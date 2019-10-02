@@ -48,6 +48,7 @@ public:
   // Getters related to systematic uncertainties
   TString GetUncertaintyName(const int iUncertainty) const;
   TH1D* GetJetShapeSystematicUncertainty(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins, int iUncertainty = kTotal) const;
+  TH1D* GetDeltaEtaSystematicUncertainty(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins, int iUncertainty = kTotal) const;
   
   TString GetLongRangeUncertaintyName(const int iUncertainty) const;
   double GetLongRangeSystematicUncertainty(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;
@@ -91,6 +92,7 @@ private:
   
   // Systematic uncertainty
   TH1D *fhJetShapeUncertainty[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][knUncertaintySources];
+  TH1D *fhDeltaEtaUncertainty[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][knUncertaintySources];
   
   // Systematic uncertainty for long range correlations
   double fLongRangeUncertaintyTable[DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][4] = {{{{0}}}}; // Last bin = Different flow components

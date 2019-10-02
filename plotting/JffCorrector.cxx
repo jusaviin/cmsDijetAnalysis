@@ -33,6 +33,7 @@ JffCorrector::JffCorrector() :
           fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = NULL;
+            fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = NULL;
           } // Uncertainty source loop
         } // Asymmetry loop
       } // Track pT loop
@@ -97,6 +98,7 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
           fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = in.fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
+            fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = in.fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
           } // Uncertainty source loop
         } // Asymmetry loop
       } // Track pT loop
@@ -235,7 +237,7 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
   
   // Create histogram manager to find correct histogram naming in the input file
   DijetHistogramManager *namerHelper = new DijetHistogramManager();
-  DijetCard *card = new DijetCard(systematicFile); //TODO: Uncomment after spillover correction files have been reproduced
+  DijetCard *card = new DijetCard(systematicFile);
   fSystematicAsymmetryBins = card->GetNAsymmetryBins();
   fSystematicTrackPtBins = card->GetNTrackPtBins();
   
@@ -261,6 +263,13 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
             histogramName = Form("%sUncertainty/jetShapeUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = (TH1D*) systematicFile->Get(histogramName.Data());
+            
+            if(iTrackPt < fSystematicTrackPtBins){
+              histogramName = Form("%sUncertainty/deltaEtaUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
+              
+              fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = (TH1D*) systematicFile->Get(histogramName.Data());
+            }
+            
           } // Uncertainty source loop
         } // Track pT loop
       } // Centrality loop
@@ -384,6 +393,19 @@ TH1D* JffCorrector::GetJetShapeSystematicUncertainty(const int iJetTrackCorrelat
   
   // Return the uncertainty in the selected bin
   return fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
+}
+
+// Getter systematic uncertainty histogram for deltaEta
+TH1D* JffCorrector::GetDeltaEtaSystematicUncertainty(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry, int iUncertainty) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry >= fSystematicAsymmetryBins) iAsymmetry = fSystematicAsymmetryBins;
+  
+  // If uncertainty bin is outside of the uncertainty bin range, return total systematic uncertainty
+  if(iUncertainty < 0 || iUncertainty > kTotal) iUncertainty = kTotal;
+  
+  // Return the uncertainty in the selected bin
+  return fhDeltaEtaUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
 }
 
 // Getter for absolute systematic uncertainty for long range correlations
