@@ -1444,6 +1444,39 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
 }
 
 /*
+ * Project the deltaEta yield from a two-dimensional histogram using the final analysis configuration
+ *
+ *  TH2D *backgroundSubtractedHistogram = Histogram from which deltaEta yield is projected from
+ *  const double lowPtEdge = Lower edge of the pT bin of the histogram
+ *  const double highPtEdge = Higher edge of the pT bin of the histogram
+ *
+ *  return = DeltaEta yield in the final analysis binning
+ */
+TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge){
+
+  // Projection region and bin edges used in final deltaEta yield plots
+  const double projectionRegion = 1;  // Region in deltaPhi which is used to project the deltaEta peak
+  const int nDeltaEtaBinsRebin = 21;
+  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
+  
+  // Project deltaEta distribution in the final analysis deltaPhi region from the two-dimensional histogram
+  TH1D *helperHistogramDeltaEta = ProjectRegionDeltaEta(backgroundSubtractedHistogram, -projectionRegion, projectionRegion, "FinalDeltaEtaYield");
+  
+  // Since we want to plot yield, we do not want to normalize over the number of bins projected over
+  // but simply look at the yield in certain region
+  helperHistogramDeltaEta->Scale(fnBinsProjectedOver);
+  
+  // The different pT bins can have different size, so we need to normalize the yield with the pT bin width
+  helperHistogramDeltaEta->Scale(1/(highPtEdge - lowPtEdge));
+  
+  // Rebin the histogram to match the binning we want to have in the final plots
+  TH1D *helperHistogramDeltaEtaRebin = (TH1D*) RebinAsymmetric(helperHistogramDeltaEta, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin);
+  
+  // Return the rebinned histogram
+  return helperHistogramDeltaEtaRebin;
+}
+
+/*
  * Do a Fourier fit for the background deltaPhi distribution
  *
  *  TH1D* backgroundDeltaPhi = Background deltaPhi histogram
@@ -1570,7 +1603,10 @@ void DijetMethods::PropagateDeltaEtaToDeltaR(TH1* errorHistogram, const double d
   double ring;
   for(int iDeltaR = 1; iDeltaR <= errorHistogram->GetNbinsX(); iDeltaR++){
     ring = TMath::Pi()*(pow(errorHistogram->GetBinLowEdge(iDeltaR)+errorHistogram->GetBinWidth(iDeltaR),2) - pow(errorHistogram->GetBinLowEdge(iDeltaR),2))/errorHistogram->GetBinWidth(iDeltaR);
-    errorHistogram->SetBinContent(iDeltaR,ring*deltaEtaError);
+    
+    // Note about division by two. The deltaEta histogram from which the uncertainty in calculated is projected over two units of deltaPhi
+    // Thus to correctly normalize the area, we need the division by two here.
+    errorHistogram->SetBinContent(iDeltaR,ring*deltaEtaError/2);
   }
 }
 
