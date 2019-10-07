@@ -47,13 +47,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
   bool drawAnyLeadingJetHistograms = false;
-  bool drawTracks = true;
+  bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -86,22 +86,22 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = false;
+  bool drawBackgroundSubtracted = true;
   bool drawBackground = false;
   int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
@@ -129,7 +129,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style3D = "surf1";
   
   // File for JFF correction (automatically changed for pp)
-  TString jffCorrectionFileName = "data/jffCorrection_PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_oldJEC_symmetrizedAndBackgroundSubtracted_2019-09-23.root";
+  TString jffCorrectionFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root";
+  // data/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root
   // data/jffCorrection_PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_oldJEC_symmetrizedAndBackgroundSubtracted_2019-09-23.root
   // data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   // data/jffCorrection_PbPbMC_akPu4CaloJets_noUncorr_improvisedMixing_JECv5b_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-09-08.root
@@ -138,7 +139,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   //"data/jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root";
   
   // File for spillover correction
-  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_akPu4CaloJet_noUncorr_improvisedMixing_eschemeAxis_oldJEC_2019-09-23.root";
+  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root";
+  // data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root
+  // data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root
+  // "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root";
   // data/spilloverCorrection_PbPbMC_akPu4CaloJet_noUncorr_improvisedMixing_eschemeAxis_oldJEC_2019-09-23.root
   // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
   // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
@@ -154,7 +158,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // File for residual tracking correction
   bool applyTrackDeltaRCorrection = true;
-  TString trackDeltaRCorrectionFileName = "data/trackDeltaRCorrection_PbPbMC_noUncorr_improvisedMixing_2019-09-24.root";
+  TString trackDeltaRCorrectionFileName = "trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_onlyLowPt_2019-10-01.root";
+  // trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_onlyLowPt_2019-10-01.root
+  // data/trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_2019-10-01.root
   
   // Define if you want to use seagull correction
   bool applySeagullCorrection = true;
@@ -178,13 +184,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
   }
   
-  int firstDrawnCentralityBin = 0;
+  int firstDrawnCentralityBin = nCentralityBins-1;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
+  int firstDrawnAsymmetryBin = 0;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   if(selectedCentralityBin >= 0){
@@ -255,7 +261,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
     lastDrawnCentralityBin = 0;
     centralityBinBorders[0] = -0.5;
-    jffCorrectionFileName = "data/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root";
+    jffCorrectionFileName = "data/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root";
     //jffCorrectionFileName = "data/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root";
   }
   

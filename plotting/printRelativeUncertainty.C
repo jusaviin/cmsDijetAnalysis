@@ -14,8 +14,8 @@ void printRelativeUncertainty(){
   TString dataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root"; // Compare also with uncorrected data
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   TString ppFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root";
-  TString uncertaintyFileName = "systematicTestPbPbUnmix.root";
-  TString ppUncertainryFileName = "systematicTestPpUnmix.root";
+  TString uncertaintyFileName = "systematicUncertaintyForPbPb_20percentSpillJff_2019-09-30.root";
+  TString ppUncertainryFileName = "systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root";
   
   // Open the input files
   TFile *dataFile = TFile::Open(dataFileName);

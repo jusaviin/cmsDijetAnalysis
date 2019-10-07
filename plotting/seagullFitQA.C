@@ -29,7 +29,7 @@ double seagullExp(double *x, double *par){
 void seagullFitQA(){
   
   // Define the file used for fit testing
-  TString recoGenFileName = "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_noCorrections_processed.root";
+  TString recoGenFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_noCorrections_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root";
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root"
   TFile *recoGenFile = TFile::Open(recoGenFileName);
   
@@ -51,6 +51,7 @@ void seagullFitQA(){
   TH1D *seagullDeltaEta[nCentralityBins][nTrackPtBins];
   TF1 *seagullDeltaEtaConstantFit[nCentralityBins][nTrackPtBins];
   TF1 *seagullDeltaEtaPolyFit[nCentralityBins][nTrackPtBins];
+  TF1 *seagullDeltaEtaExpFit[nCentralityBins][nTrackPtBins];
   
   // Create DijetMethods in which the correction procedure is implemented
   DijetMethods *corrector = new DijetMethods();
@@ -69,13 +70,16 @@ void seagullFitQA(){
       initialLevel = seagullDeltaEta[iCentrality][iTrackPt]->GetBinContent(seagullDeltaEta[iCentrality][iTrackPt]->FindBin(0));
       seagullDeltaEtaPolyFit[iCentrality][iTrackPt]->SetParameters(initialLevel,0,0);
       
+      seagullDeltaEtaExpFit[iCentrality][iTrackPt] = new TF1(Form("seagullExpFit%d%d",iCentrality,iTrackPt),seagullExp,-3,3,3);
+      seagullDeltaEtaExpFit[iCentrality][iTrackPt]->SetParameters(initialLevel,0,0);
+      
       // Fit the distribution with a constant
       seagullDeltaEta[iCentrality][iTrackPt]->Fit("pol0","","",-3,3);
       
       // Extort the fit function out from the histogram
       seagullDeltaEtaConstantFit[iCentrality][iTrackPt] = seagullDeltaEta[iCentrality][iTrackPt]->GetFunction("pol0");
       
-      // Rename the fit function to avoit root problems
+      // Rename the fit function to avoid root problems
       seagullDeltaEtaConstantFit[iCentrality][iTrackPt]->SetName(Form("constantFit%d%d",iCentrality,iTrackPt));
       
       // Remove the function form the list of functions of the histogram
@@ -83,6 +87,12 @@ void seagullFitQA(){
       
       // Fit the function again with second order polynomial
       seagullDeltaEta[iCentrality][iTrackPt]->Fit(seagullDeltaEtaPolyFit[iCentrality][iTrackPt],"","",-3,3);
+      
+      // Remove the function form the list of functions of the histogram
+      seagullDeltaEta[iCentrality][iTrackPt]->RecursiveRemove(seagullDeltaEtaPolyFit[iCentrality][iTrackPt]);
+      
+      // Fit the histogram again with exp function
+      seagullDeltaEta[iCentrality][iTrackPt]->Fit(seagullDeltaEtaExpFit[iCentrality][iTrackPt],"","",0,3);
       
     } // Track pT loop
   } // Centrality loop

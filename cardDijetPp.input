@@ -60,10 +60,10 @@ AsymmetryBinEdges   0 0.6 0.8 1.0                       # Dijet asymmetry binnin
 PtHatBinEdges       0 30 50 80 120 170 220 280 370 460  # pT hat binning
 
 # Event mixing
-DoEventMixing 0          # 0 = Do not mix events. 1 = Generate mixed events
+DoEventMixing 1          # 0 = Do not mix events. 1 = Generate mixed events
 OnlyMix 0                # 0 = Save also same event, 1 = Save only mixed event
 MixWithPool 0            # 0 = Do mixing without pool. 1 = Do mixing with pool
-NMixedEventsPerDijet 20  # Number of events mixed with each dijet event
+NMixedEventsPerDijet 1  # Number of events mixed with each dijet event
 VzTolerance 0.5          # Maximum vz distance for event to be accepted in mixing
 MixingVzBinWidth 1       # Width of vz bins used for mixing in cm
 MixingHiBinWidth 5       # Number of centrality bins combined in a single mixing bin

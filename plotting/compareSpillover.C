@@ -12,22 +12,25 @@ void compareSpillover(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
-  TString spilloverPuFileName = "data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root";
+  TString spilloverFileName = "data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root";
+  // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root
+  TString spilloverPuFileName = "data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root";
+  // data/spilloverCorrection_PbPbMC_akPu4CaloJets_xjBins_noUncorr_improvisedMixing_wtaAxis_JECv5b_preliminary_2019-09-08.root
   // spilloverTestCaloJet.root
   // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
-  TString dataPuFileName = "data/dijetPbPb_pfCsJets_wtaAxis_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root"; // Can draw also JFF correction yield
+  TString dataPuFileName = "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_onlySeagull_wtaAxis_JECv5b_processed_2019-08-30.root"; // Can draw also JFF correction yield
   // data/dijetPbPb_pfCsJets_wtaAxis_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
   // data/dijetPbPb2018_highForest_akPu4CaloJets_noCorrections_5eveMix_wtaAxis_JECv5b_processed_2019-08-30.root
   TString dataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_noCorrections_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root"; // Compare also with uncorrected data
   TString correctedDataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
   
-  TString correctedCaloFileName = "data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root";
+  TString correctedCaloFileName = "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_wtaAxis_allCorrections_JECv5b_processed_2019-08-30.root";
+  // "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_wtaAxis_allCorrections_JECv5b_processed_2019-08-30.root";
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   // data/dijetPbPb2018_highForest_akPu4CaloJets_jet80trigger_5eveMix_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-09.root
 
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Open the input files
   TFile *spilloverFile = TFile::Open(spilloverFileName);
@@ -88,11 +91,11 @@ void compareSpillover(){
 
       spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
 
-      //dataHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
-      dataHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_Corrected_C%dT%d", iCentrality, iTrackPt));
+      dataHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
+      //dataHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_Corrected_C%dT%d", iCentrality, iTrackPt));
       
-      //dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataPuFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
-      dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataPuFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_Corrected_C%dT%d", iCentrality, iTrackPt));
+      dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataPuFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
+      //dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataPuFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_Corrected_C%dT%d", iCentrality, iTrackPt));
       
       spilloverPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverPuFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d", iCentrality, iTrackPt));
       
@@ -170,7 +173,8 @@ void compareSpillover(){
   drawer->SetDefaultAppearanceGraph();
   TLine *zeroLine = new TLine(0,0,8,0);
   zeroLine->SetLineStyle(2);
-  double centralityZoom[] = {10000,6000,2000,600};
+  //double centralityZoom[] = {10000,6000,2000,600};
+  double centralityZoom[] = {20,15,10,6};
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     
     // Subtract spillover yield
@@ -179,7 +183,7 @@ void compareSpillover(){
       dataYieldPuIntegral[iCentrality][iTrackPt] -= yieldPuIntegral[iCentrality][iTrackPt];
     }*/
     
-    dataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
+    /*dataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
     dataYieldGraph[iCentrality]->SetMarkerStyle(21);
     dataYieldGraph[iCentrality]->SetMarkerColor(kBlack);
     drawer->DrawGraph(dataYieldGraph[iCentrality],0,8,-0.5,centralityZoom[iCentrality],"p_{T} (GeV)","Yield","","psame");
@@ -190,29 +194,29 @@ void compareSpillover(){
     dataYieldPuGraph[iCentrality]->SetMarkerColor(kGreen+2);
     dataYieldPuGraph[iCentrality]->Draw("psame");
     
-   // correctedDataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, correctedDataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
-    correctedDataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataBigIntegral[0][iCentrality], yieldXerrors, dataBigIntegralError[0][iCentrality]);
+    correctedDataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, correctedDataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
+    //correctedDataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataBigIntegral[0][iCentrality], yieldXerrors, dataBigIntegralError[0][iCentrality]);
     correctedDataYieldGraph[iCentrality]->SetMarkerStyle(21);
     correctedDataYieldGraph[iCentrality]->SetMarkerColor(kMagenta);
     correctedDataYieldGraph[iCentrality]->Draw("psame");
     
-    //correctedCaloYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, correctedCaloYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
-    correctedCaloYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataPuBigIntegral[0][iCentrality], yieldXerrors, dataPuBigIntegralError[0][iCentrality]);
+    correctedCaloYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, correctedCaloYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
+    //correctedCaloYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataPuBigIntegral[0][iCentrality], yieldXerrors, dataPuBigIntegralError[0][iCentrality]);
     correctedCaloYieldGraph[iCentrality]->SetMarkerStyle(21);
     correctedCaloYieldGraph[iCentrality]->SetMarkerColor(kCyan);
-    correctedCaloYieldGraph[iCentrality]->Draw("psame");
+    correctedCaloYieldGraph[iCentrality]->Draw("psame");*/
     
     
-    //yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[iCentrality], yieldXerrors, yieldIntegralError[iCentrality]);
-    yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataBigIntegral[1][iCentrality], yieldXerrors, dataBigIntegralError[1][iCentrality]);
+    yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[iCentrality], yieldXerrors, yieldIntegralError[iCentrality]);
+    //yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataBigIntegral[1][iCentrality], yieldXerrors, dataBigIntegralError[1][iCentrality]);
     yieldGraph[iCentrality]->SetMarkerStyle(20);
     yieldGraph[iCentrality]->SetMarkerColor(kRed);
-    //drawer->DrawGraph(yieldGraph[iCentrality],0,8,-0.5,15,"p_{T} (GeV)","Yield","","psame");
-    yieldGraph[iCentrality]->Draw("psame");
-    //zeroLine->Draw();
+    drawer->DrawGraph(yieldGraph[iCentrality],0,8,-0.5,6,"p_{T} (GeV)","Yield","","psame");
+    //yieldGraph[iCentrality]->Draw("psame");
+    zeroLine->Draw();
     
-    //yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldPuIntegral[iCentrality], yieldXerrors, yieldPuIntegralError[iCentrality]);
-    yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataPuBigIntegral[1][iCentrality], yieldXerrors, dataPuBigIntegralError[1][iCentrality]);
+    yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldPuIntegral[iCentrality], yieldXerrors, yieldPuIntegralError[iCentrality]);
+    //yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataPuBigIntegral[1][iCentrality], yieldXerrors, dataPuBigIntegralError[1][iCentrality]);
     yieldPuGraph[iCentrality]->SetMarkerStyle(20);
     yieldPuGraph[iCentrality]->SetMarkerColor(kBlue);
     yieldPuGraph[iCentrality]->Draw("psame");
@@ -221,17 +225,17 @@ void compareSpillover(){
     legend = new TLegend(0.35,0.55,0.85,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
     legend->SetHeader(Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
-    legend->AddEntry(dataYieldGraph[iCentrality],"Data FlowCS Signal","p");
-    legend->AddEntry(dataYieldPuGraph[iCentrality],"Data CS Signal","p");
-    legend->AddEntry(correctedDataYieldGraph[iCentrality],"Data FlowCS Near","p");
-    legend->AddEntry(correctedCaloYieldGraph[iCentrality],"Data CS Near","p");
-    legend->AddEntry(yieldGraph[iCentrality],"Data FlowCS all","p");
-    legend->AddEntry(yieldPuGraph[iCentrality],"Data CS all","p");
+    /*legend->AddEntry(dataYieldGraph[iCentrality],"Data FlowCS Uncorr","p");
+    legend->AddEntry(dataYieldPuGraph[iCentrality],"Data Calo Uncorr","p");
+    legend->AddEntry(correctedDataYieldGraph[iCentrality],"Data FlowCS Corr","p");
+    legend->AddEntry(correctedCaloYieldGraph[iCentrality],"Data Calo Corr","p");*/
+    legend->AddEntry(yieldGraph[iCentrality],"Spillover Previous","p");
+    legend->AddEntry(yieldPuGraph[iCentrality],"Spillover 5 % cent shift","p");
     legend->Draw();
     
     // Save the figures into a file
     if(saveFigures){
-      gPad->GetCanvas()->SaveAs(Form("figures/spilloverComparison_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+      gPad->GetCanvas()->SaveAs(Form("figures/spilloverComparisonCentralityShift_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
     }
     
   }

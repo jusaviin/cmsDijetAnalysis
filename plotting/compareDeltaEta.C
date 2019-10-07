@@ -19,8 +19,8 @@ void compareDeltaEta(){
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
   TFile *pbpbFile[nFilesToCompare];
   
-  pbpbFile[0] = TFile::Open("data/dijetPbPb2018_akPu4CaloJets_eschemeAxis_improvisedMixing_oldJetAndTrackCorrections_deltaRCheck_allCorrectionsWithOldJEC_processed_2019-09-21.root");
-  pbpbFile[1] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_allCorrections_newTryOnSeagull_JECv4_processed_2019-08-13_fiveJobsMissing.root");
+  pbpbFile[0] = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trigger_JECv6_finalTrack_allCorrectionsWithShiftInSpillover_wtaAxis_processed_2019-09-26.root");
+  pbpbFile[1] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_wtaAxis_correctionsWithJet100trigger_trackDeltaRCheck_JECv4_processed_2019-09-25_fiveJobsMissing.root");
   //pbpbFile[2] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root");
   //pbpbFile[3] = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_allCorrections_newTryOnSeagull_JECv4_processed_2019-08-13_fiveJobsMissing.root");
   
@@ -51,7 +51,7 @@ void compareDeltaEta(){
   
   // Choose if you want to write the figures to pdf file
   const int nHistogramTypesToCompare = 1;
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Get the number of asymmetry bins
   const int nAsymmetryBins = pbpbHistograms[0]->GetNAsymmetryBins();
@@ -169,7 +169,7 @@ void compareDeltaEta(){
   
   TString figureName;
   int veryNiceColors[] = {kBlue,kRed,kRed,kGreen+3};
-  const char* labels[] = {"Delta R","Old FlowPF","Calo100","Calo100 TRG spill"};
+  const char* labels[] = {"Spillover shift","No spillover shift","Calo100","Calo100 TRG spill"};
   
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     
@@ -209,7 +209,7 @@ void compareDeltaEta(){
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/deltaEtaMainComparison%s%s.pdf", compactCentralityString.Data(), compactTrackString.Data()));
+        gPad->GetCanvas()->SaveAs(Form("figures/deltaEtaCentralityShiftComparison%s%s.pdf", compactCentralityString.Data(), compactTrackString.Data()));
       }
       
     } // Track pT loop

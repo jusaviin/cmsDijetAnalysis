@@ -438,14 +438,14 @@ void qaPlotter(){
   bool saveFigures = false;          // Save the figures to a file
   
   bool drawSpillover = false;              // Draw the QA plots for spillover correction
-  bool drawSeagull = false;                // Draw the QA plots for seagull correction
+  bool drawSeagull = true;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
-  bool drawJetShapeCorrections = true;    // Draw the jet shape corrections as a function or R
+  bool drawJetShapeCorrections = false;    // Draw the jet shape corrections as a function or R
   
-  bool regularJetTrack = false;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool useAsymmetryBinsForSeagull = false;  // Plot seagull fits in different asymmetry bins
   
@@ -467,7 +467,7 @@ void qaPlotter(){
   spilloverQaFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_25eveMix_allCorrections_calo80Trigger_wtaAxis_JECv5b_processed_2019-09-10_QA.root");
   // data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15_QA.root
   // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18_QA.root"
-  TFile *seagullFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-05_QA.root");
+  TFile *seagullFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_wtaAxis_correctionsWithJet100trigger_trackDeltaRCheck_JECv4_processed_2019-09-25_fiveJobsMissing_QA.root");
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_allCorrections_newTryOnSeagull_JECv4_processed_2019-08-13_fiveJobsMissing_QA.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing_QA.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing_QA.root
@@ -480,15 +480,15 @@ void qaPlotter(){
   // "data/dijetPbPb_skims_pfJets_noUncorr_smoothedMixingAvoidPeakLowPt_noCorrections_2019-02-06_QA.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09_QA.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15_QA.root"
-  TFile *seagullPpFile = TFile::Open("data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13_QA.root");
+  TFile *seagullPpFile = TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28_QA.root");
   // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13_QA.root
   // data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14_QA.root
-  TFile *backgroundFile = TFile::Open("data/dijetPbPb2018_highForest_akPu4CaloJets_noCorrections_5eveMix_wtaAxis_JECv5b_processed_2019-08-30.root");
+  TFile *backgroundFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_wtaAxis_correctionsWithJet100trigger_trackDeltaRCheck_JECv4_processed_2019-09-25_fiveJobsMissing.root");
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_processed_2019-01-14.root"
   // "data/dijet_pp_highForest_pfJets_noUncorr_noJetLimit_noCorrections_adjustedBackground_processed_2019-01-14.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrectionsOrAdjust_processed_2019-01-09.root"
-  TFile *jffPbPbFile = TFile::Open("data/jffCorrection_PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_oldJEC_symmetrizedAndBackgroundSubtracted_2019-09-23.root");
+  TFile *jffPbPbFile = TFile::Open("data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
   // data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   // data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
   // jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root
