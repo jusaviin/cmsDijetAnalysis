@@ -64,6 +64,7 @@ public:
   
   // New variables for 2018 data
   Int_t GetTrackAlgorithm(Int_t iTrack) const;               // Getter for track algorithm
+  Int_t GetTrackOriginalAlgorithm(Int_t iTrack) const;       // Getter for track original algorithm
   Float_t GetTrackMVA(Int_t iTrack) const;                   // Getter for track MVA
   
   // Check if generator level jet has a matching reconstructed jet
@@ -92,8 +93,9 @@ private:
   TBranch *fnMatchedJetsBranch;  // Branch for the number of generator level jets in an event
   TBranch *fnTracksBranch;       // Branch for number of tracks
   
-  TBranch *fTrackAlgorithmBranch;    // Branch for track algorithm
-  TBranch *fTrackMVABranch;          // Branch for track MVA
+  TBranch *fTrackAlgorithmBranch;         // Branch for track algorithm
+  TBranch *fTrackOriginalAlgorithmBranch; // Branch for track original algorithm
+  TBranch *fTrackMVABranch;               // Branch for track MVA
   
   // Leaves for jet tree
   Float_t fJetPtArray[fnMaxJet] = {0};         // pT:s of all the jets in an event
@@ -126,6 +128,7 @@ private:
   
   // Additional leaves for 2018 PbPB track cuts
   UChar_t fTrackAlgorithmArray[fnMaxTrack] = {0};             // Array for track algorithm
+  UChar_t fTrackOriginalAlgorithmArray[fnMaxTrack] = {0};     // Array for track original algorithm
   Float_t fTrackMVAArray[fnMaxTrack] = {0};                   // Array for track MVA
   
 };

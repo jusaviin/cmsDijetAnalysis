@@ -102,8 +102,9 @@ public:
   virtual Int_t GetTrackSubevent(Int_t iTrack) const = 0;                // Getter for track subevent index (only for generator level tracks)
   virtual Int_t GetTrackMCStatus(Int_t iTrack) const = 0;                // Getter for track MC status (only for generator level tracks)
   
-  virtual Int_t GetTrackAlgorithm(Int_t iTrack) const;                         // Getter for track algorithm
-  virtual Float_t GetTrackMVA(Int_t iTrack) const;                             // Getter for track MVA
+  virtual Int_t GetTrackAlgorithm(Int_t iTrack) const;                   // Getter for track algorithm
+  virtual Int_t GetTrackOriginalAlgorithm(Int_t iTrack) const;           // Getter for track original algorithm
+  virtual Float_t GetTrackMVA(Int_t iTrack) const;                       // Getter for track MVA
   
   // Getters for leaves in the particle flow candidate tree
   virtual Int_t GetParticleFlowCandidateId(Int_t iCandidate) const;      // Getter for particle flow candidate ID

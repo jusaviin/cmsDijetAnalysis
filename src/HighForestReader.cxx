@@ -17,6 +17,7 @@ HighForestReader::HighForestReader() :
   fnJetsBranch(0),
   fnTracksBranch(0),
   fTrackAlgorithmBranch(0),
+  fTrackOriginalAlgorithmBranch(0),
   fTrackMVABranch(0),
   fJetPtArray(),
   fJetPhiArray(),
@@ -39,6 +40,7 @@ HighForestReader::HighForestReader() :
   fTrackEnergyEcalArray(),
   fTrackEnergyHcalArray(),
   fTrackAlgorithmArray(),
+  fTrackOriginalAlgorithmArray(),
   fTrackMVAArray()
 {
   // Default constructor
@@ -65,6 +67,7 @@ HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType
   fnJetsBranch(0),
   fnTracksBranch(0),
   fTrackAlgorithmBranch(0),
+  fTrackOriginalAlgorithmBranch(0),
   fTrackMVABranch(0),
   fJetPtArray(),
   fJetPhiArray(),
@@ -85,6 +88,7 @@ HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType
   fTrackEnergyEcalArray(),
   fTrackEnergyHcalArray(),
   fTrackAlgorithmArray(),
+  fTrackOriginalAlgorithmArray(),
   fTrackMVAArray()
 {
   // Custom constructor
@@ -105,6 +109,7 @@ HighForestReader::HighForestReader(const HighForestReader& in) :
   fnJetsBranch(in.fnJetsBranch),
   fnTracksBranch(in.fnTracksBranch),
   fTrackAlgorithmBranch(in.fTrackAlgorithmBranch),
+  fTrackOriginalAlgorithmBranch(in.fTrackOriginalAlgorithmBranch),
   fTrackMVABranch(in.fTrackMVABranch)
 {
   // Copy constructor
@@ -133,6 +138,7 @@ HighForestReader::HighForestReader(const HighForestReader& in) :
     fTrackEnergyEcalArray[i] = in.fTrackEnergyEcalArray[i];
     fTrackEnergyHcalArray[i] = in.fTrackEnergyHcalArray[i];
     fTrackAlgorithmArray[i] = in.fTrackAlgorithmArray[i];
+    fTrackOriginalAlgorithmArray[i] = in.fTrackOriginalAlgorithmArray[i];
     fTrackMVAArray[i] = in.fTrackMVAArray[i];
   }
 }
@@ -156,6 +162,7 @@ HighForestReader& HighForestReader::operator=(const HighForestReader& in){
   fnJetsBranch = in.fnJetsBranch;
   fnTracksBranch = in.fnTracksBranch;
   fTrackAlgorithmBranch = in.fTrackAlgorithmBranch;
+  fTrackOriginalAlgorithmBranch = in.fTrackOriginalAlgorithmBranch;
   fTrackMVABranch = in.fTrackMVABranch;
   
   for(Int_t i = 0; i < fnMaxJet; i++){
@@ -183,6 +190,7 @@ HighForestReader& HighForestReader::operator=(const HighForestReader& in){
     fTrackEnergyEcalArray[i] = in.fTrackEnergyEcalArray[i];
     fTrackEnergyHcalArray[i] = in.fTrackEnergyHcalArray[i];
     fTrackAlgorithmArray[i] = in.fTrackAlgorithmArray[i];
+    fTrackOriginalAlgorithmArray[i] = in.fTrackOriginalAlgorithmArray[i];
     fTrackMVAArray[i] = in.fTrackMVAArray[i];
   }
   
@@ -399,6 +407,8 @@ void HighForestReader::Initialize(){
   // Additional information needed for 2018 track cuts
   fTrackTree->SetBranchStatus("trkAlgo",1);
   fTrackTree->SetBranchAddress("trkAlgo",&fTrackAlgorithmArray,&fTrackAlgorithmBranch);
+  fTrackTree->SetBranchStatus("trkOriginalAlgo",1);
+  fTrackTree->SetBranchAddress("trkOriginalAlgo",&fTrackOriginalAlgorithmArray,&fTrackOriginalAlgorithmBranch);
   
   // Track MVA only in 2018 PbPb trees
   if(fReadMode > 2000 && (fDataType == kPbPb || fDataType == kPbPbMC)){
@@ -652,6 +662,11 @@ Int_t HighForestReader::GetTrackMCStatus(Int_t iTrack) const{
 // Getter for track algorithm
 Int_t HighForestReader::GetTrackAlgorithm(Int_t iTrack) const{
   return fTrackAlgorithmArray[iTrack];
+}
+
+// Getter for track original algorithm
+Int_t HighForestReader::GetTrackOriginalAlgorithm(Int_t iTrack) const{
+  return fTrackOriginalAlgorithmArray[iTrack];
 }
 
 // Getter for track MVA

@@ -240,7 +240,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       fCentralityWeightFunction = new TF1("fcent1", "[0]+[1]*x+[2]*x^2+[3]*x^3+[4]*x^4+[7]*exp([5]+[6]*x)", 0, 180); // 2015
       fCentralityWeightFunction->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15); // 2015
     } else { // Weight function for 2018 MC
-      fCentralityWeightFunction = new TF1("fvz","pol6",0,90); // 2018
+      fCentralityWeightFunction = new TF1("fcent","pol6",0,90); // 2018
       fCentralityWeightFunction->SetParameters(4.64945,-0.201337, 0.00435794,-7.00799e-05,8.18299e-07,-5.52604e-09,1.54472e-11); // 2018
     }
     
@@ -2141,13 +2141,7 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kEtaCut);
   
   // New cut for 2018 data based on track algorithm and MVA
-  // 6, 13, 14, 19. Remove all these and run.
-  //TODO TODO TEST TEST Try to exclude tracks from certain algorithms to see how the things look after that
-
-  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6) return false;
-  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 13) return false;
-  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 14) return false;
-  //if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 19) return false;
+  //if(fTrackReader[correlationType]->GetTrackOriginalAlgorithm(iTrack) == 14) return false; // Test a cut from Matt TODO TODO TEST TEST
   if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98 && fReadMode > 2017) return false; // Only apply this cut to 2018 PbPb
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kTrackAlgorithm);
   

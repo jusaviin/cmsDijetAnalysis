@@ -482,6 +482,11 @@ Int_t ForestReader::GetTrackAlgorithm(Int_t iTrack) const{
   return 0;
 }
 
+// Getter for the original track algorithm
+Int_t ForestReader::GetTrackOriginalAlgorithm(Int_t iTrack) const{
+  return 0;
+}
+
 // Getter for track MVA
 Float_t ForestReader::GetTrackMVA(Int_t iTrack) const{
   return 0;
