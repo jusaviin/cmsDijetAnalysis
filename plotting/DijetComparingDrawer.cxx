@@ -718,8 +718,9 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
   char namerX[100];
   
   // TODO TEST TODO TEST Extract ad hoc factors
-  //TF1 *fun1 = new TF1("myFun","pol0",-2.5,-1.5);
-  //TF1 *fun2 = new TF1("noreFun","pol0",1.5,2.5);
+  //TF1 *fun1 = new TF1("myFun","pol0",-2.5,-0.5);
+  //TF1 *fun2 = new TF1("noreFun","pol0",0.5,2.5);
+  //double funValues[4][7];
   
   // Loop over jet-track correlation categories
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -731,7 +732,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
       centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
 
-      FindScalingFactors("jetPt", iJetTrack/3, iCentrality, DijetHistogramManager::kMaxAsymmetryBins);
+      FindScalingFactors("jetPt", iJetTrack/3, iCentrality, fAsymmetryBin);
       
       // Draw only selected event correlation types
       for(int iCorrelationType = 0; iCorrelationType < DijetHistogramManager::knCorrelationTypes; iCorrelationType++){
@@ -752,7 +753,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
 
-            PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+            PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
             
             // Draw the track phi distributions to the upper panel of a split canvas plot
             sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
@@ -796,7 +797,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
               // Do not draw the deltaEta histograms for background because they are flat by construction
               if(iCorrelationType == DijetHistogramManager::kBackground) continue;
               
-              PrepareRatio("jettrackdeltaeta", 4, iJetTrack, iCorrelationType, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt, iDeltaPhi, -3, 3);
+              PrepareRatio("jettrackdeltaeta", 4, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, iDeltaPhi, -3, 3);
               
               // Draw the track phi distributions to the upper panel of a split canvas plot
               sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
@@ -823,11 +824,11 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
               fDrawer->SetGridY(false);
               
               // TODO TEST TODO TEST Get an ad hoc scaling factor lul
-              /*if(iDeltaPhi == 1){
-                fRatioHistogram[0]->Fit(fun1,"","",-2.5,-1.5);
-                fRatioHistogram[0]->Fit(fun2,"","",1.5,2.5);
-                cout << "Scaling factor for C" << iCentrality << "T" << iTrackPt << " is: " << 2.0/(fun1->GetParameter(0)+fun2->GetParameter(0)) << endl;
-              }*/
+              //if(iDeltaPhi == 1){
+              //  fRatioHistogram[0]->Fit(fun1,"","",-2.5,-0.5);
+              //  fRatioHistogram[0]->Fit(fun2,"","",0.5,2.5);
+              //  funValues[iCentrality][iTrackPt] = 2.0/(fun1->GetParameter(0)+fun2->GetParameter(0));
+              //}
               
               // Save the figure to a file
               sprintf(namerX,"%sDeltaEtaComparison",fBaseHistograms->GetJetTrackHistogramName(iJetTrack));
@@ -839,6 +840,24 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
         } // Track pT loop
       } // Correlation type loop
     } // Centrality loop
+    
+    // TODO TODO TEST TEST Print ad hoc values ready to be copied to a file
+    /*for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
+      if(iCentrality == fFirstDrawnCentralityBin) cout << "{";
+      cout << "{";
+      for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
+        cout << funValues[iCentrality][iTrackPt];
+        if(iTrackPt != fLastDrawnTrackPtBin) cout << ",";
+      }
+      cout << "}";
+      if(iCentrality == fLastDrawnCentralityBin) {
+        cout << "}";
+      } else {
+        cout << ",";
+      }
+      cout << endl;
+    }*/
+    
   } // Jet-track correlation category loop
 }
 
@@ -1205,17 +1224,35 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
  */
 void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int bin2, int bin3, int bin4, int bin5, int bin6, double minRange, double maxRange){
   
-  // Helper variable
+  // Helper variables
   char namer[100];
+  DijetMethods *rebinner = new DijetMethods();
+  
+  // Custom rebin for deltaEta
+  const int nDeltaEtaBinsRebin = 21;
+  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
   
   // Read the histograms, scale them to one and take the ratio
   fMainHistogram = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5,bin6)->Clone();
-  if(rebin > 1) {fMainHistogram->Rebin(rebin); fMainHistogram->Scale(1.0/rebin);}
+  
+  if(rebin == 666){
+    fMainHistogram = rebinner->RebinAsymmetric(fMainHistogram,nDeltaEtaBinsRebin,deltaEtaBinBordersRebin);
+  } else if(rebin > 1) {
+    fMainHistogram->Rebin(rebin);
+    fMainHistogram->Scale(1.0/rebin);
+    
+  }
   if(maxRange > minRange) fMainHistogram->GetXaxis()->SetRangeUser(minRange,maxRange);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
+  if(bin1 == 1) bin1 = 0;
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5,bin6)->Clone();
-    if(rebin > 1) {fComparisonHistogram[iAdditional]->Rebin(rebin); fComparisonHistogram[iAdditional]->Scale(1.0/rebin);}
+    if(rebin == 666){
+      fComparisonHistogram[iAdditional] = rebinner->RebinAsymmetric(fComparisonHistogram[iAdditional],nDeltaEtaBinsRebin,deltaEtaBinBordersRebin);
+    } else if(rebin > 1) {
+      fComparisonHistogram[iAdditional]->Rebin(rebin);
+      fComparisonHistogram[iAdditional]->Scale(1.0/rebin);
+    }
     if(maxRange > minRange) fComparisonHistogram[iAdditional]->GetXaxis()->SetRangeUser(minRange,maxRange);
     if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
@@ -1226,6 +1263,8 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
       fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
     }
   }
+  
+  delete rebinner;
 }
 
 /*
