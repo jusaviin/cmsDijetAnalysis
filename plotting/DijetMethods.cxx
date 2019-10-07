@@ -317,7 +317,19 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
     }
   }
   
-  correctedHistogram->Divide(fNormalizedMixedEventHistogram);
+  // Remove the error bar from the mixed event histograms before applying it as a correction.
+  // We do not want to propagate the statistical errors from the mixing as the statistical errors of the measurement
+  TH2D *noErrorMixedEventHistogram = (TH2D*) fNormalizedMixedEventHistogram->Clone("mixingButNoErrors");
+  
+  // Remove the errors for the histogram used for the acceptance correction
+  // We have an estimation of the systematic errors for the acceptance correction separately, we do not want to overestimate the errors here
+  for(int iEta = 1; iEta <= leadingMixedEventHistogram->GetNbinsY(); iEta++){
+    for(int iPhi = 1; iPhi <= leadingMixedEventHistogram->GetNbinsX(); iPhi++){
+      noErrorMixedEventHistogram->SetBinError(iPhi,iEta,0);
+    }
+  }
+  
+  correctedHistogram->Divide(noErrorMixedEventHistogram);
   
   // Return the corrected histogram
   return correctedHistogram;
