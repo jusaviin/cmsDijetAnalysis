@@ -25,21 +25,18 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "systematicUncertaintyForPp_15percentSpill20Jff_2019-10-01.root";
+  const char* outputFileName = "systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-06.root";
   
   bool ppData = false; // Flag if we are estimating systematics for pp or PbPb
   
-  bool spilloverFromMC = true; // true: Estimate Spillover and JFF from MC. false: Estimate spillover and JFF by comparing different jet collections
+  bool mcMode = true; // Only assing uncertainty from background subtraction and acceptance correction
   
-  if(ppData) spilloverFromMC = true; // For pp, there is no spillover so estimate JFF uncertainty from Monte Carlo
-  
-  TString dataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_lowPtResidualTrack_processed_2019-10-01_fiveJobsMissing.root";
+  TString dataFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_wtaAxis_allCorrections_JECv6_processed_2019-09-26.root";
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_JECv6_allCorrections_processed_2019-10-04.root
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_lowPtResidualTrack_processed_2019-10-01_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_25eveMix_allCorrections_calo80Trigger_wtaAxis_JECv5b_processed_2019-09-10.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
-  
-  // Comparison file to estimate spillover and JFF effects from different jet collection
-  TString comparisonFileName = "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_wtaAxis_allCorrections_JECv5b_processed_2019-08-30.root";
   
   TString unmixedFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_xjBins_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-13.root"; // TODO: Remove this after low and high cut have mixing
   
@@ -55,7 +52,8 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // For pp data, use pp files instead of PbPb files
   if(ppData){
-    dataFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root";
+    dataFileName = "data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root";
+    // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
     
     unmixedFileName = "data/ppData2017_highForest_pfJets_improvisedMixing_JECv2_wtaAxis_allCorrections_processed_2019-08-13.root"; // TODO: Remove this when mixing is ready for low ang high cut files
     
@@ -68,7 +66,6 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // Data file from which the histograms needed for the systematic uncertainty estimation are read
   TFile *dataFile = TFile::Open(dataFileName);
-  TFile *comparisonFile = TFile::Open(comparisonFileName);
   TFile *unmixedFile = TFile::Open(unmixedFileName); // TODO: Remove this after low and high pT results have mixing
   
   // We need spillover file to estimate the systematic uncertainty form background fluctuations
@@ -82,7 +79,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   TFile *highJetCutFile = TFile::Open(highJetCutFileName);
   
   // Read the nominal data file
-  const int nHistogramTypes = 4;
+  const int nHistogramTypes = 3;
   DijetHistogramManager *dataHistograms[nHistogramTypes];
   dataHistograms[0] = new DijetHistogramManager(dataFile);
   
@@ -96,7 +93,6 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   // Read the files with low and high jet pT cut and with different jet collection
   dataHistograms[1] = new DijetHistogramManager(lowJetCutFile);
   dataHistograms[2] = new DijetHistogramManager(highJetCutFile);
-  dataHistograms[3] = new DijetHistogramManager(comparisonFile);
   
   const int nCentralityBins = dataHistograms[0]->GetNCentralityBins();
   const int nTrackPtBins = dataHistograms[0]->GetNTrackPtBins();
@@ -258,120 +254,87 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
       for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
 
         for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
-
-          // For subleading jet, there is no spillover so estimate the JFF from MC study
-          if(spilloverFromMC || (iJetTrack >= DijetHistogramManager::kTrackSubleadingJet && iJetTrack <= DijetHistogramManager::kPtWeightedTrackSubleadingJet)){
+          
+          // ================================================ //
+          // Estimate uncertainty for background fluctuations //
+          // ================================================ //
+          
+          // Read the two dimensional spillover correction and transform it into DeltaR
+          
+          twoDimensionalHelper = spilloverReader->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentrality,iTrackPt,iAsymmetry);
+          twoDimensionalHelper->SetName(Form("spilloverHelper%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt)); // Need renaming here to avoid histograms with same name (can screw up things)
+          helperHistogram = methods->GetJetShape(twoDimensionalHelper);
+          
+          // There is no pT sum for the deltaEta histograms, this needs to be summed in the corrector
+          if(iTrackPt < nTrackPtBins) helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaSpillover%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          
+          // Assign 15 % of the correction as an uncertainty in each DeltaR bin
+          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->GetNbinsX(); iBin++){
             
-            // ================================================ //
-            // Estimate uncertainty for background fluctuations //
-            // ================================================ //
+            currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.15);
             
-            // Read the two dimensional spillover correction and transform it into DeltaR
+            // No spillover correction for pp or subleading jet
+            if(ppData || iJetTrack == DijetHistogramManager::kTrackSubleadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet) currentUncertainty = 0;
             
-            twoDimensionalHelper = spilloverReader->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentrality,iTrackPt,iAsymmetry);
-            twoDimensionalHelper->SetName(Form("spilloverHelper%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt)); // Need renaming here to avoid histograms with same name (can screw up things)
-            helperHistogram = methods->GetJetShape(twoDimensionalHelper);
+            // For MC running mode, do not assign uncertainty
+            if(mcMode) currentUncertainty = 0;
             
-            // There is no pT sum for the deltaEta histograms, this needs to be summed in the corrector
-            if(iTrackPt < nTrackPtBins) helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaSpillover%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
-            
-            // Assign 15 % of the correction as an uncertainty in each DeltaR bin
-            for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->GetNbinsX(); iBin++){
+            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
+          }
+          
+          // Assign 15 % of the correction as an uncertainty in each DeltaEta bin
+          if(iTrackPt < nTrackPtBins){
+            for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->GetNbinsX(); iBin++){
               
-              currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.15);
+              currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.15);
               
               // No spillover correction for pp or subleading jet
               if(ppData || iJetTrack == DijetHistogramManager::kTrackSubleadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet) currentUncertainty = 0;
               
-              jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
-            }
-            
-            // Assign 15 % of the correction as an uncertainty in each DeltaEta bin
-            if(iTrackPt < nTrackPtBins){
-              for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->GetNbinsX(); iBin++){
-                
-                currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.15);
-                
-                // No spillover correction for pp or subleading jet
-                if(ppData || iJetTrack == DijetHistogramManager::kTrackSubleadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet) currentUncertainty = 0;
-                
-                deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
-                
-              }
-            }
-            
-            // ================================================= //
-            //  Estimate uncertainty for jet fragmentation bias  //
-            // ================================================= //
-            
-            // As a placeholder here, do half of the JFF correction. TODO: Replace with quark/gluon difference
-            
-            // Read the two dimensional JFF correction and transform it into DeltaR
-            twoDimensionalHelper = spilloverReader->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack,iCentrality,iTrackPt,iAsymmetry);
-            twoDimensionalHelper->SetName(Form("jffHelper%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt)); // Need renaming here to avoid histograms with same name (can screw up things)
-            helperHistogram = methods->GetJetShape(twoDimensionalHelper);
-            
-            if(iTrackPt < nTrackPtBins){
-              helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaJff%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
-            }
-            
-            
-            // Assign 20 % of the correction as an uncertainty in each DeltaR bin
-            for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
+              // For MC running mode, do not assign uncertainty
+              if(mcMode) currentUncertainty = 0;
               
-              currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.2);
-              jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->SetBinContent(iBin, currentUncertainty);
+              deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
+              
             }
-            
-            // Assign 20 % of the correction as an uncertainty in each DeltaEta bin
-            if(iTrackPt < nTrackPtBins){
-              for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
-                
-                currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.2);
-                deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->SetBinContent(iBin, currentUncertainty);
-              }
-            }
-          } // Estimate spillover and JFF uncertainty from MC study
+          }
           
-          // ============================================================================================================== //
-          //  Alternative method to estimate spillover and JFF uncertainty together by comparing different jet collections  //
-          // ============================================================================================================== //
+          // ================================================= //
+          //  Estimate uncertainty for jet fragmentation bias  //
+          // ================================================= //
           
-          else {
+          // Read the two dimensional JFF correction and transform it into DeltaR
+          twoDimensionalHelper = spilloverReader->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack,iCentrality,iTrackPt,iAsymmetry);
+          twoDimensionalHelper->SetName(Form("jffHelper%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt)); // Need renaming here to avoid histograms with same name (can screw up things)
+          helperHistogram = methods->GetJetShape(twoDimensionalHelper);
+          
+          if(iTrackPt < nTrackPtBins){
+            helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaJff%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          }
+          
+          
+          // Assign 20 % of the correction as an uncertainty in each DeltaR bin
+          for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
             
-            // Find the jet shape histograms from different jet collections and subtract the from each other
-            helperHistogram = (TH1D*) dataHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt)->Clone(Form("HelperForComparison%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
-            comparisonHistogram = (TH1D*) dataHistograms[3]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt)->Clone(Form("AnotherHelperForComparison%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
-            helperHistogram->Add(comparisonHistogram,-1);
+            currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.2);
             
-            // Assign the difference between jet collections as spillover + JFF uncertainty
-            for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->GetNbinsX(); iBin++){
+            // For MC running mode, do not assign uncertainty
+            if(mcMode) currentUncertainty = 0;
+            
+            jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->SetBinContent(iBin, currentUncertainty);
+          }
+          
+          // Assign 20 % of the correction as an uncertainty in each DeltaEta bin
+          if(iTrackPt < nTrackPtBins){
+            for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
               
-              currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin));
+              currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.2);
               
-              jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
+              // For MC running mode, do not assign uncertainty
+              if(mcMode) currentUncertainty = 0;
+              
+              deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->SetBinContent(iBin, currentUncertainty);
             }
-            
-            // Do the same for deltaEta histograms
-            if(iTrackPt < nTrackPtBins){
-              twoDimensionalHelper = dataHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
-              
-              helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaForComparison%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
-              
-              twoDimensionalHelper = dataHistograms[3]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
-              
-              comparisonHistogram = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[3]->GetTrackPtBinBorder(iTrackPt), dataHistograms[3]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaForCompparison%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
-              
-              helperHistogramDeltaEta->Add(comparisonHistogram,-1);
-              
-              // Assign the difference between jet collections as spillover + JFF uncertainty
-              for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->GetNbinsX(); iBin++){
-                
-                currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin));
-                deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kBackgroundFluctuation]->SetBinContent(iBin, currentUncertainty);
-              }
-            } // if for pT index
-            
           }
           
           // =============================================== //
@@ -398,6 +361,10 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             highUncertainty = TMath::Abs(jetShapeHighCut->GetBinContent(iBin));
             currentUncertainty = TMath::Max(lowUncertainty,highUncertainty); // TODO TODO TODO After 2018 estimate comes, use it!
             //currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.05);
+            
+            // For MC running mode, do not assign uncertainty
+            if(mcMode) currentUncertainty = 0;
+            
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kJetEnergyScale]->SetBinContent(iBin, currentUncertainty);
           }
           
@@ -421,6 +388,10 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
               lowUncertainty = TMath::Abs(jetShapeLowCut->GetBinContent(iBin));
               highUncertainty = TMath::Abs(jetShapeHighCut->GetBinContent(iBin));
               currentUncertainty = TMath::Max(lowUncertainty,highUncertainty); // TODO TODO TODO After 2018 estimate comes, use it!
+              
+              // For MC running mode, do not assign uncertainty
+              if(mcMode) currentUncertainty = 0;
+              
               deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kJetEnergyScale]->SetBinContent(iBin, currentUncertainty);
             }
           } // if for track pT index
@@ -436,6 +407,10 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingEfficiency]->GetNbinsX(); iBin++){
             
             currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*trackingClosure);
+            
+            // For MC running mode, do not assign uncertainty
+            if(mcMode) currentUncertainty = 0;
+            
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingEfficiency]->SetBinContent(iBin, currentUncertainty);
           }
           
@@ -449,6 +424,10 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingEfficiency]->GetNbinsX(); iBin++){
               
               currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*trackingClosure);
+              
+              // For MC running mode, do not assign uncertainty
+              if(mcMode) currentUncertainty = 0;
+              
               deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingEfficiency]->SetBinContent(iBin, currentUncertainty);
             }
           } // if for track pT index
@@ -461,6 +440,10 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kResidualTracking]->GetNbinsX(); iBin++){
             
             currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*trackingUncertainty);
+            
+            // For MC running mode, do not assign uncertainty
+            if(mcMode) currentUncertainty = 0;
+            
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kResidualTracking]->SetBinContent(iBin, currentUncertainty);
           }
           
@@ -469,6 +452,10 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kResidualTracking]->GetNbinsX(); iBin++){
               
               currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*trackingUncertainty);
+              
+              // For MC running mode, do not assign uncertainty
+              if(mcMode) currentUncertainty = 0;
+              
               deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kResidualTracking]->SetBinContent(iBin, currentUncertainty);
             }
           }
@@ -476,7 +463,6 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           // ==================================================== //
           // Estimate the uncertainty from background subtraction //
           // ==================================================== //
-         // TODO: This and pair acceptance are overestimated for jet shapes in the lowest bin, since they are calculated without normalizing the jet shape with the pT bin width. This needs to be fixed.
           
           twoDimensionalHelper = dataHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
           
