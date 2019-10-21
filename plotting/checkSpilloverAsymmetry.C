@@ -12,23 +12,23 @@ void checkSpilloverAsymmetry(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
-  TString spilloverComparisonFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
-  // data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root
+  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root";
+  TString spilloverComparisonFileName = "corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
+  // corrections/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root
   // newSpilloverTest_symmetrizedDistribution_xj_radial.root
   // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
   // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
-  TString jffFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root" ; // Can draw also JFF correction yield
-  TString dataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root"; // Compare also with uncorrected data
+  TString jffFileName = "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root" ; // Can draw also JFF correction yield
+  TString dataFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_subeNon0_centShift5_noCorrections_notCombinedBackground_processed_2019-10-04.root"; // Compare also with uncorrected data
   // data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root
   // data/dijetPbPb_skims_pfJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-03-04.root
   
-  bool drawAsymmetryComparison = false;
+  bool drawAsymmetryComparison = true;
   bool drawFileComparison = false;
   bool draw2Dsample = false;   // Draw sample 2D distributions
   bool drawIntegral = false;
-  bool drawExample = true;     // Draw example r-dependent spillover distributions
+  bool drawExample = false;     // Draw example r-dependent spillover distributions
   
   const char *firstFileComment = "Spillover";
   const char *secondFileComment = "WTA";

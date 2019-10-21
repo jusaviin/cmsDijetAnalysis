@@ -14,7 +14,11 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_subeNon0_centShift5_noCorrections_processed_2019-10-08.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_subeNon0_centShift5_noCorrections_processed_2019-10-08.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_subeNon0_wtaAxis_JECv6_noCorrections_notCombinedBackground_processed_2019-09-26.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_subeNon0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_subeNon0_eschemeAxis_JECv5b_processed_2019-09-10.root
   // data/PbPbMC_RecoGen_akPu4CaloJets_noUncorr_improvisedMixing_xjBins_subeNon0_wtaAxis_JECv5b_processed_2019-09-08.root
@@ -31,10 +35,10 @@ void produceSpilloverCorrection(){
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root"; // File name for the output file
-  // data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
-  // data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
-  // data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
+  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_eachemeAxis_centShift5_JECv6_2019-10-16.root"; // File name for the output file
+  // corrections/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
+  // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
+  // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
   TString uncorrectedDataFileName = "data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root"; // Data file to compare yields with spillover file
   // data/PbPbMC_RecoGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_noCorrections_processed_2019-02-09.root
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
@@ -42,7 +46,7 @@ void produceSpilloverCorrection(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatio
+  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatios
   
   bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
   
@@ -50,6 +54,7 @@ void produceSpilloverCorrection(){
   
   // Note: For fitMethod = 2, JffCorrector should read spilloverCorrection instead of fittedSpilloverCorrection
   int fitMethod = 2; // Method used for fitting deltaEta and deltaPhi distributions. 0 = Gauss, 1 = Gauss+constant, 2 = Gauss+Gauss
+  bool symmetrizeDistribution = true;
   
   int fixGaussYield = 0;  // 0 = Do not fix the Gauss yield in spillover fit. 1 = Fix the Gauss yield to deltaEta distribution without background subtraction by estimating background a a flat line fitted to the tails of the distributin. 2 = Fix the Gauss yield to the deltaEta distribution bin count of the deltaEta distribution after background subtraction.
   bool fixGaussWidth = false;  // Fix the gaussian fit width to the centrality averaged result before fitting for yield
@@ -284,14 +289,14 @@ void produceSpilloverCorrection(){
               spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, iAsymmetry,iCentrality,iTrackPt);
               
               // Symmetrize the subeNon0 distribution
-              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt], spilloverRcut[iCentrality][iTrackPt]);
+              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt], /*spilloverRcut[iCentrality][iTrackPt]*/1, 0, !symmetrizeDistribution); // TODO: Check the cut
             }
           } else {
             spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
             
             if(iDataType == 0){
               // Symmetrize the subeNon0 distribution
-              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt], spilloverRcut[iCentrality][iTrackPt]);
+              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt], /*spilloverRcut[iCentrality][iTrackPt]*/1, 0, !symmetrizeDistribution); // TODO: Check the cut
             }
           }
           
@@ -375,6 +380,7 @@ void produceSpilloverCorrection(){
     
   } // Yield QA if
   
+  /*  Big part of the code commented out since it is not used at the moment!!
   // Use drawer for a quick sanity check for fits
   JDrawer *drawer = new JDrawer();
   
@@ -491,12 +497,12 @@ void produceSpilloverCorrection(){
           // 0.7-1 pT bin for centralities 10-100 %
           // Do not include these points to the averages, so that the fit to the resulting distribution will be better.
           
-          /*if((iCentrality == 0 && iTrackPt == 3) || (iCentrality > 0 && iTrackPt == 0)){
+          if((iCentrality == 0 && iTrackPt == 3) || (iCentrality > 0 && iTrackPt == 0)){
            cout << "Fit convergence for yield is deemed bad in bin iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << endl;
            cout << "This bin will be excluded from the total yield calculation" << endl;
            cout << "If in some new version of the data this is not the case, please change the code accordingly!" << endl;
            cout << endl;
-           } else {*/
+           } else {
           
           // For the combined yield, calculate the average of points from deltaEta and deltaPhi fits
           if(useIntegralYield){
@@ -640,6 +646,7 @@ void produceSpilloverCorrection(){
     
     
   } // Jet-track correlation type loop
+  */
   
   // Create the output file
   TFile *outputFile = new TFile(outputFileName,"RECREATE");
@@ -658,12 +665,12 @@ void produceSpilloverCorrection(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
         // Create a new name to the histogram and write it into file
-        sprintf(histogramNamer, "spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
-        spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        //sprintf(histogramNamer, "spilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
+        //spilloverDeltaEtaDeltaPhi[0][iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
         // Create a new name to the fitted histogram and write it into file
-        sprintf(histogramNamer,"fittedSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
-        spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
+        //sprintf(histogramNamer,"fittedSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
+        //spilloverCorrectionDeltaEtaDeltaPhi[iJetTrack][iCentrality][iTrackPt]->Write(histogramNamer);
         
         // Create a new name to the symmetrized subeNon0 histogram and write it into file
         sprintf(histogramNamer,"nofitSpilloverCorrection_%sDeltaEtaDeltaPhi_C%dT%d", histograms[0]->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
@@ -691,7 +698,7 @@ void produceSpilloverCorrection(){
   
   // Close the output file and create QA file
   outputFile->Close();
-  TString qaFileName = outputFileName.ReplaceAll(".root","_QA.root");
+  /*TString qaFileName = outputFileName.ReplaceAll(".root","_QA.root");
   TFile *qaFile = new TFile(qaFileName,"RECREATE");
  
   // Save the QA histograms and functions to file
@@ -852,4 +859,5 @@ void produceSpilloverCorrection(){
     card->Write(qaFile);
     
   } // Jet-track loop
+  */
 }

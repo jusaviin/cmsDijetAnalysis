@@ -5,15 +5,18 @@
 /*
  * Macro for comparing jets shapes in different pT bins between pp and PbPb
  */
-void compareJetShape(){
+void comparePbPbToPpDeltaEta(){
   
   // ==================================================================
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = {"data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28.root", "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_JECv6_allCorrections_processed_2019-10-04.root"};
+  TString fileNames[] = {"data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28.root", "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0AtLowPt_wtaAxis_JECv6_newJffSpilloverUntil8_processed_2019-09-26.root"};
   
   const int nFilesToCompare = 2;
+  
+  const int nRBins = 16;  // Number of R-bins for jet shape histograms
+  double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
   
   // Open all the files for the comparison
   TFile *files[nFilesToCompare];
@@ -28,7 +31,7 @@ void compareJetShape(){
   }
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Get the number of asymmetry bins
   const int nAsymmetryBins = histograms[0]->GetNAsymmetryBins();
@@ -103,12 +106,11 @@ void compareJetShape(){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       
       drawer->CreateSplitCanvas();
-      drawer->SetLogY(true);
       
       trackString = Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
       compactTrackString = Form("_T=%.0f-%.0f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
       
-      deltaEtaPp[iTrackPt]->GetXaxis()->SetRangeUser(-2,2);
+      deltaEtaPp[iTrackPt]->GetXaxis()->SetRangeUser(-2.5,2.5);
       drawer->DrawHistogramToUpperPad(deltaEtaPp[iTrackPt],"#Delta#eta","#frac{dN}{d#Delta#eta}"," ");
       
       deltaEtaPbPb[iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
@@ -116,17 +118,14 @@ void compareJetShape(){
       
       legend = new TLegend(0.45,0.5,0.9,0.8);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0,Form("%d jet",labels[iJetTrack]),"");
+      legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetTrack]),"");
       legend->AddEntry((TObject*) 0,trackString.Data(),"");
       legend->AddEntry(deltaEtaPp[iTrackPt],"Pythia8","l");
       legend->AddEntry(deltaEtaPbPb[iCentrality][iTrackPt],Form("P+H %s",centralityString.Data()),"l");
       legend->Draw();
       
-      // Draw the ratio to the lower pad
-      drawer->SetLogY(false);
-      
-      deltaEtaRatio[iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-      deltaEtaRatio[iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0.5,1.5);
+      deltaEtaRatio[iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-2.5,2.5);
+      deltaEtaRatio[iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,2);
       deltaEtaRatio[iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
       drawer->DrawHistogramToLowerPad(deltaEtaRatio[iCentrality][iTrackPt],"#Deltar","P+H/Pythia", " ");
       

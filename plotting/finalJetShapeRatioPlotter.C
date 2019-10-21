@@ -29,6 +29,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
   double shapeIntegralPp[nAsymmetryBins+1];
   double uncertaintySum;
+  double correlationFactor;
   
   // Read the pT summed jet shape histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
@@ -120,7 +121,11 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       for(int iBin = 1; iBin <= uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
         uncertaintySum = 0;
         for(int iUncertainty = 0; iUncertainty < nRelevantUncertainties; iUncertainty++){
-          uncertaintySum += TMath::Power(uncertaintySummerPbPb[iCentrality][iAsymmetry][iUncertainty]->GetBinContent(iBin),2);
+          correlationFactor = 1;
+          
+          // JFF and spillover unceratinties are correlated, so they partially cancel on the ratio
+          if(iUncertainty < 2) correlationFactor = 0.25;
+          uncertaintySum += TMath::Power(uncertaintySummerPbPb[iCentrality][iAsymmetry][iUncertainty]->GetBinContent(iBin)*correlationFactor,2);
         }
         uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->SetBinContent(iBin,TMath::Sqrt(uncertaintySum));
       }
@@ -394,7 +399,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   mainTitle->DrawLatex(0.983, 0.065, "1");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryRatio_%s.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryRatioNewMixing_%s.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -410,10 +415,12 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root");
+  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root");
+  // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root");
+  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root");
+  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_processed_2019-10-01_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_calo80Trigger_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-05.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root
@@ -421,8 +428,11 @@ void finalJetShapeRatioPlotter(){
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   
-  TFile *ppUncertaintyFile = TFile::Open("systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root");
-  TFile *pbpbUncertaintyFile = TFile::Open("systematicUncertaintyForPp_15percentSpill20Jff_2019-10-01.root");
+  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root");
+  // uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root
+  // uncertainties/systematicUncertaintyForPythia8RecoGen_mcMode_2019-10-05.root
+  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root");
+  // uncertainties/systematicUncertaintyForPbPbAsymmetryRatio_2019-10-14.root
   
   // Create histogram managers for pp and PbPb
   DijetHistogramManager *ppHistograms = new DijetHistogramManager(ppFile);

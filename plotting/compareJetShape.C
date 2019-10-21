@@ -11,10 +11,16 @@ void compareJetShape(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = {"data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28.root", "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_wtaAxis_allCorrections_JECv6_processed_2019-09-26.root"};
+  TString fileNames[] = {"data/ppData2017_highForest_pfJets_20EveMixed_finalTrackCorr_JECv4_eschemeAxis_tunedSeagull_allCorrections_processed_2019-10-14.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_allCorrections_allPtTrackDeltaR_processed_2019-10-16.root"};
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_5eveMix_widerMixingPeakFinding_allCorrections_processed_2019-10-07.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_wtaAxis_allCorrections_JECv6_processed_2019-09-26.root
   
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_JECv6_allCorrections_processed_2019-10-04.root
-  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_wtaAxisi_allCorrections_JECv6_processed_2019-09-26.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_JECv6_newJffSpilloverUntil8_processed_2019-09-26.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_wtaAxis_JECv6_newJffSpilloverUntil8_processed_2019-09-26.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0AtLowPt_wtaAxis_JECv6_newJffSpilloverUntil8_processed_2019-09-26.root
+  // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_testSeagull_allCorrections_processed_2019-09-28.root
   
   const int nFilesToCompare = 2;
   
@@ -31,7 +37,7 @@ void compareJetShape(){
   }
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Get the number of asymmetry bins
   const int nAsymmetryBins = histograms[0]->GetNAsymmetryBins();
@@ -42,7 +48,7 @@ void compareJetShape(){
   double asymmetryBinBorders[] = {0,0.6,0.8,1};
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};
   
-  int iJetTrack = DijetHistogramManager::kPtWeightedTrackLeadingJet; // DijetHistogramManager::kPtWeightedTrackSubleadingJet
+  int iJetTrack = DijetHistogramManager::kPtWeightedTrackInclusiveJet; // DijetHistogramManager::kPtWeightedTrackSubleadingJet
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -69,23 +75,23 @@ void compareJetShape(){
   
   // For normalization of the jet shapes, read the pT summed histograms
   jetShapePp[nTrackPtBins] = (TH1D*) histograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, 0, nTrackPtBins)->Clone("ppNormalizer");
-  jetShapeNormalizerPp = jetShapePp[nTrackPtBins]->Integral(1,jetShapePp[nTrackPtBins]->FindBin(0.99),"width");
+  jetShapeNormalizerPp = 1;//jetShapePp[nTrackPtBins]->Integral(1,jetShapePp[nTrackPtBins]->FindBin(0.99),"width");
   
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     jetShapePbPb[iCentrality][nTrackPtBins] = (TH1D*) histograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, iCentrality, nTrackPtBins)->Clone(Form("PbPbNormalizer%d",iCentrality));
-    jetShapeNormalizerPbPb[iCentrality] = jetShapePbPb[iCentrality][nTrackPtBins]->Integral(1, jetShapePbPb[iCentrality][nTrackPtBins]->FindBin(0.99), "width");
+    jetShapeNormalizerPbPb[iCentrality] = 1;//jetShapePbPb[iCentrality][nTrackPtBins]->Integral(1, jetShapePbPb[iCentrality][nTrackPtBins]->FindBin(0.99), "width");
   }
   
   // Read the jet shape histograms from the file and normalize them to one
   for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
     
     jetShapePp[iTrackPt] = histograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, 0, iTrackPt);
-    jetShapePp[iTrackPt]->Scale(1.0/jetShapeNormalizerPp);
+    if(iTrackPt != nTrackPtBins) jetShapePp[iTrackPt]->Scale(1.0/jetShapeNormalizerPp);
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       jetShapePbPb[iCentrality][iTrackPt] = histograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, iCentrality, iTrackPt);
-      jetShapePbPb[iCentrality][iTrackPt]->Scale(1.0/jetShapeNormalizerPbPb[iCentrality]);
+      if(iTrackPt != nTrackPtBins) jetShapePbPb[iCentrality][iTrackPt]->Scale(1.0/jetShapeNormalizerPbPb[iCentrality]);
       
       jetShapeRatio[iCentrality][iTrackPt] = (TH1D*) jetShapePbPb[iCentrality][iTrackPt]->Clone(Form("jetShapeRatio%d%d", iCentrality, iTrackPt));
       jetShapeRatio[iCentrality][iTrackPt]->Divide(jetShapePp[iTrackPt]);

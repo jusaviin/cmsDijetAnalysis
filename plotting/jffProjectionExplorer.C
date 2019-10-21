@@ -9,24 +9,26 @@ void jffProjectionExplorer(){
   
   // Open the files for the JFF corrections
   const int nFiles = 1;
-  TFile *standardFile = TFile::Open("data/jffCorrection_PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_oldJEC_symmetrizedAndBackgroundSubtracted_2019-09-23.root");
+  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_eschemeAxis_centShift5_symmetrizedAndBackgroundSubtracted_cutInRange_2019-10-13.root");
+  // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root
+  // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_cutInRange_2019-10-09.root
   TFile *rebinFile = TFile::Open("newPbPbTest.root");
   TFile *fitFile = TFile::Open("newPbPbTestSameEvent2.root");
   TFile *files[] = {standardFile,rebinFile,fitFile};
-  TFile *inclusiveAnalysisJffPbPb = TFile::Open("data/JffResidual_nominal_Pb_HIN_16_020.root");
+  TFile *inclusiveAnalysisJffPbPb = TFile::Open("corrections/JffResidual_nominal_Pb_HIN_16_020.root");
   
   // Styling option for different files
   int fileColors[] = {kRed, kBlue, kGreen+3, kMagenta, kCyan};
-  const char* fileLegend[] = {"2018 Calo with JEC2015","PF jets","sameEvent2","Other method","Another method"};
+  const char* fileLegend[] = {"PF 2018","PF jets","sameEvent2","Other method","Another method"};
   
   // Figure saving options
   bool saveFigures = false;         // Flag to determine whather or not save the figures
   
   // Configuration
   const int nCentralityBins = 4;
-  const int nTrackPtBins = 6;
+  const int nTrackPtBins = 7;
   const int nJetTrack = 6;
-  double trackPtBorders[] = {0.7,1,2,3,4,8,300};
+  double trackPtBorders[] = {0.7,1,2,3,4,8,12,300};
   double centralityBinBorders[] = {0,10,30,50,100};
   double minXrange[] = {-1.5,-1.5,0};
   

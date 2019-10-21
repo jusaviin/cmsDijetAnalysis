@@ -4,15 +4,15 @@
 DataType 3  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
-McCorrelationType 2 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
+McCorrelationType 1 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
 MatchJets 0 # 0 = Do not match jets. 1 = Match generator level jets with reconstructed jets. 2 = Match dijets. 3 = Match leading jets. 4 = Anti-match dijets. 5 = Anti-match leading jets.
 
 # Specify the forest type in the selected data files and choose forest readers based on this
 ForestType 0 # 0 = High Forest, 1 = Skim Forest
-ReadMode 2018   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 data, 2019 = Use trigger with 2018 MC
+ReadMode 2019   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 data, 2019 = Use trigger with 2018 MC
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
-FilledHistograms 127 # Bit 0 = Event information histograms      (to set: 1)
+FilledHistograms 111 # Bit 0 = Event information histograms      (to set: 1)
                     # Bit 1 = Jet histograms                    (to set: 2)
                     # Bit 2 = Track histograms                  (to set: 4)
                     # Bit 3 = Regular jet-track correlation     (to set: 8)
@@ -61,7 +61,7 @@ AsymmetryBinEdges   0 0.6 0.8 1                         # Dijet asymmetry binnin
 PtHatBinEdges       0 30 50 80 120 170 220 280 370 460  # pT hat binning
 
 # Event mixing
-DoEventMixing 0          # 0 = Do not mix events. 1 = Generate mixed events
+DoEventMixing 1          # 0 = Do not mix events. 1 = Generate mixed events
 OnlyMix 0                # 0 = Fill mixed and same event histograms. 1 = Only fill mixed event histograms
 MixWithPool 0            # 0 = Do mixing without pool. 1 = Do mixing with pool
 NMixedEventsPerDijet 1  # Number of events mixed with each dijet event

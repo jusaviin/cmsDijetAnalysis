@@ -12,22 +12,29 @@ void produceTrackingDeltaRCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
     
-  TString genRecoFileName = "data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root";  // File from which the GenReco histograms are read for the correction
+  TString genRecoFileName = "data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root";  // File from which the GenReco histograms are read for the correction
+  // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root
+  // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC_GenReco_akFlowPuCs4PFJet_xjBins_allHistograms_improvisedMixing_wtaAxis_finalTrack_noCorrections_processed_2019-09-28.root
-  // data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_allHistograms_improvisedMixing_processed_2019-09-26.root
+  // data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString gengenFileName = "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root"; // File from which the GenGen histograms are read for the correction
+  TString gengenFileName = "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root"; // File from which the GenGen histograms are read for the correction
+  // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root
+  // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_JECv6_processed_2019-09-24.root
-  // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_allHistograms_improvisedMixing_processed_2019-09-26.root
+  // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString outputFileName = "testTrackingPpAgain.root"; // File name for the output file
+  TString outputFileName = "corrections/testCorr.root"; // File name for the output file
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_until8GeV_noSymmetry_2019-10-18.root
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatio
+  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatio
   
   bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
+  
+  int ptCutBin = 5;
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -123,16 +130,21 @@ void produceTrackingDeltaRCorrection(){
           
           // Since for large pT bins the GenReco and GenGen agree within uncertainties, do not scale them to match.
           // Also for large pT use smaller area around the jet peak for the correction
-          if(iTrackPt > 2) {
+          if(iTrackPt > 5 || (iTrackPt == 5 && iCentrality > 1)) {
             scalingFactor = 1;
             maxDeltaR = 0.4;
           } else {
             maxDeltaR = 0.4;
           }
           
+          // Apply pT cut to the correction
+          if(iTrackPt >= ptCutBin) maxDeltaR = -1;
+          
           // Read the GenReco histogram
           genRecoDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = histograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
           genRecoDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Scale(scalingFactor);
+          
+          if(iJetTrack == 0) cout << "Scaling factor for iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << " is " << scalingFactor << endl;
           
           // Read the GenGen histogram
           genGenDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = histograms[1]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
@@ -151,7 +163,7 @@ void produceTrackingDeltaRCorrection(){
   } // Jet-track correlation type loop
   
   // Create the output file
-  TFile *outputFile = new TFile(outputFileName,"RECREATE");
+  TFile *outputFile = new TFile(outputFileName,"UPDATE");
   
    // Save the obtained correction to the output file
   char histogramNamer[150];

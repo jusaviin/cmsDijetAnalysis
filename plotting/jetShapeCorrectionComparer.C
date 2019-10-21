@@ -8,9 +8,9 @@
 void jetShapeCorrectionComparer(){
   
   // Open the files for the JFF corrections
-  TFile *quarkFile = TFile::Open("data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
-  TFile *gluonFile = TFile::Open("data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
-  TFile *standardFile = TFile::Open("data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *quarkFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *gluonFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
   TFile *files[3] = {quarkFile,gluonFile,standardFile};
   
   // Figure saving options

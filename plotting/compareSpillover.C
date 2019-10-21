@@ -12,13 +12,11 @@ void compareSpillover(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root";
-  // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root
-  TString spilloverPuFileName = "data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root";
-  // data/spilloverCorrection_PbPbMC_akPu4CaloJets_xjBins_noUncorr_improvisedMixing_wtaAxis_JECv5b_preliminary_2019-09-08.root
-  // spilloverTestCaloJet.root
-  // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
-  // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
+  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root";
+  // corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root
+  TString spilloverPuFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root";
+  // corrections/spilloverCorrection_PbPbMC_akPu4CaloJets_xjBins_noUncorr_improvisedMixing_wtaAxis_JECv5b_preliminary_2019-09-08.root
+  // corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
   TString dataPuFileName = "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_onlySeagull_wtaAxis_JECv5b_processed_2019-08-30.root"; // Can draw also JFF correction yield
   // data/dijetPbPb_pfCsJets_wtaAxis_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
   // data/dijetPbPb2018_highForest_akPu4CaloJets_noCorrections_5eveMix_wtaAxis_JECv5b_processed_2019-08-30.root

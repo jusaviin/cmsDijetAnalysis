@@ -8,14 +8,14 @@
  * Macro estimating the systematic uncertainties from different sources
  *
  *  Different sources currently implemented:
- *    - Background fluctuation (half of the magnitude of spillover correction)
+ *    - Background fluctuation (15 % of the magnitude of spillover correction)
+ *    - Jet fragmentation bias (5 % of the correction, based on quark/gluon differences)
  *    - Tracking efficiency (1 %)
  *    - Residual tracking efficiency (5 %)
  *    - Pair acceptance correction (difference of eta sideband level)
  *    - Backround subtraction (difference of eta sideband regions from zero after bacnground subtraction)
  *    - Jet energy scale (compare results to different leading jet threshold, take the difference)
  *
- *    TODO: JFF (compare the difference between quark and gluon jet corrections)
  */
 void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsymmetryBin = -1){
   
@@ -25,13 +25,14 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-06.root";
+  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root";
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
   
   bool ppData = false; // Flag if we are estimating systematics for pp or PbPb
   
-  bool mcMode = true; // Only assing uncertainty from background subtraction and acceptance correction
+  bool mcMode = false; // Only assing uncertainty from background subtraction and acceptance correction
   
-  TString dataFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_wtaAxis_allCorrections_JECv6_processed_2019-09-26.root";
+  TString dataFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root";
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_JECv6_allCorrections_processed_2019-10-04.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_lowPtResidualTrack_processed_2019-10-01_fiveJobsMissing.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_25eveMix_allCorrections_calo80Trigger_wtaAxis_JECv5b_processed_2019-09-10.root
@@ -40,11 +41,13 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   TString unmixedFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_xjBins_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-13.root"; // TODO: Remove this after low and high cut have mixing
   
-  TString spilloverFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root";
+  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root";
+  // corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
   // spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
   
-  TString jffFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root";
-  // jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
+  TString jffFileName = "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-15.root";
+  // corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root
+  // corrections/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
   
   TString lowJetCutFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_lowJetPtCut_xjBins_JECv4_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-17.root";
   
@@ -139,7 +142,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatios
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -313,10 +316,10 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           }
           
           
-          // Assign 20 % of the correction as an uncertainty in each DeltaR bin
+          // Assign 5 % of the correction as an uncertainty in each DeltaR bin
           for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
             
-            currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.2);
+            currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.1);
             
             // For MC running mode, do not assign uncertainty
             if(mcMode) currentUncertainty = 0;
@@ -324,11 +327,11 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->SetBinContent(iBin, currentUncertainty);
           }
           
-          // Assign 20 % of the correction as an uncertainty in each DeltaEta bin
+          // Assign 5 % of the correction as an uncertainty in each DeltaEta bin
           if(iTrackPt < nTrackPtBins){
             for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
               
-              currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.2);
+              currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.1);
               
               // For MC running mode, do not assign uncertainty
               if(mcMode) currentUncertainty = 0;
