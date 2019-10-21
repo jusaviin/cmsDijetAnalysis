@@ -86,11 +86,13 @@ private:
   
 public:
   
-  DijetHistogramManager();                                  // Default constructor
-  DijetHistogramManager(TFile *inputFile);                  // Constructor
-  DijetHistogramManager(TFile *inputFile, DijetCard *card); // Constructor with card
-  DijetHistogramManager(const DijetHistogramManager& in);   // Copy constructor
-  ~DijetHistogramManager();                                 // Destructor
+  DijetHistogramManager();                                    // Default constructor
+  DijetHistogramManager(TFile *inputFile);                    // Constructor
+  DijetHistogramManager(TFile *inputFile, TFile* mixingFile); // Constructor with mixing file
+  DijetHistogramManager(TFile *inputFile, DijetCard *card);   // Constructor with card
+  DijetHistogramManager(TFile *inputFile, TFile* mixingFile, DijetCard *card); // Constructor with mixing file and a card
+  DijetHistogramManager(const DijetHistogramManager& in);     // Copy constructor
+  ~DijetHistogramManager();                                   // Destructor
   
   void LoadHistograms();          // Load the histograms from the inputfile
   void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape
@@ -264,6 +266,7 @@ private:
   
   // Data members
   TFile *fInputFile;                  // File from which the histograms are read
+  TFile *fMixingFile;                 // File for mixed event histograms. If null, mixed events are read from the same file as inputfile
   DijetCard *fCard;                   // Card inside the data file for binning, cut collision system etc. information
   TString fSystemAndEnergy;           // Collision system (pp,PbPb,pp MC,PbPb MC,localTest) and energy
   TString fCompactSystemAndEnergy;    // Same a before but without white spaces and dots

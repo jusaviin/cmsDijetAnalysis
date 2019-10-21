@@ -15,6 +15,7 @@
  */
 DijetHistogramManager::DijetHistogramManager() :
   fInputFile(NULL),
+  fMixingFile(NULL),
   fCard(NULL),
   fSystemAndEnergy(""),
   fCompactSystemAndEnergy(""),
@@ -218,10 +219,42 @@ DijetHistogramManager::DijetHistogramManager(TFile *inputFile) :
 /*
  * Constructor
  */
+DijetHistogramManager::DijetHistogramManager(TFile *inputFile, TFile *mixingFile) :
+  DijetHistogramManager()
+{
+  fInputFile = inputFile;
+  fMixingFile = mixingFile;
+  
+  // Read card from inputfile
+  fCard = new DijetCard(inputFile);
+  
+  // Initialize values using the information in card
+  InitializeFromCard();
+  
+}
+
+/*
+ * Constructor
+ */
 DijetHistogramManager::DijetHistogramManager(TFile *inputFile, DijetCard *card) :
   DijetHistogramManager()
 {
   fInputFile = inputFile;
+  
+  // Initialize values using the information in card
+  fCard = card;
+  InitializeFromCard();
+  
+}
+
+/*
+ * Constructor
+ */
+DijetHistogramManager::DijetHistogramManager(TFile *inputFile, TFile *mixingFile, DijetCard *card) :
+  DijetHistogramManager()
+{
+  fInputFile = inputFile;
+  fMixingFile = mixingFile;
   
   // Initialize values using the information in card
   fCard = card;
@@ -285,6 +318,7 @@ void DijetHistogramManager::InitializeFromCard(){
  */
 DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fInputFile(in.fInputFile),
+  fMixingFile(in.fMixingFile),
   fCard(in.fCard),
   fSystemAndEnergy(in.fSystemAndEnergy),
   fCompactSystemAndEnergy(in.fCompactSystemAndEnergy),
@@ -494,6 +528,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
   TH2D *correctionHistogram;
   int seagullMethod = 0;
   int seagullVeto = 0;
+  double seagullConstantRegion = 0.5;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -517,12 +552,19 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           // The peak in the mixed event distribution can be seen the low pT bins, especially in the central PbPb events
           // The detector efficiency improves for higher pT tracks and the peak in event mixing disappers
           mixingPeakVisible = false;
-          if(((iTrackPtBin < 5 && iCentralityBin < 2) || (iTrackPtBin < 4 && iCentralityBin == 2)/* || (iTrackPtBin < 3 && iCentralityBin == 3)*/) && fAvoidMixingPeak) mixingPeakVisible = true; // TODO: For Calo80 trigger
+          if(((iTrackPtBin < 5 && iCentralityBin < 2) || (iTrackPtBin < 3 && iCentralityBin == 2) || (iTrackPtBin < 2 && iCentralityBin == 3)) && fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) && fAvoidMixingPeak) mixingPeakVisible = true; // This is customized for 25 events mixed run
+          
+          if(((iTrackPtBin < 4 && iCentralityBin < 2) || (iTrackPtBin < 2)) && fCard->GetDataType().Contains("PbPb MC",TString::kIgnoreCase) && fAvoidMixingPeak) mixingPeakVisible = true; // TODO: Checked for RecoReco
           if(fCard->GetDataType().EqualTo("pp",TString::kIgnoreCase) && fAvoidMixingPeak) mixingPeakVisible = true;
           
-          // For calo jets in the central low pT bin, different fit region
-          if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) /*&& fCard->GetJetType() == 0*/){ // TODO: For Calo80 trigger
-            if(iCentralityBin == 0 && iTrackPtBin == 0) fMethods->SetMixedEventFitRegion(-0.65,-0.45);
+          // Certain bins in the 25 event mixed run need different normalization region
+          if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase)){
+            
+            // One bin has special treatment
+            if(iCentralityBin == 3 && iTrackPtBin == 1 && iAsymmetry == 2 && iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+              mixingPeakVisible = false;
+              fMethods->SetMixedEventFitRegion(-0.65,-0.45);
+            }
           }
           
           // Do the mixed event correction for the current jet-track correlation histogram
@@ -544,6 +586,31 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           if(fApplySeagullCorrection){
             seagullMethod = 0; // TODO: This works for MC, need to check for data after data is produced!!
             seagullVeto = 0;
+            seagullConstantRegion = 0.5;
+            
+            // These should be applied to pp RecoGen sample to better fit the seagulls
+            if(fCard->GetDataType().Contains("pp MC",TString::kIgnoreCase)){
+              if(iTrackPtBin > 2) seagullConstantRegion = 1;
+            }
+            
+            // Optimized seagull parameters for pp data
+            if(fCard->GetDataType().EqualTo("pp",TString::kIgnoreCase)){
+              
+              // Modifications for leading jet
+              if(iTrackPtBin < 3 && iJetTrack < kTrackSubleadingJet) {
+                seagullConstantRegion = 0.2;
+                if(iAsymmetry == 2 && iTrackPtBin < 2) seagullConstantRegion = 0.4;
+                if(iAsymmetry == fnAsymmetryBins && iTrackPtBin == 1) seagullConstantRegion = 0.3;
+                seagullMethod = 2;
+              } else if(iTrackPtBin < 3 && iAsymmetry > 1){
+                seagullConstantRegion = 0.2;
+                seagullMethod = 2;
+              }
+              
+              // TODO: This is for e-scheme axis only!!
+              //if(iTrackPtBin == 3 || iTrackPtBin == 4) seagullConstantRegion = 0.3;
+            }
+            
             if(fCard->GetSubeventCut() == 1){ // For sube0 MC, always use method 0
               if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){
                 if(iCentralityBin == 0){
@@ -596,25 +663,47 @@ void DijetHistogramManager::DoMixedEventCorrection(){
               if(iTrackPtBin == 0 && iCentralityBin == 1) seagullVeto = 1;
             }*/
             
-            // Special cases in some bins due to a dip in the middle
+            // Special cases in some bins due to a dip in the middle. Optimized for the 25 events mixed file
             if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) && fCard->GetJetType() > 0){
               
               // For subleading jet, use different seagull function in a couple of bins
               if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
-                if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin == 1) seagullMethod = 1;
-                if(iAsymmetry == 1 && iCentralityBin == 0 && iTrackPtBin == 1) seagullMethod = 1;
+                if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 1;
+                if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin == 0) seagullMethod = 1;
+                if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin == 1) seagullMethod = 1;
+                if(iAsymmetry == 1 && iCentralityBin == 0 && iTrackPtBin < 2) seagullMethod = 1;
+                if(iAsymmetry == 1 && iCentralityBin == 1 && iTrackPtBin == 1) seagullMethod = 1;
+                if(iAsymmetry == 1 && iCentralityBin == 2 && iTrackPtBin == 0) seagullMethod = 1;
+                if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin < 2) seagullMethod = 1;
               } else { // For leading, there are more bins to consider
                 
-                if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 5) seagullMethod = 1;
-                if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin == 1) seagullMethod = 1;
-                if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin < 5) seagullMethod = 1;
-                if(iAsymmetry == 0 && iCentralityBin == 1 && iTrackPtBin < 3) seagullMethod = 1;
-                if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin == 1) seagullMethod = 1;
+                if((iAsymmetry == fnAsymmetryBins || iAsymmetry == 0) && iCentralityBin < 2 && iTrackPtBin < 5) seagullMethod = 1;
+                if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin < 3) seagullMethod = 1;
+                if(iAsymmetry < 2 && iCentralityBin == 2 && iTrackPtBin == 1) seagullMethod = 1;
+                if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin < 4) seagullMethod = 1;
+                if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin < 3) seagullMethod = 1;
+                if(iAsymmetry == 2 && iTrackPtBin == 2 && iCentralityBin < 2) seagullMethod = 1;
                 
               }
             }
             
-            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],seagullMethod,seagullVeto);
+            // Special cases in some bins due to a dip in the middle
+            if(fCard->GetDataType().EqualTo("PbPb MC RecoReco",TString::kIgnoreCase) && fCard->GetJetType() > 0){
+              
+              // Apply these for leading jet correlations
+              if(iJetTrack < kTrackSubleadingJet){
+                if(iCentralityBin == 0 && (iTrackPtBin < 3 || iTrackPtBin == 4)) seagullMethod = 1;
+                if(iCentralityBin == 1 && iTrackPtBin < 5) seagullMethod = 1;
+                if(iCentralityBin == 2 && (iTrackPtBin == 1 || iTrackPtBin == 2)) seagullMethod = 1;
+              }
+            }
+            
+            // TODO: For testing purposes, only apply seagull correction to certain bins
+            //seagullVeto = 2;
+            //if(iCentralityBin == 3 && iTrackPtBin == 3) seagullVeto = 1;
+            //if(iCentralityBin == 3 && iTrackPtBin == 4) seagullVeto = 1;
+            
+            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin], seagullMethod, seagullVeto, seagullConstantRegion);
             
             // Get the used background eta histogram and fitted function for QA purposes
             fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin] = (TH1D*)fMethods->GetBackgroundEta()->Clone();
@@ -637,7 +726,7 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             
           // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
-            if(fTrackPtBinBorders[iTrackPtBin+1] < 100){ // Do not apply spillover correction to the highest pT bin
+            if(fTrackPtBinBorders[iTrackPtBin+1] < 10){ // Do not apply spillover correction to the highest pT bin TODO: This is 100
               if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
                 correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
                 
@@ -688,6 +777,8 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           connectedIndex = GetConnectedIndex(iJetTrack);
           
           // Subtract the background from the mixed event corrected histogram
+          // TODO TODO TODO: Option to remove background combination
+          //fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),true);
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),isInclusive);
           
           // Get also the background and background overlap region for QA purposes
@@ -739,7 +830,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
                 errorScale = fMethods->GetBackgroundErrorScalingFactor();
                 fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta]->SetBinError(iBin,binError*errorScale);
               }
-              fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta],knFittedFlowComponents);
+              //fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta],knFittedFlowComponents); // TODO: Turning off Fourier fit
             }
             
             // DeltaPhi histogram over signal eta region
@@ -1881,6 +1972,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
   
   // Helper variable for finding names of loaded histograms
   char histogramNamer[300];
+  TFile *currentFile;
   
   // Always load the number of events histogram
   fhEvents = (TH1D*) fInputFile->Get("nEvents");                           // Number of events surviving different event cuts
@@ -1972,37 +2064,40 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     for(int iCorrelationType = 0; iCorrelationType <= kMixedEvent; iCorrelationType++){  // Tracks have only same and mixed event distributions
       if(iTrackType > kUncorrectedTrack && iCorrelationType == kMixedEvent) continue; // No mixed event histograms for inclusive tracks
       
+      currentFile = fInputFile; // By default, read the events from the input file
+      if(iCorrelationType == kMixedEvent && fMixingFile != NULL) currentFile = fMixingFile;  // If provided, read mixed events from different file
+      
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         
         // Track pT
         sprintf(histogramNamer,"%s/%sPt%s_C%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin);
-        fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = (TH1D*) fInputFile->Get(histogramNamer);
+        fhTrackPt[iTrackType][iCorrelationType][iCentralityBin] = (TH1D*) currentFile->Get(histogramNamer);
         
         // pT integrated track phi
         sprintf(histogramNamer,"%s/%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
-        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
+        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH1D*) currentFile->Get(histogramNamer);
         
         // pT integrated track eta
         sprintf(histogramNamer,"%s/%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
-        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH1D*) fInputFile->Get(histogramNamer);
+        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH1D*) currentFile->Get(histogramNamer);
         
         // pT integrated track eta-phi
         sprintf(histogramNamer,"%s/%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
-        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH2D*) fInputFile->Get(histogramNamer);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins] = (TH2D*) currentFile->Get(histogramNamer);
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
           // Track phi in track pT bins
           sprintf(histogramNamer,"%s/%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fInputFile->Get(histogramNamer);
+          fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) currentFile->Get(histogramNamer);
           
           // Track eta in track pT bins
           sprintf(histogramNamer,"%s/%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) fInputFile->Get(histogramNamer);
+          fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH1D*) currentFile->Get(histogramNamer);
           
           // Track eta-phi in track pT bins
           sprintf(histogramNamer,"%s/%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH2D*) fInputFile->Get(histogramNamer);
+          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin] = (TH2D*) currentFile->Get(histogramNamer);
           
         } // Track pT loop
       } // Centrality loop
@@ -2015,6 +2110,11 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     
     // Loop over correlation types
     for(int iCorrelationType = 0; iCorrelationType < knCorrelationTypes; iCorrelationType++){
+      
+      currentFile = fInputFile; // By default, read the histograms from the inputfile
+      
+      // If provided, read mixed event histograms from different file
+      if(iCorrelationType == kMixedEvent && fMixingFile != NULL) currentFile = fMixingFile;
       
       // Loop over asymmetry bins
       for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
@@ -2031,17 +2131,17 @@ void DijetHistogramManager::LoadProcessedHistograms(){
               
               if(iDeltaEta > kWholeEta && iCorrelationType < kMixedEventNormalized) continue; // DeltaEta slicing not implemented for same and mixed event
               sprintf(histogramNamer,"%s/%sDeltaPhi%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta], fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
-              fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta] = (TH1D*) fInputFile->Get(histogramNamer);
+              fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta] = (TH1D*) currentFile->Get(histogramNamer);
             }
             
             // Jet-track deltaEtaDeltaPhi
             sprintf(histogramNamer,"%s/%sDeltaEtaDeltaPhi%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
-            if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin] = (TH2D*) fInputFile->Get(histogramNamer);
+            if(fLoad2DHistograms) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin] = (TH2D*) currentFile->Get(histogramNamer);
             
             // DeltaPhi binning for deltaEta histogram
             for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
               sprintf(histogramNamer,"%s/%sDeltaEta%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaPhiString[iDeltaPhi].Data(), fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
-              fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) fInputFile->Get(histogramNamer);
+              fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi] = (TH1D*) currentFile->Get(histogramNamer);
             } // DeltaPhi loop
           } // Track pT loop
         } // Centrality loop
