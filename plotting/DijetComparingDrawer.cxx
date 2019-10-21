@@ -753,7 +753,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
 
-            PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+            PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, DijetHistogramManager::kSignalEtaRegion); // TODO: Change deltaEta region
             
             // Draw the track phi distributions to the upper panel of a split canvas plot
             sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
@@ -796,8 +796,9 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
 
               // Do not draw the deltaEta histograms for background because they are flat by construction
               if(iCorrelationType == DijetHistogramManager::kBackground) continue;
+              if(iDeltaPhi != DijetHistogramManager::kNearSide) continue; // TODO: Looking only at near side at the moment
               
-              PrepareRatio("jettrackdeltaeta", 4, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, iDeltaPhi, -3, 3);
+              PrepareRatio("jettrackdeltaeta", 666, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, iDeltaPhi, -3, 3);
               
               // Draw the track phi distributions to the upper panel of a split canvas plot
               sprintf(namerX,"%s #Delta#eta",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
@@ -1228,6 +1229,12 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   char namer[100];
   DijetMethods *rebinner = new DijetMethods();
   
+  // TODO: Temporary scale for histograms. Remove as soon as done!!!!
+  double lulFactor[4][7] = {{1.00383,0.99427,0.9963,1.01777,1.05513,1,1},
+  {0.995893,0.989926,0.995106,1.01464,1.03584,1,1},
+  {0.998125,0.984743,0.991936,1.0034,1.05607,1,1},
+    {0.997222,0.989378,0.98667,1.00944,1.02626,1,1}};
+  
   // Custom rebin for deltaEta
   const int nDeltaEtaBinsRebin = 21;
   const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
@@ -1244,6 +1251,7 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   }
   if(maxRange > minRange) fMainHistogram->GetXaxis()->SetRangeUser(minRange,maxRange);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
+  //fMainHistogram->Scale(lulFactor[bin4][bin5]); // TODO: Remove this argitrary scaling!!!
   if(bin1 == 1) bin1 = 0;
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5,bin6)->Clone();
@@ -1255,13 +1263,24 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     }
     if(maxRange > minRange) fComparisonHistogram[iAdditional]->GetXaxis()->SetRangeUser(minRange,maxRange);
     if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
+    fComparisonHistogram[iAdditional]->Scale(lulFactor[bin4][bin5]); // TODO: Temporary hack
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
-    fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
+    
+    // TODO: Temporarily reverse how the ratio is taken
+    
+    fRatioHistogram[iAdditional] = (TH1D*)fComparisonHistogram[iAdditional]->Clone(namer);
+    if(fUseDifferenceInsteadOfRatio){
+      fRatioHistogram[iAdditional]->Add(fMainHistogram,-1);
+    } else {
+      fRatioHistogram[iAdditional]->Divide(fMainHistogram);
+    }
+    
+    /*fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
     if(fUseDifferenceInsteadOfRatio){
       fRatioHistogram[iAdditional]->Add(fComparisonHistogram[iAdditional],-1);
     } else {
       fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
-    }
+    }*/
   }
   
   delete rebinner;
@@ -1309,6 +1328,12 @@ void DijetComparingDrawer::DrawToUpperPad(const char* xTitle, const char* yTitle
   fDrawer->CreateSplitCanvas();
   fDrawer->SetLogY(logAxis);
   fDrawer->DrawHistogramToUpperPad(fMainHistogram,xTitle,yTitle," ");
+  
+  // TODO: Temporary hack
+  //fComparisonHistogram[0]->SetLineColor(fColors[0]);
+  //fDrawer->DrawHistogramToUpperPad(fComparisonHistogram[0],xTitle,yTitle," ");
+  //fMainHistogram->Draw("same");
+  
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     fComparisonHistogram[iAdditional]->SetLineColor(fColors[iAdditional]);
     fComparisonHistogram[iAdditional]->Draw("same");
