@@ -31,17 +31,17 @@ public:
   DijetMethods& operator=(const DijetMethods& in); // Equal sign operator
   
   TH2D* MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D *leadingMixedEventHistogram, const TH2D *subleadingMixedEventHistogram, const bool avoidPeaks); // Mixed event correction for a two-dimensional histogram
-  TH2D* DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod = 0, const int vetoFlag = 0);  // Apply a seagull correction to the histogram
+  TH2D* DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod = 0, const int vetoFlag = 0, const double middleArea = 0.5);  // Apply a seagull correction to the histogram
   TH2D* SubtractBackground(TH2D *leadingHistogramWithBackground, TH2D *subleadingHistogramWithBackground, double maxDeltaEta, bool isInclusive = false); // Subtract background from a two-dimensional leading histogram
   TH2D* ImproviseMixedEvent(const TH2D *sameEventHistogram); // Improvise mixed event distribution from background deltaPhi region of the same event histogram
   double GetSpilloverYield(TH2D *onlyHydjetHistogram, double minEtaNormalizationRange, double maxEtaNormalizationRange); // Getter for the dpillover yield from the mixed event corrected distribution
   double GetSpilloverYieldError() const; // Getter for the most recent spillover yield error
   TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram, int fitMethod, double spilloverEtaFitRange = 1.5, double spilloverPhiFitRange = 1.5, double lowConstantRange = 1, double highConstantRange = 2, double fixedYield = 0, double fixedEtaWidth = 0, double fixedPhiWidth = 0);  // Get the spillover correction from only hydjet histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
-  TH1D* ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge);  // Project the deltaEta yield in final analysis binning
+  TH1D* ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize = false);  // Project the deltaEta yield in final analysis binning
   TH1D* RebinAsymmetric(TH1D *histogramInNeedOfRebinning, const int nBins, const double* binEdges); // Asymmetric rebinning for one-dimensional histograms
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
-  TH2D* SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue = 0); // Symmetrize eta and phi in a histogram up to given maximum radius
+  TH2D* SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue = 0, const bool onlyCut = false); // Symmetrize eta and phi in a histogram up to given maximum radius
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   TF1* FourierFit(TH1D* backgroundDeltaPhi, const int maxVn); // Do a Fourier fit for the background deltaPhi distribution

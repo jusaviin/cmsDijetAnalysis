@@ -7,10 +7,22 @@
 
 /*
  * Combination of zeroth and first order polynomial for seagull correction
- * Functional form: f(x) = c, if |x| < 0.5  <=> f(x) = a*x^2+b*x+c if |x| > 0.5
+ * Functional form: f(x) = c, if |x| < par[3]  <=> f(x) = b*x+c if |x| > par[3]
+ * Remember to fix par[3] before using this to fit!
+ */
+double seagullPoly1(double *x, double *par){
+  if(x[0] < par[3] && x[0] > (-1 * par[3])) return par[0];
+  if(x[0] <= (-1 * par[3])) return par[0]+par[1]*(x[0] + par[3]);
+  return par[0]+par[2]*(x[0] - par[3]);
+}
+
+/*
+ * Combination of zeroth and first order polynomial for seagull correction
+ * Functional form: f(x) = c, if |x| < par[3]  <=> f(x) = a*x^2+b*x+c if |x| > par[3]
+ * Remember to fix par[3] before using this to fit!
  */
 double seagullPoly2(double *x, double *par){
-  if(x[0] < 0.5 && x[0] > -0.5) return par[0];
+  if(x[0] < par[3] && x[0] > (-1 * par[3])) return par[0];
   return par[0]+par[1]*x[0]*x[0]+par[2]*x[0];
 }
 
@@ -351,21 +363,27 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
   int nBinsProjectedOver;
   double binSum;
   double maxSum = 0;
+  int peakFinderSideWidth = 2;
   
   if(findPeak){
     
-    // Find the highest 2x2 bin peak value from the histogram and use that as the normalization scale
-    for(int iDeltaPhi = 1; iDeltaPhi < mixedEventHistogram->GetNbinsX(); iDeltaPhi++){
+    // Find the highest n x n bin peak value from the histogram and use that as the normalization scale
+    for(int iDeltaPhi = 1; iDeltaPhi < mixedEventHistogram->GetNbinsX()+2-peakFinderSideWidth; iDeltaPhi++){
       for(int iDeltaEta = 1; iDeltaEta < mixedEventHistogram->GetNbinsY(); iDeltaEta++){
         binSum = mixedEventHistogram->GetBinContent(iDeltaPhi,iDeltaEta);
-        binSum += mixedEventHistogram->GetBinContent(iDeltaPhi+1,iDeltaEta);
-        binSum += mixedEventHistogram->GetBinContent(iDeltaPhi,iDeltaEta+1);
-        binSum += mixedEventHistogram->GetBinContent(iDeltaPhi+1,iDeltaEta+1);
+        
+        for(int iPeakFinderPhi = 0; iPeakFinderPhi < peakFinderSideWidth; iPeakFinderPhi++){
+          for(int iPeakFinderEta = 0; iPeakFinderEta < peakFinderSideWidth; iPeakFinderEta++){
+            if(iPeakFinderEta == 0 && iPeakFinderPhi == 0) continue;
+            binSum += mixedEventHistogram->GetBinContent(iDeltaPhi+iPeakFinderPhi, iDeltaEta+iPeakFinderEta);
+          }
+        }
+
         if(binSum > maxSum) maxSum = binSum;
       }
     }
     binSum = maxSum;
-    nBinsProjectedOver = 4;
+    nBinsProjectedOver = peakFinderSideWidth*peakFinderSideWidth;
     
   } else {
     
@@ -399,12 +417,13 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
  *
  * Arguments:
  *  const TH2D *mixedEventCorrectedHistogram = Two-dimensional deltaEta-deltaPhi distribution, that is corrected by the mixed event
- *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta.
+ *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta. 2: Same as 0, but use first order polynomial instead of second order
  *  const int vetoFlag = 0: Regular correction. 1: Skip constant check. 2: Skip correction
+ *  const double middleArea = If normalizationMethod == 0, the region in the middle that is assumed to be flat
  *
  *  return: The two dimensional distribution corrected for the seagull effect
  */
-TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod, const int vetoFlag){
+TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram, const int normalizationMethod, const int vetoFlag, const double middleArea){
   
   // Project out the deltaEta distribution at background deltaPhi region
   int minDeltaPhiBin = mixedEventCorrectedHistogram->GetXaxis()->FindBin(fMinBackgroundDeltaPhi+0.0001);
@@ -457,9 +476,10 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   }
   
   // Prepare the fit function
-  fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,3);
+  fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,4);
   double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
   fSeagullFit->SetParameters(initialLevel,0,0);
+  fSeagullFit->FixParameter(3,middleArea);
   fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
   
   // Fit the projected distribution
@@ -474,6 +494,15 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
     fSeagullFit->SetParameters(initialLevel,-1,-1);
     fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,3);
     backgroundLevel = fSeagullFit->GetParameter(0); // TODO: Check if this or constant fit is beta
+  }
+  
+  // We can use first order polynomial instead of second order for the fit
+  if(normalizationMethod == 2){
+    fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
+    fSeagullFit = new TF1("seagullFitPoly1",seagullPoly1,-3,3,4);
+    fSeagullFit->SetParameters(initialLevel,0,0);
+    fSeagullFit->FixParameter(3,middleArea);
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
   }
   
   // Apply the correction to the input 2D histogram
@@ -882,10 +911,11 @@ std::tuple<double,double> DijetMethods::GetBackgroundAdjustmentFactors(TH1 *lead
  *  const TH2D *histogramToBeSymmetrized = Histogram that is symmetrized
  *  const double maxR = Maximum radius until which the histogram is symmetrized around zero
  *  const double fillValue = Value that is filled to the region after symmetrization
+ *  const bool onlyCut = Do not symmetrize but only cut from maxR
  *
  *  return: Symmetrized two-dimensional histogram
  */
-TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue){
+TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue, const bool onlyCut){
 
   // Clone the given histogram to get the original binning
   TH2D *symmetrizedHistogram = (TH2D*) histogramToBeSymmetrized->Clone(Form("%sSymmetrized",histogramToBeSymmetrized->GetName()));
@@ -924,6 +954,9 @@ TH2D* DijetMethods::SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, co
         symmetrizedHistogram->SetBinError(iPhi,iEta,0);
         continue;
       }
+      
+      // If not set to symmetrize, do not do that
+      if(onlyCut) continue;
       
       // Find symmetric indices around zero for deltaEta
       if(iEta < deltaEtaZeroPlus){
@@ -1461,10 +1494,11 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
  *  TH2D *backgroundSubtractedHistogram = Histogram from which deltaEta yield is projected from
  *  const double lowPtEdge = Lower edge of the pT bin of the histogram
  *  const double highPtEdge = Higher edge of the pT bin of the histogram
+ *  const bool symmetrize = Symmetrize the rebinned histogram
  *
  *  return = DeltaEta yield in the final analysis binning
  */
-TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge){
+TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize){
 
   // Projection region and bin edges used in final deltaEta yield plots
   const double projectionRegion = 1;  // Region in deltaPhi which is used to project the deltaEta peak
@@ -1483,6 +1517,33 @@ TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHisto
   
   // Rebin the histogram to match the binning we want to have in the final plots
   TH1D *helperHistogramDeltaEtaRebin = (TH1D*) RebinAsymmetric(helperHistogramDeltaEta, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin);
+  
+  // Symmetrize the distribution such a thing is requested
+  if(symmetrize){
+    double negativeBinContent, negativeBinError;
+    double positiveBinContent, positiveBinError;
+    double averageBinContent, averageBinError;
+    for(int iDeltaEta = 1; iDeltaEta <= nDeltaEtaBinsRebin/2; iDeltaEta++){
+
+      // Do not symmetrize the bin with itself!
+      if(iDeltaEta == nDeltaEtaBinsRebin+1-iDeltaEta) continue;
+      
+      // Find the bin content and error for symmetric bins
+      negativeBinContent = helperHistogramDeltaEtaRebin->GetBinContent(iDeltaEta);
+      negativeBinError = helperHistogramDeltaEtaRebin->GetBinError(iDeltaEta);
+      positiveBinContent = helperHistogramDeltaEtaRebin->GetBinContent(nDeltaEtaBinsRebin+1-iDeltaEta);
+      positiveBinError = helperHistogramDeltaEtaRebin->GetBinError(nDeltaEtaBinsRebin+1-iDeltaEta);
+      
+      // Add the average content and error to both bins
+      averageBinContent = (negativeBinContent + positiveBinContent) / 2.0;
+      averageBinError = TMath::Sqrt(negativeBinContent*negativeBinContent + positiveBinContent*positiveBinContent) / 2.0;
+      
+      helperHistogramDeltaEtaRebin->SetBinContent(iDeltaEta,averageBinContent);
+      helperHistogramDeltaEtaRebin->SetBinError(iDeltaEta,averageBinError);
+      helperHistogramDeltaEtaRebin->SetBinContent(nDeltaEtaBinsRebin+1-iDeltaEta,averageBinContent);
+      helperHistogramDeltaEtaRebin->SetBinError(nDeltaEtaBinsRebin+1-iDeltaEta,averageBinError);
+    }
+  }
   
   // Return the rebinned histogram
   return helperHistogramDeltaEtaRebin;
