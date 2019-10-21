@@ -685,13 +685,15 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // ===== Jet-track deltaPhi =====
             if(fDrawJetTrackDeltaPhi){
-              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
-              //drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
+              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
+              // TODO: Check only analysis region for now (kWholeEta removed)
+              drawnHistogram->Rebin(4); // XXXXXX Temporary rebin
+              drawnHistogram->Scale(1.0/4); // TODO: Remove temporary rebin
               //cout << "Integral of deltaPhi: " << drawnHistogram->Integral("width") << endl; // Can print integral for debug purposes
               
               // Move legend to different place for leading jet background figures
               legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
-              if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
+              /*if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
                 if(iCorrelationType == DijetHistogramManager::kBackground) { // Move legend to top left corner for leading jet-track background figures
                   if(fCompactSystemAndEnergy.Contains("PbPb")){
                     legendX1 = 0.33; legendY1 = 0.75; legendX2 = 0.53; legendY2 = 0.9;
@@ -705,7 +707,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                     legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
                   }
                 }
-              }
+              }*/ // TODO: Temporarily comment out this section
               
               if(iCorrelationType == DijetHistogramManager::kBackground){
                 
@@ -778,7 +780,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt);
               drawnHistogram2D->Rebin2D(5,5);
               drawnHistogram2D->Scale(1.0/(5.0*5.0));
-              drawnHistogram2D->GetYaxis()->SetRangeUser(-4,4);
+              drawnHistogram2D->GetYaxis()->SetRangeUser(-0.8,0.8);
               drawnHistogram2D->SetZTitle("#frac{1}{N_{jets}} #frac{d^{2}N}{d#Delta#varphi d#Delta#eta}");
               
               // Change the left margin better suited for 2D-drawing
@@ -833,8 +835,11 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 negativeLine->SetLineColor(kBlue);*/
               
               for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
+                if(iDeltaPhi != DijetHistogramManager::kNearSide) continue; // TODO: At the moment, only plot near side
                 drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt, iDeltaPhi);
                 
+                drawnHistogram->Scale(1.0 / (fHistograms->GetTrackPtBinBorder(iTrackPt+1) - fHistograms->GetTrackPtBinBorder(iTrackPt)));
+                drawnHistogram->Scale(70);
                 drawnHistogram->Rebin(4);
                 drawnHistogram->Scale(1.0/4.0);
                 drawnHistogram->GetXaxis()->SetRangeUser(-3,3); // XXXXXX TODO: Good zooming possibilities
@@ -848,13 +853,13 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 } else if(iCorrelationType == DijetHistogramManager::kMixedEvent || iDeltaPhi > DijetHistogramManager::kNearSide) {
                   legendX1 = 0.31; legendY1 = 0.25; legendX2 = 0.61; legendY2 = 0.4;
                 } else {
-                  legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
+                  legendX1 = 0.52; legendY1 = 0.6; legendX2 = 0.82; legendY2 = 0.9;
                 }
                 
                 sprintf(namerX,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));
                 fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#eta}",fHistograms->GetCorrelationTypeString(iCorrelationType)+fHistograms->GetDeltaPhiString(iDeltaPhi));
                 legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-                SetupLegend(legend,centralityString,trackPtString);
+                SetupLegend(legend,centralityString,trackPtString,asymmetryString);
                 legend->Draw();
                 
                 // Illustration for systematic uncertainty estimation In central 2 < pT < 3 GeV bin
