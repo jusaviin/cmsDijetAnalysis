@@ -16,10 +16,15 @@
  *   int selectedCentralityBin = If 0 or greater, only look at centrality bin corresponding to the index
  *   int preprocess: 0 = Preprocess only same event, 1 = Preprocess only mixed event, 2 = Preprocess same and mixed event, anything else = No preprocessing
  */
-void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false, bool applySpilloverCorrection = false, int selectedPtBin = -1, int selectedCentralityBin = -1, int selectedAsymmetryBin = -1, int preprocess = -1){
+void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root", const char* outputFileName = "data/dijet_ppMC_RecoGen_mergedPythia6Skims_processed_2018-07-06.root", int histogramSelection = 0, bool applyJffCorrection = false, bool applySpilloverCorrection = false, int selectedPtBin = -1, int selectedCentralityBin = -1, int selectedAsymmetryBin = -1, int preprocess = -1, TString mixingFileName = ""){
 
   // Print the file name to console
   cout << "Plotting histograms from " << inputFileName.Data() << endl;
+  
+  // Possibility to read mixed events from different file
+  if(mixingFileName.EndsWith(".root",TString::kExact)){
+    cout << "Reading mixed events from: " << mixingFileName.Data() << endl;
+  }
   
   // ==================================================================
   // ========================= Configuration ==========================
@@ -53,11 +58,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedInclusiveTracks = false;
   bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = true;
+  bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
-  bool drawTrackInclusiveJetCorrelations = false;
+  bool drawTrackInclusiveJetCorrelations = true;
   bool drawPtWeightedTrackInclusiveJetCorrelations = false;
   bool drawJetPtClosure = false;
   
@@ -85,23 +90,23 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
-  bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = false;
+  bool drawJetTrackDeltaEta = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = true;
   
   // Draw jet shape histograms
-  bool drawJetShape = true;
+  bool drawJetShape = false;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
-  bool drawMixedEvent = false;
-  bool drawNormalizedMixedEvent = false;
+  bool drawMixedEvent = true;
+  bool drawNormalizedMixedEvent = true;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
-  bool drawBackgroundSubtracted = true;
+  bool drawBackgroundSubtracted = false;
   bool drawBackground = false;
   int backgroundStyle = 1; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
@@ -113,7 +118,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
   const char* figureFormat = "pdf";
-  TString figureNameSuffix = "_2018";
+  TString figureNameSuffix = "_binCheck";
   
   // Normalization for jet shape plotting
   bool normalizeJetShapePlot = false;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
@@ -129,41 +134,42 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style3D = "surf1";
   
   // File for JFF correction (automatically changed for pp)
-  TString jffCorrectionFileName = "data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root";
-  // data/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root
-  // data/jffCorrection_PbPbMC_GenGen_akPu4CaloJet_noUncorr_improvisedMixing_matchedJets_eschemeAxis_oldJEC_symmetrizedAndBackgroundSubtracted_2019-09-23.root
-  // data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root
-  // data/jffCorrection_PbPbMC_akPu4CaloJets_noUncorr_improvisedMixing_JECv5b_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-09-08.root
-  // data/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
-  // data/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
-  //"data/jffCorrection_PbPbMC_pfCsJets_noUncorr_5eveStrictMix_xjBins_symmetrizedAndBackgroundSubtracted_2019-07-07.root";
+  TString jffCorrectionFileName = "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-18.root";
+  // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-15.root
+  // "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_eschemeAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-16.root"
+  // "corrections/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root"
+  // "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_cutInRange_2019-10-09.root";
+  // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv5b_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
+  // corrections/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root
   
   // File for spillover correction
-  TString spilloverCorrectionFileName = "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root";
-  // data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root
-  // data/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root
-  // "data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root";
-  // data/spilloverCorrection_PbPbMC_akPu4CaloJet_noUncorr_improvisedMixing_eschemeAxis_oldJEC_2019-09-23.root
-  // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
-  // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
-  // data/spilloverCorrection_PbPbMC_akPu4CaloJets_xjBins_noUncorr_improvisedMixing_wtaAxis_JECv5b_preliminary_2019-09-08.root
-  // data/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root
-  // "data/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root";
-  // "data/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
-  // "data/spilloverCorrection_PbPbMC_noUncorr_5eveStrictMix_subeNon0_2019-06-06.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2019-02-14.root"
-  // "data/spilloverCorrection_PbPbMC_skims_pfJets_noInclusiveOrUncorrected_10eventsMixed_subeNon0_smoothedMixing_2018-11-27.root"
+  TString spilloverCorrectionFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root";
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_eachemeAxis_centShift5_JECv6_2019-10-16.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_symmetrized_looseCut_eschemeAxis_JECv6_2019-10-12.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixingWithSideband_symmetrized_looseCut_wtaAxis_JECv6_2019-10-11.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looserCut_wtaAxis_JECv6_2019-10-11.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_wtaAxis_JECv6_2019-10-11.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noSymmetry_looseCut_wtaAxis_JECv6_2019-10-10.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixingWithWholeAwaySide_veryLooseCut_wtaAxis_JECv6_2019-10-08.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_JECv5b_2019-10-08.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root
+
   
   // File for residual tracking correction
   bool applyTrackDeltaRCorrection = true;
-  TString trackDeltaRCorrectionFileName = "trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_onlyLowPt_2019-10-01.root";
-  // trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_onlyLowPt_2019-10-01.root
-  // data/trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_2019-10-01.root
+  TString trackDeltaRCorrectionFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_until8GeV_noSymmetry_2019-10-18.root";
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_xjBins_centShift5_onlyLowPt_2019-10-16.root
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_xjBins_centShift5_allPt_2019-10-16.root
+  // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5_onlyLowPt.root
+  // corrections/trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_onlyLowPt_2019-10-01.root
+  // corrections/trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_2019-10-01.root
+  // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5.root
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = true;
+  bool applySeagullCorrection = false;
   if(preprocess >= 0 && preprocess <= 2) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
@@ -173,7 +179,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
-  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.2}; // Low bin borders for deltaPhi (2017 pp set for 1.5, wide peak)
+  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.5}; // Low bin borders for deltaPhi (2017 pp set for 1.5, wide peak)
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1.2}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
@@ -184,13 +190,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
   }
   
-  int firstDrawnCentralityBin = nCentralityBins-1;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int firstDrawnCentralityBin = 3;
+  int lastDrawnCentralityBin = 3;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
   
-  int firstDrawnAsymmetryBin = 0;
+  int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   if(selectedCentralityBin >= 0){
@@ -216,7 +222,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
@@ -243,14 +249,26 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // ===================== Configuration ready ========================
   // ==================================================================
   
-  // Open the input file
+  // Open the input file and possible mixing file
   TFile *inputFile = TFile::Open(inputFileName);
+  TFile *mixingFile = NULL;
   
   if(inputFile == NULL){
     cout << "Error! The file " << inputFileName.Data() << " does not exist!" << endl;
     cout << "Maybe you forgot the data/ folder path?" << endl;
     cout << "Will not execute the code" << endl;
     return;
+  }
+  
+  if(mixingFileName.EndsWith(".root",TString::kExact)){
+    mixingFile = TFile::Open(mixingFileName);
+    
+    if(mixingFile == NULL){
+      cout << "Error! The mixing file " << mixingFileName.Data() << " does not exist!" << endl;
+      cout << "Maybe you forgot the data/ folder path?" << endl;
+      cout << "Will not execute the code" << endl;
+      return;
+    }
   }
   
   // Load the card from the file and read the collision system
@@ -261,8 +279,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
     lastDrawnCentralityBin = 0;
     centralityBinBorders[0] = -0.5;
-    jffCorrectionFileName = "data/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root";
-    //jffCorrectionFileName = "data/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root";
+    jffCorrectionFileName = "corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root";
+    // corrections/jffCorrection_ppMC2018_ak4PFJet_noUncorr_improvisedMixing_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_tightCutInRange_2019-10-16.root
+    // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eventsMixed_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
+    // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root
+    // corrections/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
   }
   
   // Open correction files
@@ -283,6 +304,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   card->AddOneDimensionalVector(DijetCard::kJffCorrection,applyJffCorrection);
   card->AddOneDimensionalVector(DijetCard::kSpilloverCorrection,applySpilloverCorrection);
   card->AddOneDimensionalVector(DijetCard::kSeagullCorrection,applySeagullCorrection);
+  card->AddOneDimensionalVector(DijetCard::kTrackDeltaRCorrection,applyTrackDeltaRCorrection);
   card->AddOneDimensionalVector(DijetCard::kSmoothMixing,smoothenMixing);
   card->AddOneDimensionalVector(DijetCard::kImprovisedMixing,improviseMixing);
   card->AddOneDimensionalVector(DijetCard::kAdjustBackground,adjustBackground);
@@ -295,10 +317,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   card->AddFileName(DijetCard::kInputFileName,inputFileName);
   if(applyJffCorrection) card->AddFileName(DijetCard::kJffCorrectionFileName,jffCorrectionFileName);
   if(applySpilloverCorrection) card->AddFileName(DijetCard::kSpilloverCorrectionFileName,spilloverCorrectionFileName);
+  if(applyTrackDeltaRCorrection) card->AddFileName(DijetCard::kTrackDeltaRCorrectionFileName,trackDeltaRCorrectionFileName);
   
-  ////////////////////////////////
+  // ========================== //
   //        DijetMethods        //
-  ////////////////////////////////
+  // ========================== //
   
   // Create and setup DijetMethods for mixed event correction and background subtraction
   DijetMethods *methods = new DijetMethods();
@@ -311,12 +334,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   methods->SetRebinBoundaries(nRebinDeltaEta,rebinDeltaEta,nRebinDeltaPhi,rebinDeltaPhi);
   methods->SetJetShapeNormalization(jetShapeNormalizationType);
   
-  //////////////////////////////////
+  // ============================ //
   //     DijetHistogramManager    //
-  //////////////////////////////////
+  // ============================ //
     
   // Create and setup a new histogram manager to handle the histograms
-  DijetHistogramManager *histograms = new DijetHistogramManager(inputFile,card);
+  DijetHistogramManager *histograms = new DijetHistogramManager(inputFile,mixingFile,card);
   
   // Set which histograms to draw and the drawing style to use
   histograms->SetLoadEventInformation(drawEventInformation);
@@ -398,9 +421,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     return;
   }
   
-  //////////////////////////////////
+  // ============================ //
   //          DijetDrawer         //
-  //////////////////////////////////
+  // ============================ //
   
   // Create a new DijetDrawer
   DijetDrawer *resultDrawer = new DijetDrawer(histograms);
