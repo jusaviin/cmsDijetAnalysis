@@ -1536,7 +1536,7 @@ TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHisto
       
       // Add the average content and error to both bins
       averageBinContent = (negativeBinContent + positiveBinContent) / 2.0;
-      averageBinError = TMath::Sqrt(negativeBinContent*negativeBinContent + positiveBinContent*positiveBinContent) / 2.0;
+      averageBinError = TMath::Sqrt(negativeBinError*negativeBinError + positiveBinError*positiveBinError) / 2.0;
       
       helperHistogramDeltaEtaRebin->SetBinContent(iDeltaEta,averageBinContent);
       helperHistogramDeltaEtaRebin->SetBinError(iDeltaEta,averageBinError);
