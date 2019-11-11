@@ -79,14 +79,14 @@ public:
     knEntries};                 // Number of entries in the card
   
   // Enumeration for input files used in postprocessing
-  enum enumFileNames{kInputFileName,kJffCorrectionFileName,kSpilloverCorrectionFileName,kTrackDeltaRCorrectionFileName,knFileNames};
+  enum enumFileNames{kInputFileName,kMixingFile,kJffCorrectionFileName,kSpilloverCorrectionFileName,kTrackDeltaRCorrectionFileName,knFileNames};
   
 private:
   
   // Names for each entry read from the configuration card
   const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","JetUncertainty","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","TrackDeltaRCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders","SpilloverFixGaussYield","SpilloverFixGaussWidth","SpilloverFitMethod","SpilloverUseIntegralYield"};
-  const char *fFileNameType[knFileNames] = {"input", "JFF correction", "spillover correction", "track deltaR correction"};
-  const char *fFileNameSaveName[knFileNames] = {"InputFile", "JFFCorrectionFile", "SpilloverCorrectionFile", "TrackDeltaRCorrectionFile"};
+  const char *fFileNameType[knFileNames] = {"input", "Mixing file", "JFF correction", "spillover correction", "track deltaR correction"};
+  const char *fFileNameSaveName[knFileNames] = {"InputFile", "MixingFile", "JFFCorrectionFile", "SpilloverCorrectionFile", "TrackDeltaRCorrectionFile"};
   
   TFile *fInputFile;         // Input file from which all the data is read
   TString fCardDirectory;    // Path to the ConfigurationCard directory
