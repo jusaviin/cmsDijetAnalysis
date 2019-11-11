@@ -567,6 +567,37 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             }
           }
           
+          // Special mixing ranges for RecoReco mixing
+          if(fCard->GetDataType().EqualTo("PbPb MC RecoReco",TString::kIgnoreCase)){
+            
+            // These bins have the maximum of the distribution not around zero, but in slightly different position
+            if(iCentralityBin == 2 && iTrackPtBin == 4 && iAsymmetry == fnAsymmetryBins && iJetTrack < kTrackSubleadingJet){
+              mixingPeakVisible = false;
+              fMethods->SetMixedEventFitRegion(0.05,0.45);
+            }
+            
+            if(iCentralityBin == 3 && iTrackPtBin == 4 && iAsymmetry == fnAsymmetryBins && iJetTrack < kTrackSubleadingJet){
+              mixingPeakVisible = false;
+              fMethods->SetMixedEventFitRegion(-0.55,-0.25);
+            }
+            
+            if(iCentralityBin == 1 && iTrackPtBin == 4 && iAsymmetry == fnAsymmetryBins && iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+              mixingPeakVisible = false;
+              fMethods->SetMixedEventFitRegion(-0.05,0.55);
+            }
+            
+            if(iCentralityBin == 1 && iTrackPtBin == 5 && iAsymmetry == fnAsymmetryBins && iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+              mixingPeakVisible = false;
+              fMethods->SetMixedEventFitRegion(-0.35,0.05);
+            }
+            
+            if(iCentralityBin == 2 && (iTrackPtBin == 4 || iTrackPtBin == 5) && iAsymmetry == fnAsymmetryBins && iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+              mixingPeakVisible = false;
+              fMethods->SetMixedEventFitRegion(-0.05,0.2);
+            }
+            
+          }
+          
           // Do the mixed event correction for the current jet-track correlation histogram
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->MixedEventCorrect(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kSameEvent][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kMixedEvent][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kMixedEvent][iAsymmetry][iCentralityBin][iTrackPtBin],mixingPeakVisible);
           
@@ -577,10 +608,9 @@ void DijetHistogramManager::DoMixedEventCorrection(){
           // Scale the histograms with the number of jets/dijets
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Scale(scalingFactor);
           
-          // For calo jets in the central low pT bin, reset fit region
-          if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) && fCard->GetJetType() == 0){
-            if(iCentralityBin == 0 && iTrackPtBin == 0) fMethods->SetMixedEventFitRegion(fDefaultMixingDeltaEtaFitRange);
-          }
+          // Reset the fit region for mixing in case it was changed with some special case
+          fMethods->SetMixedEventFitRegion(fDefaultMixingDeltaEtaFitRange);
+          
           
           // Apply the seagull correction after the mixed event correction
           if(fApplySeagullCorrection){
@@ -591,6 +621,13 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             // These should be applied to pp RecoGen sample to better fit the seagulls
             if(fCard->GetDataType().Contains("pp MC",TString::kIgnoreCase)){
               if(iTrackPtBin > 2) seagullConstantRegion = 1;
+              
+              // Testing for RecoGen
+              if(iTrackPtBin > 2){
+                seagullConstantRegion = 1.5;
+                if(iJetTrack == kTrackSubleadingJet && iTrackPtBin == fnTrackPtBins-1) seagullConstantRegion = 1.2;
+                seagullMethod = 2;
+              }
             }
             
             // Optimized seagull parameters for pp data
@@ -611,13 +648,13 @@ void DijetHistogramManager::DoMixedEventCorrection(){
               //if(iTrackPtBin == 3 || iTrackPtBin == 4) seagullConstantRegion = 0.3;
             }
             
-            if(fCard->GetSubeventCut() == 1){ // For sube0 MC, always use method 0
-              if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){
-                if(iCentralityBin == 0){
-                  if(iTrackPtBin > 0 && iTrackPtBin < 3) seagullMethod = 1;
-                }
-              }
-            }
+            //if(fCard->GetSubeventCut() == 1){ // For sube0 MC, always use method 0
+            //  if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){
+            //    if(iCentralityBin == 0){
+            //      if(iTrackPtBin > 0 && iTrackPtBin < 3) seagullMethod = 1;
+            //    }
+            //  }
+            //}
             
             // No seagull correction for the very high pT bins on PbPb (poly2 does not improve chi2/NDF)
             if(iTrackPtBin > 4 && fCard->GetDataType().Contains("PbPb",TString::kIgnoreCase)) seagullVeto = 2;
@@ -694,7 +731,49 @@ void DijetHistogramManager::DoMixedEventCorrection(){
               if(iJetTrack < kTrackSubleadingJet){
                 if(iCentralityBin == 0 && (iTrackPtBin < 3 || iTrackPtBin == 4)) seagullMethod = 1;
                 if(iCentralityBin == 1 && iTrackPtBin < 5) seagullMethod = 1;
-                if(iCentralityBin == 2 && (iTrackPtBin == 1 || iTrackPtBin == 2)) seagullMethod = 1;
+                if(iCentralityBin == 1 && (iTrackPtBin == 1 || iTrackPtBin == 2)) seagullMethod = 3;
+                if(iCentralityBin == 2 && iTrackPtBin == 2) seagullMethod = 4;
+              }
+              
+              if(iTrackPtBin == 5) seagullVeto = 1;
+            }
+            
+            // Special cases in some bins due to a dip in the middle
+            if(fCard->GetDataType().EqualTo("PbPb MC RecoGen",TString::kIgnoreCase) && fCard->GetJetType() > 0){
+              
+              // Apply these for leading jet correlations
+              if(iJetTrack < kTrackSubleadingJet){
+                
+                // Configuration for subeNon0
+                if(fCard->GetSubeventCut() == 1){
+                  if(iCentralityBin < 3 && iTrackPtBin < 4 && iTrackPtBin != 0 && iAsymmetry < 2) seagullMethod = 1;
+                  if(iCentralityBin == 1 && iTrackPtBin == 0 && iAsymmetry == 0) seagullMethod = 1;
+                  if(iCentralityBin == 0 && iTrackPtBin == 4 && iAsymmetry == 0) seagullMethod = 1;
+                  if(iCentralityBin < 3 && iTrackPtBin < 5 && (iAsymmetry == 1 || iAsymmetry == fnAsymmetryBins)) seagullMethod = 1;
+                  if(iCentralityBin == 0 && (iTrackPtBin == 3 || iTrackPtBin == 4) && iAsymmetry == fnAsymmetryBins) seagullMethod = 3;
+                  if(iCentralityBin == 1 && (iTrackPtBin == 3 || iTrackPtBin == 4) && iAsymmetry == fnAsymmetryBins) seagullMethod = 3;
+                  if(iCentralityBin == 2 && iTrackPtBin == 2 && iAsymmetry == fnAsymmetryBins) seagullMethod = 3;
+                  if(iCentralityBin == 0 && iTrackPtBin < 5 && iAsymmetry == 2) seagullMethod = 1;
+                  if(iCentralityBin == 1 && iTrackPtBin < 4 && iAsymmetry == 2) seagullMethod = 1;
+                  if(iCentralityBin == 2 && iTrackPtBin < 3 && iAsymmetry == 2) seagullMethod = 1;
+                  
+                // Configuration for sube0
+                } else if(fCard->GetSubeventCut() == 0){
+                  
+                  seagullMethod = 0;
+                  
+                // Configuration for all subevents
+                } else {
+                  
+                  if(iCentralityBin == 0 && (iTrackPtBin < 5 && iTrackPtBin != 0) && iAsymmetry == fnAsymmetryBins) seagullMethod = 1;
+                  if(iCentralityBin == 1 && iTrackPtBin < 5 && iAsymmetry == fnAsymmetryBins) seagullMethod = 1;
+                  if(iCentralityBin < 2 && iTrackPtBin == 1 && (iAsymmetry == 0 || iAsymmetry == 2)) seagullMethod = 1;
+                  if(iCentralityBin == 1 && iTrackPtBin == 3 && iAsymmetry == 2) seagullMethod = 1;
+                  if(iCentralityBin == 2 && (iTrackPtBin == 4 || iTrackPtBin == 3) && iAsymmetry == fnAsymmetryBins) seagullVeto = 2;
+                  if(iCentralityBin == 2 && iTrackPtBin == 1 && iAsymmetry == fnAsymmetryBins) seagullMethod = 1;
+                  if(iCentralityBin == 2 && iTrackPtBin == 2 && iAsymmetry == fnAsymmetryBins) seagullMethod = 3;
+                  
+                }
               }
             }
             
@@ -722,12 +801,21 @@ void DijetHistogramManager::DoMixedEventCorrection(){
             }
             
             fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Divide(correctionHistogram);
-          }
             
+            // Can apply scaling to match reco and gen track levels
+            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]-> Scale(fJffCorrectionFinder->GetTrackDeltaRResidualScale(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry));
+            
+          }
+          
           // Apply the spillover correction to the mixed event corrected deltaEta-deltaPhi distribution
           if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
-            if(fTrackPtBinBorders[iTrackPtBin+1] < 10){ // Do not apply spillover correction to the highest pT bin TODO: This is 100
-              if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
+            if(iTrackPtBin < fnTrackPtBins-2 || (iTrackPtBin == fnTrackPtBins-2 && iCentralityBin < 2)){ // Do not apply spillover correction to the highest pT bin
+              if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+                 // Only apply the correction in low and central bins in subleading
+                if(iCentralityBin > 1) continue;
+                if(iCentralityBin == 1 && iTrackPtBin > 3) continue;
+                if(iCentralityBin == 0 && iTrackPtBin > 4) continue;
+              }
                 correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
                 
                 // Do not propagate the statistical errors of the correction to data
@@ -738,9 +826,9 @@ void DijetHistogramManager::DoMixedEventCorrection(){
                 }
                 
                 fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
-              } // If for subleading jets
+              
             } // If for track pT
-          }
+          } // Spillover application
           
         } // Track pT loop
       } // Centrality loop
@@ -784,6 +872,24 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           // Get also the background and background overlap region for QA purposes
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundOverlap][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetBackgroundOverlap();
+          
+          // TODO: For testing purposes, do spillover correction after background subtraction
+          /*if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
+            if(iTrackPtBin < fnTrackPtBins-2 || (iTrackPtBin == fnTrackPtBins-2 && iCentralityBin < 2)){ // Do not apply spillover correction to the highest pT bin
+              //if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
+                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+                
+                // Do not propagate the statistical errors of the correction to data
+                for(int iDeltaPhi = 1; iDeltaPhi <= correctionHistogram->GetNbinsX(); iDeltaPhi++){
+                  for(int iDeltaEta = 1; iDeltaEta <= correctionHistogram->GetNbinsY(); iDeltaEta++){
+                    correctionHistogram->SetBinError(iDeltaPhi,iDeltaEta,0);
+                  }
+                }
+                
+                fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
+              //} // If for subleading jets
+            } // If for track pT
+          }*/
           
           // Apply the JFF correction to the background subtracted deltaEta-deltaPhi distribution
           if(fApplyJffCorrection && fJffCorrectionFinder->CorrectionReady()){
