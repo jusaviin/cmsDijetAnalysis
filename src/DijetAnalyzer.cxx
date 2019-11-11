@@ -21,6 +21,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fJffCorrection(),
   fVzWeightFunction(0),
   fCentralityWeightFunction(0),
+  fPtWeightFunction(0),
+  fDijetWeightFunction(0),
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
@@ -186,6 +188,13 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Asymmetry binning
   fAsymmetryBinType = fCard->Get("AsymmetryBinType");   // 0 = AJ, 1 = xJ
   
+  // pT weight function for Pythia to match 2017 MC and data pT spectra
+  fPtWeightFunction = new TF1("fPtWeightFunction","pol3",0,500);
+  fPtWeightFunction->SetParameters(0.68323,0.00481626,-1.17975e-05,1.13663e-08);
+  
+  fDijetWeightFunction = new TF1("fDijetWeightFunction","pol3",0,500);
+  fDijetWeightFunction->SetParameters(0.723161,0.00236126,-3.90984e-06,3.10631e-09);
+  
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
   fReadMode = fCard->Get("ReadMode");
@@ -295,6 +304,8 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fJffCorrection(in.fJffCorrection),
   fVzWeightFunction(in.fVzWeightFunction),
   fCentralityWeightFunction(in.fCentralityWeightFunction),
+  fPtWeightFunction(in.fPtWeightFunction),
+  fDijetWeightFunction(in.fDijetWeightFunction),
   fDataType(in.fDataType),
   fForestType(in.fForestType),
   fReadMode(in.fReadMode),
@@ -373,6 +384,8 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fJffCorrection = in.fJffCorrection;
   fVzWeightFunction = in.fVzWeightFunction;
   fCentralityWeightFunction = in.fCentralityWeightFunction;
+  fPtWeightFunction = in.fPtWeightFunction;
+  fDijetWeightFunction = in.fDijetWeightFunction;
   fDataType = in.fDataType;
   fForestType = in.fForestType;
   fReadMode = in.fReadMode;
@@ -445,6 +458,8 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fJetUncertainty2018) delete fJetUncertainty2018;
   if(fTrackPreCorrector) delete fTrackPreCorrector;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
+  if(fPtWeightFunction) delete fPtWeightFunction;
+  if(fDijetWeightFunction) delete fDijetWeightFunction;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
   if(fTrackReader[DijetHistograms::kMixedEvent]) delete fTrackReader[DijetHistograms::kMixedEvent];
@@ -659,6 +674,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t matchedSubleadingJetPhi = 0;   // Subleading matched jet phi
   Double_t matchedSubleadingJetEta = 0;   // Subleading matched jet eta
   Double_t matchedDeltaPhi = 0;           // DeltaPhi between matched leading and subleading jets
+  Double_t jetPtWeight = 1;               // Weighting for jet pT
   
   // Variables for jet matching and closure
   Int_t unmatchedCounter = 0;       // Number of jets that fail the matching
@@ -1105,13 +1121,16 @@ void DijetAnalyzer::RunAnalysis(){
               jetPtCorrected = jetPt;
             }
             
+            // Find the pT weight for the jet
+            jetPtWeight = GetJetPtWeight(jetPtCorrected);
+            
             // Fill the axes in correct order
             fillerJet[0] = jetPtCorrected;          // Axis 0 = any jet pT
             fillerJet[1] = jetPhi;                  // Axis 1 = any jet phi
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
             fillerJet[3] = centrality;              // Axis 3 = centrality
             fillerJet[4] = jetFlavor;               // Axis 4 = flavor of the jet
-            fHistograms->fhAnyJet->Fill(fillerJet,fTotalEventWeight); // Fill the data point to histogram
+            fHistograms->fhAnyJet->Fill(fillerJet,fTotalEventWeight*jetPtWeight); // Fill the data point to histogram
             
             // Remember the hishest pT filled to any jet histograms
             if(jetPtCorrected > highestAnyPt){
@@ -1174,12 +1193,16 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Fill histograms for all leading jets
       if(fFillJetHistograms && highestAnyPt > 0){
+        
+        // Find the jet pT weight
+        jetPtWeight = GetJetPtWeight(highestAnyPt);
+        
         fillerJet[0] = highestAnyPt;          // Axis 0 = any leading jet pT
         fillerJet[1] = highestPhi;            // Axis 1 = any leading jet phi
         fillerJet[2] = highestEta;            // Axis 2 = any leading jet eta
         fillerJet[3] = centrality;            // Axis 3 = centrality
         fillerJet[4] = leadingJetFlavor;      // Axis 4 = any leading jet flavor
-        fHistograms->fhLeadingJet->Fill(fillerJet,fTotalEventWeight);
+        fHistograms->fhLeadingJet->Fill(fillerJet,fTotalEventWeight*jetPtWeight);
       }
       
       //************************************************
@@ -1414,6 +1437,8 @@ void DijetAnalyzer::RunAnalysis(){
           dijetXj = subleadingJetPt/leadingJetPt;
           dijetAsymmetry = (fAsymmetryBinType == 0) ? dijetAJ : dijetXj;
           
+          jetPtWeight = GetDijetWeight(leadingJetPt);
+          
           // Fill the leading jet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
           fillerDijet[1] = leadingJetPhi;                  // Axis 1: Leading jet phi
@@ -1421,8 +1446,8 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
           fillerDijet[5] = leadingJetFlavor;               // Axis 5: Leading jet flavor
-          fHistograms->fhLeadingDijet->Fill(fillerDijet,fTotalEventWeight);    // Fill the data point to leading jet histogram
-          
+          fHistograms->fhLeadingDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight);    // Fill the data point to leading jet histogram
+                    
           // Fill the subleading jet histogram
           fillerDijet[0] = subleadingJetPt;                // Axis 0: Subleading jet pT
           fillerDijet[1] = subleadingJetPhi;               // Axis 1: Subleading jet phi
@@ -1430,7 +1455,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
           fillerDijet[5] = subleadingJetFlavor;            // Axis 5: Subleading jet flavor
-          fHistograms->fhSubleadingDijet->Fill(fillerDijet,fTotalEventWeight); // Fill the data point to subleading jet histogram
+          fHistograms->fhSubleadingDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
@@ -1439,7 +1464,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[3] = dijetAJ;                        // Axis 3: Asymmetry AJ
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
           fillerDijet[5] = dijetXj;                        // Axis 5: Asymmetry xJ
-          fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight);         // Fill the data point to dijet histogram
+          fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight);         // Fill the data point to dijet histogram
           
         }
         
@@ -1521,6 +1546,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   
   // Event information
   Double_t centrality = fTrackReader[correlationType]->GetCentrality();
+  Double_t jetPtWeight = 1;
   
   // Variables for tracks
   Double_t trackPt;       // Track pT
@@ -1586,6 +1612,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     // Fill the selected jet-track correlation histograms
     
     if(useInclusiveJets){
+      
+      jetPtWeight = GetJetPtWeight(leadingJetPt);
+      
       fillerJetTrackInclusive[0] = trackPt;                    // Axis 0: Track pT
       fillerJetTrackInclusive[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and inclusive jet
       fillerJetTrackInclusive[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and inclusive jet
@@ -1594,10 +1623,12 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       fillerJetTrackInclusive[5] = leadingJetFlavor;           // Axis 5: Jet flavor (quark of gluon)
       
       if(fFillInclusiveJetTrackCorrelation){
-        fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
-        fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the track-inclusive jet correlation histogram
+        fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
+        fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
       }
     } else {
+      
+      jetPtWeight = GetDijetWeight(leadingJetPt);
       
       // Fill the track-leading jet correlation histograms
       fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
@@ -1607,10 +1638,10 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
       fillerJetTrack[6] = leadingJetFlavor;           // Axis 6: Leading jet flavor (quark or gluon)
-      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-leading jet correlation histogram
-      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-leading jet correlation histogram
-      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-leading jet correlation histogram
-      
+      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-leading jet correlation histogram
+      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-leading jet correlation histogram
+      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-leading jet correlation histogram
+            
       // Fill the track-subleading jet correlation histograms
       fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
       fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
@@ -1619,9 +1650,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
       fillerJetTrack[6] = subleadingJetFlavor;        // Axis 6: Subleading jet flavor (quark or gluon)
-      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight); // Fill the track-subleading jet correlation histogram
-      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight);                // Fill the uncorrected track-subleading jet correlation histogram
-      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight); // Fill the pT weighted track-subleading jet correlation histogram
+      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-subleading jet correlation histogram
+      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-subleading jet correlation histogram
+      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-subleading jet correlation histogram
     }
     
   } // Loop over tracks
@@ -1921,6 +1952,44 @@ Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
     return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin) : 1;  // No weighting for the most peripheral centrality bins 2015
   } else {
     return (hiBin < 194) ? fCentralityWeightFunction->Eval(hiBin/2.0) : 1;  // No weighting for the most peripheral centrality bins 2018
+  }
+}
+
+/*
+ * Get the proper jet pT weighting depending on analyzed system
+ *
+ *  Arguments:
+ *   const Double_t jetPt = Jet pT for the weighted jet
+ *
+ *   return: Multiplicative correction factor for the jet pT
+ */
+Double_t DijetAnalyzer::GetJetPtWeight(const Double_t jetPt) const{
+  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1;  // No weight for data
+  
+  // Only weight 2017 and 2018 MC
+  if(fReadMode < 2000){
+    return 1;  // No weighting for the most peripheral centrality bins 2015
+  } else {
+    return fPtWeightFunction->Eval(jetPt);  // No weighting for the most peripheral centrality bins 2018
+  }
+}
+
+/*
+ * Get the proper leading jet pT weighting depending on analyzed system
+ *
+ *  Arguments:
+ *   const Double_t jetPt = Jet pT for the weighted jet
+ *
+ *   return: Multiplicative correction factor for the leading jet pT
+ */
+Double_t DijetAnalyzer::GetDijetWeight(const Double_t jetPt) const{
+  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1;  // No weight for data
+  
+  // Only weight 2017 and 2018 MC
+  if(fReadMode < 2000){
+    return 1;  // No weighting for the most peripheral centrality bins 2015
+  } else {
+    return fDijetWeightFunction->Eval(jetPt);  // No weighting for the most peripheral centrality bins 2018
   }
 }
 
