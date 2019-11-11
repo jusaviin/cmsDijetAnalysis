@@ -27,12 +27,19 @@ double seagullPoly2(double *x, double *par){
 }
 
 /*
- * Combination of zeroth and first order polynomial for seagull correction
+ * Exponential function for seagull correction
  * Functional form: f(x) = a + b*e^(c*x)
  */
 double seagullExp(double *x, double *par){
   return par[0]+par[1]*TMath::Exp(x[0]*par[2]);
-  //return par[0]+x[0]*par[1]+x[0]*x[0]*par[2]+x[0]*x[0]*x[3]*par[3];
+}
+
+/*
+ * Combination of second order polynomial and exponential function for seagull correction
+ * Functional form: f(x) = a + b*e^(c*x) + d*x^2
+ */
+double seagullPolyExp(double *x, double *par){
+  return par[0]+par[1]*TMath::Exp(x[0]*par[2])+par[3]*x[0]*x[0];
 }
 
 /*
@@ -363,18 +370,17 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
   int nBinsProjectedOver;
   double binSum;
   double maxSum = 0;
-  int peakFinderSideWidth = 2;
+  int peakFinderSideWidth = 16;
   
   if(findPeak){
     
     // Find the highest n x n bin peak value from the histogram and use that as the normalization scale
     for(int iDeltaPhi = 1; iDeltaPhi < mixedEventHistogram->GetNbinsX()+2-peakFinderSideWidth; iDeltaPhi++){
       for(int iDeltaEta = 1; iDeltaEta < mixedEventHistogram->GetNbinsY(); iDeltaEta++){
-        binSum = mixedEventHistogram->GetBinContent(iDeltaPhi,iDeltaEta);
+        binSum = 0;
         
         for(int iPeakFinderPhi = 0; iPeakFinderPhi < peakFinderSideWidth; iPeakFinderPhi++){
           for(int iPeakFinderEta = 0; iPeakFinderEta < peakFinderSideWidth; iPeakFinderEta++){
-            if(iPeakFinderEta == 0 && iPeakFinderPhi == 0) continue;
             binSum += mixedEventHistogram->GetBinContent(iDeltaPhi+iPeakFinderPhi, iDeltaEta+iPeakFinderEta);
           }
         }
@@ -417,7 +423,7 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
  *
  * Arguments:
  *  const TH2D *mixedEventCorrectedHistogram = Two-dimensional deltaEta-deltaPhi distribution, that is corrected by the mixed event
- *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta. 2: Same as 0, but use first order polynomial instead of second order
+ *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta. 2: Same as 0, but use first order polynomial instead of second order. 3: Same as 1, but restrict fit to region 0-2. 4: Assume dip and falling tails of distribution and symmetrize deltaEta.
  *  const int vetoFlag = 0: Regular correction. 1: Skip constant check. 2: Skip correction
  *  const double middleArea = If normalizationMethod == 0, the region in the middle that is assumed to be flat
  *
@@ -452,7 +458,7 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   }
   
   // Symmetrize the positive and negative sides of the distribution
-  if(normalizationMethod == 1){
+  if(normalizationMethod == 1 || normalizationMethod == 3 || normalizationMethod == 4){
     double negativeContent, negativeError;
     double positiveContent, positiveError;
     double averageContent, averageError;
@@ -484,16 +490,29 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   
   // Fit the projected distribution
   double backgroundLevel = fSeagullFit->GetParameter(0);
+  double maxFitRange = 3;
+  if(normalizationMethod == 3) maxFitRange = 2;
   
   // If we want to use exponential in some bins, redifine the seagull fit
   // Note that we want to have the same background level estimation in both cases
-  if(normalizationMethod == 1){
+  if(normalizationMethod == 1 || normalizationMethod == 3){
     fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
     fSeagullFit = new TF1("seagullFitExp",seagullExp,-3,3,3);
     initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
     fSeagullFit->SetParameters(initialLevel,-1,-1);
-    fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,3);
-    backgroundLevel = fSeagullFit->GetParameter(0); // TODO: Check if this or constant fit is beta
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,maxFitRange);
+    backgroundLevel = fSeagullFit->GetParameter(0);
+  }
+  
+  // If we want to use exponential in some bins, redifine the seagull fit
+  // Note that we want to have the same background level estimation in both cases
+  if(normalizationMethod == 4){
+    fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
+    fSeagullFit = new TF1("seagullFitPolyExp",seagullPolyExp,-3,3,4);
+    initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
+    fSeagullFit->SetParameters(initialLevel,-1,-1,0);
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,maxFitRange);
+    backgroundLevel = fSeagullFit->GetParameter(0);
   }
   
   // We can use first order polynomial instead of second order for the fit
@@ -515,7 +534,7 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
     
     // Calculate the correction for this deltaEta bin
     binEta = seagullCorrectedHistogram->GetYaxis()->GetBinCenter(iEta);
-    if(normalizationMethod == 1) binEta = TMath::Abs(binEta);
+    if(normalizationMethod == 1 || normalizationMethod == 3 || normalizationMethod == 4) binEta = TMath::Abs(binEta);
     seagullCorrection = backgroundLevel/fSeagullFit->Eval(binEta);
     
     // Apply the correction for all deltaPhi bins in the deltaEta strip
@@ -1536,7 +1555,7 @@ TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHisto
       
       // Add the average content and error to both bins
       averageBinContent = (negativeBinContent + positiveBinContent) / 2.0;
-      averageBinError = TMath::Sqrt(negativeBinContent*negativeBinContent + positiveBinContent*positiveBinContent) / 2.0;
+      averageBinError = TMath::Sqrt(negativeBinError*negativeBinError + positiveBinError*positiveBinError) / 2.0;
       
       helperHistogramDeltaEtaRebin->SetBinContent(iDeltaEta,averageBinContent);
       helperHistogramDeltaEtaRebin->SetBinError(iDeltaEta,averageBinError);
