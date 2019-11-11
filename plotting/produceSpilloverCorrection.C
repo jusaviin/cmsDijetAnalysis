@@ -14,7 +14,8 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_subeNon0_centShift5_noCorrections_processed_2019-10-08.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_wtaAxis_subeNon0_centShift5_onlySeagull_processed_2019-10-21.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_wtaAxis_subeNon0_centShift5_onlySeagull_processed_2019-10-21.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_subeNon0_centShift5_noCorrections_processed_2019-10-08.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_subeNon0_wtaAxis_JECv6_noCorrections_notCombinedBackground_processed_2019-09-26.root
@@ -35,18 +36,18 @@ void produceSpilloverCorrection(){
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
   // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_eachemeAxis_centShift5_JECv6_2019-10-16.root"; // File name for the output file
+  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-10-23.root"; // File name for the output file
   // corrections/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
   // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
-  TString uncorrectedDataFileName = "data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root"; // Data file to compare yields with spillover file
+  TString uncorrectedDataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_xjBins_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-13.root"; // Data file to compare yields with spillover file
   // data/PbPbMC_RecoGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_noCorrections_processed_2019-02-09.root
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatios
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
   bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
   
@@ -73,10 +74,17 @@ void produceSpilloverCorrection(){
                                 {0.5,0.5,0.5,0.5,0.5,0.4,0.4}}; // 50-100 % centrality*/
   
   // For spillover correction in 2018 data. To be studied more carefully after JECs are finalized
-  double spilloverRcut[4][7] = {{1.0,1.0,1.0,0.8,0.8,0.5,0.5},  // 0-10 % centrality
+  /*double spilloverRcut[4][7] = {{1.0,1.0,1.0,0.8,0.8,0.5,0.5},  // 0-10 % centrality
                                 {1.0,1.0,1.0,0.8,0.7,0.5,0.5},  // 10-30 % centrality
                                 {1.0,1.0,1.0,0.8,0.7,0.5,0.5},  // 30-50 % centrality
-                                {0.7,0.5,0.5,0.5,0.5,0.5,0.5}}; // 50-100 % centrality
+                                {0.7,0.5,0.5,0.5,0.5,0.5,0.5}}; // 50-100 % centrality*/
+  
+  // For spillover correction with loose cut in 2018 data.
+  double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 0-10 % centrality
+                                {1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 10-30 % centrality
+                                {1.0,1.0,1.0,1.0,1.0,1.0,1.0},  // 30-50 % centrality
+                                {1.0,1.0,1.0,1.0,1.0,1.0,1.0}}; // 50-100 % centrality
+  
   
   // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
@@ -227,6 +235,7 @@ void produceSpilloverCorrection(){
   double fixedSpilloverYield = 0;
   double fixedSpilloverYieldError = 0;
   int widthBins;
+  double spilloverCut;
   
   // Create DijetMethods in which the correction procedure is implemented
   DijetMethods *corrector = new DijetMethods();
@@ -260,6 +269,9 @@ void produceSpilloverCorrection(){
         spilloverEtaFitRange = 1.5;
         spilloverPhiFitRange = 1.5;
         
+        spilloverCut = spilloverRcut[iCentrality][iTrackPt];
+        if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet && iJetTrack <= DijetHistogramManager::kPtWeightedTrackSubleadingJet) spilloverCut = 0.5;
+        
         for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
           
           if(iDataType == 1 && iTrackPt == 6) continue; // TODO: Remove this line after this histogram is added to uncorrected file
@@ -289,14 +301,14 @@ void produceSpilloverCorrection(){
               spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, iAsymmetry,iCentrality,iTrackPt);
               
               // Symmetrize the subeNon0 distribution
-              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt], /*spilloverRcut[iCentrality][iTrackPt]*/1, 0, !symmetrizeDistribution); // TODO: Check the cut
+              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][iAsymmetry][iCentrality][iTrackPt], spilloverCut, 0, !symmetrizeDistribution);
             }
           } else {
             spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = histograms[iDataType]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
             
             if(iDataType == 0){
               // Symmetrize the subeNon0 distribution
-              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt], /*spilloverRcut[iCentrality][iTrackPt]*/1, 0, !symmetrizeDistribution); // TODO: Check the cut
+              symmetrizedSpilloverDeltaEtaDeltaPhi[iJetTrack][nAsymmetryBins][iCentrality][iTrackPt] = corrector->SymmetrizeHistogram(spilloverHelperDeltaEtaDeltaPhi[iDataType][iJetTrack][nAsymmetryBins][iCentrality][iTrackPt], spilloverCut, 0, !symmetrizeDistribution);
             }
           }
           

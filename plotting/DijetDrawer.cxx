@@ -780,7 +780,6 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt);
               drawnHistogram2D->Rebin2D(5,5);
               drawnHistogram2D->Scale(1.0/(5.0*5.0));
-              drawnHistogram2D->GetYaxis()->SetRangeUser(-0.8,0.8);
               drawnHistogram2D->SetZTitle("#frac{1}{N_{jets}} #frac{d^{2}N}{d#Delta#varphi d#Delta#eta}");
               
               // Change the left margin better suited for 2D-drawing
@@ -802,7 +801,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               sprintf(namerY,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));
-              fDrawer->DrawHistogram(drawnHistogram2D,namerX,namerY,fHistograms->GetCorrelationTypeString(iCorrelationType),drawingStyle);
+              fDrawer->DrawHistogram(drawnHistogram2D, namerX, namerY ,fHistograms->GetCorrelationTypeString(iCorrelationType), drawingStyle);
               
               // Draw legend, but not for jet shape bin map
               if(iCorrelationType != DijetHistogramManager::kJetShapeBinMap){
@@ -835,7 +834,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 negativeLine->SetLineColor(kBlue);*/
               
               for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
-                if(iDeltaPhi != DijetHistogramManager::kNearSide) continue; // TODO: At the moment, only plot near side
+                if(iDeltaPhi != DijetHistogramManager::kWholePhi) continue; // TODO: At the moment, only plot near side
                 drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt, iDeltaPhi);
                 
                 drawnHistogram->Scale(1.0 / (fHistograms->GetTrackPtBinBorder(iTrackPt+1) - fHistograms->GetTrackPtBinBorder(iTrackPt)));

@@ -226,10 +226,10 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
   raaAtlas->Scale(3);
   
   // Rebin borders for jet pT
-  //const int nJetPtRebin = 49;
-  //double jetPtRebinBorders[] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,170,180,190,200,210,220,230,240,260,280,300,325,350,375,400,450,500};
-  const int nJetPtRebin = 25;
-  double jetPtRebinBorders[] = {120,125,130,135,140,145,150,155,160,170,180,190,200,210,220,230,240,260,280,300,325,350,375,400,450,500};
+  const int nJetPtRebin = 49;
+  double jetPtRebinBorders[] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,170,180,190,200,210,220,230,240,260,280,300,325,350,375,400,450,500};
+  //const int nJetPtRebin = 25;
+  //double jetPtRebinBorders[] = {120,125,130,135,140,145,150,155,160,170,180,190,200,210,220,230,240,260,280,300,325,350,375,400,450,500};
   DijetMethods *rebinner = new DijetMethods();
 
   // Loop over single jet categories
@@ -1073,6 +1073,9 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   TH1D *mainSum;
   TH1D *comparisonSum[knMaxRatios];
   TH1D *comparisonSumRatio[knMaxRatios];
+  TLine *line = new TLine(0,1,1,1);
+  line->SetLineColor(kRed);
+  line->SetLineStyle(2);
   
   // Canvas for the big closure plot
   double canvasWidth = isPp ? 250 : 1000;
@@ -1158,6 +1161,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         
         // Draw the ratio histogram to canvas
         closureHistogram->Draw("p");
+        line->Draw();
         
         // Draw a legend to the canvas
         legend = new TLegend(0.2,0.9,0.8,0.98);
@@ -1224,16 +1228,16 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
  *   double maxRange = Maximum range shown for the histograms
  */
 void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int bin2, int bin3, int bin4, int bin5, int bin6, double minRange, double maxRange){
-  
+    
   // Helper variables
   char namer[100];
   DijetMethods *rebinner = new DijetMethods();
   
   // TODO: Temporary scale for histograms. Remove as soon as done!!!!
-  double lulFactor[4][7] = {{1.00383,0.99427,0.9963,1.01777,1.05513,1,1},
-  {0.995893,0.989926,0.995106,1.01464,1.03584,1,1},
-  {0.998125,0.984743,0.991936,1.0034,1.05607,1,1},
-    {0.997222,0.989378,0.98667,1.00944,1.02626,1,1}};
+  //double lulFactor[4][7] = {{1.00383,0.99427,0.9963,1.01777,1.05513,1,1},
+  //{0.995893,0.989926,0.995106,1.01464,1.03584,1,1},
+  //{0.998125,0.984743,0.991936,1.0034,1.05607,1,1},
+  //  {0.997222,0.989378,0.98667,1.00944,1.02626,1,1}};
   
   // Custom rebin for deltaEta
   const int nDeltaEtaBinsRebin = 21;
@@ -1252,7 +1256,7 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   if(maxRange > minRange) fMainHistogram->GetXaxis()->SetRangeUser(minRange,maxRange);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
   //fMainHistogram->Scale(lulFactor[bin4][bin5]); // TODO: Remove this argitrary scaling!!!
-  if(bin1 == 1) bin1 = 0;
+  //if(bin1 == 1) bin1 = 0;  // TODO: This was needed in some cases, but breaks some other cases
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
     fComparisonHistogram[iAdditional] = (TH1D*)fAddedHistograms[iAdditional]->GetOneDimensionalHistogram(name,bin1,bin2,bin3,bin4,bin5,bin6)->Clone();
     if(rebin == 666){
@@ -1263,26 +1267,25 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     }
     if(maxRange > minRange) fComparisonHistogram[iAdditional]->GetXaxis()->SetRangeUser(minRange,maxRange);
     if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
-    fComparisonHistogram[iAdditional]->Scale(lulFactor[bin4][bin5]); // TODO: Temporary hack
+    //fComparisonHistogram[iAdditional]->Scale(lulFactor[bin4][bin5]); // TODO: Temporary hack
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
     
     // TODO: Temporarily reverse how the ratio is taken
     
-    fRatioHistogram[iAdditional] = (TH1D*)fComparisonHistogram[iAdditional]->Clone(namer);
+    /*fRatioHistogram[iAdditional] = (TH1D*)fComparisonHistogram[iAdditional]->Clone(namer);
     if(fUseDifferenceInsteadOfRatio){
       fRatioHistogram[iAdditional]->Add(fMainHistogram,-1);
     } else {
       fRatioHistogram[iAdditional]->Divide(fMainHistogram);
-    }
+    }*/
     
-    /*fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
+    fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
     if(fUseDifferenceInsteadOfRatio){
       fRatioHistogram[iAdditional]->Add(fComparisonHistogram[iAdditional],-1);
     } else {
       fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
-    }*/
+    }
   }
-  
   delete rebinner;
 }
 

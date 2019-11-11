@@ -17,9 +17,9 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   const char* saveString = {"JetShape"};
   
   bool drawInclusive = false;
-  bool drawInclusiveRatio = true;
+  bool drawInclusiveRatio = false;
   bool drawUncertainties = true;
-  bool monteCarloLabels = false;
+  bool monteCarloLabels = true;
   int firstAsymmetryBin = nAsymmetryBins;  // Set here 0 to process asymmetry bins and nAsymmetrybins to disable them
   bool normalizeJetShape = true;           // True: draw rho. False: draw P.
   
@@ -165,7 +165,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     }
     
     // Read the uncertainties for the pT summed jet shapes and scale them for jet shapes
-    uncertaintyHistogramPp[iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(2, 0, nTrackPtBins, iAsymmetry); // TODO: Change back to iJetTrack
+    uncertaintyHistogramPp[iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry);
     if(normalizeJetShape) uncertaintyHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
     
     // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
@@ -174,7 +174,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     }
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      uncertaintyHistogramPbPb[iCentrality][iAsymmetry] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(2, iCentrality, nTrackPtBins, iAsymmetry); // TODO: Change back to iJetTrack
+      uncertaintyHistogramPbPb[iCentrality][iAsymmetry] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry);
       if(normalizeJetShape) uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
       
       // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
@@ -326,7 +326,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitleOffset(1.1);
       ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetTitle("#Deltar");
       if(monteCarloLabels){
-        ratioHistogram[iCentrality][iAsymmetry]->SetAxisRange(0.0, 2.2, "Y");
+        ratioHistogram[iCentrality][iAsymmetry]->SetAxisRange(0.5, 1.5, "Y");
       } else if(normalizeJetShape){
         ratioHistogram[iCentrality][iAsymmetry]->SetAxisRange(0, 3.2, "Y");
       } else {
@@ -516,7 +516,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     mainTitle[iAsymmetry]->DrawLatex(0.985, 0.055, "1");
     
     //bigCanvas->SaveAs("js_dr_normal_new.eps");
-    bigCanvas[iAsymmetry]->SaveAs(Form("figures/final%s_%s%s_eschemeCheck.png", saveString, jetShapeSaveName[iJetTrack/3], asymmetrySaveName[iAsymmetry]));
+    bigCanvas[iAsymmetry]->SaveAs(Form("figures/final%s_%s%s_finalClosureCheck.png", saveString, jetShapeSaveName[iJetTrack/3], asymmetrySaveName[iAsymmetry]));
     //bigCanvas->SaveAs("js_dr_normal_v3.eps");
     //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
     
@@ -533,7 +533,7 @@ void finalResultPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_finalTrackCorr_JECv4_eschemeAxis_tunedSeagull_allCorrections_processed_2019-10-14.root");
+  TFile *ppFile = TFile::Open("data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tunedSeagull_processed_2019-10-22.root");
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"
   // data/ppData2017_highForest_pfJets_20EveMixed_finalTrackCorr_JECv4_eschemeAxis_tunedSeagull_allCorrections_processed_2019-10-14.root
   // data/ppData2017_highForest_pfJets_20EveMixed_finalTrackCorr_JECv4_eschemeAxis_allCorrections_processed_2019-10-02.root
@@ -541,9 +541,12 @@ void finalResultPlotter(){
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28.root
-  // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_testSeagull_allCorrections_processed_2019-09-28.root
+  // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28.root
-  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_allCorrections_allPtTrackDeltaR_processed_2019-10-16.root");
+  TFile *pbpbFile = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_fixedFile_newTry_mixingScale16_processed_2019-10-07.root");
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull_processed_2019-10-21.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_allCorrections_allPtTrackDeltaR_processed_2019-10-16.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17.root
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_5eveMix_smootheMixing_allCorrections_processed_2019-10-16.root
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root
@@ -559,10 +562,10 @@ void finalResultPlotter(){
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root
   
-  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root");
+  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPpMC_RecoGen_20eveMix_mcMode_2019-10-21.root");
   // uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root
   // uncertainties/systematicUncertaintyForPythia8RecoGen_mcMode_2019-10-05.root
-  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_15percentSpill5Jff_2019-10-14.root");
+  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPbMC_RecoGen_5eveMix_mcMode_2019-10-21.root");
   // uncertainties/systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-06.root
   // uncertainties/systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-05.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
@@ -630,9 +633,9 @@ void finalResultPlotter(){
   pbpbUncertaintyProvider->ReadSystematicFile(pbpbUncertaintyFile);
   
   // Plot the figures using Xiao's plotting macro
-  //plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
-  //plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
-  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackInclusiveJet);
+  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
+  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
+  //plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackInclusiveJet);
   return;
   
   // Temporary: Get the ratio between pp and PbPb jet shape

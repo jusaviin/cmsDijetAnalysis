@@ -15,7 +15,9 @@ void compareDeltaR(){
   
   //TString fileNames[] = {"data/PbPbMC_GenReco_akFlowPuCs4PFJet_xjBins_allHistograms_improvisedMixing_wtaAxis_finalTrack_noCorrections_processed_2019-09-28.root", "data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_JECv6_processed_2019-09-24.root"};
   
-  TString fileNames[] = {"data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root", "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root"};
+  //TString fileNames[] = {"data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root", "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root"};
+  
+  TString fileNames[] = {"data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-09-28.root", "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tunedSeagull_processed_2019-10-22.root"};
   
   // Open all the files for the comparison
   TFile *files[nFilesToCompare];
@@ -37,13 +39,13 @@ void compareDeltaR(){
   const int nTrackPtBins = histograms[0]->GetNTrackPtBins();
   const int nCentralityBins = histograms[0]->GetNCentralityBins();
   int maxCentralityBin = nCentralityBins;
-  int iAsymmetryBin = 0;
+  int iAsymmetryBin = nAsymmetryBins;
   
   double centralityBinBorders[] = {0,10,30,50,90};
   double asymmetryBinBorders[] = {0,0.6,0.8,1};
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};
   
-  int iJetTrack = DijetHistogramManager::kTrackLeadingJet; // DijetHistogramManager::kTrackSubleadingJet
+  int iJetTrack = DijetHistogramManager::kTrackInclusiveJet; // kTrackLeadingJet kTrackSubleadingJet kTrackInclusiveJet
   if(histograms[0]->GetSystem().Contains("pp",TString::kIgnoreCase)) maxCentralityBin = 1;
   
   // ==================================================================
@@ -54,6 +56,7 @@ void compareDeltaR(){
   for(int iFile = 0; iFile < nFilesToCompare; iFile++){
     histograms[iFile]->SetLoadTrackLeadingJetCorrelations(true);
     histograms[iFile]->SetLoadTrackSubleadingJetCorrelations(true);
+    histograms[iFile]->SetLoadTrackInclusiveJetCorrelations(true);
     histograms[iFile]->SetLoad2DHistograms(true);
     histograms[iFile]->SetAsymmetryBinRange(0,nAsymmetryBins);
     histograms[iFile]->LoadProcessedHistograms();
@@ -64,15 +67,15 @@ void compareDeltaR(){
  
   // Histograms needed to calculate the deltaR distributions
   TH2D *helperHistogram;
-  TH1D *deltaRArray[nFilesToCompare][nCentralityBins][nTrackPtBins];
-  TH1D *deltaRRatio[nFilesToCompare-1][nCentralityBins][nTrackPtBins];
+  TH1D *deltaRArray[nFilesToCompare][nCentralityBins][nTrackPtBins+1];
+  TH1D *deltaRRatio[nFilesToCompare-1][nCentralityBins][nTrackPtBins+1];
   
   // Read two dimensional deltaEta-deltaPhi histograms and project the deltaR distribution out of them
-  for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+  for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
     for(int iCentrality = 0; iCentrality < maxCentralityBin; iCentrality++){
       for(int iFile = 0; iFile < nFilesToCompare; iFile++){
         
-        helperHistogram = histograms[iFile]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kCorrected, iAsymmetryBin, iCentrality, iTrackPt);
+        helperHistogram = histograms[iFile]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetryBin, iCentrality, iTrackPt);
         helperHistogram->SetName(Form("distribution%d%d%d",iTrackPt,iCentrality,iFile));
         
         deltaRArray[iFile][iCentrality][iTrackPt] = projector->GetJetShape(helperHistogram);
@@ -100,24 +103,29 @@ void compareDeltaR(){
   
   TString figureName;
   int veryNiceColors[] = {kBlue,kRed,kRed,kGreen+3};
-  const char* labels[] = {"GenReco","GenGen","Calo100","Calo100 TRG spill"};
+  const char* labels[] = {"pp","Pythia8","Calo100","Calo100 TRG spill"};
   
   for(int iCentrality = 0; iCentrality < maxCentralityBin; iCentrality++){
     
     if(histograms[0]->GetSystem().Contains("pp",TString::kIgnoreCase)){
-      centralityString = "pp";
+      centralityString = "Yield";
       compactCentralityString = "_pp";
     } else {
       centralityString = Form("C = %.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
       compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
     }
     
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
       
       drawer->CreateSplitCanvas();
       
       trackString = Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
       compactTrackString = Form("_T=%.0f-%.0f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+      
+      if(iTrackPt == nTrackPtBins){
+        trackString = "0.7 < p_{T} < 300 GeV";
+        compactTrackString = "_T=0-300";
+      }
       
       deltaRArray[0][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
       drawer->DrawHistogramToUpperPad(deltaRArray[0][iCentrality][iTrackPt],"#Deltar","#frac{dN}{d#Deltar}"," ");
@@ -139,7 +147,7 @@ void compareDeltaR(){
       deltaRRatio[0][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
       deltaRRatio[0][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0.9,1.1);
       deltaRRatio[0][iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
-      drawer->DrawHistogramToLowerPad(deltaRRatio[0][iCentrality][iTrackPt],"#Deltar","Reco/Gen", " ");
+      drawer->DrawHistogramToLowerPad(deltaRRatio[0][iCentrality][iTrackPt],"#Deltar","pp/Pythia8", " ");
       
       for(int iFile = 1; iFile < nFilesToCompare-1; iFile++){
         deltaRRatio[iFile][iCentrality][iTrackPt]->SetLineColor(veryNiceColors[iFile+1]);

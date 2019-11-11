@@ -12,18 +12,18 @@ void checkSube(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString sube0FileName = "data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_matchLeading_improvisedMixing_noDijet_wtaAxis_noSeagull_processed_2019-07-16.root";  // File from which the RecoGen histograms are read for the correction
+  TString sube0FileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_sube0_centShift5_preprocessed_2019-10-12.root";  // File from which the RecoGen histograms are read for the correction
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_sube0_xj_2019-06-10_onlyNecessarySeagull_processed.root"
   // data/PbPbMC_RecoGen_skims_pfJets_sube0_noUncorr_matchedJets_improvisedMixing_xj_processed_2019-03-18.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root
-  TString subeNon0FileName = "data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_antimatchLeading_improvisedMixing_noDijet_wtaAxis_noSeagull_processed_2019-07-16.root";   // File from which the GenGen histograms are read for the correction
+  TString subeNon0FileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_subeNon0_centShift5_preprocessed_2019-10-04.root";   // File from which the GenGen histograms are read for the correction
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyOccasionalSeagull_processed.root"
-  TString anySubeFileName = "data/PbPbMC_RecoGen_pfCsJets_onlyLeading_subeNon0_matchJets_improvisedMixing_noDijet_wtaAxis_noSeagull_processed_2019-07-16.root";   // File name for the output file
+  TString anySubeFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_preprocessed_2019-10-10.root";   // File name for the output file
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xj_2019-06-12_onlyImprovedSeagull_processed.root"
-  TString spilloverFileName = "newSpilloverTest_symmetrizedDistribution.root";
+  //TString spilloverFileName = "newSpilloverTest_symmetrizedDistribution.root";
 
   // Possible distribution to compare: kSameEvent, kMixedEvent, kMixedEventNormalized, kCorrected, kBackgroundSubtracted, kBackground, kBackgroundOverlap
-  int comparedDistribution = DijetHistogramManager::kCorrected;
+  int comparedDistribution = DijetHistogramManager::kSameEvent;
   bool saveFigures = false;
   
   // Config done
@@ -32,24 +32,24 @@ void checkSube(){
   TFile *sube0File = TFile::Open(sube0FileName);
   TFile *subeNon0File = TFile::Open(subeNon0FileName);
   TFile *anySubeFile = TFile::Open(anySubeFileName);
-  TFile *spilloverFile = TFile::Open(spilloverFileName);
+  //TFile *spilloverFile = TFile::Open(spilloverFileName);
   
   // Create histogram managers to provide the histograms for the correction
   DijetHistogramManager *sube0Histograms = new DijetHistogramManager(sube0File);
   sube0Histograms->SetLoadAllTrackLeadingJetCorrelations(true,false,false);
-  sube0Histograms->SetLoadTrackInclusiveJetCorrelations(true);
+  //sube0Histograms->SetLoadTrackInclusiveJetCorrelations(true);
   sube0Histograms->SetLoad2DHistograms(true);              // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
   sube0Histograms->LoadProcessedHistograms();
   
   DijetHistogramManager *subeNon0Histograms = new DijetHistogramManager(subeNon0File);
   subeNon0Histograms->SetLoadAllTrackLeadingJetCorrelations(true,false,false);
-  subeNon0Histograms->SetLoadTrackInclusiveJetCorrelations(true);
+  //subeNon0Histograms->SetLoadTrackInclusiveJetCorrelations(true);
   subeNon0Histograms->SetLoad2DHistograms(true);              // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
   subeNon0Histograms->LoadProcessedHistograms();
   
   DijetHistogramManager *anySubeHistograms = new DijetHistogramManager(anySubeFile);
   anySubeHistograms->SetLoadAllTrackLeadingJetCorrelations(true,false,false);
-  anySubeHistograms->SetLoadTrackInclusiveJetCorrelations(true);
+  //anySubeHistograms->SetLoadTrackInclusiveJetCorrelations(true);
   anySubeHistograms->SetLoad2DHistograms(true);              // Two-dimensional histograms are needed for deltaEta-deltaPhi correction
   anySubeHistograms->LoadProcessedHistograms();
   
@@ -74,28 +74,31 @@ void checkSube(){
   // For a quick check, read the same histogram from all three files and check that sube0 + subeNon0 = anySube
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      sube0TestHistogram[iCentrality][iTrackPt] = sube0Histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackInclusiveJet,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
-      subeNon0TestHistogram[iCentrality][iTrackPt] = subeNon0Histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackInclusiveJet,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
-      anySubeTestHistogram[iCentrality][iTrackPt] = anySubeHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackInclusiveJet,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
-      spilloverHistogram[iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
+      sube0TestHistogram[iCentrality][iTrackPt] = sube0Histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
+      subeNon0TestHistogram[iCentrality][iTrackPt] = subeNon0Histograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
+      anySubeTestHistogram[iCentrality][iTrackPt] = anySubeHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
+      //spilloverHistogram[iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
     }
   }
     
   // Add the different subes
   TH2D *oneHistogram = (TH2D*) sube0TestHistogram[iCentralityBin][iTrackPtBin]->Clone("oneHistogram");
-  double nJetsSube0 = sube0Histograms->GetInclusiveJetPtIntegral(iCentralityBin);
-  oneHistogram->Scale(nJetsSube0);
-  cout << "MAthced: " << nJetsSube0 << endl;
+  //double nJetsSube0 = sube0Histograms->GetInclusiveJetPtIntegral(iCentralityBin);
+  //oneHistogram->Scale(nJetsSube0);
+  //cout << "MAthced: " << nJetsSube0 << endl;
   TH2D *prutski = (TH2D*) subeNon0TestHistogram[iCentralityBin][iTrackPtBin]->Clone("twoHistogram");
-  double nJetsSubeNon0 = subeNon0Histograms->GetInclusiveJetPtIntegral(iCentralityBin);
-  cout << "Anti: " << nJetsSubeNon0 << endl;
-  cout << "Ratio: " << nJetsSubeNon0/nJetsSube0 << endl;
-  prutski->Scale(nJetsSubeNon0);
+  //double nJetsSubeNon0 = subeNon0Histograms->GetInclusiveJetPtIntegral(iCentralityBin);
+  //cout << "Anti: " << nJetsSubeNon0 << endl;
+  //cout << "Ratio: " << nJetsSubeNon0/nJetsSube0 << endl;
+  //prutski->Scale(nJetsSubeNon0);
   oneHistogram->Add(prutski);
-  oneHistogram->Scale(1.0/(nJetsSube0+nJetsSubeNon0));
+  //oneHistogram->Scale(1.0/(nJetsSube0+nJetsSubeNon0));
   
   // Take the ratio to any sube
   oneHistogram->Divide(anySubeTestHistogram[iCentralityBin][iTrackPtBin]);
+  oneHistogram->Draw("colz");
+  
+  return;
   
   // Look also at the ratio between subeNon0 and spillover correction
   TH2D *spilloverEvaluation = (TH2D*) subeNon0TestHistogram[iCentralityBin][iTrackPtBin]->Clone("spilloverEvaluation");

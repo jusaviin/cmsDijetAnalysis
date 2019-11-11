@@ -11,7 +11,9 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-18.root"; // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_xjBins_sube0_wtaAxis_noCorrections_processed_JECv6_2019-09-26.root"; // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_5eveMix_wtaAxis_sube0_centShift5_onlySeagull_processed_2019-10-12.root
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-18.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
@@ -29,7 +31,8 @@ void produceJffCorrection(){
   // "data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
   // data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-18.root";   // File from which the GenGen histograms are read for the correction
+  TString genGenFileName = "data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root";   // File from which the GenGen histograms are read for the correction
+  // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-18.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_eschemeAxis_noUncorr_20EventsMixed_JECv4_onlySeagull_processed_2019-10-02.root
@@ -44,7 +47,7 @@ void produceJffCorrection(){
   // data/dijet_ppMC_GenGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
   // "data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
-  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-18.root";   // File name for the output file
+  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigation_2019-10-24.root";   // File name for the output file
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eventsMixed_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
   // corrections/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   // corrections/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
@@ -55,7 +58,7 @@ void produceJffCorrection(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   // If 2D MC distribution give too much fluctuations to the results, can try different methods to reduce them
   int nRebin = 1;               // Rebin the histograms in order to reduce fluctuations
@@ -84,6 +87,13 @@ void produceJffCorrection(){
                           {1.5,1.5,1.5,1.5,0.6,0.5,0.5},  // 10-30 % centrality
                           {1.5,1.5,1.5,1.5,0.6,0.5,0.5},  // 30-50 % centrality
                           {1.5,1.5,1.5,1.5,0.6,0.5,0.5}}; // 50-100 % centrality
+  
+  // Disable the cut for testing purposes
+  //for(int iCentrality = 0; iCentrality < 4; iCentrality++){
+  //  for(int iTrackPt = 0; iTrackPt < 7; iTrackPt++){
+  //    jffRcut[iCentrality][iTrackPt] = 1.5;
+  //  }
+  //}
   
   // Create histogram managers to provide the histograms for the correction
   DijetHistogramManager *recoGenHistograms = new DijetHistogramManager(recoGenFile);
@@ -277,10 +287,10 @@ void produceJffCorrection(){
               binError = jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinError(iDeltaPhi,iDeltaEta);
               
               // TODO TODO: Check if this is proper way to deal with this
-              if(binError > TMath::Abs(binContent)){
-                jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(iDeltaPhi, iDeltaEta, 0);
-              }
-              jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi, iDeltaEta, 0);
+              //if(binError > TMath::Abs(binContent)){
+              //  jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(iDeltaPhi, iDeltaEta, 0);
+              //}
+              //jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi, iDeltaEta, 0);
             }
           }
           
