@@ -44,6 +44,7 @@ public:
   TH2D* GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi spillover correction histograms
   TH2D* GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
+  double GetTrackDeltaRResidualScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   
   // Getters related to systematic uncertainties
   TString GetUncertaintyName(const int iUncertainty) const;
@@ -89,6 +90,7 @@ private:
   
   // Residual tracking correction
   TH2D *fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
+  TH1D *fhTrackDeltaRResidualScale[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
   
   // Systematic uncertainty
   TH1D *fhJetShapeUncertainty[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][knUncertaintySources];

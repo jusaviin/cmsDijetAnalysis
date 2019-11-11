@@ -31,6 +31,7 @@ JffCorrector::JffCorrector() :
           fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+          fhTrackDeltaRResidualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = NULL;
             fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = NULL;
@@ -96,6 +97,7 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
           fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+          fhTrackDeltaRResidualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhTrackDeltaRResidualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = in.fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
             fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = in.fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
@@ -213,10 +215,18 @@ void JffCorrector::ReadTrackDeltaRFile(TFile *trackFile){
         
         fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][fTrackingAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) trackFile->Get(histogramNamer);
         
+        sprintf(histogramNamer,"%sResidualScale/residualScale_%s_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
+        
+        fhTrackDeltaRResidualScale[iJetTrack][fTrackingAsymmetryBins][iCentrality][iTrackPt] = (TH1D*) trackFile->Get(histogramNamer);
+        
+        
         for(int iAsymmetry = 0; iAsymmetry < fTrackingAsymmetryBins; iAsymmetry++){
           
           sprintf(histogramNamer,"%sDeltaEtaDeltaPhi/trackDeltaRCorrection_%sDeltaEtaDeltaPhi_A%dC%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
           fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) trackFile->Get(histogramNamer);
+          
+          sprintf(histogramNamer,"%sResidualScale/residualScale_%s_A%dC%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
+          fhTrackDeltaRResidualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) trackFile->Get(histogramNamer);
           
         } // Asymmetry loop
         
@@ -380,6 +390,19 @@ TH2D* JffCorrector::GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrack
   
   // Return the correction in the selected bin
   return fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
+}
+
+// Getter for residual scale between reconstructed and generated tracks
+double JffCorrector::GetTrackDeltaRResidualScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated correction
+  if(iAsymmetry < 0 || iAsymmetry > fTrackingAsymmetryBins) iAsymmetry = fTrackingAsymmetryBins;
+  
+  // Old files do not have this histogram. Do not provide any scaling in that case
+  if(fhTrackDeltaRResidualScale[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt] == NULL) return 1;
+  
+  return fhTrackDeltaRResidualScale[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt]->GetBinContent(1);
+  
 }
 
 // Getter systematic uncertainty histogram for jet shapes
