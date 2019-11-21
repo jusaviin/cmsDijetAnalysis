@@ -46,6 +46,9 @@ public:
   // Indices for different jet shape histograms
   enum enumJetShape{kJetShape, kJetShapeBinCount, knJetShapeTypes};
   
+  // Indices for processing steps for jet-track correlation histograms
+  enum enumProcessingStep{kMixedEventCorrection, kSeagullCorrection, kTrackDeltaRCorrection, kSpilloverCorrection, kBackgroundSubtraction, kJffCorrection, knProcessingSteps};
+  
   // Dimensions for histogram arrays
   static const int kMaxCentralityBins = 5;       // Maximum allowed number of centrality bins
   static const int kMaxTrackPtBins = 10;         // Maximum allowed number of track pT bins
@@ -259,6 +262,9 @@ public:
   void SetImproviseMixing(const bool improvise); // Create mixed event distributions from deltaPhi sideband region
   void SetDefaultMixingDeltaEtaFitRange(const double fitRange);  // Default fit range used to normalize the mixed event
   
+  // Setter for histogram processing options
+  void SetProcessingStartLevel(const int processingLevel);  // Select from which level we start processing the histograms
+  
   // Getter for the card
   DijetCard* GetCard() const;  // Getter for the JCard
   
@@ -330,8 +336,9 @@ private:
   TString fAsymmetryBinName[kMaxAsymmetryBins+1];     // Name given to each asymmetry bin
   
   // =============================================
-  // ============== Event mixing =================
+  // =========   Histogram processing   ==========
   // =============================================
+  int fProcessingStartLevel;  // Determine from which step the processing is started. It is assumed that previous steps are taken in the input file
   bool fAvoidMixingPeak;      // Avoid region around (0,0) in the mixed event distribution to stay clear of possible peaks
   bool fImproviseMixing;      // Create mixed event distributions from same event deltaPhi side band region
   double fDefaultMixingDeltaEtaFitRange; // Default deltaEta fit range in mixed event normalization
@@ -416,6 +423,9 @@ private:
   
   // Mixed event correction, background subtraction and jet shape calculation
   void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
+  void DoSeagullCorrection();     // Apply seagull correction to jet-track correlation histograms
+  void DoTrackDeltaRCorrection(); // Apply track deltaR correction to jet-track correlation histograms
+  void DoSpilloverCorrection();   // Apply spillover correction to jet-track correlation histograms
   void SubtractBackgroundAndCalculateJetShape();  // Subtract the background from the distributions and use these histograms to calculate jet shape
   
 };
