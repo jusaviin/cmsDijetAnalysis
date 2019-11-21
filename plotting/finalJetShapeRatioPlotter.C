@@ -4,196 +4,210 @@
 #include "xCanvas.h"
 #include "JDrawer.h"
 
-void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager *pbpbHistograms, JffCorrector *ppUncertaintyProvider, JffCorrector *pbpbUncertaintyProvider, int iJetTrack){
+void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5], DijetHistogramManager *pbpbHistograms[5], JffCorrector *ppUncertaintyProvider, JffCorrector *pbpbUncertaintyProvider, int iJetTrack){
 
-  const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
-  const int nCentralityBins = pbpbHistograms->GetNCentralityBins();
-  const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
+  const int nTrackPtBins = pbpbHistograms[0]->GetNTrackPtBins();
+  const int nCentralityBins = pbpbHistograms[0]->GetNCentralityBins();
+  const int nAsymmetryBins = pbpbHistograms[0]->GetNAsymmetryBins();
   const int nRelevantUncertainties = 4;
   
   const char* jetShapeTitle[] = {"Leading jet shape ratio between x_{j} bins","Subleading jet shape ratio between x_{j} bins","Jet shape ratio between x_{j} bins"};
   const char* jetShapeSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
+  
+  const char* systemLegendString[] = {"WTA, corrected", "WTA, uncorrected", "E-scheme, uncorrected", "", ""};
     
   // Temporary: Get the ratio between pp and PbPb jet shape
-  TH1D *sumHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
-  TH1D *sumHistogramPp[nAsymmetryBins+1];
-  TH1D *jetShapeArray[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
-  TH1D *uncertaintyHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
-  TH1D *uncertaintyHistogramPp[nAsymmetryBins+1];
-  TH1D *uncertaintySummerPp[nAsymmetryBins+1][nRelevantUncertainties];
-  TH1D *uncertaintySummerPbPb[nCentralityBins][nAsymmetryBins+1][nRelevantUncertainties];
-  TH1D *sumUncertainty[nCentralityBins+1][nAsymmetryBins+1];
+  TH1D *sumHistogramPbPb[5][nCentralityBins][nAsymmetryBins+1];
+  TH1D *sumHistogramPp[5][nAsymmetryBins+1];
+  TH1D *jetShapeArray[5][nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
+  TH1D *uncertaintyHistogramPbPb[5][nCentralityBins][nAsymmetryBins+1];
+  TH1D *uncertaintyHistogramPp[5][nAsymmetryBins+1];
+  TH1D *uncertaintySummerPp[5][nAsymmetryBins+1][nRelevantUncertainties];
+  TH1D *uncertaintySummerPbPb[5][nCentralityBins][nAsymmetryBins+1][nRelevantUncertainties];
+  TH1D *sumUncertainty[5][nCentralityBins+1][nAsymmetryBins+1];
   TH1D *helperHistogram;
-  double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
-  double shapeIntegralPp[nAsymmetryBins+1];
+  double shapeIntegralPbPb[5][nCentralityBins][nAsymmetryBins+1];
+  double shapeIntegralPp[5][nAsymmetryBins+1];
   double uncertaintySum;
   double correlationFactor;
   
   // Read the pT summed jet shape histograms
-  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0)->Clone(Form("sumPbPb%d",iCentrality));
-      jetShapeArray[iCentrality][0][iAsymmetry] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0);
-    }
-    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0)->Clone("sumPp");
-    jetShapeArray[nCentralityBins][0][iAsymmetry] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0);
-  }
+  for(int iDataset = 0; iDataset < nDatasets; iDataset++){
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        sumHistogramPbPb[iDataset][iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0)->Clone(Form("sumPbPb%d",iCentrality));
+        jetShapeArray[iDataset][iCentrality][0][iAsymmetry] = pbpbHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0);
+      }
+      sumHistogramPp[iDataset][iAsymmetry] = (TH1D*) ppHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0)->Clone("sumPp");
+      jetShapeArray[iDataset][nCentralityBins][0][iAsymmetry] = ppHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0);
+    } // Asymmetry loop
+  } // Dataset loop
   
   // Sum the pT:s
-  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-    for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
-      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-        helperHistogram = (TH1D*)pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt)->Clone();
-        sumHistogramPbPb[iCentrality][iAsymmetry]->Add(helperHistogram);
-        jetShapeArray[iCentrality][iTrackPt][iAsymmetry] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt);
-      }
-      helperHistogram = (TH1D*)ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,0,iTrackPt)->Clone();
-      sumHistogramPp[iAsymmetry]->Add(helperHistogram);
-      jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, iTrackPt);
-    } // track pT
-  }
+  for(int iDataset = 0; iDataset < nDatasets; iDataset++){
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          helperHistogram = (TH1D*) pbpbHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt)->Clone();
+          sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->Add(helperHistogram);
+          jetShapeArray[iDataset][iCentrality][iTrackPt][iAsymmetry] = pbpbHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt);
+        }
+        helperHistogram = (TH1D*) ppHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,0,iTrackPt)->Clone();
+        sumHistogramPp[iDataset][iAsymmetry]->Add(helperHistogram);
+        jetShapeArray[iDataset][nCentralityBins][iTrackPt][iAsymmetry] = ppHistograms[iDataset]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, iTrackPt);
+      } // track pT
+    } // Asymmetry loop
+  } // Dataset loop
   
   // Normalize the jet shape histograms
-  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      shapeIntegralPbPb[iCentrality][iAsymmetry] = sumHistogramPbPb[iCentrality][iAsymmetry]->Integral(1,sumHistogramPbPb[iCentrality][iAsymmetry]->FindBin(0.99),"width");
-      sumHistogramPbPb[iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+  for(int iDataset = 0; iDataset < nDatasets; iDataset++){
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        shapeIntegralPbPb[iDataset][iCentrality][iAsymmetry] = sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->Integral(1,sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->FindBin(0.99),"width");
+        sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iDataset][iCentrality][iAsymmetry]);
+        
+        // To draw the systematic uncertainties, clone the sum histograms to uncertainty histograms
+        sumUncertainty[iDataset][iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->Clone(Form("sumUncertaintyPbPb%d%d%d", iDataset, iCentrality, iAsymmetry));
+        
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          jetShapeArray[iDataset][iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iDataset][iCentrality][iAsymmetry]);
+        }
+        
+      }
+      
+      shapeIntegralPp[iDataset][iAsymmetry] = sumHistogramPp[iDataset][iAsymmetry]->Integral(1,sumHistogramPp[iDataset][iAsymmetry]->FindBin(0.99),"width");
+      sumHistogramPp[iDataset][iAsymmetry]->Scale(1.0/shapeIntegralPp[iDataset][iAsymmetry]);
       
       // To draw the systematic uncertainties, clone the sum histograms to uncertainty histograms
-      sumUncertainty[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("sumUncertaintyPbPb%d%d", iCentrality, iAsymmetry));
+      sumUncertainty[iDataset][nCentralityBins][iAsymmetry] = (TH1D*) sumHistogramPp[iDataset][iAsymmetry]->Clone(Form("sumUncertaintyPp%d%d", iDataset, iAsymmetry));
       
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-        jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+        jetShapeArray[iDataset][nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iDataset][iAsymmetry]);
       }
-      
-    }
-    
-    shapeIntegralPp[iAsymmetry] = sumHistogramPp[iAsymmetry]->Integral(1,sumHistogramPp[iAsymmetry]->FindBin(0.99),"width");
-    sumHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
-    
-    // To draw the systematic uncertainties, clone the sum histograms to uncertainty histograms
-    sumUncertainty[nCentralityBins][iAsymmetry] = (TH1D*) sumHistogramPp[iAsymmetry]->Clone(Form("sumUncertaintyPp%d", iAsymmetry));
-    
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
-    }
-     
-    // Read the uncertainties for the pT summed jet shapes but skip a few sources not relevant here
-    uncertaintySummerPp[iAsymmetry][0] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundFluctuation);
-    uncertaintySummerPp[iAsymmetry][1] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kFragmentationBias);
-    uncertaintySummerPp[iAsymmetry][2] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kPairAcceptance);
-    uncertaintySummerPp[iAsymmetry][3] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundSubtraction);
-    
-    uncertaintyHistogramPp[iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry);
-    
-    
-    // Add the relevant uncertainties in quadrature for pp
-    for(int iBin = 1; iBin <= uncertaintyHistogramPp[iAsymmetry]->GetNbinsX(); iBin++){
-      uncertaintySum = 0;
-      for(int iUncertainty = 0; iUncertainty < nRelevantUncertainties; iUncertainty++){
-        uncertaintySum += TMath::Power(uncertaintySummerPp[iAsymmetry][iUncertainty]->GetBinContent(iBin),2);
-      }
-      uncertaintyHistogramPp[iAsymmetry]->SetBinContent(iBin,TMath::Sqrt(uncertaintySum));
-    }
-    
-    // Scale the histograms from jet shapes
-    uncertaintyHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
-    
-    // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
-    for(int iBin = 1; iBin <= sumUncertainty[nAsymmetryBins][iAsymmetry]->GetNbinsX(); iBin++){
-      sumUncertainty[nCentralityBins][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPp[iAsymmetry]->GetBinContent(iBin));
-    }
-    
-    
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       // Read the uncertainties for the pT summed jet shapes but skip a few sources not relevant here
-      uncertaintySummerPbPb[iCentrality][iAsymmetry][0] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundFluctuation);
-      uncertaintySummerPbPb[iCentrality][iAsymmetry][1] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kFragmentationBias);
-      uncertaintySummerPbPb[iCentrality][iAsymmetry][2] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kPairAcceptance);
-      uncertaintySummerPbPb[iCentrality][iAsymmetry][3] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundSubtraction);
+      uncertaintySummerPp[iDataset][iAsymmetry][0] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundFluctuation);
+      uncertaintySummerPp[iDataset][iAsymmetry][1] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kFragmentationBias);
+      uncertaintySummerPp[iDataset][iAsymmetry][2] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kPairAcceptance);
+      uncertaintySummerPp[iDataset][iAsymmetry][3] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundSubtraction);
       
-      uncertaintyHistogramPbPb[iCentrality][iAsymmetry] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry);
+      uncertaintyHistogramPp[iDataset][iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry);
       
-      // Add the relevant uncertainties in quadrature for PbPb
-      for(int iBin = 1; iBin <= uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+      
+      // Add the relevant uncertainties in quadrature for pp
+      for(int iBin = 1; iBin <= uncertaintyHistogramPp[iDataset][iAsymmetry]->GetNbinsX(); iBin++){
         uncertaintySum = 0;
         for(int iUncertainty = 0; iUncertainty < nRelevantUncertainties; iUncertainty++){
-          correlationFactor = 1;
-          
-          // JFF and spillover unceratinties are correlated, so they partially cancel on the ratio
-          if(iUncertainty < 2) correlationFactor = 0.25;
-          uncertaintySum += TMath::Power(uncertaintySummerPbPb[iCentrality][iAsymmetry][iUncertainty]->GetBinContent(iBin)*correlationFactor,2);
+          uncertaintySum += TMath::Power(uncertaintySummerPp[iDataset][iAsymmetry][iUncertainty]->GetBinContent(iBin),2);
         }
-        uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->SetBinContent(iBin,TMath::Sqrt(uncertaintySum));
+        uncertaintyHistogramPp[iDataset][iAsymmetry]->SetBinContent(iBin,TMath::Sqrt(uncertaintySum));
       }
       
-      uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+      // Scale the histograms from jet shapes
+      uncertaintyHistogramPp[iDataset][iAsymmetry]->Scale(1.0/shapeIntegralPp[iDataset][iAsymmetry]);
       
       // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
-      for(int iBin = 1; iBin <= sumUncertainty[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
-        sumUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin));
+      for(int iBin = 1; iBin <= sumUncertainty[iDataset][nAsymmetryBins][iAsymmetry]->GetNbinsX(); iBin++){
+        sumUncertainty[iDataset][nCentralityBins][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPp[iDataset][iAsymmetry]->GetBinContent(iBin));
       }
       
-    }
-  }
+      
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        // Read the uncertainties for the pT summed jet shapes but skip a few sources not relevant here
+        uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][0] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundFluctuation);
+        uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][1] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kFragmentationBias);
+        uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][2] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kPairAcceptance);
+        uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][3] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundSubtraction);
+        
+        uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry);
+        
+        // Add the relevant uncertainties in quadrature for PbPb
+        for(int iBin = 1; iBin <= uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+          uncertaintySum = 0;
+          for(int iUncertainty = 0; iUncertainty < nRelevantUncertainties; iUncertainty++){
+            correlationFactor = 1;
+            
+            // JFF and spillover unceratinties are correlated, so they partially cancel on the ratio
+            if(iUncertainty < 2) correlationFactor = 0.25;
+            uncertaintySum += TMath::Power(uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][iUncertainty]->GetBinContent(iBin)*correlationFactor,2);
+          }
+          uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry]->SetBinContent(iBin,TMath::Sqrt(uncertaintySum));
+        }
+        
+        uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iDataset][iCentrality][iAsymmetry]);
+        
+        // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
+        for(int iBin = 1; iBin <= sumUncertainty[iDataset][iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+          sumUncertainty[iDataset][iCentrality][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin));
+        }
+        
+      }
+    } // Asymmetry loop
+  } // Dataset loop
 
   // Create the asymmetric to nominal and symmetric to nominal ratios
-  TH1D* asymmetryRatioHistogram[nCentralityBins+1][nAsymmetryBins];
-  TH1D* asymmetryRatioUncertainty[nCentralityBins+1][nAsymmetryBins];
+  TH1D* asymmetryRatioHistogram[5][nCentralityBins+1][nAsymmetryBins];
+  TH1D* asymmetryRatioUncertainty[5][nCentralityBins+1][nAsymmetryBins];
   double ppValue, pbpbValue, ratioValue;
   double ppUncertainty, pbpbUncertainty, ratioUncertaintyValue;
   
-  for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
-    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-      
-      if(iCentrality == nCentralityBins){
-        asymmetryRatioHistogram[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPp[iAsymmetry]->Clone(Form("ratioAsymmetry%d%d", iCentrality, iAsymmetry));
-        asymmetryRatioHistogram[iCentrality][iAsymmetry]->Divide(sumHistogramPp[nAsymmetryBins]);
-      } else {
-        asymmetryRatioHistogram[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("ratioAsymmetry%d%d", iCentrality, iAsymmetry));
-        asymmetryRatioHistogram[iCentrality][iAsymmetry]->Divide(sumHistogramPbPb[iCentrality][nAsymmetryBins]);
-      }
-      
-      asymmetryRatioUncertainty[iCentrality][iAsymmetry] = (TH1D*) asymmetryRatioHistogram[iCentrality][iAsymmetry]->Clone(Form("asymmetryRatioUncertainty%d%d",iAsymmetry,iCentrality));
-      
-      // Calculate the systematic uncertainty for the ratio
-      for(int iBin = 1; iBin < asymmetryRatioUncertainty[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+  for(int iDataset = 0; iDataset < nDatasets; iDataset++){
+    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+        
         if(iCentrality == nCentralityBins){
-          ppValue = sumHistogramPp[nAsymmetryBins]->GetBinContent(iBin);
-          pbpbValue = sumHistogramPp[iAsymmetry]->GetBinContent(iBin);
-          ppUncertainty = uncertaintyHistogramPp[nAsymmetryBins]->GetBinContent(iBin);
-          pbpbUncertainty = uncertaintyHistogramPp[iAsymmetry]->GetBinContent(iBin);
+          asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry] = (TH1D*) sumHistogramPp[iDataset][iAsymmetry]->Clone(Form("ratioAsymmetry%d%d%d", iDataset, iCentrality, iAsymmetry));
+          asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->Divide(sumHistogramPp[iDataset][nAsymmetryBins]);
         } else {
-          ppValue = sumHistogramPbPb[iCentrality][nAsymmetryBins]->GetBinContent(iBin);
-          pbpbValue = sumHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin);
-          ppUncertainty = uncertaintyHistogramPbPb[iCentrality][nAsymmetryBins]->GetBinContent(iBin);
-          pbpbUncertainty = uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin);
+          asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->Clone(Form("ratioAsymmetry%d%d%d", iDataset, iCentrality, iAsymmetry));
+          asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->Divide(sumHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]);
         }
-        ratioValue = asymmetryRatioHistogram[iCentrality][iAsymmetry]->GetBinContent(iBin);
-        ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2)+TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2));
-        asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetBinContent(iBin,ratioValue);
-        asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin,ratioUncertaintyValue);
-      }
-      
-    } // Centrality loop
-  } // Asymmetry loop
+        
+        asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry] = (TH1D*) asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->Clone(Form("asymmetryRatioUncertainty%d%d%d", iDataset, iAsymmetry, iCentrality));
+        
+        // Calculate the systematic uncertainty for the ratio
+        for(int iBin = 1; iBin < asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+          if(iCentrality == nCentralityBins){
+            ppValue = sumHistogramPp[iDataset][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbValue = sumHistogramPp[iDataset][iAsymmetry]->GetBinContent(iBin);
+            ppUncertainty = uncertaintyHistogramPp[iDataset][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbUncertainty = uncertaintyHistogramPp[iDataset][iAsymmetry]->GetBinContent(iBin);
+          } else {
+            ppValue = sumHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbValue = sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin);
+            ppUncertainty = uncertaintyHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbUncertainty = uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin);
+          }
+          ratioValue = asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin);
+          ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2)+TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2));
+          asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetBinContent(iBin,ratioValue);
+          asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetBinError(iBin,ratioUncertaintyValue);
+        }
+        
+      } // Centrality loop
+    } // Asymmetry loop
+  } // Dataset loop
   
   TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
+  int markerColors[5] = {kBlack, kBlue, kRed, kGreen+3, kMagenta};
+  int fillColors[5] = {kGray+3, kBlue-6, kRed-6, kGreen-6, kMagenta-6};
   
-  // Create the stacked jet shape histograms and set a good drawing style for the uncertainty histgorams
-  for(int iCentrality = 0; iCentrality < nCentralityBins+1; iCentrality++){
-    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
-      asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetFillStyle(1001);
-      asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetFillColorAlpha(kGray+3,0.4);
-      asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetMarkerStyle(20);
-      asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetMarkerSize(1.6);
-      asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetMarkerColor(kBlack);
-      asymmetryRatioUncertainty[iCentrality][iAsymmetry]->SetLineColor(kBlack);
-    } // Asymmetry loop
-  } // Centrality loop
+  // Set a good drawing style for the uncertainty histograms
+  for(int iDataset = 0; iDataset < nDatasets; iDataset++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins+1; iCentrality++){
+      for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+        asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetFillStyle(1001);
+        asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetFillColorAlpha(fillColors[iDataset],0.4);
+        asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetMarkerStyle(20);
+        asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetMarkerSize(1.6);
+        asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetMarkerColor(markerColors[iDataset]);
+        asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetLineColor(markerColors[iDataset]);
+      } // Asymmetry loop
+    } // Centrality loop
+  } // Dataset loop
   
   // Draw all the distributions to big canvases
   auxi_canvas *bigCanvas;
@@ -212,41 +226,49 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     bigCanvas->CD(5-iCentrality);
     
-    asymmetryRatioHistogram[iCentrality][0]->SetTitle("");
-    asymmetryRatioHistogram[iCentrality][0]->SetAxisRange(0, axisZoom[iJetTrack/3], "Y");
-    asymmetryRatioHistogram[iCentrality][0]->SetAxisRange(0, 0.99, "X");
+    asymmetryRatioHistogram[0][iCentrality][0]->SetTitle("");
+    asymmetryRatioHistogram[0][iCentrality][0]->SetAxisRange(0, axisZoom[iJetTrack/3], "Y");
+    asymmetryRatioHistogram[0][iCentrality][0]->SetAxisRange(0, 0.99, "X");
     if(iCentrality < 4)  {
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetTitleOffset(0.7);
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetTitleSize(0.11);
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetNdivisions(505);
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetLabelSize(0.09);
-      asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetTitleOffset(0.7);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetTitleSize(0.11);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetLabelSize(0.09);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetNdivisions(505);
     }
     if(iCentrality == 4){
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetTitleOffset(0.92);
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetTitleSize(0.086);
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetNdivisions(505);
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetLabelOffset(0.016);
-      asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->SetLabelSize(0.064);
-      asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->SetNdivisions(505);
-      asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->SetLabelOffset(0.02);
-      asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->SetLabelSize(0.09);
-      asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->SetTitleOffset(1.0);
-      asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->SetTitleSize(0.1);
-      asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->SetTitle("#rho(#Deltar)_{Asymm}/#rho(#Deltar)_{All}");
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetTitleOffset(0.92);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetTitleSize(0.086);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetLabelOffset(0.016);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetLabelSize(0.064);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetLabelOffset(0.02);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetLabelSize(0.09);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleOffset(1.0);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleSize(0.1);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitle("#rho(#Deltar)_{Asymm}/#rho(#Deltar)_{All}");
       mainTitle->SetTextSize(0.073);
     }
     
-    asymmetryRatioHistogram[iCentrality][0]->GetYaxis()->CenterTitle();
-    asymmetryRatioHistogram[iCentrality][0]->GetXaxis()->CenterTitle();
-    asymmetryRatioHistogram[iCentrality][0]->SetStats(0);
-    asymmetryRatioHistogram[iCentrality][0]->Draw();
+    asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->CenterTitle();
+    asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->CenterTitle();
+    asymmetryRatioHistogram[0][iCentrality][0]->SetStats(0);
+    asymmetryRatioHistogram[0][iCentrality][0]->SetLineColor(markerColors[0]);
+    asymmetryRatioHistogram[0][iCentrality][0]->Draw();
     
     line = new TLine();
     line->SetLineStyle(2);
     line->DrawLine(0, 1, 1, 1);
     
-    asymmetryRatioUncertainty[iCentrality][0]->Draw("same e2");
+    asymmetryRatioUncertainty[0][iCentrality][0]->Draw("same e2");
+    
+    for(int iDataset = 1; iDataset < nDatasets; iDataset++){
+      asymmetryRatioHistogram[iDataset][iCentrality][0]->SetLineColor(markerColors[iDataset]);
+      asymmetryRatioHistogram[iDataset][iCentrality][0]->Draw("same");
+      asymmetryRatioUncertainty[iDataset][iCentrality][0]->Draw("same e2");
+    }
+    
     if(iCentrality == 4){
       mainTitle->SetTextFont(22);
       mainTitle->SetTextSize(.085);
@@ -258,46 +280,67 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       mainTitle->DrawLatexNDC(.19, 0.9, "PbPb");
       mainTitle->DrawLatexNDC(.19, .82, cent_lab[iCentrality]);
     }
+    
     bigCanvas->CD(10-iCentrality);
-    asymmetryRatioHistogram[iCentrality][2]->SetTitle("");
-    asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetTitleOffset(1.1);
-    asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetTitle("#Deltar");
-    asymmetryRatioHistogram[iCentrality][2]->SetAxisRange(0, axisZoom[iJetTrack/3], "Y");
-    asymmetryRatioHistogram[iCentrality][2]->SetAxisRange(0, 0.99, "X");
+    
+    asymmetryRatioHistogram[0][iCentrality][2]->SetTitle("");
+    asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(1.1);
+    asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitle("#Deltar");
+    asymmetryRatioHistogram[0][iCentrality][2]->SetAxisRange(0, axisZoom[iJetTrack/3], "Y");
+    asymmetryRatioHistogram[0][iCentrality][2]->SetAxisRange(0, 0.99, "X");
     if( iCentrality<4 )  {
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetTitleOffset(0.65);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetTitleSize(0.115);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetNdivisions(505);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetLabelOffset(0.00001);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetLabelSize(0.092);
-      asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(0.65);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleSize(0.115);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelOffset(0.00001);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelSize(0.092);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetNdivisions(505);
     }
     if(iCentrality==4 ){
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetTitleOffset(0.92);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetTitleSize(0.086);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetNdivisions(505);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetLabelOffset(0.016);
-      asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->SetLabelSize(0.071);
-      asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->SetNdivisions(505);
-      asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->SetLabelOffset(0.02);
-      asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->SetLabelSize(0.07);
-      asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->SetTitleOffset(1.2);
-      asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->SetTitleSize(0.08);
-      asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->SetTitle("#rho(#Deltar)_{Symm}/#rho(#Deltar)_{All}");
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(0.92);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleSize(0.086);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelOffset(0.016);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelSize(0.071);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetNdivisions(505);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetLabelOffset(0.02);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetLabelSize(0.07);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleOffset(1.2);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleSize(0.08);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitle("#rho(#Deltar)_{Symm}/#rho(#Deltar)_{All}");
       mainTitle->SetTextSize(0.073);
     }
 
     
-    asymmetryRatioHistogram[iCentrality][2]->GetYaxis()->CenterTitle();
-    asymmetryRatioHistogram[iCentrality][2]->GetXaxis()->CenterTitle();
-    asymmetryRatioHistogram[iCentrality][2]->SetStats(0);
-    asymmetryRatioHistogram[iCentrality][2]->Draw("same");
+    asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->CenterTitle();
+    asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->CenterTitle();
+    asymmetryRatioHistogram[0][iCentrality][2]->SetStats(0);
+    asymmetryRatioHistogram[0][iCentrality][2]->SetLineColor(markerColors[0]);
+    asymmetryRatioHistogram[0][iCentrality][2]->Draw("same");
     
     line = new TLine();
     line->SetLineStyle(2);
     line->DrawLine(0, 1, 1, 1);
     
-    asymmetryRatioUncertainty[iCentrality][2]->Draw("same e2");
+    asymmetryRatioUncertainty[0][iCentrality][2]->Draw("same e2");
+    
+    for(int iDataset = 1; iDataset < nDatasets; iDataset++){
+      asymmetryRatioHistogram[iDataset][iCentrality][2]->SetLineColor(markerColors[iDataset]);
+      asymmetryRatioHistogram[iDataset][iCentrality][2]->Draw("same");
+      asymmetryRatioUncertainty[iDataset][iCentrality][2]->Draw("same e2");
+    }
+    
+    if(nDatasets > 1 && iCentrality == 4){
+      TLegend *systemLegend = new TLegend(0.31,0.65,0.81,0.95);
+      systemLegend->SetTextSize(0.06);
+      systemLegend->SetLineColor(kWhite);
+      systemLegend->SetFillColor(kWhite);
+      for(int iDataset = 0; iDataset < nDatasets; iDataset++){
+        systemLegend->AddEntry(asymmetryRatioUncertainty[iDataset][iCentrality][0], systemLegendString[iDataset] ,"lp");
+      }
+      systemLegend->Draw();
+    }
+    
   } // Centrality loop
   
   TLegend* lt1 = new TLegend(0.01, 0.1, 1, 0.5);
@@ -399,7 +442,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   mainTitle->DrawLatex(0.983, 0.065, "1");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryRatioPartiallyMC_%s.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryRatioAxisComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -415,11 +458,16 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root");
+  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root"), NULL, NULL};
+  // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root
+  // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_spilloverAlsoSubleading_allPtTracking_mixingScale16_processed_2019-10-07.root");
+  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagull_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root"), NULL, NULL};
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_processed_2019-11-21.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_xjBins_JECv6_finalTrack_eschemeAxis_noTrackDeltaRCorrection_firstTry_processed_2019-11-14.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root
@@ -430,6 +478,8 @@ void finalJetShapeRatioPlotter(){
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   
+  int nFilesPerDataset = 3;
+  
   TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root");
   // uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root
   // uncertainties/systematicUncertaintyForPythia8RecoGen_mcMode_2019-10-05.root
@@ -437,8 +487,17 @@ void finalJetShapeRatioPlotter(){
   // uncertainties/systematicUncertaintyForPbPbAsymmetryRatio_2019-10-14.root
   
   // Create histogram managers for pp and PbPb
-  DijetHistogramManager *ppHistograms = new DijetHistogramManager(ppFile);
-  DijetHistogramManager *pbpbHistograms = new DijetHistogramManager(pbpbFile);
+  DijetHistogramManager *ppHistograms[5];
+  DijetHistogramManager *pbpbHistograms[5];
+  for(int iFile = 0; iFile < 5; iFile++){
+    if(iFile < nFilesPerDataset){
+      ppHistograms[iFile] = new DijetHistogramManager(ppFile[iFile]);
+      pbpbHistograms[iFile] = new DijetHistogramManager(pbpbFile[iFile]);
+    } else {
+      ppHistograms[iFile] = NULL;
+      pbpbHistograms[iFile] = NULL;
+    }
+  }
   JffCorrector *ppUncertaintyProvider = new JffCorrector();
   JffCorrector *pbpbUncertaintyProvider = new JffCorrector();
   
@@ -452,9 +511,9 @@ void finalJetShapeRatioPlotter(){
   TString saveName;
   
   // Get the number of asymmetry bins
-  const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
-  const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
-  const int nCentralityBins = pbpbHistograms->GetNCentralityBins();
+  const int nAsymmetryBins = pbpbHistograms[0]->GetNAsymmetryBins();
+  const int nTrackPtBins = pbpbHistograms[0]->GetNTrackPtBins();
+  const int nCentralityBins = pbpbHistograms[0]->GetNCentralityBins();
   
   double centralityBinBorders[] = {0,10,30,50,90};
   double asymmetryBinBorders[] = {0,0.6,0.8,1};
@@ -482,21 +541,23 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Load only jet shape histograms from these
-  ppHistograms->SetLoadTrackLeadingJetCorrelationsPtWeighted(true);
-  ppHistograms->SetAsymmetryBinRange(0,nAsymmetryBins);
-  ppHistograms->LoadProcessedHistograms();
+  for(int iFile = 0; iFile < nFilesPerDataset; iFile++){
+    ppHistograms[iFile]->SetLoadTrackLeadingJetCorrelationsPtWeighted(true);
+    ppHistograms[iFile]->SetAsymmetryBinRange(0,nAsymmetryBins);
+    ppHistograms[iFile]->LoadProcessedHistograms();
   
-  pbpbHistograms->SetLoadTrackLeadingJetCorrelationsPtWeighted(true);
-  pbpbHistograms->SetAsymmetryBinRange(0,nAsymmetryBins);
-  pbpbHistograms->LoadProcessedHistograms();
+    pbpbHistograms[iFile]->SetLoadTrackLeadingJetCorrelationsPtWeighted(true);
+    pbpbHistograms[iFile]->SetAsymmetryBinRange(0,nAsymmetryBins);
+    pbpbHistograms[iFile]->LoadProcessedHistograms();
+  }
   
   // Load the systematic uncertainties from the files
   ppUncertaintyProvider->ReadSystematicFile(ppUncertaintyFile);
   pbpbUncertaintyProvider->ReadSystematicFile(pbpbUncertaintyFile);
   
   // Plot the figures using Xiao's plotting macro
-  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
-  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
+  plotJetShapeXiao(nFilesPerDataset, ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
+  plotJetShapeXiao(nFilesPerDataset, ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
   return;
   
   // Temporary: Get the ratio between pp and PbPb jet shape
@@ -511,19 +572,19 @@ void finalJetShapeRatioPlotter(){
   // Read the pT summed jet shape histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, lowestTrackPtBin)->Clone(Form("sumPbPb%d",iCentrality));
+      sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, lowestTrackPtBin)->Clone(Form("sumPbPb%d",iCentrality));
     }
-    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, lowestTrackPtBin)->Clone("sumPp");
+    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, lowestTrackPtBin)->Clone("sumPp");
   }
   
   // Sum the pT:s
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iTrackPt = lowestTrackPtBin+1; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-        helperHistogram = (TH1D*)pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt)->Clone();
+        helperHistogram = (TH1D*)pbpbHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt)->Clone();
         sumHistogramPbPb[iCentrality][iAsymmetry]->Add(helperHistogram);
       }
-      helperHistogram = (TH1D*)ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,0,iTrackPt)->Clone();
+      helperHistogram = (TH1D*)ppHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,0,iTrackPt)->Clone();
       sumHistogramPp[iAsymmetry]->Add(helperHistogram);
     } // track pT
   }
@@ -612,9 +673,9 @@ void finalJetShapeRatioPlotter(){
         
         if(saveFigures){
           if(iAsymmetry == nAsymmetryBins){
-            gPad->GetCanvas()->SaveAs(Form("figures/jetShapeRatio_%s_C=%.0f-%.0f_pT%d.pdf", pbpbHistograms->GetJetTrackHistogramName(iJetTrack), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1],lowestTrackPtBin));
+            gPad->GetCanvas()->SaveAs(Form("figures/jetShapeRatio_%s_C=%.0f-%.0f_pT%d.pdf", pbpbHistograms[0]->GetJetTrackHistogramName(iJetTrack), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1],lowestTrackPtBin));
           } else {
-            saveName = Form("figures/jetShapeRatio_%s_A=%.1f-%.1f_C=%.0f-%.0f", pbpbHistograms->GetJetTrackHistogramName(iJetTrack), asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1], centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
+            saveName = Form("figures/jetShapeRatio_%s_A=%.1f-%.1f_C=%.0f-%.0f", pbpbHistograms[0]->GetJetTrackHistogramName(iJetTrack), asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1], centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
             saveName.ReplaceAll(".","v");
             gPad->GetCanvas()->SaveAs(Form("%s.%s",saveName.Data(),figureFormat));
           }
@@ -678,11 +739,11 @@ void finalJetShapeRatioPlotter(){
         
         if(saveFigures){
           if(iCentrality == nCentralityBins){
-            saveName = Form("figures/jetShapeAsymmetryRatio_%s_pp%s", pbpbHistograms->GetJetTrackHistogramName(iJetTrack), asymmetrySaveString[iAsymmetry].Data());
+            saveName = Form("figures/jetShapeAsymmetryRatio_%s_pp%s", pbpbHistograms[0]->GetJetTrackHistogramName(iJetTrack), asymmetrySaveString[iAsymmetry].Data());
             saveName.ReplaceAll(".","v");
             gPad->GetCanvas()->SaveAs(Form("%s.%s",saveName.Data(),figureFormat));
           } else {
-            saveName = Form("figures/jetShapeAsymmetryRatio_%s_C=%.0f-%.0f%s", pbpbHistograms->GetJetTrackHistogramName(iJetTrack), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetrySaveString[iAsymmetry].Data());
+            saveName = Form("figures/jetShapeAsymmetryRatio_%s_C=%.0f-%.0f%s", pbpbHistograms[0]->GetJetTrackHistogramName(iJetTrack), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetrySaveString[iAsymmetry].Data());
             saveName.ReplaceAll(".","v");
             gPad->GetCanvas()->SaveAs(Form("%s.%s",saveName.Data(),figureFormat));
           }
