@@ -19,6 +19,7 @@
 #include "JDrawer.h"
 #include "DijetMethods.h"
 #include "DijetHistogramManager.h"
+#include "JffCorrector.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -128,12 +129,16 @@ public:
   void SetTrackPtBinRange(const int first, const int last);    // Setter for drawn track pT bins
   void SetAsymmetryBin(const int asymmetry);                   // Setter for the selected asymmetry bin
   
+  // Setter for systematic uncertainty provider
+  void SetSystematicUncertainty(JffCorrector *uncertainties);  // Setter for systemtic uncertainty provider
+  
 private:
   
   // Data members
   JDrawer *fDrawer;                       // JDrawer for drawing the histograms
   DijetHistogramManager *fBaseHistograms; // Histograms with respect to which ratios are takes
   DijetHistogramManager *fAddedHistograms[knMaxRatios];  // Histograms drawn together with the base histogram
+  JffCorrector *fUncertaintyProvider;     // Class for providing systematic uncertainties if those are needed
   int fnAddedHistograms;                  // Number of histograms added for drawing
   
   // ==============================================================
@@ -151,6 +156,9 @@ private:
   bool fDrawSingleJets[DijetHistogramManager::knSingleJetCategories];             // Draw the single jet histograms
   bool fDrawTracks[DijetHistogramManager::knTrackCategories];                     // Draw the track histograms
   bool fDrawJetTrackCorrelations[DijetHistogramManager::knJetTrackCorrelations];  // Draw the jet-track correlation histograms
+  bool fSingleJetHistogramDrawn;           // Flag telling that at least one isngle jet histogram will be drawn
+  bool fTrackHistogramDrawn;               // Flag telling that at least one track histogram will be drawn
+  bool fJetTrackCorrelationHistogramDrawn; // Flag telling that at least one jet track correlation histogram will be drawn
   
   // ==============================================
   // ============== Drawing settings ==============
@@ -226,6 +234,11 @@ private:
   // Find the per jet scaling factor
   void FindScalingFactors(const char* histogramName, int iJetCategory, int iCentrality, int iAsymmetry);
   
+  // Check flags to see if we are drawing certain types of histograms
+  void CheckFlags();            // Check flags for all histogram categories
+  void CheckFlagsSingleJet();   // Check flags for single jet histograms
+  void CheckFlagsTrack();       // Check flags for track histograms
+  void CheckFlagsJetTrack();    // Check flags for jet track correlation histograms
   
 };
 

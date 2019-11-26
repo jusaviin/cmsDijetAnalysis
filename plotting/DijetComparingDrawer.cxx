@@ -18,6 +18,9 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fnAddedHistograms(0),
   fMainHistogram(0),
   fDrawDijets(false),
+  fSingleJetHistogramDrawn(false),
+  fTrackHistogramDrawn(false),
+  fJetTrackCorrelationHistogramDrawn(false),
   fDrawJetTrackDeltaPhi(false),
   fDrawJetTrackDeltaEta(false),
   fDrawJetTrackDeltaEtaDeltaPhi(false),
@@ -54,6 +57,8 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
     fComparisonHistogram[iRatios] = NULL;
     fRatioHistogram[iRatios] = NULL;
   }
+  
+  fUncertaintyProvider = NULL;
   
   // Do not draw anything by default
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -202,6 +207,8 @@ void DijetComparingDrawer::DrawDijetHistograms(){
  */
 void DijetComparingDrawer::DrawSingleJetHistograms(){
   
+  if(!fSingleJetHistogramDrawn) return;
+  
   // Legend helper variable
   TLegend *legend;
   
@@ -347,6 +354,8 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
  * Draw the track histograms
  */
 void DijetComparingDrawer::DrawTrackHistograms(){
+  
+  if(!fTrackHistogramDrawn) return;
   
   // Legend helper variable
   TLegend *legend;
@@ -703,6 +712,8 @@ void DijetComparingDrawer::DrawEventMixingCheck(){
  */
 void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
   
+  if(!fJetTrackCorrelationHistogramDrawn) return;
+  
   // Legend helper variables
   TLegend *legend;
   double legendX1;
@@ -731,13 +742,13 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
       
       centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
-
+      
       FindScalingFactors("jetPt", iJetTrack/3, iCentrality, fAsymmetryBin);
       
       // Draw only selected event correlation types
       for(int iCorrelationType = 0; iCorrelationType < DijetHistogramManager::knCorrelationTypes; iCorrelationType++){
         if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
-
+        
         // Same and mixed event histograms are not scaled by the number of dijets in the histogram manager
         // For all the other histograms the scaling is already done
         fApplyScaling = (iCorrelationType == DijetHistogramManager::kSameEvent || iCorrelationType == DijetHistogramManager::kMixedEvent);
@@ -1085,6 +1096,12 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   closureCanvas->Divide(nCentralityBins,nTrackPtBins);
   TH1D *closureHistogram;
   
+  // Checking if values are zero within errors
+  double binContent, binError;
+  double zeroIndex;
+  TH1D *hZeroWithinErrors;
+  TH1D *uncertaintyHistogram = NULL;
+  
   // Loop over jet-track correlation categories
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
@@ -1112,6 +1129,39 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         // Prepare the jet shape histograms to be drawn
         PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, fAsymmetryBin, iCentrality, iTrackPt);
         closureHistogram = (TH1D*) fRatioHistogram[0]->Clone(Form("closureHistogram%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        
+        // Here we need to check if some of the bins are zero within errors
+        // If that is the case, the ratio does not make much sense and we should just set the marker to one
+        zeroIndex = 100;
+        hZeroWithinErrors = (TH1D*) fRatioHistogram[0]->Clone(Form("zeroHistogram%d%d%d",iJetTrack,iCentrality,iTrackPt));
+        if(fUncertaintyProvider) uncertaintyHistogram = fUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, iTrackPt, fAsymmetryBin, JffCorrector::kBackgroundSubtraction);
+        
+        for(int iBin = 1; iBin <= fMainHistogram->GetNbinsX(); iBin++){
+          
+          if(iBin < zeroIndex){
+            binContent = fMainHistogram->GetBinContent(iBin);
+            binError = fMainHistogram->GetBinError(iBin);
+            if(uncertaintyHistogram) binError += uncertaintyHistogram->GetBinContent(iBin);
+            if(binContent-binError <= 0){
+              zeroIndex = iBin;
+            }
+            
+            binContent = fComparisonHistogram[0]->GetBinContent(iBin);
+            binError = fComparisonHistogram[0]->GetBinError(iBin);
+            if(uncertaintyHistogram) binError += uncertaintyHistogram->GetBinContent(iBin);
+            if(binContent-binError <= 0){
+              zeroIndex = iBin;
+            }
+          }
+          
+          if(iBin < zeroIndex){
+            hZeroWithinErrors->SetBinContent(iBin,0);
+          } else {
+            hZeroWithinErrors->SetBinContent(iBin,1);
+            closureHistogram->SetBinContent(iBin,0);
+          }
+          hZeroWithinErrors->SetBinError(iBin,0);
+        }
         
         // Calculate the pT sum
         if(iTrackPt == fFirstDrawnTrackPtBin){
@@ -1159,8 +1209,14 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
         closureHistogram->SetMarkerSize(0.5);
         closureHistogram->SetMarkerColor(kBlack);
         
+        // Set a different style for the histogram stating that one histogram is zero within errors
+        hZeroWithinErrors->SetMarkerStyle(kOpenCircle);
+        hZeroWithinErrors->SetMarkerSize(0.5);
+        hZeroWithinErrors->SetMarkerColor(kRed);
+        
         // Draw the ratio histogram to canvas
         closureHistogram->Draw("p");
+        hZeroWithinErrors->Draw("p,same");
         line->Draw();
         
         // Draw a legend to the canvas
@@ -1298,7 +1354,7 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
  *  int iAsymmetry = Index for the asymmetry bin of the jet
  */
 void DijetComparingDrawer::FindScalingFactors(const char*  histogramName, int iJetCategory, int iCentrality, int iAsymmetry){
-  
+
   // Helper variable for reading the normalization scales
   TH1D *scaleReader;
   scaleReader = (TH1D*)fBaseHistograms->GetOneDimensionalHistogram(histogramName, iJetCategory, iCentrality, iAsymmetry)->Clone();
@@ -1528,21 +1584,25 @@ void DijetComparingDrawer::SetDrawDijetHistograms(const bool drawOrNot){
 // Setter for drawing leading jet histograms
 void DijetComparingDrawer::SetDrawLeadingJetHistograms(const bool drawOrNot){
   fDrawSingleJets[DijetHistogramManager::kLeadingJet] = drawOrNot;
+  CheckFlagsSingleJet();
 }
 
 // Setter for drawing subleading jet histograms
 void DijetComparingDrawer::SetDrawSubleadingJetHistograms(const bool drawOrNot){
   fDrawSingleJets[DijetHistogramManager::kSubleadingJet] = drawOrNot;
+  CheckFlagsSingleJet();
 }
 
 // Setter for drawing all jet histograms
 void DijetComparingDrawer::SetDrawAnyJetHistograms(const bool drawOrNot){
   fDrawSingleJets[DijetHistogramManager::kAnyJet] = drawOrNot;
+  CheckFlagsSingleJet();
 }
 
 // Setter for drawing all leading jet histograms
 void DijetComparingDrawer::SetDrawAnyLeadingJetHistograms(const bool drawOrNot){
   fDrawSingleJets[DijetHistogramManager::kAnyLeadingJet] = drawOrNot;
+  CheckFlagsSingleJet();
 }
 
 // Setter for drawing jet histograms
@@ -1556,11 +1616,13 @@ void DijetComparingDrawer::SetDrawAllJets(const bool drawLeading, const bool dra
 // Setter for drawing tracks
 void DijetComparingDrawer::SetDrawTracks(const bool drawOrNot){
   fDrawTracks[DijetHistogramManager::kTrack] = drawOrNot;
+  CheckFlagsTrack();
 }
 
 // Setter for drawing uncorrected tracks
 void DijetComparingDrawer::SetDrawTracksUncorrected(const bool drawOrNot){
   fDrawTracks[DijetHistogramManager::kUncorrectedTrack] = drawOrNot;
+  CheckFlagsTrack();
 }
 
 // Setter for drawing track histograms
@@ -1572,11 +1634,13 @@ void DijetComparingDrawer::SetDrawAllTracks(const bool drawTracks, const bool dr
 // Setter for drawing inclusive tracks
 void DijetComparingDrawer::SetDrawInclusiveTracks(const bool drawOrNot){
   fDrawTracks[DijetHistogramManager::kInclusiveTrack] = drawOrNot;
+  CheckFlagsTrack();
 }
 
 // Setter for drawing uncorrected inclusive tracks
 void DijetComparingDrawer::SetDrawInclusiveTracksUncorrected(const bool drawOrNot){
   fDrawTracks[DijetHistogramManager::kUncorrectedInclusiveTrack] = drawOrNot;
+  CheckFlagsTrack();
 }
 
 // Setter for drawing inclusive track histograms
@@ -1588,16 +1652,19 @@ void DijetComparingDrawer::SetDrawAllInclusiveTracks(const bool drawTracks, cons
 // Setter for drawing leading jet-track correlations
 void DijetComparingDrawer::SetDrawTrackLeadingJetCorrelations(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kTrackLeadingJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing uncorrected leading jet-track correlations
 void DijetComparingDrawer::SetDrawTrackLeadingJetCorrelationsUncorrected(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kUncorrectedTrackLeadingJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing pT weighted leading jet-track correlations
 void DijetComparingDrawer::SetDrawTrackLeadingJetCorrelationsPtWeighted(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kPtWeightedTrackLeadingJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing all correlations related to tracks and leading jets
@@ -1610,16 +1677,19 @@ void DijetComparingDrawer::SetDrawAllTrackLeadingJetCorrelations(const bool draw
 // Setter for drawing subleading jet-track correlations
 void DijetComparingDrawer::SetDrawTrackSubleadingJetCorrelations(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kTrackSubleadingJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing uncorrected subleading jet-track correlations
 void DijetComparingDrawer::SetDrawTrackSubleadingJetCorrelationsUncorrected(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kUncorrectedTrackSubleadingJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing pT weighted subleading jet-track correlations
 void DijetComparingDrawer::SetDrawTrackSubleadingJetCorrelationsPtWeighted(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kPtWeightedTrackSubleadingJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing all correlations related to tracks and subleading jets
@@ -1632,11 +1702,13 @@ void DijetComparingDrawer::SetDrawAllTrackSubleadingJetCorrelations(const bool d
 // Setter for drawing inclusive jet-track correlations
 void DijetComparingDrawer::SetDrawTrackInclusiveJetCorrelations(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kTrackInclusiveJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing pT weighted inclusive jet-track correlations
 void DijetComparingDrawer::SetDrawTrackInclusiveJetCorrelationsPtWeighted(const bool drawOrNot){
   fDrawJetTrackCorrelations[DijetHistogramManager::kPtWeightedTrackInclusiveJet] = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing all correlations related to tracks and inclusive jets
@@ -1648,16 +1720,19 @@ void DijetComparingDrawer::SetDrawAllTrackInclusiveJetCorrelations(const bool dr
 // Setter for drawing jet-track deltaPhi correlations
 void DijetComparingDrawer::SetDrawJetTrackDeltaPhi(const bool drawOrNot){
   fDrawJetTrackDeltaPhi = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing jet-track deltaEta correlations
 void DijetComparingDrawer::SetDrawJetTrackDeltaEta(const bool drawOrNot){
   fDrawJetTrackDeltaEta = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing jet-track deltaEta-deltaPhi correlations
 void DijetComparingDrawer::SetDrawJetTrackDeltaEtaDeltaPhi(const bool drawOrNot){
   fDrawJetTrackDeltaEtaDeltaPhi = drawOrNot;
+  CheckFlagsJetTrack();
 }
 
 // Setter for drawing all the jet-track deltaEta/Phi correlations
@@ -1692,21 +1767,25 @@ void DijetComparingDrawer::SetDrawJetShapeBinMap(const bool drawOrNot){
 // Setter for drawing same event correlation distributions
 void DijetComparingDrawer::SetDrawSameEvent(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kSameEvent] = drawOrNot;
+  CheckFlags();
 }
 
 // Setter for drawing mixed event correlation distributions
 void DijetComparingDrawer::SetDrawMixedEvent(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kMixedEvent] = drawOrNot;
+  CheckFlags();
 }
 
 // Setter for drawing normalized mixed event correlation distributions
 void DijetComparingDrawer::SetDrawNormalizedMixedEvent(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kMixedEventNormalized] = drawOrNot;
+  CheckFlags();
 }
 
 // Setter for drawing corrected correlation distributions
 void DijetComparingDrawer::SetDrawCorrectedCorrelations(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kCorrected] = drawOrNot;
+  CheckFlags();
 }
 
 // Setter for drawing different correlation types
@@ -1720,11 +1799,13 @@ void DijetComparingDrawer::SetDrawCorrelationTypes(const bool sameEvent, const b
 // Setter for drawing background subtracted jet-track correlation histograms
 void DijetComparingDrawer::SetDrawBackgroundSubtracted(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kBackgroundSubtracted] = drawOrNot;
+  CheckFlags();
 }
 
 // Setter for drawing the generated background distributions
 void DijetComparingDrawer::SetDrawBackground(const bool drawOrNot){
   fDrawCorrelationType[DijetHistogramManager::kBackground] = drawOrNot;
+  CheckFlags();
 }
 
 // Setter for drawing the event mixing check
@@ -1854,4 +1935,56 @@ void DijetComparingDrawer::BinSanityCheck(const int nBins, int first, int last){
   if(first < 0) first = 0;
   if(last < first) last = first;
   if(last > nBins-1) last = nBins-1;
+}
+
+// Setter for systematic uncertainty provider
+void DijetComparingDrawer::SetSystematicUncertainty(JffCorrector *uncertainties){
+  fUncertaintyProvider = uncertainties;
+}
+
+// Check flags for single jet histograms
+void DijetComparingDrawer::CheckFlagsSingleJet(){
+  fSingleJetHistogramDrawn = false;
+  
+  // Loop over single jet categories and see if any is selected
+  for(int iJetCategory = 0; iJetCategory < DijetHistogramManager::knSingleJetCategories; iJetCategory++){
+    if(fDrawSingleJets[iJetCategory]) fSingleJetHistogramDrawn = true;  // Only draw selected jet categories
+  }
+  
+}
+
+// Check flags for track histograms
+void DijetComparingDrawer::CheckFlagsTrack(){
+  fTrackHistogramDrawn = false;
+  
+  for(int iTrackType = 0; iTrackType < DijetHistogramManager::knTrackCategories; iTrackType++){
+    if(!fDrawTracks[iTrackType]) continue;  // Only draw selected tracks
+    for(int iCorrelationType = 0; iCorrelationType <= DijetHistogramManager::kMixedEvent; iCorrelationType++){
+      if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
+      fTrackHistogramDrawn = true;
+    }
+  }
+}
+
+// Check flags for jet track correlation histograms
+void DijetComparingDrawer::CheckFlagsJetTrack(){
+  fJetTrackCorrelationHistogramDrawn = false;
+  
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    if(!fDrawJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+    for(int iCorrelationType = 0; iCorrelationType < DijetHistogramManager::knCorrelationTypes; iCorrelationType++){
+      if(!fDrawCorrelationType[iCorrelationType]) continue; // Draw only types of correlations that are requested
+      fJetTrackCorrelationHistogramDrawn = true;
+    }
+  }
+}
+
+
+// Check flags to see if we are drawing certain types of histograms
+void DijetComparingDrawer::CheckFlags(){
+  
+  CheckFlagsSingleJet();
+  CheckFlagsTrack();
+  CheckFlagsJetTrack();
+  
 }
