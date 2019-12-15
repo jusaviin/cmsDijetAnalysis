@@ -16,7 +16,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   
-  const char* systemLegendString[] = {"WTA, corrected", "WTA, uncorrected", "E-scheme, uncorrected", "", ""};
+  const char* systemLegendString[] = {"All dijets", "No third jet", "Third jet", "", ""};
     
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[5][nCentralityBins][nAsymmetryBins+1];
@@ -247,7 +247,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
       asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetLabelSize(0.09);
       asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleOffset(1.0);
       asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleSize(0.1);
-      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitle("#rho(#Deltar)_{Asymm}/#rho(#Deltar)_{All}");
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitle("#rho(#Deltar)_{x_{j} < 0.6 }/#rho(#Deltar)_{All}");
       mainTitle->SetTextSize(0.073);
     }
     
@@ -307,7 +307,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetLabelSize(0.07);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleOffset(1.2);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleSize(0.08);
-      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitle("#rho(#Deltar)_{Symm}/#rho(#Deltar)_{All}");
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitle("#rho(#Deltar)_{x_{j} > 0.8 }/#rho(#Deltar)_{All}");
       mainTitle->SetTextSize(0.073);
     }
 
@@ -442,7 +442,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   mainTitle->DrawLatex(0.983, 0.065, "1");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryRatioAxisComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -458,13 +458,14 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root"), NULL, NULL};
+  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_JECv4_thirdJetCut_wtaAxis_onlySeagull_processed_2019-12-04.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_JECv4_thirdJetCut_noThirdJet_wtaAxis_onlySeagull_processed_2019-12-04.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_JECv4_thirdJetCut_includeThirdJet_wtaAxis_onlySeagull_processed_2019-12-04.root"), NULL, NULL};
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagull_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root"), NULL, NULL};
+  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagull_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root"), NULL, NULL};
+  // dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_onlySeagullAndSpillover_correctedCentralityCorrection_eschemeAxis_processed_2019-12-05.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_processed_2019-11-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_xjBins_JECv6_finalTrack_eschemeAxis_noTrackDeltaRCorrection_firstTry_processed_2019-11-14.root
@@ -478,7 +479,11 @@ void finalJetShapeRatioPlotter(){
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   
-  int nFilesPerDataset = 3;
+  int nFilesPerDataset = 1;
+  for(int iFile = 1; iFile < 5; iFile++){
+    if(ppFile[iFile] == NULL) break;
+    nFilesPerDataset++;
+  }
   
   TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root");
   // uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root
