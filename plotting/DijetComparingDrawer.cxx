@@ -1090,7 +1090,8 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   
   // Canvas for the big closure plot
   double canvasWidth = isPp ? 250 : 1000;
-  TCanvas *closureCanvas = new TCanvas(Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), canvasWidth, 1800);
+  double canvasHeight = 820 / 7.0 *(fLastDrawnTrackPtBin+1);
+  TCanvas *closureCanvas = new TCanvas(Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), Form("jetShapeClosureCanvas%s",compactAsymmetryString.Data()), canvasWidth, canvasHeight);
   double nCentralityBins = fLastDrawnCentralityBin-fFirstDrawnCentralityBin+1;
   double nTrackPtBins = fLastDrawnTrackPtBin-fFirstDrawnTrackPtBin+1;
   closureCanvas->Divide(nCentralityBins,nTrackPtBins);
@@ -1152,6 +1153,43 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
             if(binContent-binError <= 0){
               zeroIndex = iBin;
             }
+          }
+          
+          zeroIndex = 100;
+          
+          // Leading jet closure fix
+          if(iJetTrack == DijetHistogramManager::kTrackLeadingJet){
+            
+            // Low pT bins for 0-10 centrality
+            if(iCentrality == 0) zeroIndex = 14;
+            
+            // Track pT bin 8 < pT < 12 GeV
+            if(iTrackPt == 5) zeroIndex = 14;
+            
+            // Track pT bin 12 < pT < 300 GeV
+            if(iTrackPt == 6) zeroIndex = 12;
+          }
+          
+          // Subleading jet closure fix
+          if(iJetTrack == DijetHistogramManager::kTrackSubleadingJet){
+            
+            // Low pT bins for 0-10 centrality
+            if(iCentrality == 0) zeroIndex = 14;
+            
+            // Track pT bin 8 < pT < 12 GeV
+            if(iTrackPt == 5){
+              zeroIndex = 13;
+            }
+            
+            // Track pT bin 12 < pT < 300 GeV
+            if(iTrackPt == 6){
+              if(iCentrality == 3){
+                zeroIndex = 11;
+              } else {
+                zeroIndex = 12;
+              }
+            }
+            
           }
           
           if(iBin < zeroIndex){
@@ -1339,7 +1377,8 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     if(fUseDifferenceInsteadOfRatio){
       fRatioHistogram[iAdditional]->Add(fComparisonHistogram[iAdditional],-1);
     } else {
-      fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
+      fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]); // TODO: Check if something clever can be done here
+      //fRatioHistogram[iAdditional]->Divide(fRatioHistogram[iAdditional],fComparisonHistogram[iAdditional],1,1,"B"); // Binomial errors
     }
   }
   delete rebinner;
