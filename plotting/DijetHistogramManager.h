@@ -426,7 +426,9 @@ private:
   void DoSeagullCorrection();     // Apply seagull correction to jet-track correlation histograms
   void DoTrackDeltaRCorrection(); // Apply track deltaR correction to jet-track correlation histograms
   void DoSpilloverCorrection();   // Apply spillover correction to jet-track correlation histograms
-  void SubtractBackgroundAndCalculateJetShape();  // Subtract the background from the distributions and use these histograms to calculate jet shape
+  void SubtractBackground();      // Subtract background from the spillover corrected distribution
+  void DoJffCorrection();         // Do the JFF correction to the background subtracted distribution
+  void CalculateJetShapeAndDoProjections();  // Calculate the jet shape from the background subtracted histogram and take projections of processed two-dimensional histograms
   
 };
 

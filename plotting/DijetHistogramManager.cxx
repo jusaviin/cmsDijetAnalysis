@@ -516,7 +516,9 @@ void DijetHistogramManager::ProcessHistograms(){
     DoSeagullCorrection();     // After mixed event correction, correct for possible residual seagull effects
     DoTrackDeltaRCorrection(); // When seagulls are done, correct for R dependent tracking
     DoSpilloverCorrection();   // After tracking corrections are done, continue with spillover correction
-    SubtractBackgroundAndCalculateJetShape(); // Subtract the background and take projections of processed two-dimensional histograms. After that, calculate jet shape
+    SubtractBackground();      // Subtract the background from the spillover corrected distribution
+    DoJffCorrection();         // Apply JFF correction to the background subtracted distribution
+    CalculateJetShapeAndDoProjections(); // Calculate the jet shape from the background subtracted histogram and take projections of processed two-dimensional histograms
   }
 }
 
@@ -631,7 +633,7 @@ void DijetHistogramManager::DoSeagullCorrection(){
   
   // If seagull correction is already done in the input file, do not repeat it
   if(fProcessingStartLevel > kSeagullCorrection) return;
-  
+
   int seagullMethod = 0;
   int seagullVeto = 0;
   double seagullConstantRegion = 0.5;
@@ -657,6 +659,7 @@ void DijetHistogramManager::DoSeagullCorrection(){
             if(iTrackPtBin > 2){
               seagullConstantRegion = 1.5;
               if(iJetTrack == kTrackSubleadingJet && iTrackPtBin == fnTrackPtBins-1) seagullConstantRegion = 1.2;
+              if(iJetTrack == kTrackSubleadingJet && iAsymmetry == 1 && iTrackPtBin > 3) seagullConstantRegion = 1.6;
               seagullMethod = 2;
             }
           }
@@ -749,8 +752,9 @@ void DijetHistogramManager::DoSeagullCorrection(){
               if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin < 3) seagullMethod = 1;
               if(iAsymmetry < 2 && iCentralityBin == 2 && iTrackPtBin == 1) seagullMethod = 1;
               if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin < 4) seagullMethod = 1;
-              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin < 3) seagullMethod = 1;
+              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin < 3) seagullMethod = 1; // TODO: For escheme axis change cent 3 to 2
               if(iAsymmetry == 2 && iTrackPtBin == 2 && iCentralityBin < 2) seagullMethod = 1;
+              //if(iAsymmetry == 0 && iCentralityBin > 1 && iTrackPtBin < 2) seagullVeto = 2; // TODO: Debugging stage here
               
             }
           }
@@ -764,6 +768,11 @@ void DijetHistogramManager::DoSeagullCorrection(){
               if(iCentralityBin == 1 && iTrackPtBin < 5) seagullMethod = 1;
               if(iCentralityBin == 1 && (iTrackPtBin == 1 || iTrackPtBin == 2)) seagullMethod = 3;
               if(iCentralityBin == 2 && iTrackPtBin == 2) seagullMethod = 4;
+              
+            } else if (iJetTrack >= kTrackSubleadingJet){
+              //if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin == 4) seagullVeto = 2; // TODO: Debug for closures
+              //if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 1 && iTrackPtBin == 4) seagullVeto = 2; // TODO: Debug for closures
+              //if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && (iTrackPtBin == 2 || iTrackPtBin == 3)) seagullVeto = 2;
             }
             
             if(iTrackPtBin == 5) seagullVeto = 1;
@@ -835,7 +844,7 @@ void DijetHistogramManager::DoTrackDeltaRCorrection(){
   
   // If R-dependent track correction is already applied in the input file, do not repeat it
   if(fProcessingStartLevel > kTrackDeltaRCorrection) return;
-  
+
   TH2D *correctionHistogram;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
@@ -877,7 +886,7 @@ void DijetHistogramManager::DoSpilloverCorrection(){
   
   // If the spillover correction is already applied in the input file, do not repeat it
   if(fProcessingStartLevel > kSpilloverCorrection) return;
-  
+
   TH2D *correctionHistogram;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
@@ -893,7 +902,7 @@ void DijetHistogramManager::DoSpilloverCorrection(){
             if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
               // Only apply the correction in low and central bins in subleading
               if(iCentralityBin > 1) continue;
-              if(iCentralityBin == 1 && iTrackPtBin > 3) continue;
+              if(iCentralityBin == 1 && iTrackPtBin > 4) continue; // TODO: Debug, changed 3 to 4 here
               if(iCentralityBin == 0 && iTrackPtBin > 4) continue;
             }
             correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
@@ -916,21 +925,17 @@ void DijetHistogramManager::DoSpilloverCorrection(){
 }
 
 /*
- * Subtract the background and take projections of processed two-dimensional histograms
+ * Subtract the background from the spillover corrected distribution
  */
-void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
+void DijetHistogramManager::SubtractBackground(){
   
-  // Helper variables to make the code more readable
-  char histogramName[200];
-  int nBins;
+  // Background is already subtracted in the input file, do not do it again
+  if(fProcessingStartLevel > kBackgroundSubtraction) return;
+  
   int connectedIndex;
-  int nProjectedBins;
-  int lowDeltaPhiBin, highDeltaPhiBin;
   bool isInclusive;
-  double binError;
-  double errorScale;
-  TH2D *correctionHistogram;
   
+  // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     isInclusive = (iJetTrack >= kTrackInclusiveJet); // Set the flag for inclusive jet-track correlations
@@ -943,38 +948,73 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
           // Get the subleading/leading jet index connected to the currect leading/subleading correlation type
           connectedIndex = GetConnectedIndex(iJetTrack);
           
-          // Subtract the background from the mixed event corrected histogram
+          // Subtract the background from the spillover corrected histogram
           // TODO TODO TODO: Option to remove background combination
-          //fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),true);
-          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),isInclusive);
+          //fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),true); // Do not combine background
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),isInclusive); // Nominal
           
           // Get also the background and background overlap region for QA purposes
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundOverlap][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetBackgroundOverlap();
           
-          // TODO: For testing purposes, do spillover correction after background subtraction
-          /*if(fApplySpilloverCorrection && fJffCorrectionFinder->SpilloverReady()){
-            if(iTrackPtBin < fnTrackPtBins-2 || (iTrackPtBin == fnTrackPtBins-2 && iCentralityBin < 2)){ // Do not apply spillover correction to the highest pT bin
-              //if(iJetTrack < kTrackSubleadingJet || iJetTrack > kPtWeightedTrackSubleadingJet){ // Do not apply spillover correction for subleading jets
-                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
-                
-                // Do not propagate the statistical errors of the correction to data
-                for(int iDeltaPhi = 1; iDeltaPhi <= correctionHistogram->GetNbinsX(); iDeltaPhi++){
-                  for(int iDeltaEta = 1; iDeltaEta <= correctionHistogram->GetNbinsY(); iDeltaEta++){
-                    correctionHistogram->SetBinError(iDeltaPhi,iDeltaEta,0);
-                  }
-                }
-                
-                fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram,-1);
-              //} // If for subleading jets
-            } // If for track pT
-          }*/
+        } // Track pT loop
+      } // Centrality loop
+    } // Asymmetry loop
+  } // Jet-track correlation category loop
+}
+
+/*
+ * Apply JFF correction to the background subtracted distribution
+ */
+void DijetHistogramManager::DoJffCorrection(){
+  
+  // If JFF correction is disabled in the configuration or the correction is not loaded, do not apply it
+  if(!fApplyJffCorrection || !fJffCorrectionFinder->CorrectionReady()) return;
+  
+  // If JFF correction is already applied in the input file, do not repeat it
+  if(fProcessingStartLevel > kJffCorrection) return;
+  
+  TH2D *correctionHistogram;
+  
+  // Loop over all jet-track correlation types and apply the mixed event correction
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
+    for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+      if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      
+      for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+        for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
-          // Apply the JFF correction to the background subtracted deltaEta-deltaPhi distribution
-          if(fApplyJffCorrection && fJffCorrectionFinder->CorrectionReady()){
-            correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
-            fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram, -1);
-          }
+          correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram, -1);
+          
+        } // Track pT loop
+      } // Centrality loop
+    } // Asymmetry loop
+  } // Jet-track correlation category loop
+}
+
+/*
+ * Calculate the jet shape from the background subtracted histogram and take projections of processed two-dimensional histograms
+ */
+void DijetHistogramManager::CalculateJetShapeAndDoProjections(){
+  
+  // Helper variables to make the code more readable
+  char histogramName[200];
+  int nBins;
+  int nProjectedBins;
+  int lowDeltaPhiBin, highDeltaPhiBin;
+  double binError;
+  double errorScale;
+  
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
+    
+    for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+      if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      
+      for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+        for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
           // Calculate the jet shape from the background subtracted histogram
           fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetJetShape(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]);
@@ -1025,7 +1065,7 @@ void DijetHistogramManager::SubtractBackgroundAndCalculateJetShape(){
             // DeltaPhi histogram over background eta region
             sprintf(histogramName,"%sDeltaPhiProjection%d",fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetName(),kBackgroundEtaRegion);
             fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kBackgroundEtaRegion] = (TH1D*)fMethods->ProjectBackgroundDeltaPhi(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin])->Clone();
-              
+            
             for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
               
               lowDeltaPhiBin = fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->GetXaxis()->FindBin(fLowDeltaPhiBinBorders[iDeltaPhi]);
