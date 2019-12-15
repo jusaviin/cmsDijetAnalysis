@@ -11,6 +11,14 @@
 using namespace std;
 
 /*
+ * Combination of third order polynomial and Gaussian function
+ * Functional form: f(x) = a + bx + cx^2 + dx^3 + h/s * e^(-0.5*((x-g)/s)^2)
+ */
+double jetPolyGauss(double *x, double *par){
+  return par[0]+par[1]*x[0]+par[2]*x[0]*x[0]+par[3]*x[0]*x[0]*x[0]+(par[4]/par[5])*TMath::Exp(-0.5*TMath::Power((x[0]-par[6])/par[5],2));
+}
+
+/*
  * Default constructor
  */
 DijetAnalyzer::DijetAnalyzer() :
@@ -192,8 +200,13 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fPtWeightFunction = new TF1("fPtWeightFunction","pol3",0,500);
   fPtWeightFunction->SetParameters(0.68323,0.00481626,-1.17975e-05,1.13663e-08);
   
+  // Weight function derived for leading jet
   fDijetWeightFunction = new TF1("fDijetWeightFunction","pol3",0,500);
   fDijetWeightFunction->SetParameters(0.723161,0.00236126,-3.90984e-06,3.10631e-09);
+  
+  // Weight function derived for subleading jet
+  //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
+  //fDijetWeightFunction->SetParameters(0.683267,2.97273e-03,-6.71989e-06,6.26340e-09,1.81108,16.8066,84.4603);
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
@@ -577,7 +590,11 @@ void DijetAnalyzer::RunAnalysis(){
   //****************************************
   //    Correlation type for Monte Carlo
   //****************************************
-  fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) {
+    fMcCorrelationType = -100;
+  } else {
+    fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
+  }
   Int_t mixingFileIndex = fCard->Get("MixingFileIndex");        // Select the used mixing file for PbPb MC
 
   //****************************************
@@ -644,6 +661,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t subleadingJetPhi = 0;    // Subleading jet phi
   Double_t subleadingJetEta = 0;    // Subleading jet eta
   Double_t subleadingJetFlavor = 0; // Flavor of the subleading jet
+  Double_t thirdJetPt = 0;          // Third highest jet pT
   Double_t leadingParticleFlowCandidatePhi = 0;     // Leading particle lofw candidate phi
   Double_t leadingParticleFlowCandidateEta = 0;     // Leading particle flow candidate eta
   Double_t subleadingParticleFlowCandidatePhi = 0;  // Subleading particle flow candidate phi
@@ -684,6 +702,7 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t jetSwapCounter = 0;         // Counter for leading and subleading jets that are swapped between reco and gen
   Int_t nonSensicalPartonIndex = 0; // Parton index is -999 even though jets are matched
   Int_t partonFlavor = -999;        // Code for parton flavor in Monte Carlo
+  Int_t highThirdJet = 0;           // TODO: Debuggery
   
   // Variables for tracks
   Double_t fillerTrack[4];            // Track histogram filler
@@ -1017,6 +1036,7 @@ void DijetAnalyzer::RunAnalysis(){
       secondHighestIndex = -1;
       leadingJetPt = 0;
       subleadingJetPt = 0;
+      thirdJetPt = 0;
       highestAnyPt = 0;
       highestPhi = 0;
       highestEta = 0;
@@ -1052,9 +1072,10 @@ void DijetAnalyzer::RunAnalysis(){
         }
         
         // Require also reference parton flavor to be quark [-6,-1] U [1,6] or gluon (21)
-        if(fMatchJets){
+        // We need to match gen jets to reco to get the parton flavor, but for reco jets it is always available in the forest
+        if(fMatchJets || fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
           
-          matchedCounter++; // For debugging purposes, count the number of matched jets
+          if(fMatchJets) matchedCounter++; // For debugging purposes, count the number of matched jets
           jetFlavor = 0;    // Jet flavor. 0 = Quark jet.
           
           partonFlavor = fJetReader->GetPartonFlavor(jetIndex);
@@ -1258,9 +1279,13 @@ void DijetAnalyzer::RunAnalysis(){
           
         }
         
+        // Remember subleading jet pT and the third highest jet pT
         if(jetPt > subleadingJetPt){
+          thirdJetPt = subleadingJetPt;
           subleadingJetPt = jetPt;
           secondHighestIndex = jetIndex;
+        } else if (jetPt > thirdJetPt){
+          thirdJetPt = jetPt;
         }
       }  //End of subleading jet search
       
@@ -1282,18 +1307,19 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetEta = fJetReader->GetJetEta(secondHighestIndex);
         subleadingJetFlavor = 0; // 0 = Quark jet
         
-        // If matching jets, find the jet flavor
-        if(fMatchJets){
+        // If matching jets or using reco jets, find the jet flavor
+        if(fMatchJets || fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
           if(TMath::Abs(fJetReader->GetPartonFlavor(highestIndex)) == 21) leadingJetFlavor = 1; // 1 = Gluon jet
           if(TMath::Abs(fJetReader->GetPartonFlavor(secondHighestIndex)) == 21) subleadingJetFlavor = 1; // 1 = Gluon jet
         }
         
         // For data, instead of jet flavor, mark positive vz with 1 and negative with 0
         // This is used in one of the systematic checks for long range correlations
-        if((fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) && vz > 0){
-          leadingJetFlavor = 1;
-          subleadingJetFlavor = 1;
-        }
+        // TODO: Debuggery
+        //if((fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) && vz > 0){
+        //  leadingJetFlavor = 1;
+        //  subleadingJetFlavor = 1;
+        //}
         
         // Apply the JFF correction for leading and subleading jet pT only if we are using calo jets
         // Determine the directions of the leading particle flow candidates for the leading and subleading
@@ -1340,6 +1366,15 @@ void DijetAnalyzer::RunAnalysis(){
         
         if(dijetFound) dijetCounter++;
       } // End of dijet cuts (two jets found if)
+      
+      // TODO: Debuggery
+      if(thirdJetPt > subleadingJetPt/2 && dijetFound) {
+        highThirdJet++;
+        
+        // Mark the events with high pT third jet with 1. 0 means there is no such jet
+        //leadingJetFlavor = 1;     // TODO: Quark/gluon separation used instead of third jet
+        //subleadingJetFlavor = 1;
+      }
       
       //************************************************
       //       Fill histograms for inclusive tracks
@@ -1521,6 +1556,9 @@ void DijetAnalyzer::RunAnalysis(){
     
   } // File loop
   
+  // TODO: Debuggery
+  cout << "Number of high third jet events: " << highThirdJet << endl;
+  cout << "Number of dijets: " << dijetCounter << endl;
   if(fMatchJets && fDebugLevel > 1){
     cout << "A total of " << unmatchedCounter << " jets were not matched!" << endl;
     cout << "A total of " << nonSensicalPartonIndex << " out of " << matchedCounter <<  " matched jets had reference parton flavor -999!" << endl;
@@ -1984,6 +2022,7 @@ Double_t DijetAnalyzer::GetJetPtWeight(const Double_t jetPt) const{
  */
 Double_t DijetAnalyzer::GetDijetWeight(const Double_t jetPt) const{
   if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1;  // No weight for data
+  return 1; // TODO: Current dijet weight is disabled
   
   // Only weight 2017 and 2018 MC
   if(fReadMode < 2000){

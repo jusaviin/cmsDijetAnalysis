@@ -256,8 +256,8 @@ void HighForestReader::Initialize(){
   fJetTree->SetBranchStatus("trackMax",1);
   fJetTree->SetBranchAddress("trackMax",&fJetMaxTrackPtArray,&fJetMaxTrackPtBranch);
   
-  // If we are matching jets and looking at Monte Carlo, connect the reference pT and parton arrays
-  if(fMatchJets && fDataType > kPbPb){
+  // If we are looking at Monte Carlo, connect the reference pT and parton arrays
+  if(fDataType > kPbPb){
     fJetTree->SetBranchStatus("refpt",1);
     fJetTree->SetBranchAddress("refpt",&fJetRefPtArray,&fJetRefPtBranch);
     fJetTree->SetBranchStatus("refparton_flavor",1);
@@ -699,8 +699,8 @@ Float_t HighForestReader::GetMatchedPt(Int_t iJet) const{
 // Parton flavor for the parton initiating the jet
 Int_t HighForestReader::GetPartonFlavor(Int_t iJet) const{
   
-  // If we are not matching jets or are considering real data, this value has no meaning
-  if(!fMatchJets || fDataType <= kPbPb) return 0;
+  // If we are considering real data, this value has no meaning
+  if(fDataType <= kPbPb) return 0;
   
   // Return the matching parton flavor
   return fJetRefFlavorArray[iJet];
