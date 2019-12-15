@@ -12,26 +12,27 @@ void checkSpilloverAsymmetry(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMixed_xjBins_symmetrized_looseCut_wtaAxis_centShift5_JECv6_2019-10-21.root";
-  TString spilloverComparisonFileName = "corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root";
+  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-02.root";
+  TString spilloverComparisonFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_dijetWeight_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-06.root";
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_dijetWeight_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-02.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_eschemeAxis_JECv6_2019-11-14.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMixed_xjBins_symmetrized_looseCut_wtaAxis_centShift5_JECv6_2019-10-21.root
   // corrections/spilloverCorrection_PbPbMC_pfCsJets_5eveStrictMix_xjBins_2019-06-06.root
-  // newSpilloverTest_symmetrizedDistribution_xj_radial.root
-  // newSpilloverTest_symmetrizedDistribution_matchedDijets_radial.root
-  // newSpilloverTest_symmetrizedDistribution_genJets_radial.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_eachemeAxis_centShift5_JECv6_2019-10-16.root
   TString jffFileName = "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_noErrors_symmetrizedAndBackgroundSubtracted_2019-08-16.root" ; // Can draw also JFF correction yield
   TString dataFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_subeNon0_centShift5_noCorrections_notCombinedBackground_processed_2019-10-04.root"; // Compare also with uncorrected data
   // data/dijetPbPb_pfCsJets_xj_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root
   // data/dijetPbPb_skims_pfJets_noUncorr_xj_improvisedMixing_noCorrections_processed_2019-03-04.root
   
-  bool drawAsymmetryComparison = true;
-  bool drawFileComparison = false;
+  bool drawAsymmetryComparison = false;
+  bool drawFileComparison = true;
   bool draw2Dsample = false;   // Draw sample 2D distributions
   bool drawIntegral = false;
   bool drawExample = false;     // Draw example r-dependent spillover distributions
   
-  const char *firstFileComment = "Spillover";
-  const char *secondFileComment = "WTA";
+  const char *firstFileComment = "WTA";
+  const char *secondFileComment = "Weighted";
   
   bool saveFigures = false;
   
@@ -79,12 +80,12 @@ void checkSpilloverAsymmetry(){
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
-        spilloverHistogram[iAsymmetry][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackSubleadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackSubleadingJetDeltaEtaDeltaPhi_A%dC%dT%d",iAsymmetry,iCentrality,iTrackPt));
+        spilloverHistogram[iAsymmetry][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_A%dC%dT%d",iAsymmetry,iCentrality,iTrackPt));
         spilloverDeltaR[iAsymmetry][iCentrality][iTrackPt] = calculator->GetJetShape(spilloverHistogram[iAsymmetry][iCentrality][iTrackPt]);
         
         jffHistogram[iAsymmetry][iCentrality][iTrackPt] = (TH2D*) jffFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/jffCorrection_trackLeadingJetDeltaEtaDeltaPhi_A%dC%dT%d", iAsymmetry, iCentrality, iTrackPt));
       }
-      spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackSubleadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackSubleadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
+      spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
       spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]->SetName(Form("regularSpillover%d%d",iCentrality,iTrackPt));
       spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt] = calculator->GetJetShape(spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]);
       

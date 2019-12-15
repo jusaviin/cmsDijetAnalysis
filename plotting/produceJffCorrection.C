@@ -1,6 +1,7 @@
 #include "DijetHistogramManager.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "DijetCard.h"
 #include "DijetMethods.h"
+#include "JffCorrector.h" // TODO: Only for testing, can be removed when done
 
 /*
  * Macro for producing the JFF correction from PYTHIA simulation results
@@ -11,43 +12,27 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_xjBins_sube0_wtaAxis_noCorrections_processed_JECv6_2019-09-26.root"; // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/ppMC2017_RecoGen_Pythia8_pfJets_20eveMix_xjBins_wtaAxis_noUncorr_dijetWeight_JECv4_onlySeagull_processed_2019-11-21.root"; // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_xjBins_sube0_wtaAxis_noCorrections_processed_JECv6_2019-09-26.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_5eveMix_wtaAxis_sube0_centShift5_onlySeagull_processed_2019-10-12.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-18.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_eschemeAxis_noUncorr_20EventsMixed_JECv4_onlySeagull_processed_2019-10-02.root
-  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
-  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_sube0_eschemeAxis_JECv5b_processed_2019-09-10.root
-  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_jetWeighting_noCorrections_sube0_wtaAxis_JECv5b_processed_2019-09-11.root
-  // data/PbPbMC_RecoGen_akPu4CaloJets_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_JECv5b_processed_2019-09-08.root
-  // data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyGluonJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyQuarkJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root
-  // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_improvisedMixing_JECv2_processed_2019-08-13.root
-  // data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_JECv4_processed_2019-08-09.root
-  // data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root
-  // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
-  // "data/PbPbMC_RecoGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
-  // data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_sube0_smoothedMixing_processed_2018-11-27.root
-  TString genGenFileName = "data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root";   // File from which the GenGen histograms are read for the correction
+  TString genGenFileName = "data/ppMC2017_GenGen_Pythia8_pfJets_20eveMix_xjBins_wtaAxis_noUncorr_dijetWeight_JECv4_onlySeagull_processed_2019-11-21.root";   // File from which the GenGen histograms are read for the correction
+  // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-18.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_eschemeAxis_noUncorr_20EventsMixed_JECv4_onlySeagull_processed_2019-10-02.root
   // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
-  // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_sube0_eschemeAxis_JECv5b_processed_2019-09-10.root
-  // data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyGluonJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root
-  // data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_improvisedMixing_sube0_onlyQuarkJets_matchedJets_noCorrections_JECv4_processed_2019-08-09.root
-  // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_improvisedMixing_JECv2_processed_2019-08-13.root
-  // data/PbPbMC_GenGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_sube0_matchedJets_JECv4_processed_2019-08-09.root
-  // data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root
-  // data/dijet_ppMC_GenGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
-  // "data/PbPbMC_GenGen_pfCsJets_noUncOrInc_xjBins_improvisedMixing_onlySeagull_sube0_matchedJets_wtaAxis_processed_2019-07-12.root"
 
-  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigation_2019-10-24.root";   // File name for the output file
+  TString outputFileName = "corrections/jffCorrection_ppMC2017_pfJets_noUncOrInc_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-11-27.root";   // File name for the output file
+  // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigationOrRCut_2019-11-26.root
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eventsMixed_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
   // corrections/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   // corrections/jffCorrection_ppMC_pfCsJets_noUncOrInc_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
@@ -62,7 +47,7 @@ void produceJffCorrection(){
   
   // If 2D MC distribution give too much fluctuations to the results, can try different methods to reduce them
   int nRebin = 1;               // Rebin the histograms in order to reduce fluctuations
-  bool symmetrizeDistribution = true; // Symmetrize eta and phi in the JFF correction to reduce fluctuations
+  bool symmetrizeDistribution = false; // Symmetrize eta and phi in the JFF correction to reduce fluctuations
   int distributionForCorrection = DijetHistogramManager::kBackgroundSubtracted; // Choose which distribution is used for the correction DijetHistogramManager::kBackgroundSubtracted DijetHistogramManager::kCorrected DijetHistogramManager::kSameEvent
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
@@ -89,11 +74,11 @@ void produceJffCorrection(){
                           {1.5,1.5,1.5,1.5,0.6,0.5,0.5}}; // 50-100 % centrality
   
   // Disable the cut for testing purposes
-  //for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-  //  for(int iTrackPt = 0; iTrackPt < 7; iTrackPt++){
-  //    jffRcut[iCentrality][iTrackPt] = 1.5;
-  //  }
-  //}
+  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
+    for(int iTrackPt = 0; iTrackPt < 7; iTrackPt++){
+      jffRcut[iCentrality][iTrackPt] = 1.5;
+    }
+  }
   
   // Create histogram managers to provide the histograms for the correction
   DijetHistogramManager *recoGenHistograms = new DijetHistogramManager(recoGenFile);
@@ -170,7 +155,7 @@ void produceJffCorrection(){
           
           jffCorrectionDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
           
-          jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,distributionForCorrection,iAsymmetry,iCentrality,iTrackPt);
+          jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,distributionForCorrection,iAsymmetry,iCentrality,iTrackPt)->Clone(Form("jffCorrection%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
           
           // If we are reading the histograms from the same event distribution, we need to scale them by the number of dijets
           // The scaling by dijets is done in histogram manager after mixed event correction, so other distribution have
@@ -207,7 +192,7 @@ void produceJffCorrection(){
           
           jffHelperDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,DijetHistogramManager::kBackgroundSubtracted,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
           
-          jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,distributionForCorrection,iAsymmetry,iCentrality,iTrackPt);
+          jffHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH2D*) genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack,distributionForCorrection,iAsymmetry,iCentrality,iTrackPt)->Clone(Form("jffHelper%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
           
           // If we are reading the histograms from the same event distribution, we need to scale them by the number of dijets
           // The scaling by dijets is done in histogram manager after mixed event correction, so other distribution have
@@ -301,6 +286,23 @@ void produceJffCorrection(){
       } // Centrality loop
     } // Asymmetry loop
   } // Jet-track correlation type loop
+  
+  // TODO TODO TODO: Test here if we get reasonable results
+  
+  /*TFile *correctionFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigationOrRCut_2019-11-26.root");
+  JffCorrector *dededest = new JffCorrector(correctionFile);
+  TH2D *myDesperateCorrection = dededest->GetDeltaEtaDeltaPhiJffCorrection(0,0,0,3);
+  TH2D *myFairHistogram = recoGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(0,distributionForCorrection,3,0,0);
+  TH2D *myTipsyHistogram = genGenHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(0,distributionForCorrection,3,0,0);
+  myFairHistogram->Add(myDesperateCorrection,-1);
+  TH1D *myFairShape = fitter->GetJetShape(myFairHistogram);
+  myFairShape->SetName("lulIsTheWord");
+  TH1D *myTipsyShape = fitter->GetJetShape(myTipsyHistogram);
+  myFairShape->Divide(myTipsyShape);
+  myFairShape->Draw();
+  //myFairHistogram->Divide(myTipsyHistogram);
+  //myFairHistogram->Draw("colz");
+  return;*/
   
   // Create the output file
   TFile *outputFile = new TFile(outputFileName,"RECREATE");

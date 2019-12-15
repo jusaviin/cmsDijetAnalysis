@@ -12,14 +12,14 @@ void checkSame(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileName1 = "testPreprocess.root";  // File from which the RecoGen histograms are read for the correction
+  TString fileName1 = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_xjBins_sube0_wtaAxis_onlyJffCorrection_jffExplore_processed_JECv6_2019-11-26.root";  // File from which the RecoGen histograms are read for the correction
   // PbPbMC_RecoGen_skims_pfJets_noIncOrUnc_5eveStrictMix_matchedDijets_subeNon0_noCorrections_processed_2019-05-08.root
   // PbPbMC_RecoGen_skims_pfJets_noUncOrInc_5eveImprovedMix_subeNon0_2019-02-15_noCorrections_processed.root
   // data/PbPbMC_RecoGen_skims_pfJets_noUncorr_xj_sube0_improvisedMixing_processed_2019-03-28.root
-  TString fileName2 = "testNoPreprocess.root";   // File from which the GenGen histograms are read for the correction
+  TString fileName2 = "data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root";   // File from which the GenGen histograms are read for the correction
 
   // Possible distribution to compare: kSameEvent, kMixedEvent, kMixedEventNormalized, kCorrected, kBackgroundSubtracted, kBackground, kBackgroundOverlap
-  int comparedDistribution = DijetHistogramManager::kCorrected;
+  int comparedDistribution = DijetHistogramManager::kBackgroundSubtracted;
   bool saveFigures = false;
   
   // Config done
@@ -69,7 +69,7 @@ void checkSame(){
   
   // For a quick check, read the same histogram from the two files and check 1/2 = 1
   for(int iCentrality = 1; iCentrality < 2; iCentrality++){
-    for(int iTrackPt = 1; iTrackPt < 2; iTrackPt++){
+    for(int iTrackPt = 5; iTrackPt < 6; iTrackPt++){
       firstTestHistogram[iCentrality][iTrackPt] = firstHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(0,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
       secondTestHistogram[iCentrality][iTrackPt] = secondHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(0,comparedDistribution,DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt);
       

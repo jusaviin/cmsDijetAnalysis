@@ -25,14 +25,14 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "uncertainties/systematicUncertaintyForPpMC_RecoGen_20eveMix_mcMode_2019-10-21.root";
+  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPbMC_RecoReco_5eveMix_mcMode_2019-12-10.root";
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
   
-  bool ppData = true; // Flag if we are estimating systematics for pp or PbPb
+  bool ppData = false; // Flag if we are estimating systematics for pp or PbPb
   
   bool mcMode = true; // Only assing uncertainty from background subtraction and acceptance correction
   
-  TString dataFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root";
+  TString dataFileName = "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_5eveMix_allCorrections_tunedTracking_processed_2019-11-21.root";
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_JECv6_allCorrections_processed_2019-10-04.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_lowPtResidualTrack_processed_2019-10-01_fiveJobsMissing.root

@@ -12,7 +12,8 @@ void produceTrackingDeltaRCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
 
-  TString genRecoFileName = "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_onlySeagullUptoHigh_mixingScale16_processed_2019-10-07.root";  // File from which the GenReco histograms are read for the correction
+  TString genRecoFileName = "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_5eveMix_onlySeagull_processed_2019-11-19.root";  // File from which the GenReco histograms are read for the correction
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_onlySeagullUptoHigh_mixingScale16_processed_2019-10-07.root
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_onlySeagull_processed_2019-10-07.root
   // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_centShift5_noCorrections_processed_2019-10-12.root
@@ -29,7 +30,7 @@ void produceTrackingDeltaRCorrection(){
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_fineTunedRange_mixingFromSubeNon0_recoJets_2019-10-24.root"; // File name for the output file
+  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_workInProgress_mixingFromSubeNon0_recoJets_2019-11-19.root"; // File name for the output file
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_until8GeV_noSymmetry_2019-10-18.root
   
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
@@ -139,10 +140,10 @@ void produceTrackingDeltaRCorrection(){
           // Also for large pT use smaller area around the jet peak for the correction
           if(iTrackPt > 4 ) {
             if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet) {
-              if(iTrackPt == 5) maxDeltaR = 0.8;
-              if(iTrackPt == 6) maxDeltaR = 0.8;
+              if(iTrackPt == 5) maxDeltaR = 2.5;   // 0.6 is decent
+              if(iTrackPt == 6) maxDeltaR = 2.5;  // 0.2 best thus far
             } else {
-              maxDeltaR = 0.6;
+              maxDeltaR = 2.5;
             }
             scalingFactor = 1;
           } else {

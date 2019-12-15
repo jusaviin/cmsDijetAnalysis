@@ -14,29 +14,15 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_wtaAxis_subeNon0_centShift5_onlySeagull_processed_2019-10-21.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wta_dijetWeight_subeNon0_centShift5_correctedCentrality_noCorrections_processed_2019-11-25.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_wtaAxis_subeNon0_centShift5_onlySeagull_processed_2019-10-21.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_subeNon0_centShift5_noCorrections_processed_2019-10-08.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_subeNon0_wtaAxis_JECv6_noCorrections_notCombinedBackground_processed_2019-09-26.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_subeNon0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
-  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_subeNon0_eschemeAxis_JECv5b_processed_2019-09-10.root
-  // data/PbPbMC_RecoGen_akPu4CaloJets_noUncorr_improvisedMixing_xjBins_subeNon0_wtaAxis_JECv5b_processed_2019-09-08.root
-  // data/PbPbMC_RecoGen_akPu4CaloJets_noUncorr_improvisedMixing_noCorrections_subeNon0_wtaAxis_JECv5b_processed_2019-09-08.root
-  // data/PbPbMC_RecoGen_akFlowPuCs4PfJets_noUncorr_improvisedMixing_noCorrections_xjBins_subeNon0_JECv5b_processed_2019-09-04.root
-  // data/PbPbMC_RecoGen_akFlowPuCs4PfJets_noUncorr_improvisedMixing_noCorrections_xjBins_jet100Trigger_subeNon0_JECv5b_processed_2019-09-04.root
-  // data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_subeNon0_JECv4_noCorrections_processed_2019-08-09.root
-  // data/PbPbMC_RecoGen_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_subeNon0_wtaAxis_processed_2019-07-12.root
-  // data/PbPbMC_RecoGen_pfCsJets_noUncorr_matchedDijets_subeNon0_improvisedMixing_onlySeagull_processed_2019-07-02.root
-  // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xjBinsIncluded_2019-06-06_onlySeagullCorrection_processed.root"
-  // PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root
-  // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_onlyImprovedSeagull_processed.root"
-  // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_largeDeltaPhiBackground_processed_2019-02-15.root"
-  // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_fixedCentality_processed_2019-02-15.root"
-  // "data/PbPbMC_RecoGen_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_processed_2019-02-15.root"
-  // "data/PbPbMC_RecoGen_skims_pfJets_noInclOrUncorr_10eveMixed_subeNon0_smoothedMixing_processed_2018-11-27.root"
-  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-10-23.root"; // File name for the output file
+
+  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_dijetWeight_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-06.root"; // File name for the output file
   // corrections/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
   // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
@@ -49,7 +35,7 @@ void produceSpilloverCorrection(){
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
-  bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
+  bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   

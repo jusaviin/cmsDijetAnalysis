@@ -9,8 +9,14 @@ void jetShapeCorrectionComparer(){
   
   // Open the files for the JFF corrections
   TFile *quarkFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
+  // corrections/jffCorrection_ppMC2017_pfJets_noUncOrInc_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-11-27.root
   TFile *gluonFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
+  // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
   TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
+  // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
   TFile *files[3] = {quarkFile,gluonFile,standardFile};
   
   // Figure saving options
@@ -20,8 +26,8 @@ void jetShapeCorrectionComparer(){
   
   // Configuration
   const int nCentralityBins = 4;
-  const int nTrackPtBins = 6;
-  double trackPtBorders[] = {0.7,1,2,3,4,8,300};
+  const int nTrackPtBins = 7;
+  double trackPtBorders[] = {0.7,1,2,3,4,8,12,300};
   double centralityBinBorders[] = {0,10,30,50,90};
   
   // Jff correction histograms
