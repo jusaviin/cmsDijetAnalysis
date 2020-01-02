@@ -16,6 +16,8 @@ void illustrateBackgroundSystematics(){
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
+  bool zoomCloseToUncertaintyScale = true;  // Zoom the histograms such that uncertainties are more easily visible
+  
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
   // Define which bins to loop over
@@ -23,11 +25,15 @@ void illustrateBackgroundSystematics(){
   const int nTrackPtBins = dataHistograms->GetNTrackPtBins();
   const int nAsymmetryBins = dataHistograms->GetNAsymmetryBins();
   
-  int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  double centralityBinBorders[] = {0,10,30,50,90};
+  double asymmetryBinBorders[] = {0,0.6,0.8,1};
+  double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};
   
-  int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = 0;
+  int firstDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
+  
+  int firstDrawnTrackPtBin = 1;
+  int lastDrawnTrackPtBin = 1;
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -48,13 +54,14 @@ void illustrateBackgroundSystematics(){
   DijetMethods *methods = new DijetMethods();
   
   // Define helper variables
-  double currentUncertainty;
-  double currentUncertaintyDeltaEta;
-  TH1D *helperHistogram;
   TH2D *twoDimensionalHelper;
   
+  // Define histograms and arrays for background and pair acceptance uncertainties
   TH1D *backgroundSubtractionHistogram[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   double backgroundUncertainty[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  
+  TH1D *pairAcceptanceHistogram[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  double pairAcceptanceUncertainty[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   
   // Loop over the bins to collect histograms and parameters for illustration
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -87,9 +94,9 @@ void illustrateBackgroundSystematics(){
           
           twoDimensionalHelper = dataHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
           
-          helperHistogram = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, 1, 2)->Clone(Form("DeltaEtaForShapeAcceptance%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          pairAcceptanceHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, 1, 2)->Clone(Form("DeltaEtaForShapeAcceptance%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
           
-          currentUncertainty = methods->EstimateSystematicsForPairAcceptanceCorrection(helperHistogram);
+          pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = methods->EstimateSystematicsForPairAcceptanceCorrection(pairAcceptanceHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
           
         } // Track pT loop
@@ -99,13 +106,16 @@ void illustrateBackgroundSystematics(){
   
   JDrawer *drawer = new JDrawer();
   TLegend *legend;
-  TLine *line = new TLine();
-  line->SetLineColor(kRed);
+  TLine *redLine = new TLine();
+  redLine->SetLineColor(kRed);
+  TLine *blueLine = new TLine();
+  blueLine->SetLineColor(kBlue);
   
   TString centralityString;
   TString compactCentralityString;
   TString trackPtString;
   TString compactTrackPtString;
+  double maxUncertainty;
   
   // Draw the illustrative figures
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -139,15 +149,26 @@ void illustrateBackgroundSystematics(){
           backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlack);
           backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3);
           
+          if(zoomCloseToUncertaintyScale){
+            maxUncertainty = backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+            if(pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] > maxUncertainty){
+              maxUncertainty = pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+            }
+            backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(-4*maxUncertainty, 15*maxUncertainty);
+          }
+          
           drawer->DrawHistogram(backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt], "#Delta#eta", "#frac{dN}{d#Delta#eta}");
-          line->DrawLine(-3, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
-          line->DrawLine(-3, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          redLine->DrawLine(-3, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          redLine->DrawLine(-3, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          blueLine->DrawLine(-3, pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          blueLine->DrawLine(-3, -pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, -pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
           legend = new TLegend(0.7,0.65,0.9,0.92);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
           legend->AddEntry((TObject*) 0,centralityString.Data(),"");
           legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
-          legend->AddEntry(spilloverEtaProjection[0][nAsymmetryBins][iCentrality][iTrackPt], "Flow PF jet", "l");
+          legend->AddEntry(redLine, "Background", "l");
+          legend->AddEntry(blueLine, "Pair acceptance", "l");
           legend->Draw();
           
         } // Track pT loop
