@@ -268,6 +268,9 @@ public:
   // Getter for the card
   DijetCard* GetCard() const;  // Getter for the JCard
   
+  // Histogram combining
+  void CombineHistograms(DijetHistogramManager *combinedHistograms, double factorThis = 1, double factorCombine = 1);   // Combine histograms between this histogram manager and provided histogram manager
+  
 private:
   
   // Data members

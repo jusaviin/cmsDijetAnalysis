@@ -505,6 +505,92 @@ DijetHistogramManager::~DijetHistogramManager(){
 }
 
 /*
+ * Combine same and mixed event jet-track correlation distributions from two files weighting the distributions with given factors.
+ * We will also need to combine the jet pT distribution with the same factors to get the correct normalization later.
+ *
+ *  DijetHistogramManager *combinedHistograms = Set of histograms to be combined with histograms in this manager
+ *  double factorThis = Weighting factor for the distributions in this manager
+ *  double factorCombine = Weighting factor for the distributions from the combined manager
+ */
+void DijetHistogramManager::CombineHistograms(DijetHistogramManager *combinedHistograms, double factorThis, double factorCombine){
+
+  // Helper variables for reading histograms
+  TH1D *helperHistogram;
+  TH2D *twoDimensionalHelper;
+  
+  // Combine the single jet histograms between the two managers
+  for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
+    
+    if(!fLoadSingleJets[iJetCategory]) continue;  // Only combine histograms in selected categories
+    
+    for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+      
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        
+        // Single jet pT histograms
+        helperHistogram = combinedHistograms->GetHistogramJetPt(iJetCategory, iCentralityBin, iAsymmetry);
+        if(helperHistogram) fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]->Add(fhJetPt[iJetCategory][iCentralityBin][iAsymmetry], helperHistogram, factorThis, factorCombine);
+        
+        // Single jet phi
+        helperHistogram = combinedHistograms->GetHistogramJetPhi(iJetCategory, iCentralityBin, iAsymmetry);
+        if(helperHistogram) fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]->Add(fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry], helperHistogram, factorThis, factorCombine);
+        
+        // Single jet eta
+        helperHistogram = combinedHistograms->GetHistogramJetEta(iJetCategory, iCentralityBin, iAsymmetry);
+        if(helperHistogram) fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]->Add(fhJetEta[iJetCategory][iCentralityBin][iAsymmetry], helperHistogram, factorThis, factorCombine);
+        
+        // Single jet eta-phi
+        if(fLoad2DHistograms){
+          twoDimensionalHelper = combinedHistograms->GetHistogramJetEtaPhi(iJetCategory, iCentralityBin, iAsymmetry);
+          if(twoDimensionalHelper) fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]->Add(fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry], twoDimensionalHelper, factorThis, factorCombine);
+        }
+      } // Asymmetry bin loop
+    } // Centrality bin loop
+    
+  } // Loop over single jet categories
+  
+  
+  // Combine the jet-track correlation histograms between the two managers
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only load categories of correlation that are selected
+    
+    // Loop over correlation types (only combine same and mixed event)
+    for(int iCorrelationType = 0; iCorrelationType < kMixedEventNormalized; iCorrelationType++){
+      
+      // Loop over asymmetry bins
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+        
+        // Loop over centrality bins
+        for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+          
+          // Loop over track pT bins
+          for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+            
+            // Jet-track deltaPhi
+            helperHistogram = combinedHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack, iCorrelationType, iAsymmetry, iCentralityBin, iTrackPtBin, kWholeEta);
+            if(helperHistogram) fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta]->Add( fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta], helperHistogram, factorThis, factorCombine );
+            
+            // Jet-track deltaEtaDeltaPhi
+            if(fLoad2DHistograms){
+              twoDimensionalHelper = combinedHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, iCorrelationType, iAsymmetry, iCentralityBin, iTrackPtBin);
+              if(twoDimensionalHelper) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->Add( fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin], twoDimensionalHelper, factorThis, factorCombine );
+            }
+            
+            // DeltaPhi binning for deltaEta histogram
+            for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
+              helperHistogram = combinedHistograms->GetHistogramJetTrackDeltaEta(iJetTrack, iCorrelationType, iAsymmetry, iCentralityBin, iTrackPtBin, iDeltaPhi);
+              if(helperHistogram) fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]->Add( fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi], helperHistogram, factorThis, factorCombine );
+            } // DeltaPhi loop
+          } // Track pT loop
+        } // Centrality loop
+      } // Asymmetry loop
+    } // Correlation type loop
+  } // Jet-track correlation category loop
+  
+}
+
+/*
  * Apply the mixed event correction to all jet-track correlation histograms that are selected for analysis
  * After that subtract the background form the mixed event corrected distributions
  */
