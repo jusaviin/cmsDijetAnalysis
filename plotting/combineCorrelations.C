@@ -32,46 +32,46 @@ void combineCorrelations(TString firstFileName, TString secondFileName, const ch
   // Choose which histograms to combine
   // NOTE: Currently (2020-01-02) combining histograms is only implemented for single jet histograms and jet-track correlation histograms
   // For other cases the histograms from the first file will be used as is
-  bool drawEventInformation = false;
-  bool drawDijetHistograms = false;
-  bool drawLeadingJetHistograms = false;
-  bool drawSubleadingJetHistograms = false;
-  bool drawAnyJetHistograms = false;
-  bool drawAnyLeadingJetHistograms = false;
-  bool drawTracks = false;
-  bool drawUncorrectedTracks = false;
-  bool drawInclusiveTracks = false;
-  bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
-  bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = false;
-  bool drawUncorrectedTrackSubleadingJetCorrelations = false;
-  bool drawPtWeightedTrackSubleadingJetCorrelations = true;
-  bool drawTrackInclusiveJetCorrelations = false;
-  bool drawPtWeightedTrackInclusiveJetCorrelations = false;
-  bool drawJetPtClosure = false;
+  bool combineEventInformation = false;
+  bool combineDijetHistograms = false;
+  bool combineLeadingJetHistograms = false;
+  bool combineSubleadingJetHistograms = false;
+  bool combineAnyJetHistograms = false;
+  bool combineAnyLeadingJetHistograms = false;
+  bool combineTracks = false;
+  bool combineUncorrectedTracks = false;
+  bool combineInclusiveTracks = false;
+  bool combineUncorrectedInclusiveTracks = false;
+  bool combineTrackLeadingJetCorrelations = false;
+  bool combineUncorrectedTrackLeadingJetCorrelations = false;
+  bool combinePtWeightedTrackLeadingJetCorrelations = false;
+  bool combineTrackSubleadingJetCorrelations = false;
+  bool combineUncorrectedTrackSubleadingJetCorrelations = false;
+  bool combinePtWeightedTrackSubleadingJetCorrelations = true;
+  bool combineTrackInclusiveJetCorrelations = false;
+  bool combinePtWeightedTrackInclusiveJetCorrelations = false;
+  bool combineJetPtClosure = false;
   
   if(histogramSelection > 0){
-    drawEventInformation = (histogramSelection == 1);
-    drawDijetHistograms = (histogramSelection == 2);
-    drawLeadingJetHistograms = (histogramSelection == 2);
-    drawSubleadingJetHistograms = (histogramSelection == 2);
-    drawAnyJetHistograms = (histogramSelection == 2);
-    drawAnyLeadingJetHistograms = (histogramSelection == 2);
-    drawTracks = (histogramSelection == 3);
-    drawUncorrectedTracks = (histogramSelection == 3);
-    drawInclusiveTracks = (histogramSelection == 3);
-    drawUncorrectedInclusiveTracks = (histogramSelection == 3);
-    drawTrackLeadingJetCorrelations = (histogramSelection == 4);
-    drawUncorrectedTrackLeadingJetCorrelations = (histogramSelection == 5);
-    drawPtWeightedTrackLeadingJetCorrelations = (histogramSelection == 6);
-    drawTrackSubleadingJetCorrelations = (histogramSelection == 4);
-    drawUncorrectedTrackSubleadingJetCorrelations = (histogramSelection == 5);
-    drawPtWeightedTrackSubleadingJetCorrelations = (histogramSelection == 6);
-    drawTrackInclusiveJetCorrelations = (histogramSelection == 7);
-    drawPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 8);
-    drawJetPtClosure = (histogramSelection == 9);
+    combineEventInformation = (histogramSelection == 1);
+    combineDijetHistograms = (histogramSelection == 2);
+    combineLeadingJetHistograms = (histogramSelection == 2);
+    combineSubleadingJetHistograms = (histogramSelection == 2);
+    combineAnyJetHistograms = (histogramSelection == 2);
+    combineAnyLeadingJetHistograms = (histogramSelection == 2);
+    combineTracks = (histogramSelection == 3);
+    combineUncorrectedTracks = (histogramSelection == 3);
+    combineInclusiveTracks = (histogramSelection == 3);
+    combineUncorrectedInclusiveTracks = (histogramSelection == 3);
+    combineTrackLeadingJetCorrelations = (histogramSelection == 4);
+    combineUncorrectedTrackLeadingJetCorrelations = (histogramSelection == 5);
+    combinePtWeightedTrackLeadingJetCorrelations = (histogramSelection == 6);
+    combineTrackSubleadingJetCorrelations = (histogramSelection == 4);
+    combineUncorrectedTrackSubleadingJetCorrelations = (histogramSelection == 5);
+    combinePtWeightedTrackSubleadingJetCorrelations = (histogramSelection == 6);
+    combineTrackInclusiveJetCorrelations = (histogramSelection == 7);
+    combinePtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 8);
+    combineJetPtClosure = (histogramSelection == 9);
   }
   
   // Processed bins
@@ -146,16 +146,16 @@ void combineCorrelations(TString firstFileName, TString secondFileName, const ch
   
   // Load the histograms that will be combined
   for(int iFile = 0; iFile < 2; iFile++){
-    histograms[iFile]->SetLoadEventInformation(drawEventInformation);
-    histograms[iFile]->SetLoadDijetHistograms(drawDijetHistograms);
-    histograms[iFile]->SetLoadAllJets(drawLeadingJetHistograms, drawSubleadingJetHistograms, drawAnyJetHistograms, drawAnyLeadingJetHistograms);
-    histograms[iFile]->SetLoadAllTracks(drawTracks, drawUncorrectedTracks);
-    histograms[iFile]->SetLoadAllInclusiveTracks(drawInclusiveTracks, drawUncorrectedInclusiveTracks);
-    histograms[iFile]->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations, drawUncorrectedTrackLeadingJetCorrelations, drawPtWeightedTrackLeadingJetCorrelations);
-    histograms[iFile]->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations, drawUncorrectedTrackSubleadingJetCorrelations, drawPtWeightedTrackSubleadingJetCorrelations);
-    histograms[iFile]->SetLoadAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations ,drawPtWeightedTrackInclusiveJetCorrelations);
+    histograms[iFile]->SetLoadEventInformation(combineEventInformation);
+    histograms[iFile]->SetLoadDijetHistograms(combineDijetHistograms);
+    histograms[iFile]->SetLoadAllJets(combineLeadingJetHistograms, combineSubleadingJetHistograms, combineAnyJetHistograms, combineAnyLeadingJetHistograms);
+    histograms[iFile]->SetLoadAllTracks(combineTracks, combineUncorrectedTracks);
+    histograms[iFile]->SetLoadAllInclusiveTracks(combineInclusiveTracks, combineUncorrectedInclusiveTracks);
+    histograms[iFile]->SetLoadAllTrackLeadingJetCorrelations(combineTrackLeadingJetCorrelations, combineUncorrectedTrackLeadingJetCorrelations, combinePtWeightedTrackLeadingJetCorrelations);
+    histograms[iFile]->SetLoadAllTrackSubleadingJetCorrelations(combineTrackSubleadingJetCorrelations, combineUncorrectedTrackSubleadingJetCorrelations, combinePtWeightedTrackSubleadingJetCorrelations);
+    histograms[iFile]->SetLoadAllTrackInclusiveJetCorrelations(combineTrackInclusiveJetCorrelations ,combinePtWeightedTrackInclusiveJetCorrelations);
     histograms[iFile]->SetLoad2DHistograms(true);
-    histograms[iFile]->SetLoadJetPtClosureHistograms(drawJetPtClosure);
+    histograms[iFile]->SetLoadJetPtClosureHistograms(combineJetPtClosure);
     
     // Set the binning information
     histograms[iFile]->SetCentralityBinRange(firstDrawnCentralityBin, lastDrawnCentralityBin);
@@ -166,7 +166,6 @@ void combineCorrelations(TString firstFileName, TString secondFileName, const ch
     // Load the chosen histograms
     histograms[iFile]->LoadProcessedHistograms();
   }
-  
   
   // Combine the histograms from two files and write them to a new file
   histograms[0]->CombineHistograms(histograms[1], histogramWeightFirst, histogramWeightSecond);
