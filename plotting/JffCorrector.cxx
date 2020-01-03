@@ -254,6 +254,10 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
   // Read the histograms from the file
   TString asymmetryString;
   TString histogramName;
+  TH1D *jetShapeSum;
+  TH1D *deltaEtaSum;
+  double oldContent, addedContent, newContent;
+  
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     
     for(int iAsymmetry = 0; iAsymmetry <= fSystematicAsymmetryBins; iAsymmetry++){
@@ -269,19 +273,53 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
       }
       
       for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){
-        for(int iTrackPt = 0; iTrackPt <= fSystematicTrackPtBins; iTrackPt++){
-          for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
+        
+        for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
+          for(int iTrackPt = 0; iTrackPt < fSystematicTrackPtBins; iTrackPt++){
+            
             histogramName = Form("%sUncertainty/jetShapeUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
             fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = (TH1D*) systematicFile->Get(histogramName.Data());
             
-            if(iTrackPt < fSystematicTrackPtBins){
-              histogramName = Form("%sUncertainty/deltaEtaUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
+            histogramName = Form("%sUncertainty/deltaEtaUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
               
-              fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = (TH1D*) systematicFile->Get(histogramName.Data());
+            fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] = (TH1D*) systematicFile->Get(histogramName.Data());
+            
+            // If the histogram does not exist, do not do the summing
+            if(fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty] == NULL) continue;
+            
+            // For pT summed histogram, in the first pT bin clone the histogram and add the histograms in quadrature in the other bins
+            if(iTrackPt == 0){
+              histogramName = Form("jetShapeUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, fSystematicTrackPtBins, uncertaintyName[iUncertainty].Data());
+              jetShapeSum = (TH1D*) fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->Clone(histogramName);
+              
+              histogramName = Form("deltaEtaUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, fSystematicTrackPtBins, uncertaintyName[iUncertainty].Data());
+              deltaEtaSum = (TH1D*) fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->Clone(histogramName);
+              
+            } else {
+              
+              for(int iBin = 1; iBin <= jetShapeSum->GetNbinsX(); iBin++){
+                oldContent = jetShapeSum->GetBinContent(iBin);
+                addedContent = fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetBinContent(iBin);
+                newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
+                
+                jetShapeSum->SetBinContent(iBin, newContent);
+              }
+              
+              for(int iBin = 1; iBin <= deltaEtaSum->GetNbinsX(); iBin++){
+                oldContent = deltaEtaSum->GetBinContent(iBin);
+                addedContent = fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetBinContent(iBin);
+                newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
+                
+                deltaEtaSum->SetBinContent(iBin, newContent);
+              }
             }
             
-          } // Uncertainty source loop
-        } // Track pT loop
+          } // Track pT loop
+          
+          fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][fSystematicTrackPtBins][iUncertainty] = (TH1D*) jetShapeSum->Clone();
+          fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][fSystematicTrackPtBins][iUncertainty] = (TH1D*) deltaEtaSum->Clone();
+          
+        } // Uncertainty source loop
       } // Centrality loop
     } // Asymmetry loop
   } // Jet-track correlation type loop
