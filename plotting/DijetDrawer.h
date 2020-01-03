@@ -108,6 +108,8 @@ public:
   void SetDrawingStyles(const int color, const char* style2D, const char* style3D); // Setter for drawing styles
   void SetBackgroundDrawStyle(const int style); // Setter for background deltaPhi draw styles
   
+  // Setters for drawn projection regions
+  void SetDeltaEtaProjectionRegion(bool wholePhi, bool nearSide, bool awaySide, bool betweenPeaks);  // DeltaPhi regions for deltaEta projections
   
 private:
   
@@ -139,7 +141,8 @@ private:
   bool fDrawJetTrackDeltaEta;                                            // Draw the jet-track deltaEta correlation
   bool fDrawJetTrackDeltaEtaDeltaPhi;                                    // Draw the jet-track deltaEta-deltaPhi correlation
   bool fDrawJetShape[DijetHistogramManager::knJetShapeTypes];            // Draw the jet shape histograms
-  bool fBackgroundDrawStyle[knBackgroundStyles];                         // Bacroung drawing style settings
+  bool fBackgroundDrawStyle[knBackgroundStyles];                         // Backround drawing style settings
+  bool fDrawDeltaEtaProjection[DijetHistogramManager::knDeltaPhiBins];   // Choose which deltaPhi slices are drawn from deltaEta projections
   
   // Choose if you want to write the figures to pdf file
   bool fSaveFigures;           // Flag for saving the figures to file

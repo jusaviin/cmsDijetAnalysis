@@ -62,6 +62,10 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   for(int iStyle = 0; iStyle < knBackgroundStyles; iStyle++){
     fBackgroundDrawStyle[iStyle] = false;
   }
+  fDrawDeltaEtaProjection[0] = true;
+  for(int iDeltaPhi = 1; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
+    fDrawDeltaEtaProjection[iDeltaPhi] = false;
+  }
   
   // Setup the centrality, track pT and asymmetry bins to be drawn
   fFirstDrawnCentralityBin = fHistograms->GetFirstCentralityBin();
@@ -834,14 +838,14 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 negativeLine->SetLineColor(kBlue);*/
               
               for(int iDeltaPhi = 0; iDeltaPhi < DijetHistogramManager::knDeltaPhiBins; iDeltaPhi++){
-                if(iDeltaPhi != DijetHistogramManager::kWholePhi) continue; // TODO: At the moment, only plot near side
+                if(!fDrawDeltaEtaProjection[iDeltaPhi]) continue;
                 drawnHistogram = fHistograms->GetHistogramJetTrackDeltaEta(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt, iDeltaPhi);
                 
                 drawnHistogram->Scale(1.0 / (fHistograms->GetTrackPtBinBorder(iTrackPt+1) - fHistograms->GetTrackPtBinBorder(iTrackPt)));
                 drawnHistogram->Scale(70);
                 drawnHistogram->Rebin(4);
                 drawnHistogram->Scale(1.0/4.0);
-                drawnHistogram->GetXaxis()->SetRangeUser(-3,3); // XXXXXX TODO: Good zooming possibilities
+                drawnHistogram->GetXaxis()->SetRangeUser(-3.5,3.5); // XXXXXX TODO: Good zooming possibilities
                 
                 // Do not draw the deltaEta histograms for background because they are flat by construction
                 if(iCorrelationType == DijetHistogramManager::kBackground) continue;
@@ -1647,4 +1651,12 @@ void DijetDrawer::SetBackgroundDrawStyle(const int style){
   fBackgroundDrawStyle[kOverlapZoom] = bitChecker.test(kOverlapZoom);
   fBackgroundDrawStyle[kDrawFit] = bitChecker.test(kDrawFit);
   fBackgroundDrawStyle[kDrawFitComposition] = bitChecker.test(kDrawFitComposition);
+}
+
+// Setter for used deltaPhi regions for deltaEta projections
+void DijetDrawer::SetDeltaEtaProjectionRegion(bool wholePhi, bool nearSide, bool awaySide, bool betweenPeaks){
+  fDrawDeltaEtaProjection[DijetHistogramManager::kWholePhi] = wholePhi;
+  fDrawDeltaEtaProjection[DijetHistogramManager::kNearSide] = nearSide;
+  fDrawDeltaEtaProjection[DijetHistogramManager::kAwaySide] = awaySide;
+  fDrawDeltaEtaProjection[DijetHistogramManager::kBetweenPeaks] = betweenPeaks;
 }
