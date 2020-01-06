@@ -275,6 +275,11 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
       for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){
         
         for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
+          
+          // Set the sums to NULL. If still NULL after loop, we know that we do not assign this to pT sum.
+          jetShapeSum = NULL;
+          deltaEtaSum = NULL;
+          
           for(int iTrackPt = 0; iTrackPt < fSystematicTrackPtBins; iTrackPt++){
             
             histogramName = Form("%sUncertainty/jetShapeUncertainty_%s_%sC%dT%d_%s", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), asymmetryString.Data(), iCentrality, iTrackPt, uncertaintyName[iUncertainty].Data());
@@ -315,9 +320,9 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
             }
             
           } // Track pT loop
-          
-          fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][fSystematicTrackPtBins][iUncertainty] = (TH1D*) jetShapeSum->Clone();
-          fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][fSystematicTrackPtBins][iUncertainty] = (TH1D*) deltaEtaSum->Clone();
+
+          if(jetShapeSum) fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][fSystematicTrackPtBins][iUncertainty] = (TH1D*) jetShapeSum->Clone();
+          if(deltaEtaSum) fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][fSystematicTrackPtBins][iUncertainty] = (TH1D*) deltaEtaSum->Clone();
           
         } // Uncertainty source loop
       } // Centrality loop
