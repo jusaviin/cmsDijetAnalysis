@@ -604,7 +604,8 @@ void DijetHistogramManager::ProcessHistograms(){
     DoSpilloverCorrection();   // After tracking corrections are done, continue with spillover correction
     SubtractBackground();      // Subtract the background from the spillover corrected distribution
     DoJffCorrection();         // Apply JFF correction to the background subtracted distribution
-    CalculateJetShapeAndDoProjections(); // Calculate the jet shape from the background subtracted histogram and take projections of processed two-dimensional histograms
+    CalculateJetShape();       // Calculate the jet shape from the background subtracted histogram
+    DoProjections();           // Take projections of processed two-dimensional histograms
   }
 }
 
@@ -825,7 +826,7 @@ void DijetHistogramManager::DoSeagullCorrection(){
             
             // For subleading jet, use different seagull function in a couple of bins
             if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 1;
+              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 4; // TODO: Trying to fix shape at large deltaEta by switching method from 1 to 4
               if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin == 0) seagullMethod = 1;
               if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin == 1) seagullMethod = 1;
               if(iAsymmetry == 1 && iCentralityBin == 0 && iTrackPtBin < 2) seagullMethod = 1;
@@ -836,6 +837,7 @@ void DijetHistogramManager::DoSeagullCorrection(){
               
               if((iAsymmetry == fnAsymmetryBins || iAsymmetry == 0) && iCentralityBin < 2 && iTrackPtBin < 5) seagullMethod = 1;
               if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin < 3) seagullMethod = 1;
+              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 4; // TODO: Trying to fix shape at large deltaEta
               if(iAsymmetry < 2 && iCentralityBin == 2 && iTrackPtBin == 1) seagullMethod = 1;
               if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin < 4) seagullMethod = 1;
               if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin < 3) seagullMethod = 1; // TODO: For escheme axis change cent 3 to 2
@@ -1081,18 +1083,11 @@ void DijetHistogramManager::DoJffCorrection(){
 }
 
 /*
- * Calculate the jet shape from the background subtracted histogram and take projections of processed two-dimensional histograms
+ * Calculate the jet shape from the background subtracted histogram
  */
-void DijetHistogramManager::CalculateJetShapeAndDoProjections(){
+void DijetHistogramManager::CalculateJetShape(){
   
-  // Helper variables to make the code more readable
-  char histogramName[200];
-  int nBins;
-  int nProjectedBins;
-  int lowDeltaPhiBin, highDeltaPhiBin;
-  double binError;
-  double errorScale;
-  
+  // Jet shape calculation
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
     
@@ -1110,6 +1105,34 @@ void DijetHistogramManager::CalculateJetShapeAndDoProjections(){
           
           // Get the mapping histogram of Rbins to deltaPhi-deltaEta bins
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kJetShapeBinMap][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetJetShapeBinMap();
+          
+        } // Track pT loop
+      } // Centrality loop
+    } // Asymmetry bin loop
+  } // Jet-track correlation category loop
+}
+
+/*
+ * Take projections of processed two-dimensional histograms
+ */
+void DijetHistogramManager::DoProjections(){
+  
+  // Helper variables to make the code more readable
+  char histogramName[200];
+  int nBins;
+  int nProjectedBins;
+  int lowDeltaPhiBin, highDeltaPhiBin;
+  double binError;
+  double errorScale;
+  
+  for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+    if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only correct the histograms that are selected for analysis
+    
+    for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+      if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+      
+      for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+        for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
           // Project the deltaPhi and deltaEta histograms from the processed two-dimensional histograms
           for(int iCorrelationType = kMixedEvent; iCorrelationType < knCorrelationTypes; iCorrelationType++){
@@ -2117,44 +2140,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
   } // Jet-track correlation category loop
   
   // Jet shape histograms are not produced in preprocessing
-  if(!fPreprocess){
-    
-    // Write the jet shape histograms to the output file
-    for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
-      
-      // Loop over jet-track correlation categories
-      for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
-        if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
-        
-        // Create a directory for the histograms if it does not already exist
-        sprintf(histogramNamer,"%s_%s",fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack]);
-        if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
-        gDirectory->cd(histogramNamer);
-        
-        // Loop over asymmetry
-        for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
-          if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
-          
-          // Loop over centrality
-          for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
-            
-            // Loop over track pT bins
-            for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
-              sprintf(histogramNamer,"%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape], fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
-              if(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
-              
-            } // Track pT loop
-          } // Centrality loop
-        } // Asymmetry loop
-        
-        // Return back to main directory
-        gDirectory->cd("../");
-        
-      } // Jet-track correlation category loop
-      
-    } // Jet shape type loop
-    
-  } // if for preprocess
+  if(!fPreprocess) WriteJetShapeHistograms();
   
   // Write the jet pT closure histograms to a file
   if(fLoadJetPtClosureHistograms){
@@ -2274,6 +2260,73 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     // Delete the qaFile object
     delete qaFile;
   } // Seagull correction
+}
+
+/*
+ * Write only the jet shape histograms into a file
+ *
+ *  const char* fileName = Name for the created output file
+ *  const char* fileOption = File write mode for TFile
+ */
+void DijetHistogramManager::WriteJetShape(const char* fileName, const char* fileOption){
+  
+  // Create the output file
+  TFile *outputFile = new TFile(fileName,fileOption);
+  
+  // Write the jet shape histograms to the output file
+  WriteJetShapeHistograms();
+  
+  // Close the file after everything is written
+  outputFile->Close();
+  
+  // Delete the outputFile object
+  delete outputFile;
+  
+}
+
+/*
+ * Write the jet shape histograms to the file that is currently open
+ */
+void DijetHistogramManager::WriteJetShapeHistograms(){
+  
+  // Helper variable for histogram naming
+  char histogramNamer[200];
+  
+  // Write the jet shape histograms to the output file
+  for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
+    
+    // Loop over jet-track correlation categories
+    for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
+      if(!fLoadJetTrackCorrelations[iJetTrack]) continue;  // Only draw the selected categories
+      
+      // Create a directory for the histograms if it does not already exist
+      sprintf(histogramNamer,"%s_%s",fJetShapeHistogramName[iJetShape],fJetTrackHistogramNames[iJetTrack]);
+      if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+      gDirectory->cd(histogramNamer);
+      
+      // Loop over asymmetry
+      for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+        if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+        
+        // Loop over centrality
+        for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+          
+          // Loop over track pT bins
+          for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
+            sprintf(histogramNamer,"%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape], fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
+            if(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
+            
+          } // Track pT loop
+        } // Centrality loop
+      } // Asymmetry loop
+      
+      // Return back to main directory
+      gDirectory->cd("../");
+      
+    } // Jet-track correlation category loop
+    
+  } // Jet shape type loop
+  
 }
 
 /*

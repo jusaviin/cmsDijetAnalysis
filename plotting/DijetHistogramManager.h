@@ -99,9 +99,11 @@ public:
   
   void LoadHistograms();          // Load the histograms from the inputfile
   void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape
-  void Write(const char* fileName, const char* fileOption);  // Write all the loaded histograms into a file
+  void Write(const char* fileName, const char* fileOption);          // Write all the loaded histograms into a file
+  void WriteJetShape(const char* fileName, const char* fileOption);  // Write only the jet shape histograms into a file
   void LoadProcessedHistograms(); // Load processed histograms from the inputfile
   void ApplyJffCorrection(JffCorrector *jffCorrectionFinder);  // Apply the JFF correction to relevant histograms
+  void CalculateJetShape();       // Calculate the jet shape from the background subtracted histograms
   void NormalizeJetShape();       // Normalize the jet shape histograms
   
   // Setters for binning information
@@ -424,14 +426,17 @@ private:
   void BinSanityCheck(const int nBins, int first, int last) const; // Sanity check for given binning
   int BinIndexCheck(const int nBins, const int binIndex) const; // Check that given index is in defined range
   
-  // Mixed event correction, background subtraction and jet shape calculation
+  // Mixed event correction, background subtraction, different corrections and projections
   void DoMixedEventCorrection();  // Apply mixed event correction for jet-track correlation histograms
   void DoSeagullCorrection();     // Apply seagull correction to jet-track correlation histograms
   void DoTrackDeltaRCorrection(); // Apply track deltaR correction to jet-track correlation histograms
   void DoSpilloverCorrection();   // Apply spillover correction to jet-track correlation histograms
   void SubtractBackground();      // Subtract background from the spillover corrected distribution
   void DoJffCorrection();         // Do the JFF correction to the background subtracted distribution
-  void CalculateJetShapeAndDoProjections();  // Calculate the jet shape from the background subtracted histogram and take projections of processed two-dimensional histograms
+  void DoProjections();           // Take projections of processed two-dimensional histograms
+  
+  // Methods for histogram writing
+  void WriteJetShapeHistograms(); // Write the jet shape histograms to the file that is currently open
   
 };
 
