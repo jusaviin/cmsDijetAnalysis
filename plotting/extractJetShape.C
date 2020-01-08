@@ -3,6 +3,8 @@
 #include "DijetCard.h"
 #include "DijetHistogramManager.h"
 
+// TODO: Add JCard to the final file!!!
+
 /*
  * Macro for extracting the jet shape histograms from processed dijet analysis file.
  *
@@ -82,12 +84,12 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   // Binning for jet shape
   
   // Standard binning for this analysis
-  //const int nRBins = 16;  // Number of R-bins for jet shape histograms
-  //double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
+  const int nRBins = 16;  // Number of R-bins for jet shape histograms
+  double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.6,0.7,0.8,1.0,1.25,1.5}; // R-bin boundaries for jet shape histogram
   
   // Xiao binning
-  const int nRBins = 15; // Number of R-bins for jet shape histograms
-  double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.45,0.6,0.8,1.0, 1.2, 1.5, 2, 2.5}; // R-bin boundaries for jet shape histogram
+  //const int nRBins = 15; // Number of R-bins for jet shape histograms
+  //double rBins[nRBins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.45,0.6,0.8,1.0, 1.2, 1.5, 2, 2.5}; // R-bin boundaries for jet shape histogram
   
   const int jetShapeNormalizationType = DijetMethods::kBinWidth;  // How to normalize jet shape histogram, kBinWidth or kBinArea
   

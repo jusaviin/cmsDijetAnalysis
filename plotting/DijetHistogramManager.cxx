@@ -2276,6 +2276,9 @@ void DijetHistogramManager::WriteJetShape(const char* fileName, const char* file
   // Write the jet shape histograms to the output file
   WriteJetShapeHistograms();
   
+  // Write the card to the output file if it is not already written
+  if(!gDirectory->GetDirectory("JCard")) fCard->Write(outputFile);
+  
   // Close the file after everything is written
   outputFile->Close();
   
