@@ -198,7 +198,7 @@ double DijetCard::GetHighBinBorderAsymmetry(const int iBin) const{
  // Get a description of the used asymmetry bin type
 const char* DijetCard::GetAsymmetryBinType(TString latexIt) const{
   const char *asymmetryNames[] = {"Aj","Xj"};
-  const char *asymmetryLatex[] = {"A_{J}","x_{J}"};
+  const char *asymmetryLatex[] = {"A_{J}","x_{j}"};
   if(latexIt.Contains("tex"),TString::kIgnoreCase) return asymmetryLatex[fAsymmetryBinType];
   return asymmetryNames[fAsymmetryBinType];
 }
