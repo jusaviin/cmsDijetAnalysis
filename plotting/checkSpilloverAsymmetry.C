@@ -13,7 +13,8 @@ void checkSpilloverAsymmetry(){
   // ==================================================================
   
   TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-02.root";
-  TString spilloverComparisonFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_dijetWeight_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-06.root";
+  TString spilloverComparisonFileName = "corrections/spilloverCorrection_akPu4PFJet_noUncOrInc_improvisedMixing_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2020-01-03.root";
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_dijetWeight_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-06.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_dijetWeight_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2019-12-02.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_eschemeAxis_JECv6_2019-11-14.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMixed_xjBins_symmetrized_looseCut_wtaAxis_centShift5_JECv6_2019-10-21.root
@@ -31,8 +32,8 @@ void checkSpilloverAsymmetry(){
   bool drawIntegral = false;
   bool drawExample = false;     // Draw example r-dependent spillover distributions
   
-  const char *firstFileComment = "WTA";
-  const char *secondFileComment = "Weighted";
+  const char *firstFileComment = "Flow";
+  const char *secondFileComment = "PuPF";
   
   bool saveFigures = false;
   

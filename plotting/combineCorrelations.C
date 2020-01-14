@@ -3,7 +3,7 @@
 
 
 /*
- * Macro for configuring the DijetDrawer and defining which histograms are drawn
+ * Macro for combining two preprocessed dijet analysis files
  *
  *  Arguments:
  *   TString firstFileName = Name of the first file from which the correlation histograms are combined

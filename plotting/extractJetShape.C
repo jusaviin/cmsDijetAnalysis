@@ -3,8 +3,6 @@
 #include "DijetCard.h"
 #include "DijetHistogramManager.h"
 
-// TODO: Add JCard to the final file!!!
-
 /*
  * Macro for extracting the jet shape histograms from processed dijet analysis file.
  *
