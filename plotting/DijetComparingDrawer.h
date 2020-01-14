@@ -106,6 +106,7 @@ public:
   void SetLogCorrelation(const bool isLog); // Setter for logarithmic z axis for correlation plots
   void SetLogJetShape(const bool isLog);    // Setter for logarithmic jet shape drawing
   void SetLogAxes(const bool pt, const bool correlation, const bool jetShape); // Setter for logarithmic axes
+  void SetManualLegend(const bool manualLegend);  // Setter for manual legend setting
   
   // Setter for scaling and rebinning the histograms
   void SetApplyScaling(const bool applyScaling); // Set if we should scale the histograms with their integral before comparing them
@@ -176,6 +177,7 @@ private:
   bool fSaveFigures;           // Flag for saving the figures to file
   const char* fFigureFormat;   // Format in which the figures are saved
   const char* fFigureComment;  // Comment added to figure name
+  bool fManualLegend;          // Flag for using manual instead of automatic legend
   
   // Choose if we should scale the histograms before comparing them
   bool fApplyScaling;

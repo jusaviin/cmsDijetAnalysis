@@ -28,6 +28,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fSaveFigures(false),
   fFigureFormat("pdf"),
   fFigureComment(""),
+  fManualLegend(false),
   fApplyScaling(false),
   fLogPt(true),
   fLogCorrelation(true),
@@ -883,6 +884,8 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   
   // Legend helper variables
   TLegend *legend;
+  TLegend *alternativeLegend;
+  TLegend *xjLegend;
   double legendX1;
   double legendY1;
   double legendX2;
@@ -893,55 +896,20 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
   TString compactCentralityString;
   TString trackPtString;
   TString compactTrackPtString;
+  TString asymmetryString = "";
+  TString compactAsymmetryString = "";
   char namerX[100];
   char namerY[100];
   
-  TFile *comparisonFile = TFile::Open("data/JS5TeV_HIN_16_020.root");
-  //TFile *comparisonFile = TFile::Open("data/inclJetShapes_GenGen_PYTHIA6.root");
-  const int nTrackPtBins = fBaseHistograms->GetNTrackPtBins();
-  const int nCentralityBins = fBaseHistograms->GetNCentralityBins();
-  TH1D *comparisonHistograms[nCentralityBins][nTrackPtBins];
-  TH1D *sumHistogram[nCentralityBins];
-  TH1D *dijetSumHistogram;
-  TH1D *helperHistogram;
+  double allYield;
+  double combineYield[fnAddedHistograms];
   
-  // Find the histograms to compare with from the comparison file
-  //comparisonHistograms[0] = (TH1D*) comparisonFile->Get("dr_pTweighted_0_0");
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-    sprintf(namerX,"JS_pb_0_%d",iCentrality);
-    comparisonHistograms[iCentrality][0] = (TH1D*) comparisonFile->Get(namerX);
-    sprintf(namerX,"normalizationSum%d",iCentrality);
-    sumHistogram[iCentrality] = (TH1D*) comparisonHistograms[iCentrality][0]->Clone(namerX);
-    for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
-      sprintf(namerX,"JS_pb_%d_%d",iTrackPt,iCentrality);
-      //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
-      comparisonHistograms[iCentrality][iTrackPt] = (TH1D*) comparisonFile->Get(namerX);
-      sumHistogram[iCentrality]->Add(comparisonHistograms[iCentrality][iTrackPt]);
-    }
+  // Set the asymmetry string based on the selected asymmetry bin
+  if(fAsymmetryBin >= 0 && fAsymmetryBin < fBaseHistograms->GetNAsymmetryBins()){
+    asymmetryString = Form("%.1f < %s < %.1f", fBaseHistograms->GetCard()->GetLowBinBorderAsymmetry(fAsymmetryBin), fBaseHistograms->GetCard()->GetAsymmetryBinType(), fBaseHistograms->GetCard()->GetHighBinBorderAsymmetry(fAsymmetryBin));
+    compactAsymmetryString = Form("_A=%.1f-%.1f", fBaseHistograms->GetCard()->GetLowBinBorderAsymmetry(fAsymmetryBin), fBaseHistograms->GetCard()->GetHighBinBorderAsymmetry(fAsymmetryBin));
+    compactAsymmetryString.ReplaceAll(".","v");
   }
-  
-  // There are more pT bins in the comparison file, so sum them up to match the pT bins in this analysis
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-    for(int iTrackPt = nTrackPtBins; iTrackPt < 9; iTrackPt++){
-      sprintf(namerX,"JS_pb_%d_%d",iTrackPt,iCentrality);
-      //sprintf(namerX,"dr_pTweighted_%d_0",iTrackPt);
-      helperHistogram = (TH1D*) comparisonFile->Get(namerX);
-      comparisonHistograms[iCentrality][nTrackPtBins-1]->Add(helperHistogram);
-      sumHistogram[iCentrality]->Add(helperHistogram);
-    }
-  }
-  
-  // Normalize the jet shape histograms from the comparison file
-  //double jetShapeIntegral = sumHistogram->Integral(1,sumHistogram->FindBin(0.99),"width");
-  //for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-    //comparisonHistograms[iTrackPt]->Scale(1.0/jetShapeIntegral);
-  //}
-  
-  // Scale the sum histogram
-  //sumHistogram->Scale(1.0/jetShapeIntegral);
-  
-  // For the jet shape, there will be one added histogram
-  fnAddedHistograms = 1;
   
   // Loop over jet-track correlation categories
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
@@ -961,85 +929,71 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
         compactTrackPtString.ReplaceAll(".","v");
         
-        legendX1 = 0.48; legendY1 = 0.68; legendX2 = 0.82; legendY2 = 0.93;
         sprintf(namerX,"#DeltaR");
         sprintf(namerY,"%s",fBaseHistograms->GetJetShapeAxisName(DijetHistogramManager::kJetShape));
         
         // Prepare the histograms and draw then to the upper pad
-        fComparisonHistogram[0] = comparisonHistograms[iCentrality][iTrackPt];
-        fMainHistogram = (TH1D*) fComparisonHistogram[0]->Clone(Form("Klooni%d%d%d",iJetTrack,iCentrality,iTrackPt));
-        helperHistogram = (TH1D*)fBaseHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, DijetHistogramManager::kMaxAsymmetryBins,iCentrality,iTrackPt)->Clone();
+        PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, fAsymmetryBin, iCentrality, iTrackPt);
         
-        // A couple of last bins are missing from the comparison histogram, so drop them also from main histogram
-        for(int iBin = 1; iBin <= fMainHistogram->GetNbinsX(); iBin++){
-          fMainHistogram->SetBinContent(iBin,helperHistogram->GetBinContent(iBin));
-          fMainHistogram->SetBinError(iBin,helperHistogram->GetBinError(iBin));
-        }
-        
-        // Create a sum histogram for the jet shape from dijet analysis
-        if(iTrackPt == fFirstDrawnTrackPtBin){
-          dijetSumHistogram = (TH1D*) fMainHistogram->Clone(Form("dijetSum%d%d%d",iJetTrack,iCentrality,iTrackPt));
-        } else {
-          dijetSumHistogram->Add(fMainHistogram);
-        }
+        fMainHistogram->GetXaxis()->SetRangeUser(0,1);
         
         DrawToUpperPad(namerX,namerY,fLogJetShape);
         
         // Setup a legend to the plot
-        legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
-        legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
-        legend->AddEntry(fMainHistogram,"This analysis pp","l");
-        legend->AddEntry(fComparisonHistogram[0],"Inclusive pp","l");
-        legend->Draw();
+        if(fManualLegend){
+          legendX1 = 0.5; legendY1 = 0.71; legendX2 = 0.84; legendY2 = 0.98;
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+          
+          // Manual legend
+          allYield = fMainHistogram->Integral(1,fMainHistogram->FindBin(0.99),"width");
+          for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+            combineYield[iAdditional] = fComparisonHistogram[iAdditional]->Integral(1, fComparisonHistogram[iAdditional]->FindBin(0.99),"width");
+          }
+          legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+          if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
+          legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
+          legend->AddEntry(fMainHistogram,Form("%s, Yield: %.3f", fLegendComment[0].Data(), allYield),"l");
+          for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+            legend->AddEntry(fComparisonHistogram[iAdditional],Form("%s, Yield: %.3f", fLegendComment[iAdditional+1].Data(), combineYield[iAdditional]),"l");
+          }
+          legend->Draw();
+          
+          // Manual legend TODO: Comment out
+          alternativeLegend = new TLegend(0.2,0.04,0.5,0.2);
+          alternativeLegend->SetFillStyle(0);alternativeLegend->SetBorderSize(0);
+          alternativeLegend->SetTextSize(0.05);alternativeLegend->SetTextFont(62);
+          for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+            alternativeLegend->AddEntry((TObject*) 0, Form("%s/%s = %.3f", fLegendComment[iAdditional+1].Data(), fLegendComment[0].Data(), combineYield[iAdditional]/allYield),"");
+          }
+          alternativeLegend->Draw();
+          
+          xjLegend = new TLegend(0.22,0.89,0.42,0.95);
+          xjLegend->SetFillStyle(0);xjLegend->SetBorderSize(0);xjLegend->SetTextSize(0.05);xjLegend->SetTextFont(62);
+          xjLegend->SetHeader(asymmetryString);
+          xjLegend->Draw();
+          
+        } else {
         
-        // Prepare the ratio and draw it to the lower pad
-        fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("jetShapeRatio%d%d%d",iJetTrack,iCentrality,iTrackPt));
-        fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
+          legendX1 = 0.5; legendY1 = 0.71; legendX2 = 0.84; legendY2 = 0.98;
+          legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+          
+          // Automatic legend TODO: Comment in
+          SetupLegend(legend,centralityString,trackPtString,asymmetryString);
+          legend->Draw();
+          
+        }
+        
+        // Draw the ratios to the lower portion of the split canvas
+        fDrawer->SetGridY(true);
+        fRatioHistogram[0]->GetXaxis()->SetRangeUser(0,1);
         DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
+        fDrawer->SetGridY(false);
         
         // Save the figure to a file
         sprintf(namerX,"%s%sRatio",fBaseHistograms->GetJetTrackHistogramName(iJetTrack),fBaseHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape));
-        SaveFigure(namerX,compactCentralityString,compactTrackPtString);
+        SaveFigure(namerX,compactCentralityString,compactTrackPtString,compactAsymmetryString);
         
       } // Track pT loop
-      
-      // Draw the histogram for pT summed jet shape
-      
-      // Set the correct track pT bins
-      trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(fFirstDrawnTrackPtBin),fBaseHistograms->GetTrackPtBinBorder(fLastDrawnTrackPtBin+1));
-      compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(fFirstDrawnTrackPtBin),fBaseHistograms->GetTrackPtBinBorder(fLastDrawnTrackPtBin+1));
-      compactTrackPtString.ReplaceAll(".","v");
-      
-      // Setup legend position and axis names
-      legendX1 = 0.48; legendY1 = 0.68; legendX2 = 0.82; legendY2 = 0.93;
-      sprintf(namerX,"#DeltaR");
-      sprintf(namerY,"%s",fBaseHistograms->GetJetShapeAxisName(DijetHistogramManager::kJetShape));
-      
-      // Setup the main histogram and comparison histogram and draw them
-      fMainHistogram = dijetSumHistogram;
-      fComparisonHistogram[0] = sumHistogram[iCentrality];
-      
-      DrawToUpperPad(namerX,namerY,fLogJetShape);
-      
-      // Setup a legend to the plot
-      legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      if(fBaseHistograms->GetSystem().Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
-      legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
-      legend->AddEntry(fMainHistogram,"This analysis pp","l");
-      legend->AddEntry(fComparisonHistogram[0],"Inclusive pp","l");
-      legend->Draw();
-      
-      // Prepare the ratio and draw it to the lower pad
-      fRatioHistogram[0] = (TH1D*) fMainHistogram->Clone(Form("jetShapeRatio%d%d",iJetTrack,iCentrality));
-      fRatioHistogram[0]->Divide(fComparisonHistogram[0]);
-      DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
-      
-      // Save the figure to a file
-      sprintf(namerX,"%s%sRatio",fBaseHistograms->GetJetTrackHistogramName(iJetTrack),fBaseHistograms->GetJetShapeHistogramName(DijetHistogramManager::kJetShape));
-      SaveFigure(namerX,compactCentralityString,compactTrackPtString);
       
     } // Centrality loop
   } // Jet-track correlation category loop
@@ -1366,20 +1320,20 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     
     // TODO: Temporarily reverse how the ratio is taken
     
-    /*fRatioHistogram[iAdditional] = (TH1D*)fComparisonHistogram[iAdditional]->Clone(namer);
+    fRatioHistogram[iAdditional] = (TH1D*)fComparisonHistogram[iAdditional]->Clone(namer);
     if(fUseDifferenceInsteadOfRatio){
       fRatioHistogram[iAdditional]->Add(fMainHistogram,-1);
     } else {
       fRatioHistogram[iAdditional]->Divide(fMainHistogram);
-    }*/
+    }
     
-    fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
+    /*fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(namer);
     if(fUseDifferenceInsteadOfRatio){
       fRatioHistogram[iAdditional]->Add(fComparisonHistogram[iAdditional],-1);
     } else {
       fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]); // TODO: Check if something clever can be done here
       //fRatioHistogram[iAdditional]->Divide(fRatioHistogram[iAdditional],fComparisonHistogram[iAdditional],1,1,"B"); // Binomial errors
-    }
+    }*/
   }
   delete rebinner;
 }
@@ -1891,6 +1845,11 @@ void DijetComparingDrawer::SetLogAxes(const bool pt, const bool correlation, con
   SetLogPt(pt);
   SetLogCorrelation(correlation);
   SetLogJetShape(jetShape);
+}
+
+// Setter for manual legend setting
+void DijetComparingDrawer::SetManualLegend(const bool manualLegend){
+  fManualLegend = manualLegend;
 }
 
 // Setter for plotting difference instead of ratio to lower pad
