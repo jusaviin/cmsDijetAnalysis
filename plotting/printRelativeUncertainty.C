@@ -14,8 +14,23 @@ void printRelativeUncertainty(){
   TString dataFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17.root"; // Compare also with uncorrected data
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root";
-  TString uncertaintyFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root";
-  TString ppUncertainryFileName = "uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root";
+  TString uncertaintyFileName[2];
+  TString ppUncertaintyFileName[2];
+  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_forComparison_2020-01-14.root";
+  ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root";
+  uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_noRebinPairBg_2020-01-14.root";
+  ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverAndJESestimates_2020-01-13.root
+  // uncertainties/systematicUncertaintyForPbPb_20eveMix_newSpilloverJEStunedSeagull_2020-01-14.root
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_noRebinPairBg_2020-01-14.root
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_forComparison_2020-01-14.root
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
+  
+  bool drawComparisonUncertaintyFile = true;
+  bool smoothHistograms = true;
+  int nFiles = drawComparisonUncertaintyFile ? 2 : 1;
+  
+  const char* legendLabels[] = {"Dijet analysis (old)", "Dijet analysis (new)", "lul", "Toinen lul"};  // Labels referring to different uncertainty files
   
   TString inclusiveFileName = "uncertainties/inclusiveAnalysis/js_AllSource_syst_err.root";
   
@@ -31,9 +46,11 @@ void printRelativeUncertainty(){
   
   // Open the input files
   TFile *dataFile = TFile::Open(dataFileName);
-  TFile *uncertaintyFile = TFile::Open(uncertaintyFileName);
+  TFile *uncertaintyFile[2];
+  for(int iFile = 0; iFile < nFiles; iFile++) uncertaintyFile[iFile] = TFile::Open(uncertaintyFileName[iFile]);
   TFile *ppFile = TFile::Open(ppFileName);
-  TFile *ppUncertainryFile = TFile::Open(ppUncertainryFileName);
+  TFile *ppUncertaintyFile[2];
+  for(int iFile = 0; iFile < nFiles; iFile++) ppUncertaintyFile[iFile] = TFile::Open(ppUncertaintyFileName[iFile]);
   
   TFile *inclusiveFile;
   if(drawComparisonToInclusive) inclusiveFile = TFile::Open(inclusiveFileName);
@@ -51,11 +68,17 @@ void printRelativeUncertainty(){
   ppManager->SetAsymmetryBinRange(0,3);
   ppManager->LoadProcessedHistograms();
   
-  JffCorrector *uncertaintyManager = new JffCorrector();
-  uncertaintyManager->ReadSystematicFile(uncertaintyFile);
+  JffCorrector *uncertaintyManager[2];
+  for(int iFile = 0; iFile < nFiles; iFile++){
+    uncertaintyManager[iFile] = new JffCorrector();
+    uncertaintyManager[iFile]->ReadSystematicFile(uncertaintyFile[iFile]);
+  }
   
-  JffCorrector *ppUncertaintyManager = new JffCorrector();
-  ppUncertaintyManager->ReadSystematicFile(ppUncertainryFile);
+  JffCorrector *ppUncertaintyManager[2];
+  for(int iFile = 0; iFile < nFiles; iFile++){
+    ppUncertaintyManager[iFile] = new JffCorrector();
+    ppUncertaintyManager[iFile]->ReadSystematicFile(ppUncertaintyFile[iFile]);
+  }
   
   const int nCentralityBins = dataManager->GetNCentralityBins();
   const int nTrackPtBins = dataManager->GetNTrackPtBins();
@@ -82,11 +105,11 @@ void printRelativeUncertainty(){
   
   // Define arrays for the jet shapes
   TH1D *dataShape[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins+1];
-  TH1D *uncertaintyShape[2][JffCorrector::knUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins+1];
+  TH1D *uncertaintyShape[2][2][JffCorrector::knUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins+1];
   
   // Define arrays for yield
   double dataYield[2][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins+1];
-  double uncertaintyYield[2][JffCorrector::knUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins+1];
+  double uncertaintyYield[2][2][JffCorrector::knUncertaintySources][nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins+1];
   
   // Define histograms for uncertainties from inclusive analysis
   // There are four sources of uncertainty in the inclusive files:
@@ -119,20 +142,22 @@ void printRelativeUncertainty(){
         dataYield[0][iAsymmetry][iCentrality][iTrackPt] = dataShape[0][iAsymmetry][iCentrality][iTrackPt]->Integral(1, dataShape[0][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
         dataYield[1][iAsymmetry][iCentrality][iTrackPt] = dataShape[1][iAsymmetry][iCentrality][iTrackPt]->Integral(1, dataShape[1][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
         
-        for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
-          
-          // Different reader for pp and PbPb uncertainty files
-          if(iCentrality == nCentralityBins){
-            uncertaintyShape[0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = ppUncertaintyManager->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackLeadingJet, 0, iTrackPt, iAsymmetry, iUncertainty);
-            uncertaintyShape[1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = ppUncertaintyManager->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackSubleadingJet, 0, iTrackPt, iAsymmetry, iUncertainty);
-          } else {
-            uncertaintyShape[0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyManager->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackLeadingJet, iCentrality, iTrackPt, iAsymmetry, iUncertainty);
-            uncertaintyShape[1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyManager->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackSubleadingJet, iCentrality, iTrackPt, iAsymmetry, iUncertainty);
-          }
-          
-          uncertaintyYield[0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
-          uncertaintyYield[1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
-        } // Uncertainty type loop
+        for(int iFile = 0; iFile < nFiles; iFile++){
+          for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
+            
+            // Different reader for pp and PbPb uncertainty files
+            if(iCentrality == nCentralityBins){
+              uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = ppUncertaintyManager[iFile]->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackLeadingJet, 0, iTrackPt, iAsymmetry, iUncertainty);
+              uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = ppUncertaintyManager[iFile]->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackSubleadingJet, 0, iTrackPt, iAsymmetry, iUncertainty);
+            } else {
+              uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyManager[iFile]->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackLeadingJet, iCentrality, iTrackPt, iAsymmetry, iUncertainty);
+              uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyManager[iFile]->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackSubleadingJet, iCentrality, iTrackPt, iAsymmetry, iUncertainty);
+            }
+            
+            uncertaintyYield[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
+            uncertaintyYield[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
+          } // Uncertainty type loop
+        } // Uncertainty file loop
       } // Asymmetry loop
     } // Track pT loop
     
@@ -200,9 +225,9 @@ void printRelativeUncertainty(){
         
         // Print one line for each track pT bin
         for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
-          cout << uncertaintyManager->GetUncertaintyName(iUncertainty);
+          cout << uncertaintyManager[0]->GetUncertaintyName(iUncertainty);
           for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-            cout << " & $" << uncertaintyYield[iJetType][iUncertainty][nAsymmetryBins][iCentrality][iTrackPt] / dataYield[iJetType][nAsymmetryBins][iCentrality][iTrackPt] << "$";
+            cout << " & $" << uncertaintyYield[0][iJetType][iUncertainty][nAsymmetryBins][iCentrality][iTrackPt] / dataYield[iJetType][nAsymmetryBins][iCentrality][iTrackPt] << "$";
           }
           cout << " \\\\" << endl;
         }
@@ -222,7 +247,9 @@ void printRelativeUncertainty(){
     JDrawer *drawer = new JDrawer();
     TLegend *legend;
     int colors[] = {kBlue, kRed, kMagenta, kCyan, kGreen+3, kViolet+7, kOrange+7, kSpring, kGray};
+    int trueColors[] = {kBlack, kBlue, kMagenta, kCyan, kGreen+3, kViolet+7, kOrange+7, kSpring, kGray};
     double maxValue = 0;
+    double localMaximum = 0;
     double histogramMaximum = 0;
     TString centralityString;
     TString compactCentralityString;
@@ -267,11 +294,11 @@ void printRelativeUncertainty(){
               compactTrackPtString.ReplaceAll(".","v");
               
               // Draw the first uncertainty source
-              uncertaintyShape[iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-              maxValue = uncertaintyShape[iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->GetMaximum();
-              uncertaintyShape[iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
-              uncertaintyShape[iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlack);
-              drawer->DrawHistogram(uncertaintyShape[iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+              uncertaintyShape[0][iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+              maxValue = uncertaintyShape[0][iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->GetMaximum();
+              uncertaintyShape[0][iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
+              uncertaintyShape[0][iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlack);
+              drawer->DrawHistogram(uncertaintyShape[0][iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
               
               // Make a legend for the titles
               legend = new TLegend(0.12,0.77,0.4,0.92);
@@ -286,13 +313,13 @@ void printRelativeUncertainty(){
               legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
               
               // Add the first uncertainty source to legend
-              legend->AddEntry(uncertaintyShape[iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt], uncertaintyManager->GetUncertaintyName(JffCorrector::kTotal), "l");
+              legend->AddEntry(uncertaintyShape[0][iJetType][JffCorrector::kTotal][iAsymmetry][iCentrality][iTrackPt], uncertaintyManager[0]->GetUncertaintyName(JffCorrector::kTotal), "l");
               
               // Loop over all the other uncertainty sources
               for(int iUncertainty = 0; iUncertainty < JffCorrector::kTotal; iUncertainty++){
-                uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iUncertainty]);
-                uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
-                legend->AddEntry(uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt], uncertaintyManager->GetUncertaintyName(iUncertainty), "l");
+                uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iUncertainty]);
+                uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
+                legend->AddEntry(uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt], uncertaintyManager[0]->GetUncertaintyName(iUncertainty), "l");
               }
               
               // Draw the legend to the figure
@@ -338,21 +365,21 @@ void printRelativeUncertainty(){
               // First, find the maximum value for uncertainty among all centrality bins
               maxValue = 0;
               for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-                uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-                histogramMaximum = uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->GetMaximum();
+                uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+                histogramMaximum = uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->GetMaximum();
                 if(histogramMaximum > maxValue) maxValue = histogramMaximum;
               }
               
               // Draw the most central bin
-              uncertaintyShape[iJetType][iUncertainty][iAsymmetry][0][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
-              uncertaintyShape[iJetType][iUncertainty][iAsymmetry][0][iTrackPt]->SetLineColor(kBlack);
-              drawer->DrawHistogram(uncertaintyShape[iJetType][iUncertainty][iAsymmetry][0][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+              uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][0][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
+              uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][0][iTrackPt]->SetLineColor(kBlack);
+              drawer->DrawHistogram(uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][0][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
               
               // Make a legend for the titles
               legend = new TLegend(0.12,0.77,0.4,0.92);
               legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
               legend->AddEntry((TObject*) 0,(jetShapeString+asymmetryString).Data(),"");
-              legend->AddEntry((TObject*) 0,uncertaintyManager->GetUncertaintyName(iUncertainty),"");
+              legend->AddEntry((TObject*) 0,uncertaintyManager[0]->GetUncertaintyName(iUncertainty),"");
               legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
               legend->Draw();
               
@@ -361,7 +388,7 @@ void printRelativeUncertainty(){
               legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
               
               // Add the most central bin to the legend
-              legend->AddEntry(uncertaintyShape[iJetType][iUncertainty][iAsymmetry][0][iTrackPt], "C = 0-10 %", "l");
+              legend->AddEntry(uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][0][iTrackPt], "C = 0-10 %", "l");
               
               // Loop over all the other centrality bins and pp
               for(int iCentrality = 1; iCentrality <= nCentralityBins; iCentrality++){
@@ -372,9 +399,9 @@ void printRelativeUncertainty(){
                   centralityString = Form("C = %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
                 }
                 
-                uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iCentrality-1]);
-                uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
-                legend->AddEntry(uncertaintyShape[iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt], centralityString.Data(), "l");
+                uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iCentrality-1]);
+                uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
+                legend->AddEntry(uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt], centralityString.Data(), "l");
               } // Centrality bin loop
               
               // Draw the legend to the figure
@@ -382,7 +409,7 @@ void printRelativeUncertainty(){
               
               // Save the figures into a file
               if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/uncertaintySystemBreakdown%sJet_%s%s%s.pdf", jetType[iJetType], uncertaintyManager->GetUncertaintyName(iUncertainty).Data(), compactAsymmetryString.Data(), compactTrackPtString.Data()));
+                gPad->GetCanvas()->SaveAs(Form("figures/uncertaintySystemBreakdown%sJet_%s%s%s.pdf", jetType[iJetType], uncertaintyManager[0]->GetUncertaintyName(iUncertainty).Data(), compactAsymmetryString.Data(), compactTrackPtString.Data()));
               }
               
             } // Track pT loop
@@ -412,15 +439,27 @@ void printRelativeUncertainty(){
           // == Compare with inclusive on background fluctuation ==
           // ======================================================
           
-          uncertaintyShape[0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          maxValue = uncertaintyShape[0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+          maxValue = 0;
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            localMaximum = uncertaintyShape[iFile][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+            if(localMaximum > maxValue) maxValue = localMaximum;
+          }
+          
           inclusiveUncertainty[0][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
           histogramMaximum = inclusiveUncertainty[0][iCentrality][iTrackPt]->GetMaximum();
           if(maxValue < histogramMaximum) maxValue = histogramMaximum;
      
-          uncertaintyShape[0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
-          uncertaintyShape[0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
-          drawer->DrawHistogram(uncertaintyShape[0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          uncertaintyShape[0][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0, maxValue*1.3);
+          uncertaintyShape[0][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          for(int iFile = 1; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(trueColors[iFile]);
+            if(smoothHistograms) uncertaintyShape[iFile][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
+            uncertaintyShape[iFile][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->Draw("same");
+          }
+          
           
           inclusiveUncertainty[0][iCentrality][iTrackPt]->SetLineColor(kRed);
           inclusiveUncertainty[0][iCentrality][iTrackPt]->Draw("same");
@@ -434,11 +473,13 @@ void printRelativeUncertainty(){
           legend->Draw();
           
           // Create a new legend for uncertainties
-          legend = new TLegend(0.6,0.8,0.9,0.92);
+          legend = new TLegend(0.6,0.85-0.05*nFiles,0.9,0.92);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
           
           // Add the first uncertainty source to legend
-          legend->AddEntry(uncertaintyShape[0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt], "Dijet analysis", "l");
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            legend->AddEntry(uncertaintyShape[iFile][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt], legendLabels[iFile], "l");
+          }
           legend->AddEntry(inclusiveUncertainty[0][iCentrality][iTrackPt], "Inclusive analysis", "l");
           
           // Draw the legend to the figure
@@ -452,15 +493,29 @@ void printRelativeUncertainty(){
           // ======================================================
           // == Compare with inclusive on jet fragmentation bias ==
           // ======================================================
-          
-          uncertaintyShape[0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          maxValue = uncertaintyShape[0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+          maxValue = 0;
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            localMaximum = uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+            if(localMaximum > maxValue) maxValue = localMaximum;
+          }
           inclusiveUncertainty[1][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
           histogramMaximum = inclusiveUncertainty[1][iCentrality][iTrackPt]->GetMaximum();
           if(maxValue < histogramMaximum) maxValue = histogramMaximum;
-          uncertaintyShape[0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
-          uncertaintyShape[0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
-          drawer->DrawHistogram(uncertaintyShape[0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
+          uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          for(int iFile = 1; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(trueColors[iFile]);
+            if(smoothHistograms){
+              uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0.05,1);
+              uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
+              uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            }
+            uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->Draw("same");
+          }
           
           inclusiveUncertainty[1][iCentrality][iTrackPt]->SetLineColor(kRed);
           inclusiveUncertainty[1][iCentrality][iTrackPt]->Draw("same");
@@ -478,7 +533,9 @@ void printRelativeUncertainty(){
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
           
           // Add the first uncertainty source to legend
-          legend->AddEntry(uncertaintyShape[0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt], "Dijet analysis", "l");
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            legend->AddEntry(uncertaintyShape[iFile][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt], legendLabels[iFile], "l");
+          }
           legend->AddEntry(inclusiveUncertainty[1][iCentrality][iTrackPt], "Inclusive analysis", "l");
           
           // Draw the legend to the figure
@@ -494,22 +551,36 @@ void printRelativeUncertainty(){
           // ========================================================================
           
           // Add pair acceptance and background uncertainties in quadrature
-          for(int iBin = 1; iBin <= uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
-            oldContent = uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
-            addedContent = uncertaintyShape[0][JffCorrector::kBackgroundSubtraction][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
-            newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
-            uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->SetBinContent(iBin,newContent);
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            for(int iBin = 1; iBin <= uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+              oldContent = uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
+              addedContent = uncertaintyShape[iFile][0][JffCorrector::kBackgroundSubtraction][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
+              newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
+              uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->SetBinContent(iBin,newContent);
+            } // Histogram bin loop
+          } // Uncertainty file loop
+          
+          maxValue = 0;
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            localMaximum = uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+            if(localMaximum > maxValue) maxValue = localMaximum;
           }
           
-          uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          maxValue = uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+          // There is a bug in the inclusive file, the range need to be manually set to the value found from the last bin
           inclusiveUncertainty[2][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
           histogramMaximum = inclusiveUncertainty[2][iCentrality][iTrackPt]->GetBinContent(inclusiveUncertainty[2][iCentrality][iTrackPt]->FindBin(0.99));
           inclusiveUncertainty[2][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,histogramMaximum);
           if(maxValue < histogramMaximum) maxValue = histogramMaximum;
-          uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
-          uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
-          drawer->DrawHistogram(uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          uncertaintyShape[0][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
+          uncertaintyShape[0][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          for(int iFile = 1; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(trueColors[iFile]);
+            uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt]->Draw("same");
+          }
           
           inclusiveUncertainty[2][iCentrality][iTrackPt]->SetLineColor(kRed);
           inclusiveUncertainty[2][iCentrality][iTrackPt]->Draw("same");
@@ -527,7 +598,9 @@ void printRelativeUncertainty(){
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
           
           // Add the first uncertainty source to legend
-          legend->AddEntry(uncertaintyShape[0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt], "Dijet analysis", "l");
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            legend->AddEntry(uncertaintyShape[iFile][0][JffCorrector::kPairAcceptance][nAsymmetryBins][iCentrality][iTrackPt], legendLabels[iFile], "l");
+          }
           legend->AddEntry(inclusiveUncertainty[2][iCentrality][iTrackPt], "Inclusive analysis", "l");
           
           // Draw the legend to the figure
@@ -543,22 +616,39 @@ void printRelativeUncertainty(){
           // =================================================
           
           // Add pair acceptance and background uncertainties in quadrature
-          for(int iBin = 1; iBin <= uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
-            oldContent = uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
-            addedContent = uncertaintyShape[0][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
-            histogramMaximum = uncertaintyShape[0][JffCorrector::kResidualTracking][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
-            newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent+histogramMaximum*histogramMaximum);
-            uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->SetBinContent(iBin,newContent);
-          }
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            for(int iBin = 1; iBin <= uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+              oldContent = uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
+              addedContent = uncertaintyShape[iFile][0][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
+              histogramMaximum = uncertaintyShape[iFile][0][JffCorrector::kResidualTracking][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
+              newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent+histogramMaximum*histogramMaximum);
+              uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->SetBinContent(iBin,newContent);
+            } // Histogram bin loop
+          } // Uncertainty file loop
           
-          uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          maxValue = uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+          maxValue = 0;
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            localMaximum = uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+            if(localMaximum > maxValue) maxValue = localMaximum;
+          }
           inclusiveUncertainty[3][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
           histogramMaximum = inclusiveUncertainty[3][iCentrality][iTrackPt]->GetMaximum();
           if(maxValue < histogramMaximum) maxValue = histogramMaximum;
-          uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
-          uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
-          drawer->DrawHistogram(uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
+          uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          for(int iFile = 1; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(trueColors[iFile]);
+            if(smoothHistograms){
+              uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0.05,1);
+              uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
+              uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            }
+            uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->Draw("same");
+          }
           
           inclusiveUncertainty[3][iCentrality][iTrackPt]->SetLineColor(kRed);
           inclusiveUncertainty[3][iCentrality][iTrackPt]->Draw("same");
@@ -576,8 +666,10 @@ void printRelativeUncertainty(){
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
           
           // Add the first uncertainty source to legend
-          legend->AddEntry(uncertaintyShape[0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt], "Dijet analysis", "l");
-          legend->AddEntry(inclusiveUncertainty[2][iCentrality][iTrackPt], "Inclusive analysis", "l");
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            legend->AddEntry(uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt], legendLabels[iFile], "l");
+          }
+          legend->AddEntry(inclusiveUncertainty[3][iCentrality][iTrackPt], "Inclusive analysis", "l");
           
           // Draw the legend to the figure
           legend->Draw();
@@ -591,15 +683,29 @@ void printRelativeUncertainty(){
           // == Compare with total inclusive uncertainty ==
           // ==============================================
           
-          uncertaintyShape[0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          maxValue = uncertaintyShape[0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+          maxValue = 0;
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            localMaximum = uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetMaximum();
+            if(localMaximum > maxValue) maxValue = localMaximum;
+          }
           inclusiveUncertainty[4][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
           histogramMaximum = inclusiveUncertainty[4][iCentrality][iTrackPt]->GetMaximum();
           if(maxValue < histogramMaximum) maxValue = histogramMaximum;
           
-          uncertaintyShape[0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
-          uncertaintyShape[0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
-          drawer->DrawHistogram(uncertaintyShape[0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
+          uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
+          
+          for(int iFile = 1; iFile < nFiles; iFile++){
+            uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(trueColors[iFile]);
+            if(smoothHistograms){
+              uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0.05,1);
+              uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
+              uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            }
+            uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->Draw("same");
+          }
           
           inclusiveUncertainty[4][iCentrality][iTrackPt]->SetLineColor(kRed);
           inclusiveUncertainty[4][iCentrality][iTrackPt]->Draw("same");
@@ -617,7 +723,9 @@ void printRelativeUncertainty(){
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
           
           // Add the first uncertainty source to legend
-          legend->AddEntry(uncertaintyShape[0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt], "Dijet analysis", "l");
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            legend->AddEntry(uncertaintyShape[iFile][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt], legendLabels[iFile], "l");
+          }
           legend->AddEntry(inclusiveUncertainty[4][iCentrality][iTrackPt], "Inclusive analysis", "l");
           
           // Draw the legend to the figure
