@@ -6,17 +6,21 @@
 void illustrateBackgroundSystematics(){
 
   // Open the file from which the illustration is generated and create a histogram manager for that
-  TString fileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root";
+  TString fileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_tunedSeagull_allCorrections_processed_2020-01-14.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_testSpillover_processed_2020-01-03.root
   TFile *dataFile = TFile::Open(fileName);
   DijetHistogramManager *dataHistograms = new DijetHistogramManager(dataFile);
   
   // Select which types of histograms will be drawn
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
   bool zoomCloseToUncertaintyScale = true;  // Zoom the histograms such that uncertainties are more easily visible
+  
+  bool saveFigures = false;   // Save the drawn figures to files
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -32,8 +36,8 @@ void illustrateBackgroundSystematics(){
   int firstDrawnCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 1;
-  int lastDrawnTrackPtBin = 1;
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = nTrackPtBins-1;
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -82,7 +86,8 @@ void illustrateBackgroundSystematics(){
           
           twoDimensionalHelper = dataHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
           
-          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, 1, 2)->Clone(Form("DeltaEtaForShapes%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectRegionDeltaEta(twoDimensionalHelper, -1, 1, "FinalDeltaEtaYield")->Clone(Form("DeltaEtaForShapes%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Scale(methods->GetNBinsProjectedOver());
           
           backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = methods->EstimateSystematicsForBackgroundSubtraction(backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
@@ -94,7 +99,8 @@ void illustrateBackgroundSystematics(){
           
           twoDimensionalHelper = dataHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
           
-          pairAcceptanceHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, 1, 2)->Clone(Form("DeltaEtaForShapeAcceptance%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          pairAcceptanceHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectRegionDeltaEta(twoDimensionalHelper, -1, 1, "CorrectedDeltaEtaYield")->Clone(Form("DeltaEtaForShapeAcceptance%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          pairAcceptanceHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Scale(methods->GetNBinsProjectedOver());
           
           pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = methods->EstimateSystematicsForPairAcceptanceCorrection(pairAcceptanceHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
@@ -115,6 +121,9 @@ void illustrateBackgroundSystematics(){
   TString compactCentralityString;
   TString trackPtString;
   TString compactTrackPtString;
+  TString asymmetryString;
+  TString compactAsymmetryString;
+  
   double maxUncertainty;
   
   // Draw the illustrative figures
@@ -122,6 +131,16 @@ void illustrateBackgroundSystematics(){
     if(!correlationSelector[iJetTrack]) continue;  // Only estimate uncertainty for selected types
     
     for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+      
+      // Setup the asymmetry strings
+      if(iAsymmetry < nAsymmetryBins){
+        asymmetryString = Form(", %.1f < x_{j} < %.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+        compactAsymmetryString = Form("_A=%.1f-%.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+        compactAsymmetryString.ReplaceAll(".","v");
+      } else {
+        asymmetryString = "";
+        compactAsymmetryString = "";
+      }
       
       // No asymmetry bins for inclusive jets
       if(iJetTrack >= DijetHistogramManager::kTrackInclusiveJet && iAsymmetry != nAsymmetryBins) continue;
@@ -170,6 +189,11 @@ void illustrateBackgroundSystematics(){
           legend->AddEntry(redLine, "Background", "l");
           legend->AddEntry(blueLine, "Pair acceptance", "l");
           legend->Draw();
+          
+          // Save the figures into a file
+          if(saveFigures){
+            gPad->GetCanvas()->SaveAs(Form("figures/uncertaintySidebandIllustration_%s%s%s%s.pdf", dataHistograms->GetJetTrackHistogramName(iJetTrack), compactCentralityString.Data(), compactTrackPtString.Data(), compactAsymmetryString.Data()));
+          }
           
         } // Track pT loop
       } // Centrality loop
