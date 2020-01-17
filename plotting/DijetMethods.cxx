@@ -31,7 +31,8 @@ double seagullPoly2(double *x, double *par){
  * Functional form: f(x) = a + b*e^(c*x)
  */
 double seagullExp(double *x, double *par){
-  return par[0]+par[1]*TMath::Exp(x[0]*par[2]);
+  if(x[0] >= 0) return par[0]+par[1]*TMath::Exp(x[0]*par[2]);
+  return par[0]+par[3]*TMath::Exp(x[0]*par[4]);
 }
 
 /*
@@ -39,7 +40,8 @@ double seagullExp(double *x, double *par){
  * Functional form: f(x) = a + b*e^(c*x) + d*x^2
  */
 double seagullPolyExp(double *x, double *par){
-  return par[0]+par[1]*TMath::Exp(x[0]*par[2])+par[3]*x[0]*x[0];
+  if(x[0] >= 0) return par[0]+par[1]*TMath::Exp(x[0]*par[2])+par[3]*x[0]*x[0];
+  return par[0]+par[4]*TMath::Exp(x[0]*par[5])+par[6]*x[0]*x[0];
 }
 
 /*
@@ -423,7 +425,7 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
  *
  * Arguments:
  *  const TH2D *mixedEventCorrectedHistogram = Two-dimensional deltaEta-deltaPhi distribution, that is corrected by the mixed event
- *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta. 2: Same as 0, but use first order polynomial instead of second order. 3: Same as 1, but restrict fit to region 0-2. 4: Assume dip and falling tails of distribution and symmetrize deltaEta.
+ *  const int normalizationMethod = 0: Assume no dip in the middle. 1: Assume dip in the middle and symmetrize background deltaEta. 2: Same as 0, but use first order polynomial instead of second order. 3: Same as 1, but restrict fit to region 0-2. 4: Assume dip and falling tails of distribution and symmetrize deltaEta. 5: Assume dip in the middle but do not symmetrize deltaEta. 6: Assume dip and falling tails of the distribution but do not symmetrize deltaEta.
  *  const int vetoFlag = 0: Regular correction. 1: Skip constant check. 2: Skip correction
  *  const double middleArea = If normalizationMethod == 0, the region in the middle that is assumed to be flat
  *
@@ -481,6 +483,17 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
     }
   }
   
+  // Define how many parameters are used with each implemented fit technique
+  // The fit techniques are:
+  //  0: Assume no dip in the middle and fit second order polynomial
+  //  1: Assume dip in the middle and symmetrize background deltaEta. Fit with exponential function
+  //  2: Same as 0, but use first order polynomial instead of second order
+  //  3: Same as 1, but restrict fit to region 0-2
+  //  4: Assume dip and falling tails of distribution and symmetrize deltaEta. Fit exponential function together with second order polynomial
+  //  5: Same as 1, but do not symmetrize background deltaEta
+  //  6: Same as 4, but do not symmetrize background deltaEta
+  int nFitParameters[] = {4,3,4,3,4,5,7};
+  
   // Prepare the fit function
   fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,4);
   double initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
@@ -491,27 +504,28 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   // Fit the projected distribution
   double backgroundLevel = fSeagullFit->GetParameter(0);
   double maxFitRange = 3;
+  double minFitRange = -3;
   if(normalizationMethod == 3) maxFitRange = 2;
+  if(normalizationMethod == 1 || normalizationMethod == 3 || normalizationMethod == 4) minFitRange = 0;
   
   // If we want to use exponential in some bins, redifine the seagull fit
-  // Note that we want to have the same background level estimation in both cases
-  if(normalizationMethod == 1 || normalizationMethod == 3){
+  // Note that we want to have the same background level estimation in all cases
+  if(normalizationMethod == 1 || normalizationMethod == 3 || normalizationMethod == 5){
     fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
-    fSeagullFit = new TF1("seagullFitExp",seagullExp,-3,3,3);
+    fSeagullFit = new TF1("seagullFitExp",seagullExp,-3,3,nFitParameters[normalizationMethod]);
     initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
-    fSeagullFit->SetParameters(initialLevel,-1,-1);
-    fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,maxFitRange);
+    fSeagullFit->SetParameters(initialLevel,-1,-1,-1,1); // Note that if setting more parameters than arguments, extra parameters are ignored
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",minFitRange,maxFitRange);
     backgroundLevel = fSeagullFit->GetParameter(0);
   }
   
   // If we want to use exponential in some bins, redifine the seagull fit
-  // Note that we want to have the same background level estimation in both cases
-  if(normalizationMethod == 4){
+  if(normalizationMethod == 4 || normalizationMethod == 6){
     fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
-    fSeagullFit = new TF1("seagullFitPolyExp",seagullPolyExp,-3,3,4);
+    fSeagullFit = new TF1("seagullFitPolyExp",seagullPolyExp,-3,3,nFitParameters[normalizationMethod]);
     initialLevel = fBackgroundEtaProjection->GetBinContent(fBackgroundEtaProjection->FindBin(0));
-    fSeagullFit->SetParameters(initialLevel,-1,-1,0);
-    fBackgroundEtaProjection->Fit(fSeagullFit,"","",0,maxFitRange);
+    fSeagullFit->SetParameters(initialLevel,-1,-1,0,-1,1,0); // Note that if setting more parameters than arguments, extra parameters are ignored
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",minFitRange,maxFitRange);
     backgroundLevel = fSeagullFit->GetParameter(0);
   }
   
