@@ -9,6 +9,7 @@
 // Own includes
 #include "DijetHistogramManager.h"
 #include "JffCorrector.h"
+#include "SeagullConfiguration.h"
 
 /*
  * Default constructor
@@ -721,6 +722,8 @@ void DijetHistogramManager::DoSeagullCorrection(){
   // If seagull correction is already done in the input file, do not repeat it
   if(fProcessingStartLevel > kSeagullCorrection) return;
 
+  SeagullConfiguration *seagullMethodProvider = new SeagullConfiguration();
+  
   int seagullMethod = 0;
   int seagullVeto = 0;
   double seagullConstantRegion = 0.5;
@@ -825,8 +828,9 @@ void DijetHistogramManager::DoSeagullCorrection(){
           if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) && fCard->GetJetType() > 0){
             
             // For subleading jet, use different seagull function in a couple of bins
-            if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 4; // TODO: Trying to fix shape at large deltaEta by switching method from 1 to 4
+            /*if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
+              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 6;
+              if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 1 && iTrackPtBin == 2) seagullMethod = 5;
               if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin == 0) seagullMethod = 1;
               if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin == 1) seagullMethod = 1;
               if(iAsymmetry == 1 && iCentralityBin == 0 && iTrackPtBin < 2) seagullMethod = 1;
@@ -837,14 +841,22 @@ void DijetHistogramManager::DoSeagullCorrection(){
               
               if((iAsymmetry == fnAsymmetryBins || iAsymmetry == 0) && iCentralityBin < 2 && iTrackPtBin < 5) seagullMethod = 1;
               if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin < 3) seagullMethod = 1;
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 4; // TODO: Trying to fix shape at large deltaEta
+              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 2) seagullMethod = 6;
+              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin == 2) seagullMethod = 5;
               if(iAsymmetry < 2 && iCentralityBin == 2 && iTrackPtBin == 1) seagullMethod = 1;
-              if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin < 4) seagullMethod = 1;
-              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin < 3) seagullMethod = 1; // TODO: For escheme axis change cent 3 to 2
-              if(iAsymmetry == 2 && iTrackPtBin == 2 && iCentralityBin < 2) seagullMethod = 1;
+              if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin < 4) seagullMethod = 6;   // <--
+              if(iAsymmetry == 1 && iCentralityBin == 1 && iTrackPtBin == 1) seagullMethod = 5;   // <--
+              if(iAsymmetry == 0 && iTrackPtBin == 1 && iCentralityBin == 0) seagullMethod = 6; // <--
+              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin == 2) seagullMethod = 1; // TODO: Delete this line for escheme
+              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin == 1) seagullMethod = 6;
+              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin == 0) seagullMethod = 4;
+              if(iAsymmetry == 2 && iTrackPtBin == 2 && iCentralityBin < 2) seagullMethod = 6;
               //if(iAsymmetry == 0 && iCentralityBin > 1 && iTrackPtBin < 2) seagullVeto = 2; // TODO: Debugging stage here
               
-            }
+            }*/
+            
+            seagullMethod = seagullMethodProvider->GetSeagullMethod(iJetTrack, iAsymmetry, iCentralityBin, iTrackPtBin);
+            seagullVeto = seagullMethodProvider->GetSeagullVeto(iJetTrack, iAsymmetry, iCentralityBin, iTrackPtBin);
           }
           
           // Special cases in some bins due to a dip in the middle
@@ -1935,17 +1947,17 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
   
   // Write the event information histograms to the output file
   if(fLoadEventInformation){
-    fhEvents->Write();             // Number of events surviving different event cuts
-    fhVertexZ->Write();            // Vertex z position
-    fhVertexZWeighted->Write();    // MC weighted vertex z position
-    if(fhVertexZDijet) fhVertexZDijet->Write();  // Vertex z position in dijet events
-    fhTrackCuts->Write();          // Number of tracks surviving different track cuts
-    fhTrackCutsInclusive->Write(); // Number of inclusive tracks surviving different track cuts
-    fhCentrality->Write();         // Centrality in all events
-    fhCentralityWeighted->Write(); // MC weighted centrality in all events
-    fhCentralityDijet->Write();    // Centrality in dijet events
-    fhPtHat->Write();              // pT hat for MC events (only meaningful for MC)
-    fhPtHatWeighted->Write();      // Weighted pT hat distribution (only meaningful for MC)
+    fhEvents->Write("",TObject::kOverwrite);             // Number of events surviving different event cuts
+    fhVertexZ->Write("",TObject::kOverwrite);            // Vertex z position
+    fhVertexZWeighted->Write("",TObject::kOverwrite);    // MC weighted vertex z position
+    if(fhVertexZDijet) fhVertexZDijet->Write("",TObject::kOverwrite);  // Vertex z position in dijet events
+    fhTrackCuts->Write("",TObject::kOverwrite);          // Number of tracks surviving different track cuts
+    fhTrackCutsInclusive->Write("",TObject::kOverwrite); // Number of inclusive tracks surviving different track cuts
+    fhCentrality->Write("",TObject::kOverwrite);         // Centrality in all events
+    fhCentralityWeighted->Write("",TObject::kOverwrite); // MC weighted centrality in all events
+    fhCentralityDijet->Write("",TObject::kOverwrite);    // Centrality in dijet events
+    fhPtHat->Write("",TObject::kOverwrite);              // pT hat for MC events (only meaningful for MC)
+    fhPtHatWeighted->Write("",TObject::kOverwrite);      // Weighted pT hat distribution (only meaningful for MC)
   }
  
   // Write the single jet histograms to the output file
@@ -1968,19 +1980,19 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         
         // Single jet pT
         sprintf(histogramNamer,"%sPt_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
-        if(fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
+        if(fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPt[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
         
         // Single jet phi
         sprintf(histogramNamer,"%sPhi_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
-        if(fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
+        if(fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
         
         // Single jet eta
         sprintf(histogramNamer,"%sEta_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
-        if(fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
+        if(fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
         
         //Single jet eta-phi
         sprintf(histogramNamer,"%sEtaPhi_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
-        if(fLoad2DHistograms && fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer);
+        if(fLoad2DHistograms && fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
       } // Loop over asymmetry bins
     } // Loop over centrality bins
     
@@ -2000,34 +2012,34 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
       
       // Dijet deltaPhi
       sprintf(histogramNamer,"dijetDeltaPhi_C%d",iCentralityBin);
-      fhDijetDphi[iCentralityBin]->Write(histogramNamer);
+      fhDijetDphi[iCentralityBin]->Write(histogramNamer, TObject::kOverwrite);
       
       // Dijet asymmetry
       sprintf(histogramNamer,"dijetAsymmetry_C%d",iCentralityBin);
-      fhDijetAsymmetry[iCentralityBin][knJetPtBins]->Write(histogramNamer);
+      fhDijetAsymmetry[iCentralityBin][knJetPtBins]->Write(histogramNamer, TObject::kOverwrite);
       
       // xJ histograms are newer addition. Do not crash the code if they are not there for older files
       if(fhDijetXj[iCentralityBin][knJetPtBins] != NULL){
         sprintf(histogramNamer,"dijetXj_C%d",iCentralityBin);
-        fhDijetXj[iCentralityBin][knJetPtBins]->Write(histogramNamer);
+        fhDijetXj[iCentralityBin][knJetPtBins]->Write(histogramNamer, TObject::kOverwrite);
       }
       
       for(int iJetPt = 0; iJetPt < knJetPtBins; iJetPt++){
         
         // Dijet asymmetry AJ in jet pT bins
         sprintf(histogramNamer,"dijetAsymmetry_C%dT%d",iCentralityBin,iJetPt);
-        fhDijetAsymmetry[iCentralityBin][iJetPt]->Write(histogramNamer);
+        fhDijetAsymmetry[iCentralityBin][iJetPt]->Write(histogramNamer, TObject::kOverwrite);
         
         // Dijet asymmetry xJ in jet pT bins
         if(fhDijetXj[iCentralityBin][iJetPt] != NULL){
           sprintf(histogramNamer,"dijetXj_C%dT%d",iCentralityBin,iJetPt);
-          fhDijetXj[iCentralityBin][iJetPt]->Write(histogramNamer);
+          fhDijetXj[iCentralityBin][iJetPt]->Write(histogramNamer, TObject::kOverwrite);
         }
       }
       
       // Leading jet pT vs. subleading jet pT
       sprintf(histogramNamer,"leadingVsSubleadingPt_C%d",iCentralityBin);
-      if(fLoad2DHistograms) fhDijetLeadingVsSubleadingPt[iCentralityBin]->Write(histogramNamer);
+      if(fLoad2DHistograms) fhDijetLeadingVsSubleadingPt[iCentralityBin]->Write(histogramNamer, TObject::kOverwrite);
     }
     
     // Return back to main directory
@@ -2049,33 +2061,33 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
         
         // Track pT
         sprintf(histogramNamer,"%sPt%s_C%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin);
-        fhTrackPt[iTrackType][iCorrelationType][iCentralityBin]->Write(histogramNamer);
+        fhTrackPt[iTrackType][iCorrelationType][iCentralityBin]->Write(histogramNamer, TObject::kOverwrite);
         
         // pT integrated track phi
         sprintf(histogramNamer,"%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
-        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer);
+        fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer, TObject::kOverwrite);
         
         // pT integrated track eta
         sprintf(histogramNamer,"%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
-        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer);
+        fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer, TObject::kOverwrite);
         
         // pT integrated track eta-phi
         sprintf(histogramNamer,"%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,fnTrackPtBins);
-        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer);
+        if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][fnTrackPtBins]->Write(histogramNamer, TObject::kOverwrite);
         
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
           // Track phi in track pT bins
           sprintf(histogramNamer,"%sPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin]->Write(histogramNamer);
+          fhTrackPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin]->Write(histogramNamer, TObject::kOverwrite);
           
           // Track eta in track pT bins
           sprintf(histogramNamer,"%sEta%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin]->Write(histogramNamer);
+          fhTrackEta[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin]->Write(histogramNamer, TObject::kOverwrite);
           
           // Track eta-phi in track pT bins
           sprintf(histogramNamer,"%sEtaPhi%s_C%dT%d",fTrackHistogramNames[iTrackType],fCompactCorrelationTypeString[iCorrelationType].Data(),iCentralityBin,iTrackPtBin);
-          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin]->Write(histogramNamer);
+          if(fLoad2DHistograms) fhTrackEtaPhi[iTrackType][iCorrelationType][iCentralityBin][iTrackPtBin]->Write(histogramNamer, TObject::kOverwrite);
           
         } // Track pT loop
       } // Centrality loop
@@ -2117,17 +2129,17 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
               
               if(iDeltaEta > kWholeEta && iCorrelationType < kMixedEventNormalized) continue; // DeltaEta slicing not implemented for same and mixed event
               sprintf(histogramNamer,"%sDeltaPhi%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaEtaString[iDeltaEta], fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
-              if(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta] != NULL) fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta]->Write(histogramNamer);
+              if(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta] != NULL) fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaEta]->Write(histogramNamer, TObject::kOverwrite);
             }
             
             // Jet-track deltaEtaDeltaPhi
             sprintf(histogramNamer,"%sDeltaEtaDeltaPhi%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
-            if(fLoad2DHistograms && fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->Write(histogramNamer);
+            if(fLoad2DHistograms && fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin]->Write(histogramNamer, TObject::kOverwrite);
             
             // DeltaPhi binning for deltaEta histogram
             for(int iDeltaPhi = 0; iDeltaPhi < knDeltaPhiBins; iDeltaPhi++){
               sprintf(histogramNamer,"%sDeltaEta%s%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fCompactCorrelationTypeString[iCorrelationType].Data(),fCompactDeltaPhiString[iDeltaPhi].Data(), fAsymmetryBinName[iAsymmetry].Data(),iCentralityBin,iTrackPtBin);
-              if(fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]) fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]->Write(histogramNamer);
+              if(fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]) fhJetTrackDeltaEta[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][iDeltaPhi]->Write(histogramNamer, TObject::kOverwrite);
             } // DeltaPhi loop
           } // Track pT loop
         } // Centrality loop
@@ -2168,7 +2180,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
               // Only write histogram that are non-NULL
               if(fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]){
                 sprintf(histogramNamer,"jetPtClosure_%s%s_C%dT%dE%d", fSingleJetHistogramName[iClosureType], fClosureParticleName[iClosureParticle], iCentrality, iGenJetPt, iJetEta);
-                fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]->Write(histogramNamer);
+                fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]->Write(histogramNamer, TObject::kOverwrite);
               }
             
             } // Jet eta bin loop
@@ -2218,7 +2230,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
             sprintf(histogramNamer,"seagullDeltaEta_%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack], fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
-            if(fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
+            if(fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fhSeagullDeltaEta[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer, TObject::kOverwrite);
             
           } // Track pT loop
         } // Centrality loop
@@ -2242,7 +2254,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
             sprintf(histogramNamer,"seagullFit_%s_%sC%dT%d",fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
-            if(fSeagullFit[iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fSeagullFit[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
+            if(fSeagullFit[iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fSeagullFit[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer, TObject::kOverwrite);
             
           } // Track pT loop
         } // Centrality loop
@@ -2317,7 +2329,7 @@ void DijetHistogramManager::WriteJetShapeHistograms(){
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
             sprintf(histogramNamer,"%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape], fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
-            if(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer);
+            if(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer, TObject::kOverwrite);
             
           } // Track pT loop
         } // Centrality loop

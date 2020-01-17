@@ -17,6 +17,7 @@
 #include "../src/DijetHistograms.h"
 
 class JffCorrector;  // Need forward declaration of the JffCorrector as this class depends on DijetHistogramManager
+class SeagullConfiguration; // Also SeagullConfiguration depends on DijetHistogramManager
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
