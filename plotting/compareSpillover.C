@@ -1,7 +1,7 @@
 #include "DijetHistogramManager.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "DijetCard.h"
-#include "DijetMethods.h"
 #include "JDrawer.h"
+#include "JffCorrector.h"
 
 /*
  * Macro for comparing spillover corrections from different sources
@@ -12,33 +12,34 @@ void compareSpillover(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_centShift5_jet100trigger_JECv6_2019-10-04.root";
+  const int nSpilloverDistributions = 2;
+  const int nDataDistributions = 4;
+  
+  TString spilloverFileName[nSpilloverDistributions] = {"corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root", "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root"};
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root
   // corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-08-16.root
-  TString spilloverPuFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_eachemeAxis_centShift5_JECv6_2019-10-16.root";
   // corrections/spilloverCorrection_PbPbMC_akPu4CaloJets_xjBins_noUncorr_improvisedMixing_wtaAxis_JECv5b_preliminary_2019-09-08.root
   // corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
-  TString dataPuFileName = "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_onlySeagull_wtaAxis_JECv5b_processed_2019-08-30.root"; // Can draw also JFF correction yield
-  // data/dijetPbPb_pfCsJets_wtaAxis_noUncorr_improvisedMixing_onlySeagull_processed_2019-07-05.root
-  // data/dijetPbPb2018_highForest_akPu4CaloJets_noCorrections_5eveMix_wtaAxis_JECv5b_processed_2019-08-30.root
-  TString dataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_noCorrections_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root"; // Compare also with uncorrected data
-  TString correctedDataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
   
-  TString correctedCaloFileName = "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_wtaAxis_allCorrections_JECv5b_processed_2019-08-30.root";
-  // "data/dijetPbPb2018_highForest_akPu4CaloJets_xjBins_5eveMix_wtaAxis_allCorrections_JECv5b_processed_2019-08-30.root";
-  // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
-  // data/dijetPbPb2018_highForest_akPu4CaloJets_jet80trigger_5eveMix_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-09.root
+  TString dataFileName[nDataDistributions] = {"data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_onlyGluonJets_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_onlyQuarkJets_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_quarkGluonCombined_25pQuarkExcess_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root"};
 
-  bool saveFigures = true;
+  TString legendComment[nSpilloverDistributions] = {"lul", "lul"};
+  TString dataLegendComment[nDataDistributions] = {"Regular", "Pure gluon", "Pure quark", "Quark+25%"};
+  
+  bool saveFigures = false;
   
   // Open the input files
-  TFile *spilloverFile = TFile::Open(spilloverFileName);
-  TFile *spilloverPuFile = TFile::Open(spilloverPuFileName);
-  TFile *dataPuFile = TFile::Open(dataPuFileName);
-  TFile *dataFile = TFile::Open(dataFileName);
-  TFile *correctedDataFile = TFile::Open(correctedDataFileName);
-  TFile *correctedCaloFile = TFile::Open(correctedCaloFileName);
+  TFile *spilloverFile[nSpilloverDistributions];
+  for(int iFile = 0; iFile < nSpilloverDistributions; iFile++){
+    spilloverFile[iFile] = TFile::Open(spilloverFileName[iFile]);
+  }
   
+  TFile *dataFile[nDataDistributions];
+  for(int iFile = 0; iFile < nDataDistributions; iFile++){
+    dataFile[iFile] = TFile::Open(dataFileName[iFile]);
+  }
+  
+  // Binning information
   const int nCentralityBins = 4;
   const int nTrackPtBins = 5;
   const int nAsymmetryBins = 3;
@@ -46,123 +47,93 @@ void compareSpillover(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
+  const int firstDrawnAsymmetryBin = 0;
+  const int lastDrawnAsymmetryBin = 0;
+  
+  // Make histogram managers for the files
+  JffCorrector *spilloverProvider[nSpilloverDistributions];
+  for(int iFile = 0; iFile < nSpilloverDistributions; iFile++){
+    spilloverProvider[iFile] = new JffCorrector();
+    spilloverProvider[iFile]->ReadSpilloverFile(spilloverFile[iFile]);
+  }
+  
+  DijetHistogramManager *histograms[nDataDistributions];
+  for(int iFile = 0; iFile < nDataDistributions; iFile++){
+    histograms[iFile] = new DijetHistogramManager(dataFile[iFile]);
+    
+    histograms[iFile]->SetLoadTrackLeadingJetCorrelations(true);
+    histograms[iFile]->SetLoad2DHistograms(true);
+    histograms[iFile]->SetAsymmetryBinRange(firstDrawnAsymmetryBin,lastDrawnAsymmetryBin);
+    histograms[iFile]->LoadProcessedHistograms();
+  }
+  
   // Define arrays for the histograms
-  TH2D *spilloverHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
-  TH2D *dataHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
-  TH2D *correctedDataHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
-  TH2D *correctedCaloHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
-  TH2D *spilloverPuHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
-  TH2D *dataPuHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TH2D *spilloverHistogram[nSpilloverDistributions][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TH2D *dataHistogram[nDataDistributions][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   
   // Yield extraction
-  TGraphErrors *yieldGraph[nCentralityBins];
-  TGraphErrors *dataYieldGraph[nCentralityBins];
-  TGraphErrors *correctedDataYieldGraph[nCentralityBins];
-  TGraphErrors *correctedCaloYieldGraph[nCentralityBins];
-  TGraphErrors *yieldPuGraph[nCentralityBins];
-  TGraphErrors *dataYieldPuGraph[nCentralityBins];
-  double yieldIntegral[nCentralityBins][nTrackPtBins];
-  double yieldIntegralError[nCentralityBins][nTrackPtBins];
-  double dataYieldIntegral[nCentralityBins][nTrackPtBins];
-  double dataYieldIntegralError[nCentralityBins][nTrackPtBins];
-  double correctedDataYieldIntegral[nCentralityBins][nTrackPtBins];
-  double correctedDataYieldIntegralError[nCentralityBins][nTrackPtBins];
-  double correctedCaloYieldIntegral[nCentralityBins][nTrackPtBins];
-  double correctedCaloYieldIntegralError[nCentralityBins][nTrackPtBins];
-  double yieldPuIntegral[nCentralityBins][nTrackPtBins];
-  double yieldPuIntegralError[nCentralityBins][nTrackPtBins];
-  double dataYieldPuIntegral[nCentralityBins][nTrackPtBins];
-  double dataYieldPuIntegralError[nCentralityBins][nTrackPtBins];
-  double dataBigIntegral[2][nCentralityBins][nTrackPtBins];        // First bin: 0 = Near side, 1 = Whole distribution
-  double dataBigIntegralError[2][nCentralityBins][nTrackPtBins];   // Fisrt bin: 0 = Near side, 1 = Whole distribution
-  double dataPuBigIntegral[2][nCentralityBins][nTrackPtBins];      // First bin: 0 = Near side, 1 = Whole distribution
-  double dataPuBigIntegralError[2][nCentralityBins][nTrackPtBins]; // Fisrt bin: 0 = Near side, 1 = Whole distribution
+  TGraphErrors *yieldGraph[nSpilloverDistributions][nAsymmetryBins+1][nCentralityBins];
+  TGraphErrors *dataYieldGraph[nDataDistributions][nAsymmetryBins+1][nCentralityBins];
+  TGraphErrors *dataRatioGraph[nDataDistributions-1][nAsymmetryBins+1][nCentralityBins];
+  double yieldIntegral[nSpilloverDistributions][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  double yieldIntegralError[nSpilloverDistributions][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  double dataYieldIntegral[nDataDistributions][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  double dataYieldIntegralError[nDataDistributions][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  double dataRatio[nDataDistributions-1][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  double dataRatioError[nDataDistributions-1][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   double yieldXpoints[] = {0.85,1.5,2.5,3.5,6,10};
   double yieldXerrors[] = {0,0,0,0,0,0};
   int binX1, binX2, binY1, binY2;
   
-  // Define a DijetMethods to get the spillover correction as a function of DeltaR
-  DijetMethods *calculator = new DijetMethods();
-  
   // Read the histograms from spillover file
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-
-      spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d",iCentrality,iTrackPt));
-
-      dataHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
-      //dataHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_Corrected_C%dT%d", iCentrality, iTrackPt));
-      
-      dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataPuFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
-      //dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) dataPuFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_Corrected_C%dT%d", iCentrality, iTrackPt));
-      
-      spilloverPuHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) spilloverPuFile->Get(Form("trackLeadingJetDeltaEtaDeltaPhi/nofitSpilloverCorrection_trackLeadingJetDeltaEtaDeltaPhi_C%dT%d", iCentrality, iTrackPt));
-      
-      correctedDataHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) correctedDataFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
-      
-      correctedCaloHistogram[nAsymmetryBins][iCentrality][iTrackPt] = (TH2D*) correctedCaloFile->Get(Form("trackLeadingJet/trackLeadingJetDeltaEtaDeltaPhi_BackgroundSubtracted_C%dT%d", iCentrality, iTrackPt));
-    }
-  }
+      for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+        for(int iSpillover = 0; iSpillover < nSpilloverDistributions; iSpillover++){
+          
+          spilloverHistogram[iSpillover][iAsymmetry][iCentrality][iTrackPt] = spilloverProvider[iSpillover]->GetDeltaEtaDeltaPhiSpilloverCorrection(DijetHistogramManager::kTrackLeadingJet, iCentrality, iTrackPt, iAsymmetry);
+          
+        } // Loop over spillover files
+        
+        for(int iData = 0; iData < nDataDistributions; iData++){
+          dataHistogram[iData][iAsymmetry][iCentrality][iTrackPt] = histograms[iData]->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
+        } // Loop over data files
+        
+      } // Asymmetry loop
+    } // Track pT loop
+  } // Centrality loop
   
   // Calculate integrals for asymmetry integrated distributions and normalize them to pT bin width
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      yieldIntegral[iCentrality][iTrackPt] = spilloverHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(1, 200, 1, 500, yieldIntegralError[iCentrality][iTrackPt], "width");
-      yieldIntegral[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      yieldIntegralError[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      binX1 = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->FindBin(-0.99);
-      binX2 = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->FindBin(0.99);
-      binY1 = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->FindBin(-0.99);
-      binY2 = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->FindBin(0.99);
-      
-      dataYieldIntegral[iCentrality][iTrackPt] = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, dataYieldIntegralError[iCentrality][iTrackPt], "width");
-      dataYieldIntegral[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      dataYieldIntegralError[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      dataYieldPuIntegral[iCentrality][iTrackPt] = dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, dataYieldPuIntegralError[iCentrality][iTrackPt], "width");
-      dataYieldPuIntegral[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      dataYieldPuIntegralError[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      correctedDataYieldIntegral[iCentrality][iTrackPt] = correctedDataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, correctedDataYieldIntegralError[iCentrality][iTrackPt], "width");
-      correctedDataYieldIntegral[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      correctedDataYieldIntegralError[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      correctedCaloYieldIntegral[iCentrality][iTrackPt] = correctedCaloHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, correctedCaloYieldIntegralError[iCentrality][iTrackPt], "width");
-      correctedCaloYieldIntegral[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      correctedCaloYieldIntegralError[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      yieldPuIntegral[iCentrality][iTrackPt] = spilloverPuHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, yieldPuIntegralError[iCentrality][iTrackPt], "width");
-      yieldPuIntegral[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      yieldPuIntegralError[iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      // For data, check also the integral over the whole near side and the whole distribution
-      binX1 = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->FindBin(-TMath::Pi()/2.0 + 0.01);
-      binX2 = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->FindBin(TMath::Pi()/2.0 - 0.01);
-      binY1 = 1;
-      binY2 = 500;
-      
-      dataBigIntegral[0][iCentrality][iTrackPt] = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, dataBigIntegralError[0][iCentrality][iTrackPt], "width");
-      dataBigIntegral[0][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      dataBigIntegralError[0][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      dataPuBigIntegral[0][iCentrality][iTrackPt] = dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, dataPuBigIntegralError[0][iCentrality][iTrackPt], "width");
-      dataPuBigIntegral[0][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      dataPuBigIntegralError[0][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      // Set the bin borders for the whole distribution
-      binX1 = 1;
-      binX2 = 200;
-      
-      dataBigIntegral[1][iCentrality][iTrackPt] = dataHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, dataBigIntegralError[1][iCentrality][iTrackPt], "width");
-      dataBigIntegral[1][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      dataBigIntegralError[1][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      
-      dataPuBigIntegral[1][iCentrality][iTrackPt] = dataPuHistogram[nAsymmetryBins][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, dataPuBigIntegralError[1][iCentrality][iTrackPt], "width");
-      dataPuBigIntegral[1][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-      dataPuBigIntegralError[1][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
-    }
-  }
+      for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+        for(int iSpillover = 0; iSpillover < nSpilloverDistributions; iSpillover++){
+          yieldIntegral[iSpillover][iAsymmetry][iCentrality][iTrackPt] = spilloverHistogram[iSpillover][iAsymmetry][iCentrality][iTrackPt]->IntegralAndError(1, 200, 1, 500, yieldIntegralError[iSpillover][iAsymmetry][iCentrality][iTrackPt], "width");
+          yieldIntegral[iSpillover][iAsymmetry][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
+          yieldIntegralError[iSpillover][iAsymmetry][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
+        } // Spillover file loop
+        
+        for(int iData = 0; iData < nDataDistributions; iData++){
+          
+          binX1 = dataHistogram[iData][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->FindBin(-0.99);
+          binX2 = dataHistogram[iData][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->FindBin(0.99);
+          binY1 = dataHistogram[iData][iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->FindBin(-0.99);
+          binY2 = dataHistogram[iData][iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->FindBin(0.99);
+          
+          dataYieldIntegral[iData][iAsymmetry][iCentrality][iTrackPt] = dataHistogram[iData][iAsymmetry][iCentrality][iTrackPt]->IntegralAndError(binX1, binX2, binY1, binY2, dataYieldIntegralError[iData][iAsymmetry][iCentrality][iTrackPt], "width");
+          dataYieldIntegral[iData][iAsymmetry][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
+          dataYieldIntegralError[iData][iAsymmetry][iCentrality][iTrackPt] /= (trackPtBinBorders[iTrackPt+1] - trackPtBinBorders[iTrackPt]);
+          
+          // Calculate the ratio and error of the integrated values
+          if(iData > 0){
+            dataRatio[iData-1][iAsymmetry][iCentrality][iTrackPt] = dataYieldIntegral[iData][iAsymmetry][iCentrality][iTrackPt] / dataYieldIntegral[0][iAsymmetry][iCentrality][iTrackPt];
+            dataRatioError[iData-1][iAsymmetry][iCentrality][iTrackPt] = TMath::Sqrt( TMath::Power(dataYieldIntegralError[iData][iAsymmetry][iCentrality][iTrackPt] / dataYieldIntegral[0][iAsymmetry][iCentrality][iTrackPt] ,2) + TMath::Power(dataYieldIntegral[iData][iAsymmetry][iCentrality][iTrackPt] * dataYieldIntegralError[0][iAsymmetry][iCentrality][iTrackPt] / (dataYieldIntegral[0][iAsymmetry][iCentrality][iTrackPt] * dataYieldIntegral[0][iAsymmetry][iCentrality][iTrackPt]) ,2) );
+          }
+          
+        } // Data file loop
+      } // Asymmetry loop
+    } // Track pT loop
+  } // Centrality loop
   
   // Draw all asymmery bins deltaR curves to a single plot to see if the spillover is similar regardless of asymmetry bin
   JDrawer *drawer = new JDrawer();
@@ -172,70 +143,99 @@ void compareSpillover(){
   drawer->SetDefaultAppearanceGraph();
   TLine *zeroLine = new TLine(0,0,8,0);
   zeroLine->SetLineStyle(2);
+  TLine *oneLine = new TLine(0,1,8,1);
+  oneLine->SetLineStyle(2);
   //double centralityZoom[] = {10000,6000,2000,600};
   double centralityZoom[] = {20,15,10,6};
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  int markers[] = {kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullDoubleDiamond, kFullCrossX};
+  int colors[] = {kBlack, kBlue, kRed, kGreen+2, kMagenta, kCyan};
+  
+  TString asymmetryString;
+  TString compactAsymmetryString;
+  
+  for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
     
-    // Subtract spillover yield
-    /*for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      dataYieldIntegral[iCentrality][iTrackPt] -= yieldIntegral[iCentrality][iTrackPt];
-      dataYieldPuIntegral[iCentrality][iTrackPt] -= yieldPuIntegral[iCentrality][iTrackPt];
-    }*/
-    
-    /*dataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
-    dataYieldGraph[iCentrality]->SetMarkerStyle(21);
-    dataYieldGraph[iCentrality]->SetMarkerColor(kBlack);
-    drawer->DrawGraph(dataYieldGraph[iCentrality],0,8,-0.5,centralityZoom[iCentrality],"p_{T} (GeV)","Yield","","psame");
-    zeroLine->Draw();
-    
-    dataYieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldPuIntegral[iCentrality], yieldXerrors, dataYieldPuIntegralError[iCentrality]);
-    dataYieldPuGraph[iCentrality]->SetMarkerStyle(21);
-    dataYieldPuGraph[iCentrality]->SetMarkerColor(kGreen+2);
-    dataYieldPuGraph[iCentrality]->Draw("psame");
-    
-    correctedDataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, correctedDataYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
-    //correctedDataYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataBigIntegral[0][iCentrality], yieldXerrors, dataBigIntegralError[0][iCentrality]);
-    correctedDataYieldGraph[iCentrality]->SetMarkerStyle(21);
-    correctedDataYieldGraph[iCentrality]->SetMarkerColor(kMagenta);
-    correctedDataYieldGraph[iCentrality]->Draw("psame");
-    
-    correctedCaloYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, correctedCaloYieldIntegral[iCentrality], yieldXerrors, dataYieldIntegralError[iCentrality]);
-    //correctedCaloYieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataPuBigIntegral[0][iCentrality], yieldXerrors, dataPuBigIntegralError[0][iCentrality]);
-    correctedCaloYieldGraph[iCentrality]->SetMarkerStyle(21);
-    correctedCaloYieldGraph[iCentrality]->SetMarkerColor(kCyan);
-    correctedCaloYieldGraph[iCentrality]->Draw("psame");*/
-    
-    
-    yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[iCentrality], yieldXerrors, yieldIntegralError[iCentrality]);
-    //yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataBigIntegral[1][iCentrality], yieldXerrors, dataBigIntegralError[1][iCentrality]);
-    yieldGraph[iCentrality]->SetMarkerStyle(20);
-    yieldGraph[iCentrality]->SetMarkerColor(kRed);
-    drawer->DrawGraph(yieldGraph[iCentrality],0,8,-0.5,6,"p_{T} (GeV)","Yield","","psame");
-    //yieldGraph[iCentrality]->Draw("psame");
-    zeroLine->Draw();
-    
-    yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldPuIntegral[iCentrality], yieldXerrors, yieldPuIntegralError[iCentrality]);
-    //yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataPuBigIntegral[1][iCentrality], yieldXerrors, dataPuBigIntegralError[1][iCentrality]);
-    yieldPuGraph[iCentrality]->SetMarkerStyle(20);
-    yieldPuGraph[iCentrality]->SetMarkerColor(kBlue);
-    yieldPuGraph[iCentrality]->Draw("psame");
-    
-    // Put the centrality bin to the canvas
-    legend = new TLegend(0.35,0.55,0.85,0.9);
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    legend->SetHeader(Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
-    /*legend->AddEntry(dataYieldGraph[iCentrality],"Data FlowCS Uncorr","p");
-    legend->AddEntry(dataYieldPuGraph[iCentrality],"Data Calo Uncorr","p");
-    legend->AddEntry(correctedDataYieldGraph[iCentrality],"Data FlowCS Corr","p");
-    legend->AddEntry(correctedCaloYieldGraph[iCentrality],"Data Calo Corr","p");*/
-    legend->AddEntry(yieldGraph[iCentrality],"Spillover Previous","p");
-    legend->AddEntry(yieldPuGraph[iCentrality],"Spillover 5 % cent shift","p");
-    legend->Draw();
-    
-    // Save the figures into a file
-    if(saveFigures){
-      gPad->GetCanvas()->SaveAs(Form("figures/spilloverComparisonCentralityShift_C=%.0f-%.0f.pdf", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+    if(iAsymmetry == nAsymmetryBins){
+      asymmetryString = "";
+      compactAsymmetryString = "";
+    } else {
+      asymmetryString = Form(", %.1f < x_{j} < %.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
+      compactAsymmetryString = Form("_A=%.1f-%.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
+      compactAsymmetryString.ReplaceAll(".","v");
     }
     
-  }
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      
+      // TODO: Drawing for spillover yields
+      //yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[0][iCentrality], yieldXerrors, yieldIntegralError[0][iCentrality]);
+      //yieldGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataBigIntegral[1][iCentrality], yieldXerrors, dataBigIntegralError[1][iCentrality]);
+      //yieldGraph[iCentrality]->SetMarkerStyle(20);
+      //yieldGraph[iCentrality]->SetMarkerColor(kRed);
+      //drawer->DrawGraph(yieldGraph[iCentrality],0,8,-0.5,6,"p_{T} (GeV)","Yield","","psame");
+      //yieldGraph[iCentrality]->Draw("psame");
+      //zeroLine->Draw();
+      
+      //yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, yieldIntegral[1][iCentrality], yieldXerrors, yieldIntegralError[1][iCentrality]);
+      //yieldPuGraph[iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataPuBigIntegral[1][iCentrality], yieldXerrors, dataPuBigIntegralError[1][iCentrality]);
+      //yieldPuGraph[iCentrality]->SetMarkerStyle(20);
+      //yieldPuGraph[iCentrality]->SetMarkerColor(kBlue);
+      //yieldPuGraph[iCentrality]->Draw("psame");
+      
+      for(int iData = 0; iData < nDataDistributions; iData++){
+        dataYieldGraph[iData][iAsymmetry][iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataYieldIntegral[iData][iAsymmetry][iCentrality], yieldXerrors, dataYieldIntegralError[iData][iAsymmetry][iCentrality]);
+        dataYieldGraph[iData][iAsymmetry][iCentrality]->SetMarkerStyle(markers[iData]);
+        dataYieldGraph[iData][iAsymmetry][iCentrality]->SetMarkerColor(colors[iData]);
+      }
+      
+      drawer->DrawGraph(dataYieldGraph[0][iAsymmetry][iCentrality],0,8,-0.5,6,"p_{T} (GeV)","Yield","","psame");
+      zeroLine->Draw();
+      
+      for(int iData = 1; iData < nDataDistributions; iData++){
+        dataYieldGraph[iData][iAsymmetry][iCentrality]->Draw("psame");
+      }
+      
+      // Put the centrality bin to the canvas
+      legend = new TLegend(0.43,0.55,0.9,0.9);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->SetHeader(Form("C: %.0f-%.0f %%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString.Data()));
+      for(int iData = 0; iData < nDataDistributions; iData++){
+        legend->AddEntry(dataYieldGraph[iData][iAsymmetry][iCentrality],dataLegendComment[iData].Data(),"p");
+      }
+      legend->Draw();
+      
+      // Save the figures into a file
+      if(saveFigures){
+        gPad->GetCanvas()->SaveAs(Form("figures/spilloverYieldParticleComposition%s_C=%.0f-%.0f.pdf", compactAsymmetryString.Data(),  centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+      }
+      
+      // Make the ratio graphs
+      for(int iData = 0; iData < nDataDistributions-1; iData++){
+        dataRatioGraph[iData][iAsymmetry][iCentrality] = new TGraphErrors(nTrackPtBins, yieldXpoints, dataRatio[iData][iAsymmetry][iCentrality], yieldXerrors, dataRatioError[iData][iAsymmetry][iCentrality]);
+        dataRatioGraph[iData][iAsymmetry][iCentrality]->SetMarkerStyle(markers[iData+1]);
+        dataRatioGraph[iData][iAsymmetry][iCentrality]->SetMarkerColor(colors[iData+1]);
+      }
+      
+      drawer->DrawGraph(dataRatioGraph[0][iAsymmetry][iCentrality],0,8,0.6,1.4,"p_{T} (GeV)","Yield ratio","","psame");
+      oneLine->Draw();
+      
+      for(int iData = 1; iData < nDataDistributions-1; iData++){
+        dataRatioGraph[iData][iAsymmetry][iCentrality]->Draw("psame");
+      }
+      
+      // Put the centrality bin to the canvas
+      legend = new TLegend(0.2,0.76,0.65,0.99);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->SetHeader(Form("C: %.0f-%.0f %%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString.Data()));
+      for(int iData = 0; iData < nDataDistributions-1; iData++){
+        legend->AddEntry(dataRatioGraph[iData][iAsymmetry][iCentrality],Form("%s / %s",dataLegendComment[iData+1].Data(),dataLegendComment[0].Data()),"p");
+      }
+      legend->Draw();
+      
+      // Save the figures into a file
+      if(saveFigures){
+        gPad->GetCanvas()->SaveAs(Form("figures/spilloverParticleCompositionRatio%s_C=%.0f-%.0f.pdf", compactAsymmetryString.Data(),  centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+      }
+      
+    } // Centrality loop
+  } // Asymmetry loop
 }
