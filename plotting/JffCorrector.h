@@ -21,7 +21,7 @@ class JffCorrector {
 
 public:
   
-  enum enumUncertaintySources{kBackgroundFluctuation, kFragmentationBias, kJetEnergyScale, kTrackingEfficiency, kResidualTracking, kPairAcceptance, kBackgroundSubtraction, kTotal, knUncertaintySources};
+  enum enumUncertaintySources{kBackgroundFluctuation, kFragmentationBias, kJetEnergyScale, kTrackingEfficiency, kResidualTracking, kTrackingDeltaR, kPairAcceptance, kBackgroundSubtraction, kTotal, knUncertaintySources};
   enum enumLongRangeUncertaintySources{kBackgroundGlue, kEtaSide, kEtaRegion, kSameMixed, kVzVariation, kTotalLongRange, knLongRangeUncertaintySources};
 
   
@@ -63,7 +63,7 @@ public:
 private:
   
   // Names for different uncertainties
-  TString uncertaintyName[knUncertaintySources] = {"backgroundFluctuation", "fragmentationBias", "jetEnergyScale", "trackingEfficiency", "residualTracking", "pairAcceptance", "backgroundSubtraction", "total"};
+  TString uncertaintyName[knUncertaintySources] = {"backgroundFluctuation", "fragmentationBias", "jetEnergyScale", "trackingEfficiency", "residualTracking", "trackingDeltaR", "pairAcceptance", "backgroundSubtraction", "total"};
   
   TString longRangeUncertaintyName[knLongRangeUncertaintySources] = {"backgroundShift", "etaSide", "etaRegion", "sameVsMixed", "vzSelection", "total"};
   
