@@ -23,6 +23,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fApplyJffCorrection(false),
   fApplySpilloverCorrection(false),
   fApplyTrackDeltaRCorrection(false),
+  fApplyTrackDeltaRResidualScale(false),
   fApplySeagullCorrection(false),
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
@@ -329,6 +330,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fApplyJffCorrection(in.fApplyJffCorrection),
   fApplySpilloverCorrection(in.fApplySpilloverCorrection),
   fApplyTrackDeltaRCorrection(in.fApplyTrackDeltaRCorrection),
+  fApplyTrackDeltaRResidualScale(in.fApplyTrackDeltaRResidualScale),
   fApplySeagullCorrection(in.fApplySeagullCorrection),
   fLoadEventInformation(in.fLoadEventInformation),
   fLoadDijetHistograms(in.fLoadDijetHistograms),
@@ -783,80 +785,12 @@ void DijetHistogramManager::DoSeagullCorrection(){
           // No seagull correction for the very high pT bins on PbPb (poly2 does not improve chi2/NDF)
           if(iTrackPtBin > 4 && fCard->GetDataType().Contains("PbPb",TString::kIgnoreCase)) seagullVeto = 2;
           
-          // Special case. Some bins for RecoGen sube0 need special care. E-scheme axis, old xJ bins
-          // Special cases only relevant for 2015 MC
-          /*if(fCard->GetSubeventCut() == 0 && fCard->GetDataType().EqualTo("PbPb MC RecoGen",TString::kIgnoreCase)){
-           
-           // For subleading jet set veto for all bins above 4 GeV
-           if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
-           if(iTrackPtBin > 3) seagullVeto = 2;
-           } else {
-           // For leading jets, veto one bin and force another bin
-           if(iAsymmetry == 0 && iCentralityBin == 2 && iTrackPtBin == 4) seagullVeto = 2; // Veto
-           if(iAsymmetry == 2 && iCentralityBin == 0 && iTrackPtBin == 2) seagullVeto = 1; // Force
-           if(iAsymmetry == 1 && iCentralityBin == 1 && iTrackPtBin == 2) seagullVeto = 1; // Force
-           }
-           }
-           
-           // Special case. Some bins for GenGen sube0 need special care. E-scheme axis, old xJ bins
-           if(fCard->GetSubeventCut() == 0 && fCard->GetDataType().EqualTo("PbPb MC GenGen",TString::kIgnoreCase)){
-           
-           // For subleading jet set veto for all bins above 4 GeV
-           if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
-           if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin == 3) seagullVeto = 2; // Veto
-           if(iAsymmetry == 1 && iCentralityBin == 3 && iTrackPtBin == 4) seagullVeto = 2; // Veto
-           } else {
-           // For leading jets, veto one bin and force another bin
-           if(iAsymmetry == 0 && iCentralityBin == 1 && iTrackPtBin == 4) seagullVeto = 2; // Veto
-           if(iAsymmetry == 0 && iCentralityBin == 2 && iTrackPtBin == 2) seagullVeto = 2; // Veto
-           if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 3 && iTrackPtBin == 3) seagullVeto = 1; // Force
-           }
-           }
-           
-           // Special case. Force the seagull correction in two bins for PbPb MC RecoReco
-           if(fCard->GetSubeventCut() == 2 && fCard->GetDataType().EqualTo("PbPb MC RecoReco",TString::kIgnoreCase) && iAsymmetry > 1){
-           if(iTrackPtBin == 1 || iTrackPtBin == 2) seagullVeto = 1;
-           }
-           
-           // Special case. If we are looking at RecoGen all subevents, force seagull correction in low pT bins so that
-           // the same correction is made as in sube0 and subeNon0 cases
-           if(fCard->GetSubeventCut() == 2 && fCard->GetDataType().EqualTo("PbPb MC RecoGen",TString::kIgnoreCase)){
-           if(iTrackPtBin == 0 && iCentralityBin == 1) seagullVeto = 1;
-           }*/
-          
           // Special cases in some bins due to a dip in the middle. Optimized for the 25 events mixed file
           if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase) && fCard->GetJetType() > 0){
             
-            // For subleading jet, use different seagull function in a couple of bins
-            /*if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 3) seagullMethod = 6;
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 1 && iTrackPtBin == 2) seagullMethod = 5;
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin == 0) seagullMethod = 1;
-              if(iAsymmetry == 0 && iCentralityBin == 0 && iTrackPtBin == 1) seagullMethod = 1;
-              if(iAsymmetry == 1 && iCentralityBin == 0 && iTrackPtBin < 2) seagullMethod = 1;
-              if(iAsymmetry == 1 && iCentralityBin == 1 && iTrackPtBin == 1) seagullMethod = 1;
-              if(iAsymmetry == 1 && iCentralityBin == 2 && iTrackPtBin == 0) seagullMethod = 1;
-              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin < 2) seagullMethod = 1;
-            } else { // For leading, there are more bins to consider
-              
-              if((iAsymmetry == fnAsymmetryBins || iAsymmetry == 0) && iCentralityBin < 2 && iTrackPtBin < 5) seagullMethod = 1;
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin == 2 && iTrackPtBin < 3) seagullMethod = 1;
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin < 2) seagullMethod = 6;
-              if(iAsymmetry == fnAsymmetryBins && iCentralityBin < 2 && iTrackPtBin == 2) seagullMethod = 5;
-              if(iAsymmetry < 2 && iCentralityBin == 2 && iTrackPtBin == 1) seagullMethod = 1;
-              if(iAsymmetry == 1 && iCentralityBin < 2 && iTrackPtBin < 4) seagullMethod = 6;   // <--
-              if(iAsymmetry == 1 && iCentralityBin == 1 && iTrackPtBin == 1) seagullMethod = 5;   // <--
-              if(iAsymmetry == 0 && iTrackPtBin == 1 && iCentralityBin == 0) seagullMethod = 6; // <--
-              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin == 2) seagullMethod = 1; // TODO: Delete this line for escheme
-              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin == 1) seagullMethod = 6;
-              if(iAsymmetry == 2 && iTrackPtBin == 1 && iCentralityBin == 0) seagullMethod = 4;
-              if(iAsymmetry == 2 && iTrackPtBin == 2 && iCentralityBin < 2) seagullMethod = 6;
-              //if(iAsymmetry == 0 && iCentralityBin > 1 && iTrackPtBin < 2) seagullVeto = 2; // TODO: Debugging stage here
-              
-            }*/
-            
             seagullMethod = seagullMethodProvider->GetSeagullMethod(iJetTrack, iAsymmetry, iCentralityBin, iTrackPtBin);
             seagullVeto = seagullMethodProvider->GetSeagullVeto(iJetTrack, iAsymmetry, iCentralityBin, iTrackPtBin);
+            
           }
           
           // Special cases in some bins due to a dip in the middle
@@ -896,6 +830,7 @@ void DijetHistogramManager::DoSeagullCorrection(){
                 if(iCentralityBin == 0 && iTrackPtBin < 5 && iAsymmetry == 2) seagullMethod = 1;
                 if(iCentralityBin == 1 && iTrackPtBin < 4 && iAsymmetry == 2) seagullMethod = 1;
                 if(iCentralityBin == 2 && iTrackPtBin < 3 && iAsymmetry == 2) seagullMethod = 1;
+                if(iCentralityBin == 0 && iTrackPtBin == 1 && iAsymmetry == fnAsymmetryBins) seagullMethod = 6;
                 
                 // Configuration for sube0
               } else if(fCard->GetSubeventCut() == 0){
@@ -968,7 +903,7 @@ void DijetHistogramManager::DoTrackDeltaRCorrection(){
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]->Divide(correctionHistogram);
           
           // Can apply scaling to match reco and gen track levels
-          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]-> Scale(fJffCorrectionFinder->GetTrackDeltaRResidualScale(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry));
+          if(fApplyTrackDeltaRResidualScale) fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin]-> Scale(fJffCorrectionFinder->GetTrackDeltaRResidualScale(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry));
           
         } // Track pT loop
       } // Centrality loop
@@ -3187,8 +3122,9 @@ void DijetHistogramManager::SetSpilloverCorrection(TFile *spilloverFile, const b
 }
 
 // Setter for residual tracking correction
-void DijetHistogramManager::SetTrackDeltaRCorrection(TFile *trackingFile, const bool applyCorrection){
+void DijetHistogramManager::SetTrackDeltaRCorrection(TFile *trackingFile, const bool applyCorrection, const bool applyResidualScale){
   fApplyTrackDeltaRCorrection = applyCorrection;
+  fApplyTrackDeltaRResidualScale = applyResidualScale;
   if(fApplyTrackDeltaRCorrection){
     fJffCorrectionFinder->ReadTrackDeltaRFile(trackingFile);
   }
