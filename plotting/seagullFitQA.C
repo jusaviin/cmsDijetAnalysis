@@ -1,7 +1,4 @@
 #include "DijetHistogramManager.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
-#include "DijetMethods.h"
-#include "DijetCard.h"
-#include "JffCorrector.h"
 #include "JDrawer.h"
 
 /*
@@ -22,6 +19,14 @@ double seagullExp(double *x, double *par){
   //return par[0]+x[0]*par[1]+x[0]*x[0]*par[2]+x[0]*x[0]*x[3]*par[3];
 }
 
+/*
+ * Combination of second order polynomial and exponential function for seagull correction
+ * Functional form: f(x) = a + b*e^(c*x) + d*x^2
+ */
+double seagullPolyExp(double *x, double *par){
+  if(x[0] > 0) return par[0]+par[1]*TMath::Exp(x[0]*par[2])+par[3]*x[0]*x[0];
+  return par[0]+par[4]*TMath::Exp(x[0]*par[5])+par[6]*x[0]*x[0];
+}
 
 /*
  * Macro for some QA to determine automatically when seagull fit should be applied and when not.
@@ -29,7 +34,7 @@ double seagullExp(double *x, double *par){
 void seagullFitQA(){
   
   // Define the file used for fit testing
-  TString recoGenFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_noCorrections_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root";
+  TString recoGenFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_noCorrections_processed_2020-01-15.root";
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root"
   TFile *recoGenFile = TFile::Open(recoGenFileName);
   
@@ -53,13 +58,11 @@ void seagullFitQA(){
   TF1 *seagullDeltaEtaPolyFit[nCentralityBins][nTrackPtBins];
   TF1 *seagullDeltaEtaExpFit[nCentralityBins][nTrackPtBins];
   
-  // Create DijetMethods in which the correction procedure is implemented
-  DijetMethods *corrector = new DijetMethods();
   double initialLevel;
   
   // Read the histograms from the file
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+  for(int iCentrality = 0; iCentrality < 1; iCentrality++){
+    for(int iTrackPt = 1; iTrackPt < 2; iTrackPt++){
       
       // Read the deltaEta distribution to which seagull fit is made form the file
       seagullDeltaEta[iCentrality][iTrackPt] = histograms->GetHistogramJetTrackDeltaEta(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt, DijetHistogramManager::kBetweenPeaks);
@@ -70,8 +73,8 @@ void seagullFitQA(){
       initialLevel = seagullDeltaEta[iCentrality][iTrackPt]->GetBinContent(seagullDeltaEta[iCentrality][iTrackPt]->FindBin(0));
       seagullDeltaEtaPolyFit[iCentrality][iTrackPt]->SetParameters(initialLevel,0,0);
       
-      seagullDeltaEtaExpFit[iCentrality][iTrackPt] = new TF1(Form("seagullExpFit%d%d",iCentrality,iTrackPt),seagullExp,-3,3,3);
-      seagullDeltaEtaExpFit[iCentrality][iTrackPt]->SetParameters(initialLevel,0,0);
+      seagullDeltaEtaExpFit[iCentrality][iTrackPt] = new TF1(Form("seagullExpFit%d%d",iCentrality,iTrackPt),seagullPolyExp,-3,3,4);
+      seagullDeltaEtaExpFit[iCentrality][iTrackPt]->SetParameters(initialLevel,-1,-1,0,-1,1,0);
       
       // Fit the distribution with a constant
       seagullDeltaEta[iCentrality][iTrackPt]->Fit("pol0","","",-3,3);
@@ -92,7 +95,7 @@ void seagullFitQA(){
       seagullDeltaEta[iCentrality][iTrackPt]->RecursiveRemove(seagullDeltaEtaPolyFit[iCentrality][iTrackPt]);
       
       // Fit the histogram again with exp function
-      seagullDeltaEta[iCentrality][iTrackPt]->Fit(seagullDeltaEtaExpFit[iCentrality][iTrackPt],"","",0,3);
+      seagullDeltaEta[iCentrality][iTrackPt]->Fit(seagullDeltaEtaExpFit[iCentrality][iTrackPt],"","",-3,3);
       
     } // Track pT loop
   } // Centrality loop
@@ -102,10 +105,10 @@ void seagullFitQA(){
 
   // Draw the histograms from the file
   double constantChi2, polyChi2;
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  for(int iCentrality = 0; iCentrality < 1; iCentrality++){
     cout << endl;
     cout << "Results for centrality " << iCentrality << endl;
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    for(int iTrackPt = 1; iTrackPt < 2; iTrackPt++){
       
       seagullDeltaEta[iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3);
       drawer->DrawHistogram(seagullDeltaEta[iCentrality][iTrackPt],"#Delta#eta","counts",Form("C = %d, pT = %d",iCentrality,iTrackPt));

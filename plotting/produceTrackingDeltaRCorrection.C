@@ -12,35 +12,38 @@ void produceTrackingDeltaRCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
 
-  TString genRecoFileName = "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_5eveMix_onlySeagull_processed_2019-11-19.root";  // File from which the GenReco histograms are read for the correction
-  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_onlySeagullUptoHigh_mixingScale16_processed_2019-10-07.root
+  TString genRecoFileName = "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root";  // File from which the GenReco histograms are read for the correction
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root <-- Sys
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_onlySeagull_processed_2019-10-07.root
   // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_centShift5_noCorrections_processed_2019-10-12.root
-  // data/PbPbMC_GenReco_akFlowPuCs4PFJet_xjBins_allHistograms_improvisedMixing_wtaAxis_finalTrack_noCorrections_processed_2019-09-28.root
+  // data/PbPbMC_GenReco_akFlowPuCs4PFJet_xjBins_allHistograms_improvisedMixing_wtaAxis_finalTrack_noCorrections_processed_2019-09-28.root <-- Sys
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_tunedSeagull_processed_2019-10-22.root
   // data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString gengenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_mixingFromSubeNon0_newTry_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root"; // File from which the GenGen histograms are read for the correction
+  TString gengenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root"; // File from which the GenGen histograms are read for the correction
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_mixingFromSubeNon0_newTry_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root
+  // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root <-- Sys
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_wtaAxis_JECv6_processed_2019-09-26.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_centShift5_noCorrections_processed_2019-10-12.root
-  // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_JECv6_processed_2019-09-24.root
+  // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_JECv6_processed_2019-09-24.root <-- Sys
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_workInProgress_mixingFromSubeNon0_recoJets_2019-11-19.root"; // File name for the output file
+  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_recoJets_smoothed_2020-01-27.root"; // File name for the output file
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_until8GeV_noSymmetry_2019-10-18.root
   
-  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = true;       // Produce the correction for regular jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatio
   
-  bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
+  bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
   int ptCutBin = 666;
+  
+  bool smoothHistograms = true;  // Smoothen the histograms to reduce statistical fluctuations from the MC sample
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -81,6 +84,11 @@ void produceTrackingDeltaRCorrection(){
   TH1D *genRecoDeltaEtaProjection[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TH1D *genGenDeltaEtaProjection[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TH1D *residualScale[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  
+  TH2D *smootherHelper;
+  double centerValue;
+  int zeroBinEta;
+  int zeroBinPhi;
 
   // Functions to fit deltaEta projections needed to obtain scaling factors to match genReco and genGen at large angles
   TF1 *constantMinus = new TF1("coMi","pol0",-2.5,-0.5);
@@ -140,14 +148,14 @@ void produceTrackingDeltaRCorrection(){
           // Also for large pT use smaller area around the jet peak for the correction
           if(iTrackPt > 4 ) {
             if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet) {
-              if(iTrackPt == 5) maxDeltaR = 2.5;   // 0.6 is decent
-              if(iTrackPt == 6) maxDeltaR = 2.5;  // 0.2 best thus far
+              if(iTrackPt == 5) maxDeltaR = 0.2;   // 0.6 is decent
+              if(iTrackPt == 6) maxDeltaR = 0.2;  // 0.2 best thus far
             } else {
-              maxDeltaR = 2.5;
+              maxDeltaR = 0.2;
             }
             scalingFactor = 1;
           } else {
-            maxDeltaR = 1;
+            maxDeltaR = 0.4;
           }
           
           // Fill the residual scaling factor to the scale histogram
@@ -170,6 +178,27 @@ void produceTrackingDeltaRCorrection(){
           
           // Divide the GenReco histogram with the GenGen histogram to get the correction
           symmetrizedCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Divide(symmetrizedHelperDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          
+          // Smoothening for the two-dimensional histogram
+          if(smoothHistograms){
+            
+            smootherHelper = (TH2D*) symmetrizedCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Clone();
+            smootherHelper->Smooth();
+            
+            // There is a sharp peak in the very center of the histogram that we do not want to smooth
+            // Return the values to the four bins closest to the zero to their original values
+            zeroBinPhi = smootherHelper->GetXaxis()->FindBin(-0.001);
+            zeroBinEta = smootherHelper->GetYaxis()->FindBin(-0.001);
+            centerValue = symmetrizedCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinContent(zeroBinPhi, zeroBinEta);
+            
+            smootherHelper->SetBinContent(zeroBinPhi, zeroBinEta, centerValue);
+            smootherHelper->SetBinContent(zeroBinPhi+1, zeroBinEta, centerValue);
+            smootherHelper->SetBinContent(zeroBinPhi, zeroBinEta+1, centerValue);
+            smootherHelper->SetBinContent(zeroBinPhi+1, zeroBinEta+1, centerValue);
+            
+            symmetrizedCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = smootherHelper;
+            
+          }
           
         } // Asymmetry loop
       } // Track pT loop

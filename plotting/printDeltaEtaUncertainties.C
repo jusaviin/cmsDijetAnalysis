@@ -1,6 +1,5 @@
 #include "DijetHistogramManager.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "JffCorrector.h"
-#include "JDrawer.h"
 
 /*
  * Macro for printing the relative uncertainties in latex slides
@@ -11,7 +10,7 @@ void printDeltaEtaUncertainties(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString uncertaintyFileName = "uncertainties/systematicUncertaintyForPbPb_15percentSpill20Jff_2019-10-01.root";
+  TString uncertaintyFileName = "uncertainties/systematicUncertaintyForPbPbMC_5eveMix_xjBins_forSpillover_2020-01-22.root";
   TString ppUncertainryFileName = "uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root";
   
   // Open the input files
@@ -35,6 +34,9 @@ void printDeltaEtaUncertainties(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
+  int firstDrawnAsymmetryBin = 0;
+  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  
   TString asymmetryString[nAsymmetryBins+1];
   for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
     asymmetryString[iAsymmetry] = Form("%.1f < xj < %.1f",xjBinBorders[iAsymmetry],xjBinBorders[iAsymmetry+1]);
@@ -48,14 +50,14 @@ void printDeltaEtaUncertainties(){
   bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = true;     // Produce the correction for inclusive jet-track correlatios
+  bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
     
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
   // Read PbPb and pp histograms from files
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!correlationSelector[iJetTrack]) continue;
-    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+    for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
       for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
@@ -81,7 +83,7 @@ void printDeltaEtaUncertainties(){
   char namer[100];
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!correlationSelector[iJetTrack]) continue;
-    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+    for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
       if(iJetTrack >= DijetHistogramManager::kTrackInclusiveJet && iAsymmetry < nAsymmetryBins) continue;
       
       for(int iUncertainty = JffCorrector::kPairAcceptance; iUncertainty <= JffCorrector::kBackgroundSubtraction; iUncertainty++){

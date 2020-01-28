@@ -33,6 +33,6 @@ do
 #    root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",5,'$FIRSTWEIGHT','$SECONDWEIGHT','$j',-1,'$k')' # Uncorrected jet-track correlations for leading and subleading jets
     root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",6,'$FIRSTWEIGHT','$SECONDWEIGHT','$j',-1,'$k')' # pT weighted jet-track correlations for leading and subleading jets
   done
-#  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",7,'$FIRSTWEIGHT','$SECONDWEIGHT','$j',-1,10)' # Regular jet-track correlations for inclusive jets
-#  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",8,'$FIRSTWEIGHT','$SECONDWEIGHT','$j',-1,10)' # pT weighted jet-track correlations for inclusive jets
+  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",7,'$FIRSTWEIGHT','$SECONDWEIGHT','$j',-1,10)' # Regular jet-track correlations for inclusive jets
+  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",8,'$FIRSTWEIGHT','$SECONDWEIGHT','$j',-1,10)' # pT weighted jet-track correlations for inclusive jets
 done

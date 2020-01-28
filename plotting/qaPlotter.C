@@ -448,7 +448,7 @@ void qaPlotter(){
   bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
-  bool useAsymmetryBinsForSeagull = true;  // Plot seagull fits in different asymmetry bins
+  bool useAsymmetryBinsForSeagull = false;  // Plot seagull fits in different asymmetry bins
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
@@ -465,14 +465,17 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
 
-  TFile *seagullFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_processed_2019-12-29_QA.root");
+  TFile *seagullFile = TFile::Open("data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13_QA.root");
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15_QA.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagull_processed_2020-01-15_QA.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_tunedSeagull_allCorrections_processed_2020-01-14_QA.root
   //  data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21_QA.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_spilloverWithNewSeagull_processed_2019-10-10_QA.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trigger_JECv6_finalTrack_wtaAxis_allCorrectionsWithCentralityShift_processed_2019-10-18_QA.root
   // PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0AtLowPt_wtaAxis_JECv6_noSymmetrySpilloverLooserCutUntil8_processed_2019-09-26_QA.root
 
-  TFile *seagullPpFile = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_dijetWeight_thirdJetCut_JECv4_onlySeagull_processed_2019-12-04_QA.root");
+  TFile *seagullPpFile = TFile::Open("data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluonCombine_25pMoreQuark_dijetWeight_JECv4_onlySeagull_processed_2020-01-10_QA.root");
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28_QA.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-09-28_QA.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_testSeagull_allCorrections_processed_2019-09-28_QA.root

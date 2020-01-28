@@ -8,13 +8,17 @@
 void jetShapeCorrectionComparer(){
   
   // Open the files for the JFF corrections
-  TFile *quarkFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *quarkFile = TFile::Open("corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_25pExcessQuark_JECv4_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-23.root");
+  // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_25pExcessQuark_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root"
+  // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyQuark_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC2017_pfJets_noUncOrInc_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-11-27.root
-  TFile *gluonFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *gluonFile = TFile::Open("corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyGluon_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root");
+  // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyGluon_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
-  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
+  TFile *standardFile = TFile::Open("corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_JECv4_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-23.root");
+  // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
   TFile *files[3] = {quarkFile,gluonFile,standardFile};

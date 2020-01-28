@@ -4,5 +4,8 @@
 #./processHistogramsInStepsPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsAsymmetry.sh "data/" "data/" false false -1 "data/"
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
+#./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInStepsPp.sh "data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root" "data/ppData2017_JECv4_jetSpectra_processed_2019-10-17.root" false false -1
+#./processHistogramsInStepsAsymmetryPp.sh "data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluonCombine_25pMoreQuark_dijetWeight_JECv4_preprocessed_2020-01-10.root" "data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluonCombine_25pMoreQuark_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root" false false -1
+#./processHistogramsInStepsAsymmetry.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_preprocessed_2019-10-06.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_genJetTrackCorrection_wtaAxis_processed_2020-01-24.root" true true -1 "data/"
+./processHistogramsInStepsAsymmetry.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_preprocessed_2019-10-06.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6_allCorrectionsExectTrackingDeltaR_wtaAxis_processed_2020-01-24.root" true true -1 "data/"

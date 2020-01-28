@@ -192,8 +192,8 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   } // Dataset loop
   
   TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
-  int markerColors[5] = {kBlack, kBlue, kRed, kGreen+3, kMagenta};
-  int fillColors[5] = {kGray+3, kBlue-6, kRed-6, kGreen-6, kMagenta-6};
+  int markerColors[5] = {/*kBlack*/kBlue, kBlue, kRed, kGreen+3, kMagenta};
+  int fillColors[5] = {/*kGray+3*/kBlue-6, kBlue-6, kRed-6, kGreen-6, kMagenta-6};
   
   // Set a good drawing style for the uncertainty histograms
   for(int iDataset = 0; iDataset < nDatasets; iDataset++){
@@ -273,6 +273,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
       mainTitle->SetTextFont(22);
       mainTitle->SetTextSize(.085);
       mainTitle->DrawLatexNDC(.35, 0.9, "pp reference");
+      //mainTitle->DrawLatexNDC(.35, 0.9, "pp reference");
     }
     else {
       mainTitle->SetTextFont(22);
@@ -442,7 +443,8 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   mainTitle->DrawLatex(0.983, 0.065, "1");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
+  //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryWithColors_%s.png",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -458,13 +460,13 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_JECv4_thirdJetCut_wtaAxis_onlySeagull_processed_2019-12-04.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_JECv4_thirdJetCut_noThirdJet_wtaAxis_onlySeagull_processed_2019-12-04.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_JECv4_thirdJetCut_includeThirdJet_wtaAxis_onlySeagull_processed_2019-12-04.root"), NULL, NULL};
+  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"), NULL, NULL, NULL, NULL};
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagull_onlyJetShapes_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_onlyJetShapes_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_onlyJetShapes_processed_2019-11-21.root"), NULL, NULL};
+  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root"), NULL, NULL, NULL, NULL};
   // dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_onlySeagullAndSpillover_correctedCentralityCorrection_eschemeAxis_processed_2019-12-05.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_processed_2019-11-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root

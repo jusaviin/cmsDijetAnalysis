@@ -6,16 +6,17 @@
 void illustrateBackgroundSystematics(){
 
   // Open the file from which the illustration is generated and create a histogram manager for that
-  TString fileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_tunedSeagull_allCorrections_processed_2020-01-14.root";
+  TString fileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root
-  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_testSpillover_processed_2020-01-03.root
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root
   TFile *dataFile = TFile::Open(fileName);
   DijetHistogramManager *dataHistograms = new DijetHistogramManager(dataFile);
   
   // Select which types of histograms will be drawn
-  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = false;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
   bool zoomCloseToUncertaintyScale = true;  // Zoom the histograms such that uncertainties are more easily visible
@@ -39,8 +40,8 @@ void illustrateBackgroundSystematics(){
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
-  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  int firstDrawnAsymmetryBin = 0;
+  int lastDrawnAsymmetryBin = 0;
   
   // Load the selected histograms to the histogram manager
   dataHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
@@ -91,6 +92,8 @@ void illustrateBackgroundSystematics(){
           
           backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = methods->EstimateSystematicsForBackgroundSubtraction(backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
+          // For drawing purposes, use the rebinned histogram
+          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, 1, 2)->Clone(Form("RebinnedDeltaEtaForShapes%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
           
           
           // ======================================================== //
@@ -134,7 +137,7 @@ void illustrateBackgroundSystematics(){
       
       // Setup the asymmetry strings
       if(iAsymmetry < nAsymmetryBins){
-        asymmetryString = Form(", %.1f < x_{j} < %.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+        asymmetryString = Form("%.1f < x_{j} < %.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
         compactAsymmetryString = Form("_A=%.1f-%.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
         compactAsymmetryString.ReplaceAll(".","v");
       } else {
@@ -186,6 +189,7 @@ void illustrateBackgroundSystematics(){
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
           legend->AddEntry((TObject*) 0,centralityString.Data(),"");
           legend->AddEntry((TObject*) 0,trackPtString.Data(),"");
+          if(iAsymmetry != nAsymmetryBins) legend->AddEntry((TObject*) 0,asymmetryString.Data(),"");
           legend->AddEntry(redLine, "Background", "l");
           legend->AddEntry(blueLine, "Pair acceptance", "l");
           legend->Draw();
