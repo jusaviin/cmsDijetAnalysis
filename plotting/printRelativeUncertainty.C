@@ -16,29 +16,30 @@ void printRelativeUncertainty(){
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root";
   TString uncertaintyFileName[2];
   TString ppUncertaintyFileName[2];
-  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_forComparison_2020-01-14.root";
-  ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root";
-  uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_noRebinPairBg_2020-01-14.root";
+  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root";
+  ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJES_smoothedPairBackground_2020-01-21.root";
+  uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root";
   ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
-  // uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverAndJESestimates_2020-01-13.root
-  // uncertainties/systematicUncertaintyForPbPb_20eveMix_newSpilloverJEStunedSeagull_2020-01-14.root
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverWithSmoothedBackground_newJES_tunedSeagull_smoothedPairBackground_2020-01-23.root
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_seagullTuningProcess_2020-01-15.root
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_noRebinPairBg_2020-01-14.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_newSpilloverJEStunedSeagull_forComparison_2020-01-14.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
   
-  bool drawComparisonUncertaintyFile = true;
+  bool drawComparisonUncertaintyFile = false;
   bool smoothHistograms = true;
   int nFiles = drawComparisonUncertaintyFile ? 2 : 1;
   
-  const char* legendLabels[] = {"Dijet analysis (old)", "Dijet analysis (new)", "lul", "Toinen lul"};  // Labels referring to different uncertainty files
+  const char* legendLabels[] = {"Dijet analysis", "Dijet analysis (no bg)", "lul", "Toinen lul"};  // Labels referring to different uncertainty files
   
   TString inclusiveFileName = "uncertainties/inclusiveAnalysis/js_AllSource_syst_err.root";
   
   bool printSlides = false;  // Print slides showing the R-integrated uncertainty in each pT bin
-  bool drawUncertaintySourceComparison = false; // Draw all uncertainty sources as a function of R in each pT bin
+  bool drawUncertaintySourceComparison = true; // Draw all uncertainty sources as a function of R in each pT bin
   bool drawUncertaintySystemComparison = false; // Draw single uncertainty source for all systems as a function of R in each pT bin
-  bool drawComparisonToInclusive = true;        // Draw comparison to systematic uncertainty histograms from inclusive analysis
-  bool saveFigures = true;   // Save the drawn figures to file
+  bool drawComparisonToInclusive = false;        // Draw comparison to systematic uncertainty histograms from inclusive analysis
+  bool saveFigures = false;   // Save the drawn figures to file
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -89,13 +90,33 @@ void printRelativeUncertainty(){
   
   // Select drawn bins
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
-  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  int firstDrawnAsymmetryBin = 2;
+  int lastDrawnAsymmetryBin = 2;
+    
+  // Select which uncertainty sources to draw
+  bool drawAllUncertainites = true;
+  bool drawSpilloverUncertainty = false;
+  bool drawJffUncertainty = false;
+  bool drawJetEnergyScaleUncertainty = false;
+  bool drawTrackingEfficiencyUncertainty = false;
+  bool drawResidualTrackinguncertainty = false;
+  bool drawTrackingDeltaRUncertainty = false;
+  bool drawPairAcceptanceUncertainty = false;
+  bool drawBackgroundSubtractionUncertainty = true;
+  bool drawTotalUncertainty = false;
+  
+  bool drawUncertainty[JffCorrector::knUncertaintySources] = {drawSpilloverUncertainty, drawJffUncertainty, drawJetEnergyScaleUncertainty, drawTrackingEfficiencyUncertainty, drawResidualTrackinguncertainty, drawTrackingDeltaRUncertainty, drawPairAcceptanceUncertainty, drawBackgroundSubtractionUncertainty, drawTotalUncertainty};
+  
+  if(drawAllUncertainites){
+    for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
+      drawUncertainty[iUncertainty] = true;
+    }
+  }
   
   // If we are drawing system comparison or printing slides, we must use all centrality bins
   if(drawUncertaintySystemComparison || printSlides){
@@ -145,6 +166,9 @@ void printRelativeUncertainty(){
         for(int iFile = 0; iFile < nFiles; iFile++){
           for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
             
+            // Initialize the uncertainty histograms to NULL
+            uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = NULL;
+            
             // Different reader for pp and PbPb uncertainty files
             if(iCentrality == nCentralityBins){
               uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = ppUncertaintyManager[iFile]->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackLeadingJet, 0, iTrackPt, iAsymmetry, iUncertainty);
@@ -154,8 +178,13 @@ void printRelativeUncertainty(){
               uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyManager[iFile]->GetJetShapeSystematicUncertainty(DijetHistogramManager::kPtWeightedTrackSubleadingJet, iCentrality, iTrackPt, iAsymmetry, iUncertainty);
             }
             
-            uncertaintyYield[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
-            uncertaintyYield[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
+            if(uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]){
+              uncertaintyYield[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
+              uncertaintyYield[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Integral(1, uncertaintyShape[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width");
+            } else {
+              uncertaintyYield[iFile][0][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = 0;
+              uncertaintyYield[iFile][1][iUncertainty][iAsymmetry][iCentrality][iTrackPt] = 0;
+            }
           } // Uncertainty type loop
         } // Uncertainty file loop
       } // Asymmetry loop
@@ -317,6 +346,7 @@ void printRelativeUncertainty(){
               
               // Loop over all the other uncertainty sources
               for(int iUncertainty = 0; iUncertainty < JffCorrector::kTotal; iUncertainty++){
+                if(!drawUncertainty[iUncertainty]) continue;
                 uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iUncertainty]);
                 uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt]->Draw("same");
                 legend->AddEntry(uncertaintyShape[0][iJetType][iUncertainty][iAsymmetry][iCentrality][iTrackPt], uncertaintyManager[0]->GetUncertaintyName(iUncertainty), "l");
@@ -344,6 +374,7 @@ void printRelativeUncertainty(){
         jetShapeString = Form("%s jet shape", jetType[iJetType]);
         
         for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
+          if(!drawUncertainty[iUncertainty]) continue;
           
           for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
             
@@ -452,6 +483,7 @@ void printRelativeUncertainty(){
      
           uncertaintyShape[0][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0, maxValue*1.3);
           uncertaintyShape[0][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          if(smoothHistograms) uncertaintyShape[0][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
           drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kBackgroundFluctuation][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
           
           for(int iFile = 1; iFile < nFiles; iFile++){
@@ -505,6 +537,11 @@ void printRelativeUncertainty(){
           
           uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
           uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          if(smoothHistograms){
+            uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0.05,1);
+            uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
+            uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+          }
           drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kFragmentationBias][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
           
           for(int iFile = 1; iFile < nFiles; iFile++){
@@ -621,7 +658,8 @@ void printRelativeUncertainty(){
               oldContent = uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
               addedContent = uncertaintyShape[iFile][0][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
               histogramMaximum = uncertaintyShape[iFile][0][JffCorrector::kResidualTracking][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
-              newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent+histogramMaximum*histogramMaximum);
+              maxValue = uncertaintyShape[iFile][0][JffCorrector::kTrackingDeltaR][nAsymmetryBins][iCentrality][iTrackPt]->GetBinContent(iBin);
+              newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent+histogramMaximum*histogramMaximum+maxValue*maxValue);
               uncertaintyShape[iFile][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->SetBinContent(iBin,newContent);
             } // Histogram bin loop
           } // Uncertainty file loop
@@ -638,6 +676,11 @@ void printRelativeUncertainty(){
           
           uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
           uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          if(smoothHistograms){
+            uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0.05,1);
+            uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
+            uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+          }
           drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kJetEnergyScale][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
           
           for(int iFile = 1; iFile < nFiles; iFile++){
@@ -695,6 +738,11 @@ void printRelativeUncertainty(){
           
           uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,maxValue*1.3);
           uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->SetLineColor(kBlack);
+          if(smoothHistograms){
+            uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0.05,1);
+            uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->Smooth(1,"R");
+            uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+          }
           drawer->DrawHistogram(uncertaintyShape[0][0][JffCorrector::kTotal][nAsymmetryBins][iCentrality][iTrackPt], "#Deltar", "P(#Deltar) error", " ", "");
           
           for(int iFile = 1; iFile < nFiles; iFile++){
