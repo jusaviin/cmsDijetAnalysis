@@ -1190,10 +1190,11 @@ TH2D* DijetMethods::GetSpilloverCorrection(TH2D *onlyHydjetHistogram, int fitMet
  *  double normalizationRange = Range for yield normalization
  *  double fixedYield = If > 0, fix the Gaussian fit yield to this number
  *  double fixedWidth = If > 0, fix the width of the Gaussian fit to this number
+ *  double fixedConstant = Fixed constant level for the fit
  *
  *  return: Gaussian function fitted to the histogram
  */
-TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange, double normalizationRange, double fixedYield, double fixedWidth){
+TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange, double normalizationRange, double fixedYield, double fixedWidth, double fixedConstant){
   
   // Create a Gaussian function for the fit
   TF1 *gaussFit = new TF1("gaussFit","[0]/(TMath::Sqrt(2*TMath::Pi())*[1])*TMath::Exp(-0.5*TMath::Power(x/[1],2))+[2]",-fitRange,fitRange);
@@ -1206,7 +1207,7 @@ TF1* DijetMethods::FitGauss(TH1D *fittedHistogram, double fitRange, double norma
   if(fixedYield > 0) gaussFit->FixParameter(0,fixedYield);
   gaussFit->SetParameter(1,0.3);
   if(fixedWidth > 0) gaussFit->FixParameter(1,fixedWidth);
-  gaussFit->FixParameter(2,0); // Fix the constant to zero. Add zero here to make this compatible with Gauss+constant fit elwhere in the code.
+  gaussFit->FixParameter(2,fixedConstant);
   
   // Fit the histogram over the defined range
   fittedHistogram->Fit("gaussFit","","",-fitRange,fitRange);
@@ -1535,8 +1536,8 @@ TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHisto
 
   // Projection region and bin edges used in final deltaEta yield plots
   const double projectionRegion = 1;  // Region in deltaPhi which is used to project the deltaEta peak
-  const int nDeltaEtaBinsRebin = 21;
-  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
+  const int nDeltaEtaBinsRebin = 23;
+  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2.5,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,2.5,3,4};
   
   // Project deltaEta distribution in the final analysis deltaPhi region from the two-dimensional histogram
   TH1D *helperHistogramDeltaEta = ProjectRegionDeltaEta(backgroundSubtractedHistogram, -projectionRegion, projectionRegion, "FinalDeltaEtaYield");
@@ -1645,14 +1646,32 @@ double DijetMethods::EstimateSystematicsForPairAcceptanceCorrection(const TH1* d
   // Fit a constant to the specified ranges
   fitHistogram->Fit("pol0","","",-pairAcceptanceHighLimit,-pairAcceptanceLowLimit);
   fPairAcceptanceNegativeLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) fPairAcceptanceNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double pairAcceptanceNegativeError = 0;
+  if(fitHistogram->GetFunction("pol0")){
+    fPairAcceptanceNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+    pairAcceptanceNegativeError = fitHistogram->GetFunction("pol0")->GetParError(0);
+  }
   
   fitHistogram->Fit("pol0","","",pairAcceptanceLowLimit,pairAcceptanceHighLimit);
   fPairAcceptancePositiveLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) fPairAcceptancePositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double pairAcceptancePositiveError = 0;
+  if(fitHistogram->GetFunction("pol0")){
+    fPairAcceptancePositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+    pairAcceptancePositiveError = fitHistogram->GetFunction("pol0")->GetParError(0);
+  }
   
-  // Return the absolute value of the diffence between the two levels.
-  return TMath::Abs(fPairAcceptancePositiveLevel-fPairAcceptanceNegativeLevel);
+  // Check if there is a statistically significant difference between the two levels
+  //if(fPairAcceptancePositiveLevel > fPairAcceptanceNegativeLevel){
+  //  if((fPairAcceptancePositiveLevel - pairAcceptancePositiveError) < (fPairAcceptanceNegativeLevel + pairAcceptanceNegativeError)) return 0;
+  //  return (fPairAcceptancePositiveLevel - pairAcceptancePositiveError) - (fPairAcceptanceNegativeLevel + pairAcceptanceNegativeError);
+  //}
+  
+  //if((fPairAcceptanceNegativeLevel - pairAcceptanceNegativeError) < (fPairAcceptancePositiveLevel + pairAcceptancePositiveError)) return 0;
+  //return (fPairAcceptanceNegativeLevel - pairAcceptanceNegativeError) - (fPairAcceptancePositiveLevel + pairAcceptancePositiveError);
+  
+  // Return half of the absolute value of the diffence between the two levels.
+  // This uncertainty is applied on the both sides of the zero in the end so half of the difference is more realistic error estimate than the whole difference.
+  return TMath::Abs(fPairAcceptancePositiveLevel-fPairAcceptanceNegativeLevel)/2.0;
   
 }
 
@@ -1674,23 +1693,50 @@ double DijetMethods::EstimateSystematicsForBackgroundSubtraction(const TH1* delt
   // Fit a constant to the specified ranges
   fitHistogram->Fit("pol0","","",-backgroundMidPoint,-backgroundLowLimit);
   double innerNegativeLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) innerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double innerNegativeError = 0;
+  if(fitHistogram->GetFunction("pol0")) {
+    innerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+    innerNegativeError = fitHistogram->GetFunction("pol0")->GetParError(0);
+  }
   
   fitHistogram->Fit("pol0","","",-backgroundHighLimit,-backgroundMidPoint);
   double outerNegativeLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) outerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double outerNegativeError = 0;
+  if(fitHistogram->GetFunction("pol0")) {
+    outerNegativeLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+    outerNegativeError = fitHistogram->GetFunction("pol0")->GetParError(0);
+  }
   
   fitHistogram->Fit("pol0","","",backgroundLowLimit,backgroundMidPoint);
   double innerPositiveLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) innerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double innerPositiveError = 0;
+  if(fitHistogram->GetFunction("pol0")){
+    innerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+    innerPositiveError = fitHistogram->GetFunction("pol0")->GetParError(0);
+  }
   
   fitHistogram->Fit("pol0","","",backgroundMidPoint,backgroundHighLimit);
   double outerPositiveLevel = 0;
-  if(fitHistogram->GetFunction("pol0")) outerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+  double outerPositiveError = 0;
+  if(fitHistogram->GetFunction("pol0")){
+    outerPositiveLevel = fitHistogram->GetFunction("pol0")->GetParameter(0);
+    outerPositiveError = fitHistogram->GetFunction("pol0")->GetParError(0);
+  }
   
   // Calculate means for outer and inner levels
   fBackgroundSubtractionInnerMean = TMath::Abs((innerNegativeLevel+innerPositiveLevel)/2.0);
   fBackgroundSubtractionOuterMean = TMath::Abs((outerNegativeLevel+outerPositiveLevel)/2.0);
+  
+  // Calculate the errors for the means
+  //double innerMeanError = TMath::Sqrt(innerNegativeError*innerNegativeError + innerPositiveError*innerPositiveError)/2;
+  //double outerMeanError = TMath::Sqrt(outerNegativeError*outerNegativeError + outerPositiveError*outerPositiveError)/2;
+  
+  // Subtract the error from the mean to get the statistically significant uncertainty
+  //fBackgroundSubtractionInnerMean -= innerMeanError;
+  //fBackgroundSubtractionOuterMean -= outerMeanError;
+  
+  //if(fBackgroundSubtractionInnerMean < 0) fBackgroundSubtractionInnerMean = 0;
+  //if(fBackgroundSubtractionOuterMean < 0) fBackgroundSubtractionOuterMean = 0;
   
   // Return the larger deviation from zero
   if(fBackgroundSubtractionOuterMean > fBackgroundSubtractionInnerMean) return fBackgroundSubtractionOuterMean;
