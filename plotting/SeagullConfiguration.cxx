@@ -13,10 +13,18 @@ SeagullConfiguration::SeagullConfiguration()
   for(int iAsymmetry = 0; iAsymmetry < DijetHistogramManager::kMaxAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < DijetHistogramManager::kMaxCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < DijetHistogramManager::kMaxTrackPtBins; iTrackPt++){
+        
+        // Initialize the histograms for PbPb data
         trackLeadingJetPbPb[iAsymmetry][iCentrality][iTrackPt] = 0;
         trackSubleadingJetPbPb[iAsymmetry][iCentrality][iTrackPt] = 0;
         vetoTrackLeadingJetPbPb[iAsymmetry][iCentrality][iTrackPt] = 0;
         vetoTrackSubleadingJetPbPb[iAsymmetry][iCentrality][iTrackPt] = 0;
+        
+        // Initialize the histograms for PbPb MC
+        trackLeadingJetPbPbMCRecoGen[iAsymmetry][iCentrality][iTrackPt] = 0;
+        trackLeadingJetPbPbMCRecoGenSubeNon0[iAsymmetry][iCentrality][iTrackPt] = 0;
+        vetoTrackLeadingJetPbPbMCRecoGen[iAsymmetry][iCentrality][iTrackPt] = 0;
+        
       } // Track pT loop
     } // Centrality loop
   } // Asymmetry loop
@@ -146,6 +154,115 @@ void SeagullConfiguration::InitializeArrays(){
   trackSubleadingJetPbPb[2][0][1] = 6;   // C = 0-10,    1 < pT < 2 GeV
   
   trackSubleadingJetPbPb[2][1][1] = 6;   // C = 10-30,   1 < pT < 2 GeV
+  
+  
+  // ======================================================
+  // == Track-leading jet histograms for PbPb MC RecoGen ==
+  // ======================================================
+  
+  // xj integrated
+  trackLeadingJetPbPbMCRecoGen[3][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGen[3][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGen[3][0][3] = 1;   // C = 0-10,    3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGen[3][0][4] = 1;   // C = 0-10,    4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGen[3][1][0] = 1;   // C = 10-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGen[3][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGen[3][1][2] = 1;   // C = 10-30,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGen[3][1][3] = 1;   // C = 10-30    3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGen[3][1][4] = 1;   // C = 10-30    4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGen[3][2][1] = 1;   // C = 30-50,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGen[3][2][2] = 3;   // C = 30-50,   2 < pT < 3 GeV
+  
+  // 0 < xj < 0.6
+  trackLeadingJetPbPbMCRecoGen[0][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV
+  
+  trackLeadingJetPbPbMCRecoGen[0][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
+  
+  // 0.6 < xj < 0.8
+  // Nothing here different from default!
+  
+  // 0.8 < xj < 1
+  trackLeadingJetPbPbMCRecoGen[2][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV
+  
+  trackLeadingJetPbPbMCRecoGen[2][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGen[2][1][3] = 1;   // C = 10-30,   3 < pT < 4 GeV
+  
+  
+  // ===============================================================
+  // == Track-leading jet histograms for PbPb MC RecoGen SubeNon0 ==
+  // ===============================================================
+  
+  // xj integrated
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV  (6 gives smaller pair acceptance error here, but fit not really much better)
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][0][3] = 3;   // C = 0-10,    3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][0][4] = 3;   // C = 0-10,    4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][1][0] = 1;   // C = 10-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][1][2] = 1;   // C = 10-30,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][1][3] = 3;   // C = 10-30,   3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][1][4] = 3;   // C = 10-30,   4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][2][0] = 1;   // C = 30-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][2][1] = 1;   // C = 30-50,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][2][2] = 3;   // C = 30-50,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][2][3] = 1;   // C = 30-50,   3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[3][2][4] = 1;   // C = 30-50,   4 < pT < 8 GeV
+  
+  // 0 < xj < 0.6
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][0][3] = 1;   // C = 0-10,    3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][0][4] = 1;   // C = 0-10,    4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][1][0] = 1;   // C = 10-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][1][2] = 1;   // C = 10-30,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][1][3] = 1;   // C = 10-30,   3 < pT < 4 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][2][1] = 1;   // C = 30-50,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][2][2] = 1;   // C = 30-50,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[0][2][3] = 1;   // C = 30-50,   3 < pT < 4 GeV
+  
+  // 0.6 < xj < 0.8
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][0][3] = 1;   // C = 0-10,    3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][0][4] = 1;   // C = 0-10,    4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][1][0] = 1;   // C = 10-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][1][2] = 1;   // C = 10-30,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][1][3] = 1;   // C = 10-30,   3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][1][4] = 1;   // C = 10-30,   4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][2][0] = 1;   // C = 30-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][2][1] = 1;   // C = 30-50,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][2][2] = 1;   // C = 30-50,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][2][3] = 1;   // C = 30-50,   3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[1][2][4] = 1;   // C = 30-50,   4 < pT < 8 GeV
+  
+  // 0.8 < xj < 1
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][0][3] = 1;   // C = 0-10,    3 < pT < 4 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][0][4] = 1;   // C = 0-10,    4 < pT < 8 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][1][0] = 1;   // C = 10-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][1][2] = 1;   // C = 10-30,   2 < pT < 3 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][1][3] = 1;   // C = 10-30,   3 < pT < 4 GeV
+  
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][2][0] = 1;   // C = 30-50, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][2][1] = 1;   // C = 30-50,   1 < pT < 2 GeV
+  trackLeadingJetPbPbMCRecoGenSubeNon0[2][2][2] = 1;   // C = 30-50,   2 < pT < 3 GeV
+  
   
   // ========================================== //
   //                                            //
@@ -303,6 +420,64 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackSubleadingJetPbPb[2][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[2][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
   
+  
+  // ======================================================
+  // == Track-leading jet histograms for PbPb MC RecoGen ==
+  // ======================================================
+    
+  // xj integrated
+  vetoTrackLeadingJetPbPbMCRecoGen[3][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[3][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[3][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[3][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[3][2][3] = 2;   // C = 30-50,   3 < pT < 4 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[3][2][4] = 2;   // C = 30-50,   4 < pT < 8 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[3][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[3][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[3][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[3][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
+  
+  // 0 < xj < 0.6
+  vetoTrackLeadingJetPbPbMCRecoGen[0][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[0][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[0][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[0][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[0][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[0][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[0][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[0][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
+  
+  // 0.6 < xj < 0.8
+  vetoTrackLeadingJetPbPbMCRecoGen[1][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[1][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[1][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[1][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[1][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[1][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[1][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[1][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
+  
+  // 0.8 < xj < 1.0
+  vetoTrackLeadingJetPbPbMCRecoGen[2][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[2][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[2][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[2][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[2][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[2][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
+  
+  vetoTrackLeadingJetPbPbMCRecoGen[2][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
+  vetoTrackLeadingJetPbPbMCRecoGen[2][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
 }
 
 /*

@@ -27,10 +27,13 @@ private:
   // Seagull method arrays for different jet-track correlation types and datasets
   int trackLeadingJetPbPb[DijetHistogramManager::kMaxAsymmetryBins][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
   int trackSubleadingJetPbPb[DijetHistogramManager::kMaxAsymmetryBins][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
+  int trackLeadingJetPbPbMCRecoGen[DijetHistogramManager::kMaxAsymmetryBins][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
+  int trackLeadingJetPbPbMCRecoGenSubeNon0[DijetHistogramManager::kMaxAsymmetryBins][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
   
   // Seagull veto arrays for different jet-track correlation types and datasets
   int vetoTrackLeadingJetPbPb[DijetHistogramManager::kMaxAsymmetryBins][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
   int vetoTrackSubleadingJetPbPb[DijetHistogramManager::kMaxAsymmetryBins][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
+  int vetoTrackLeadingJetPbPbMCRecoGen[DijetHistogramManager::kMaxAsymmetryBins][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
 
 };
 
