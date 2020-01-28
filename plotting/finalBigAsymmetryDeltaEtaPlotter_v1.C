@@ -13,12 +13,12 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
 		const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
 
 		// Define labels and plotting layout
-		const char* deltaEtaTitle[] = {"Particle yields associated with leading jet","Particle yields associated with subleading jet","Particle yield wrt. inclusive jet"};
+		const char* deltaEtaTitle[] = {"Particle yields associated with leading jets","Particle yields associated with subleading jets","Particle yield wrt. inclusive jet"};
 		//const char* deltaEtaTitle[] = {"Particle yield w.r.t. the leading jet","Particle yield w.r.t. the subleading jet","Particle yield wrt. inclusive jet"};
 		const char* deltaEtaSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
 		const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
 		const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
-		double deltaEtaZoom[] = {40,40,30};
+		double deltaEtaZoom[] = {37,37,30};
 		double subtractionZoom[] = {23,23,15};
 
 		const bool drawInclusive = false;
@@ -295,18 +295,18 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
 
 						deltaEtaStack[iCentrality][iAsymmetry]->drawStack("","hist",true);
 						deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetNdivisions(505);
-						deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.09);
+						deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.11);
 						deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(1.2);
 						deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
 						deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("Y = #frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
 						deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitle("#Delta#eta");
 						if(iCentrality == nCentralityBins && iAsymmetry == 2){
 								//most left-bottom conner
-								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.11);
-								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(0.83);
+								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.1);
+								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(1);
 								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.08);
 								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.03);
-								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.07);
+								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.08);
 								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelOffset(0.01);
 						}else {
 								deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(0.8);
@@ -328,31 +328,20 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
 
 						sumUncertainty[iCentrality][iAsymmetry]->Draw("same e2");
 
-						//						if(iCentrality == nCentralityBins ){
-						//								mainTitle->SetTextFont(22);
-						//								mainTitle->SetTextSize(0.1);
-						//								mainTitle->DrawLatexNDC(0.35, 0.88, ppLabel);
-						//						}
-						//						else {
-						//								mainTitle->SetTextFont(22);
-						//								mainTitle->SetTextSize(0.11);
-						//								mainTitle->DrawLatexNDC(0.19, 0.9, pbpbLabel);
-						//								mainTitle->DrawLatexNDC(0.19, 0.80, cent_lab[iCentrality]);
-						//						}
 						if(iCentrality == nCentralityBins){
 								mainTitle->SetTextFont(22);
 								if( iAsymmetry == 2)
 										mainTitle->SetTextSize(0.08);
 								else
 										mainTitle->SetTextSize(0.11);
-								mainTitle->DrawLatex(-1.15, 35, ppLabel);
-								mainTitle->DrawLatex(-0.4, 35, xjbin[iAsymmetry]);
+								mainTitle->DrawLatex(-1.15,deltaEtaZoom[0]-5, ppLabel);
+								mainTitle->DrawLatex(-0.4,deltaEtaZoom[0]-5, xjbin[iAsymmetry]);
 						}
 						else {
 								mainTitle->SetTextFont(22);
 								mainTitle->SetTextSize(0.11);
-								mainTitle->DrawLatex(-1.15, 38, pbpbLabel);
-								mainTitle->DrawLatex(-1.15, 33, cent_lab[iCentrality]);
+								mainTitle->DrawLatex(-1.15, deltaEtaZoom[0]-3.15, pbpbLabel);
+								mainTitle->DrawLatex(-1.15, deltaEtaZoom[0]-7, cent_lab[iCentrality]);
 						}
 				} // Centrality loop
 		} // Asymmetry loop for drawing distributions to the really big canvas
@@ -423,12 +412,12 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
 		ptLegend4->Draw();
 
 		mainTitle->SetTextFont(62);
-		mainTitle->SetTextSize(cmsSize);
-		mainTitle->DrawLatexNDC(cmsPosition[iJetTrack/3]+0.1, cmsPositionY, "CMS");
+		mainTitle->SetTextSize(0.04);
+		mainTitle->DrawLatexNDC(.13, cmsPositionY, "CMS");
 
 		mainTitle->SetTextFont(42);
 		mainTitle->SetTextSize(0.035);
-		mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3]-0.1, 0.97, deltaEtaTitle[iJetTrack/3]);
+		mainTitle->DrawLatexNDC(0.24, 0.97, deltaEtaTitle[iJetTrack/3]);
 
 		//mainTitle->SetTextFont(42);
 		//mainTitle->SetTextSize(0.035);
@@ -461,7 +450,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
 		  mainTitle->DrawLatex(0.982, 0.0285, "1");*/
 
 		//bigCanvas->SaveAs("js_dr_normal_new.eps");
-		bigCanvas->SaveAs(Form("figures/final%s_bigCanvas_DesDng.png", deltaEtaSaveName[iJetTrack/3]));
+		bigCanvas->SaveAs(Form("figures/final%s_bigCanvas_DesDng.pdf", deltaEtaSaveName[iJetTrack/3]));
 		//bigCanvas->SaveAs("deltaEta_normal_v3.png");
 		//bigCanvas->SaveAs("js_dr_normal_v3.pdf");
 
@@ -483,16 +472,6 @@ void finalBigAsymmetryDeltaEtaPlotter_v1(){
 		// data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
 		// data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
 		TFile *pbpbFile = TFile::Open(dir+"/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17.root");
-		// data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root
-		// data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trigger_JECv6_finalTrack_allCorrections_wtaAxis_processed_2019-09-26.root
-		// data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_lowPtResidualTrack_processed_2019-10-01_fiveJobsMissing.root
-		// data/dijetPbPb2018_highForest_akPu4CaloJets_jet80trigger_5eveMix_xjBins_wtaAxis_allCorrections_JECv5b_processed_2019-09-09.root
-		// data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
-		// data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root
-		// dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
-		// data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_testNoJffCorr_processed_2019-08-13_fiveJobsMissing.root
-		// data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
-		// data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
 
 		TFile *ppUncertaintyFile = TFile::Open(dir+"/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root");
 		TFile *pbpbUncertaintyFile = TFile::Open(dir+"/systematicUncertaintyForPbPb_15percentSpill5Jff_2019-10-14.root");
