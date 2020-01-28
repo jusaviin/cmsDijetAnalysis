@@ -105,8 +105,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = false;
-  bool drawMixedEvent = true;
+  bool drawSameEvent = true;
+  bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
@@ -170,8 +170,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
 
   
   // File for residual tracking correction. File name changed for pp automagically
-  bool applyTrackDeltaRCorrection = true;
-  TString trackDeltaRCorrectionFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_xjBins_centShift5_onlyLowPt_2019-10-16.root";
+  bool applyTrackDeltaRCorrection = false;
+  bool applyTrackDeltaRResidualScale = false;
+  TString trackDeltaRCorrectionFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_genJets_smoothed_2020-01-27.root";
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_recoJets_smoothed_2020-01-27.root
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_genJets_smoothed_2020-01-27.root
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_genJets_2020-01-27.root
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_recoJets_2020-01-24.root
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_workInProgress_mixingFromSubeNon0_recoJets_2019-11-19.root
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_tunedRange_mixingFromSubeNon0_recoJets_2019-10-24.root
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_wideRange_narrowHighPt_mixingFromSubeNon0_recoJets_2019-10-24.root
@@ -181,7 +186,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/recoJetTestTrackingCorrection_pTCut8_largeRadius.root
   // corrections/recoJetTestTrackingCorrection_ptCut8.root
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_until8GeV_noSymmetry_2019-10-18.root
-  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_xjBins_centShift5_onlyLowPt_2019-10-16.root
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_xjBins_centShift5_onlyLowPt_2019-10-16.root <-- Currenly used in results files
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_xjBins_centShift5_allPt_2019-10-16.root
   // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5_onlyLowPt.root
   // corrections/trackDeltaRCorrection_PbPbMC_noUncorr_xjBins_improvisedMixing_onlyLowPt_2019-10-01.root
@@ -200,7 +205,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   //double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
-  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.5}; // Low bin borders for deltaPhi (2017 pp set for 1.5, wide peak)
+  double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.2}; // Low bin borders for deltaPhi (2017 pp set for 1.5, wide peak)
   double highDeltaPhiBinBorders[] = {3*TMath::Pi()/2-0.001,1,TMath::Pi()+1,TMath::Pi()-1.2}; // High bin borders for deltaPhi
   TString deltaPhiString[] = {""," Near side", " Away side", " Between peaks"};
   TString compactDeltaPhiString[] = {"", "_NearSide", "_AwaySide", "_BetweenPeaks"};
@@ -332,6 +337,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   card->AddOneDimensionalVector(DijetCard::kSpilloverCorrection,applySpilloverCorrection);
   card->AddOneDimensionalVector(DijetCard::kSeagullCorrection,applySeagullCorrection);
   card->AddOneDimensionalVector(DijetCard::kTrackDeltaRCorrection,applyTrackDeltaRCorrection);
+  card->AddOneDimensionalVector(DijetCard::kTrackDeltaRResidualScale,applyTrackDeltaRResidualScale);
   card->AddOneDimensionalVector(DijetCard::kSmoothMixing,smoothenMixing);
   card->AddOneDimensionalVector(DijetCard::kImprovisedMixing,improviseMixing);
   card->AddOneDimensionalVector(DijetCard::kAdjustBackground,adjustBackground);
@@ -396,7 +402,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetDijetMethods(methods);
   histograms->SetJffCorrection(jffCorrectionFile,applyJffCorrection);
   histograms->SetSpilloverCorrection(spilloverFile,applySpilloverCorrection);
-  histograms->SetTrackDeltaRCorrection(trackDeltaRFile,applyTrackDeltaRCorrection);
+  histograms->SetTrackDeltaRCorrection(trackDeltaRFile,applyTrackDeltaRCorrection,applyTrackDeltaRResidualScale);
   histograms->SetSeagullCorrection(applySeagullCorrection);
   histograms->SetAvoidMixingPeak(avoidPeaks);
   histograms->SetImproviseMixing(improviseMixing);

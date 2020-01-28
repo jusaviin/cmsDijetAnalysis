@@ -67,6 +67,7 @@ public:
     kSpilloverCorrection,       // For postprocessing: 0 = No spillover correction, 1 = Apply spillover correction
     kSeagullCorrection,         // For postprocessing: 0 = No seagull correction, 1 = Apply seagull correction
     kTrackDeltaRCorrection,     // For postprocessing: 0 = No R-dependent tracking correction, 1 = Apply R-dependent tracking correction
+    kTrackDeltaRResidualScale,  // For postprocessing: 0 = Do not scale R-dependent correction, 1 = Scale R-dependent tracking correction
     kSmoothMixing,              // For postprocessing: 0 = No smoothening in mixing, 1 = Smoothen mixed event distribution
     kImprovisedMixing,          // For postprocessing: 0 = Use actual mixing, 1 = Improvise mixing from deltaPhi side band
     kAdjustBackground,          // For postprocessing: 0 = No adjustment between leading and subleading backgrounds, 1 = Match leading and subleading backgrounds
@@ -84,7 +85,7 @@ public:
 private:
   
   // Names for each entry read from the configuration card
-  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","JetUncertainty","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","TrackDeltaRCorrection","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders","SpilloverFixGaussYield","SpilloverFixGaussWidth","SpilloverFitMethod","SpilloverUseIntegralYield"};
+  const char *fCardEntryNames[knEntries] = {"DataType","McCorrelationType","MatchJets","ForestType","ReadMode","JetType","JetAxis","JetEtaCut","SearchEtaCut","MaxPtCut","MinPtCut","SubleadingPtCut","DeltaPhiCut","MinMaxTrackPtFraction","MaxMaxTrackPtFraction","JetUncertainty","TrackEtaCut","MinTrackPtCut","MaxTrackPtRelativeError","VertexMaxDistance","CalorimeterSignalLimitPt","HighPtEtFraction","Chi2QualityCut","MinimumTrackHits","SubeventCut","ZVertexCut","LowPtHatCut","HighPtHatCut","AsymmetryBinType","CentralityBinEdges","TrackPtBinEdges","AsymmetryBinEdges","PtHatBinEdges","DoEventMixing","MixWithPool","NMixedEventsPerDijet","VzTolerance","MixingVzBinWidth","MixingHiBinWidth","MixingPoolDepth","JffCorrection","SpilloverCorrection","SeagullCorrection","TrackDeltaRCorrection","TrackDeltaRResidualScale","SmoothMixing","ImprovisedMixing","AdjustedBackground","LowDeltaPhiBinBorders","HighDeltaPhiBinBorders","SpilloverFixGaussYield","SpilloverFixGaussWidth","SpilloverFitMethod","SpilloverUseIntegralYield"};
   const char *fFileNameType[knFileNames] = {"input", "Mixing file", "JFF correction", "spillover correction", "track deltaR correction"};
   const char *fFileNameSaveName[knFileNames] = {"InputFile", "MixingFile", "JFFCorrectionFile", "SpilloverCorrectionFile", "TrackDeltaRCorrectionFile"};
   
