@@ -6,7 +6,7 @@
 void illustrateBackgroundSystematics(){
 
   // Open the file from which the illustration is generated and create a histogram manager for that
-  TString fileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root";
+  TString fileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root";
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root
@@ -14,16 +14,18 @@ void illustrateBackgroundSystematics(){
   DijetHistogramManager *dataHistograms = new DijetHistogramManager(dataFile);
   
   // Select which types of histograms will be drawn
-  bool regularJetTrack = false;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
   bool zoomCloseToUncertaintyScale = true;  // Zoom the histograms such that uncertainties are more easily visible
   
-  bool saveFigures = false;   // Save the drawn figures to files
+  bool saveFigures = true;   // Save the drawn figures to files
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
+  
+  double drawingRange = 2.5;
   
   // Define which bins to loop over
   const int nCentralityBins = dataHistograms->GetNCentralityBins();
@@ -40,8 +42,8 @@ void illustrateBackgroundSystematics(){
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
   
-  int firstDrawnAsymmetryBin = 0;
-  int lastDrawnAsymmetryBin = 0;
+  int firstDrawnAsymmetryBin = nAsymmetryBins;
+  int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   // Load the selected histograms to the histogram manager
   dataHistograms->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
@@ -93,7 +95,9 @@ void illustrateBackgroundSystematics(){
           backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = methods->EstimateSystematicsForBackgroundSubtraction(backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
           // For drawing purposes, use the rebinned histogram
-          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, 1, 2)->Clone(Form("RebinnedDeltaEtaForShapes%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          //backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, 1, 2)->Clone(Form("RebinnedDeltaEtaForShapes%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Rebin(4);
+          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Scale(1/4.0);
           
           
           // ======================================================== //
@@ -126,6 +130,8 @@ void illustrateBackgroundSystematics(){
   TString compactTrackPtString;
   TString asymmetryString;
   TString compactAsymmetryString;
+  
+  double zoomInThisPtBin[DijetHistogramManager::knJetTrackCorrelations][nAsymmetryBins+1][nTrackPtBins];
   
   double maxUncertainty;
   
@@ -169,21 +175,26 @@ void illustrateBackgroundSystematics(){
           // ================================================ //
           
           backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kBlack);
-          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3);
+          backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-drawingRange,drawingRange);
           
           if(zoomCloseToUncertaintyScale){
-            maxUncertainty = backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
-            if(pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] > maxUncertainty){
-              maxUncertainty = pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+            if(iCentrality == 0){
+              maxUncertainty = backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+              if(pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt] > maxUncertainty){
+                maxUncertainty = pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+              }
+              zoomInThisPtBin[iJetTrack][iAsymmetry][iTrackPt] = maxUncertainty;
+            } else {
+              maxUncertainty = zoomInThisPtBin[iJetTrack][iAsymmetry][iTrackPt];
             }
-            backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(-4*maxUncertainty, 15*maxUncertainty);
+            backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(-6*maxUncertainty, 25*maxUncertainty);
           }
           
-          drawer->DrawHistogram(backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt], "#Delta#eta", "#frac{dN}{d#Delta#eta}");
-          redLine->DrawLine(-3, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
-          redLine->DrawLine(-3, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
-          blueLine->DrawLine(-3, pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
-          blueLine->DrawLine(-3, -pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], 3, -pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          drawer->DrawHistogram(backgroundSubtractionHistogram[iJetTrack][iAsymmetry][iCentrality][iTrackPt], "#Delta#eta", "#frac{dN}{d#Delta#eta}", " ");
+          redLine->DrawLine(-drawingRange, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], drawingRange, backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          redLine->DrawLine(-drawingRange, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], drawingRange, -backgroundUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          blueLine->DrawLine(-drawingRange, pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], drawingRange, pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+          blueLine->DrawLine(-drawingRange, -pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt], drawingRange, -pairAcceptanceUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
           
           legend = new TLegend(0.7,0.65,0.9,0.92);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);

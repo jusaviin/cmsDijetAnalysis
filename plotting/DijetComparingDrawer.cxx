@@ -765,7 +765,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
 
-            PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, DijetHistogramManager::kSignalEtaRegion); // TODO: Change deltaEta region
+            PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta); // TODO: Change deltaEta region kWholeEta kSignalEtaRegion
             
             // Draw the track phi distributions to the upper panel of a split canvas plot
             sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));

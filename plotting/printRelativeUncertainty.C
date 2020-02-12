@@ -17,7 +17,7 @@ void printRelativeUncertainty(){
   TString uncertaintyFileName[2];
   TString ppUncertaintyFileName[2];
   uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root";
-  ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJES_smoothedPairBackground_2020-01-21.root";
+  ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root";
   uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root";
   ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverWithSmoothedBackground_newJES_tunedSeagull_smoothedPairBackground_2020-01-23.root
@@ -36,10 +36,11 @@ void printRelativeUncertainty(){
   TString inclusiveFileName = "uncertainties/inclusiveAnalysis/js_AllSource_syst_err.root";
   
   bool printSlides = false;  // Print slides showing the R-integrated uncertainty in each pT bin
+  bool combineTracking = false; // Combine all tracking related uncertainty to one when printing the table
   bool drawUncertaintySourceComparison = true; // Draw all uncertainty sources as a function of R in each pT bin
   bool drawUncertaintySystemComparison = false; // Draw single uncertainty source for all systems as a function of R in each pT bin
   bool drawComparisonToInclusive = false;        // Draw comparison to systematic uncertainty histograms from inclusive analysis
-  bool saveFigures = false;   // Save the drawn figures to file
+  bool saveFigures = true;   // Save the drawn figures to file
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -73,12 +74,14 @@ void printRelativeUncertainty(){
   for(int iFile = 0; iFile < nFiles; iFile++){
     uncertaintyManager[iFile] = new JffCorrector();
     uncertaintyManager[iFile]->ReadSystematicFile(uncertaintyFile[iFile]);
+    uncertaintyManager[iFile]->SetUncertaintySmooth(smoothHistograms);
   }
   
   JffCorrector *ppUncertaintyManager[2];
   for(int iFile = 0; iFile < nFiles; iFile++){
     ppUncertaintyManager[iFile] = new JffCorrector();
     ppUncertaintyManager[iFile]->ReadSystematicFile(ppUncertaintyFile[iFile]);
+    ppUncertaintyManager[iFile]->SetUncertaintySmooth(smoothHistograms);
   }
   
   const int nCentralityBins = dataManager->GetNCentralityBins();
@@ -93,10 +96,10 @@ void printRelativeUncertainty(){
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int lastDrawnTrackPtBin = nTrackPtBins;
   
-  int firstDrawnAsymmetryBin = 2;
-  int lastDrawnAsymmetryBin = 2;
+  int firstDrawnAsymmetryBin = 0;
+  int lastDrawnAsymmetryBin = nAsymmetryBins;
     
   // Select which uncertainty sources to draw
   bool drawAllUncertainites = true;
@@ -252,8 +255,16 @@ void printRelativeUncertainty(){
         // Set the correct precision for printing floating point numbers
         cout << fixed << setprecision(3);
         
+        // Combine the tracking uncertainties kTrackingEfficiency, kResidualTracking, kTrackingDeltaR
+        if(combineTracking){
+          for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+            uncertaintyYield[0][iJetType][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt] = TMath::Sqrt(TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt],2) + TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kResidualTracking][nAsymmetryBins][iCentrality][iTrackPt],2) + TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kTrackingDeltaR][nAsymmetryBins][iCentrality][iTrackPt],2));
+          }
+        }
+        
         // Print one line for each track pT bin
         for(int iUncertainty = 0; iUncertainty < JffCorrector::knUncertaintySources; iUncertainty++){
+          if(combineTracking && (iUncertainty == JffCorrector::kResidualTracking || iUncertainty == JffCorrector::kTrackingDeltaR)) continue;
           cout << uncertaintyManager[0]->GetUncertaintyName(iUncertainty);
           for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
             cout << " & $" << uncertaintyYield[0][iJetType][iUncertainty][nAsymmetryBins][iCentrality][iTrackPt] / dataYield[iJetType][nAsymmetryBins][iCentrality][iTrackPt] << "$";

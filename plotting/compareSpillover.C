@@ -13,7 +13,7 @@ void compareSpillover(){
   // ==================================================================
   
   const int nSpilloverDistributions = 2;
-  const int nDataDistributions = 4;
+  const int nDataDistributions = 2;
   
   TString spilloverFileName[nSpilloverDistributions] = {"corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root", "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root"};
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_jet100trigger_JECv6_2019-09-26.root
@@ -21,12 +21,15 @@ void compareSpillover(){
   // corrections/spilloverCorrection_PbPbMC_akPu4CaloJets_xjBins_noUncorr_improvisedMixing_wtaAxis_JECv5b_preliminary_2019-09-08.root
   // corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
   
-  TString dataFileName[nDataDistributions] = {"data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_onlyGluonJets_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_onlyQuarkJets_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_quarkGluonCombined_25pQuarkExcess_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root"};
+  TString dataFileName[nDataDistributions] = {"data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_quarkGluonCombined_wta_subeNon0_centShift5_noCorrections_processed_2019-12-13.root", "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_subeNon0_wtaAxis_JECv6_processed_2019-09-26.root"};
+  
+  //TString dataFileName[nDataDistributions] = {"data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_onlyGluonJets_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_onlyQuarkJets_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_quarkGluonCombined_25pQuarkExcess_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root"};
 
   TString legendComment[nSpilloverDistributions] = {"lul", "lul"};
-  TString dataLegendComment[nDataDistributions] = {"Regular", "Pure gluon", "Pure quark", "Quark+25%"};
+  TString dataLegendComment[nDataDistributions] = {"Tuned", "Untuned"};
+ // TString dataLegendComment[nDataDistributions] = {"Nominal", "Pure gluon", "Pure quark", "Quark+25%"};
   
-  bool saveFigures = false;
+  bool saveFigures = true;
   
   // Open the input files
   TFile *spilloverFile[nSpilloverDistributions];
@@ -47,8 +50,8 @@ void compareSpillover(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
-  const int firstDrawnAsymmetryBin = 0;
-  const int lastDrawnAsymmetryBin = 0;
+  const int firstDrawnAsymmetryBin = nAsymmetryBins;
+  const int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   // Make histogram managers for the files
   JffCorrector *spilloverProvider[nSpilloverDistributions];
@@ -205,7 +208,7 @@ void compareSpillover(){
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/spilloverYieldParticleComposition%s_C=%.0f-%.0f.pdf", compactAsymmetryString.Data(),  centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+        gPad->GetCanvas()->SaveAs(Form("figures/spilloverYieldShift%s_C=%.0f-%.0f.pdf", compactAsymmetryString.Data(),  centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
       }
       
       // Make the ratio graphs
@@ -215,7 +218,7 @@ void compareSpillover(){
         dataRatioGraph[iData][iAsymmetry][iCentrality]->SetMarkerColor(colors[iData+1]);
       }
       
-      drawer->DrawGraph(dataRatioGraph[0][iAsymmetry][iCentrality],0,8,0.6,1.4,"p_{T} (GeV)","Yield ratio","","psame");
+      drawer->DrawGraph(dataRatioGraph[0][iAsymmetry][iCentrality],0,8,0,2,"p_{T} (GeV)","Yield ratio","","psame");
       oneLine->Draw();
       
       for(int iData = 1; iData < nDataDistributions-1; iData++){
@@ -233,7 +236,7 @@ void compareSpillover(){
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/spilloverParticleCompositionRatio%s_C=%.0f-%.0f.pdf", compactAsymmetryString.Data(),  centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+        gPad->GetCanvas()->SaveAs(Form("figures/spilloverShiftRatio%s_C=%.0f-%.0f.pdf", compactAsymmetryString.Data(),  centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
       }
       
     } // Centrality loop

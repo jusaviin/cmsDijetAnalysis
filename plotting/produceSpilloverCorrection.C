@@ -14,7 +14,9 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akPu4PFJet_noUncOrInc_improvisedMixing_wta_subeNon0_centShift5_noCorrections_processed_2019-12-13.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_seagullTuning_processed_2019-12-13.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_seagullTuning_processed_2019-12-13.root
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_wtaAxis_subeNon0_centShift5_onlySeagull_processed_2019-10-21.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_eschemeAxis_subeNon0_centShift5_noCorrections_processed_2019-10-08.root
@@ -22,11 +24,11 @@ void produceSpilloverCorrection(){
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_subeNon0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
 
-  TString outputFileName = "corrections/spilloverCorrection_akPu4PFJet_noUncOrInc_improvisedMixing_symmetrized_looseCut_tightForSubleading_centShift5_wtaAxis_JECv6_2020-01-03.root"; // File name for the output file
+  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-10.root"; // File name for the output file
   // corrections/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
   // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
   // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noInclOrUncorr_10eventsMixed_subeNon0_smoothedMixing_revisedFit_2019-02-18.root";
-  TString uncorrectedDataFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_xjBins_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-13.root"; // Data file to compare yields with spillover file
+  TString uncorrectedDataFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root"; // Data file to compare yields with spillover file
   // data/PbPbMC_RecoGen_skims_pfJets_noInclUncorPtw_3eveMix_improvedMix_noJetLimit_noCorrections_processed_2019-02-09.root
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   
@@ -35,7 +37,7 @@ void produceSpilloverCorrection(){
   bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlatios
   
-  bool processAsymmetryBins = false; // Select if you want to make the correction in asymmetry bins
+  bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -60,16 +62,16 @@ void produceSpilloverCorrection(){
                                 {0.5,0.5,0.5,0.5,0.5,0.4,0.4}}; // 50-100 % centrality*/
   
   // For spillover correction in 2018 data. To be studied more carefully after JECs are finalized
-  /*double spilloverRcut[4][7] = {{1.0,1.0,1.0,0.8,0.8,0.5,0.5},  // 0-10 % centrality
-                                {1.0,1.0,1.0,0.8,0.7,0.5,0.5},  // 10-30 % centrality
-                                {1.0,1.0,1.0,0.8,0.7,0.5,0.5},  // 30-50 % centrality
-                                {0.7,0.5,0.5,0.5,0.5,0.5,0.5}}; // 50-100 % centrality*/
+  double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,0.8,0.6,0.6},  // 0-10 % centrality
+                                {1.5,1.5,1.5,1.0,0.7,0.6,0.6},  // 10-30 % centrality
+                                {1.0,1.0,1.0,1.0,0.7,0.6,0.6},  // 30-50 % centrality
+                                {0.5,0.5,0.5,0.5,0.5,0.5,0.5}}; // 50-100 % centrality
   
   // For spillover correction with loose cut in 2018 data.
-  double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 0-10 % centrality
+  /*double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 0-10 % centrality
                                 {1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 10-30 % centrality
                                 {1.0,1.0,1.0,1.0,1.0,1.0,1.0},  // 30-50 % centrality
-                                {1.0,1.0,1.0,1.0,1.0,1.0,1.0}}; // 50-100 % centrality
+                                {1.0,1.0,1.0,1.0,1.0,1.0,1.0}}; // 50-100 % centrality*/
   
   
   // Open the input files

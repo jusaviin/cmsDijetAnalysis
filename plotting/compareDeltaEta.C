@@ -54,9 +54,6 @@ void compareDeltaEta(){
   for(int iFile = 0; iFile < nFilesToCompare; iFile++){
     pbpbHistograms[iFile] = new DijetHistogramManager(pbpbFile[iFile]);
   }
-  // Choose which figure sets to draw
-  bool drawJetShapePptoPbPbRatio = false;
-  bool drawJetShapeSymmetricAsymmetricRatio = true;
   
   // Choose if you want to write the figures to pdf file
   const int nHistogramTypesToCompare = 1;
@@ -84,7 +81,7 @@ void compareDeltaEta(){
   ppHistograms->SetLoadTrackLeadingJetCorrelations(true);
   ppHistograms->SetLoadTrackInclusiveJetCorrelations(true);
   ppHistograms->SetLoad2DHistograms(true);
-  ppHistograms->SetAsymmetryBinRange(0,nAsymmetryBins);
+  ppHistograms->SetAsymmetryBinRange(nAsymmetryBins,nAsymmetryBins);
   ppHistograms->LoadProcessedHistograms();
   
   for(int iFile = 0; iFile < nFilesToCompare; iFile++){

@@ -19,7 +19,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
   bool drawInclusive = false;
   bool drawInclusiveRatio = false;
   bool drawUncertainties = true;
-  bool monteCarloLabels = true;
+  bool monteCarloLabels = false;
   int firstAsymmetryBin = nAsymmetryBins;  // Set here 0 to process asymmetry bins and nAsymmetrybins to disable them
   bool normalizeJetShape = true;           // True: draw rho. False: draw P.
   
@@ -369,6 +369,12 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
       ratioHistogram[iCentrality][iAsymmetry]->GetYaxis()->CenterTitle();
       ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->CenterTitle();
       ratioHistogram[iCentrality][iAsymmetry]->SetStats(0);
+      
+      // TODO: Drawing only inclusive
+      //for(int iBin = 1; iBin <= ratioHistogram[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+      //  ratioHistogram[iCentrality][iAsymmetry]->SetBinContent(iBin,-1);
+      //}
+      
       ratioHistogram[iCentrality][iAsymmetry]->Draw("same");
       
       line[iAsymmetry] = new TLine();
@@ -381,6 +387,19 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
         inclusiveRatio[iCentrality]->Draw("same");
         inclusiveRatioError[iCentrality]->Draw("same e2");
       }
+      
+      // TODO: Try to draw centrality lables to ratio plots
+      if(iCentrality==3 ){
+        mainTitle[iAsymmetry]->SetTextFont(22);
+        mainTitle[iAsymmetry]->SetTextSize(.085);
+        mainTitle[iAsymmetry]->DrawLatexNDC(.35, 0.9, cent_lab[iCentrality]);
+      }
+      else {
+        mainTitle[iAsymmetry]->SetTextFont(22);
+        mainTitle[iAsymmetry]->SetTextSize(.09);
+        mainTitle[iAsymmetry]->DrawLatexNDC(.19, 0.9, cent_lab[iCentrality]);
+      }
+      
     }
     bigCanvas[iAsymmetry]->CD(1);
     gPad->SetLogy();
@@ -438,7 +457,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     
     lt4->AddEntry(ratioUncertainty[0][iAsymmetry], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
     bigCanvas[iAsymmetry]->CD(9);
-    lt4->Draw();
+    //lt4->Draw(); // TODO: Put thi sbak in
     
     if(drawInclusiveRatio && iAsymmetry == nAsymmetryBins){
       lt5->AddEntry(inclusiveRatio[0], "JHEP 05(2018)006","lpfe");
@@ -516,7 +535,7 @@ void plotJetShapeXiao(DijetHistogramManager *ppHistograms, DijetHistogramManager
     mainTitle[iAsymmetry]->DrawLatex(0.985, 0.055, "1");
     
     //bigCanvas->SaveAs("js_dr_normal_new.eps");
-    bigCanvas[iAsymmetry]->SaveAs(Form("figures/final%s_%s%s_finalClosureCheck.png", saveString, jetShapeSaveName[iJetTrack/3], asymmetrySaveName[iAsymmetry]));
+    bigCanvas[iAsymmetry]->SaveAs(Form("figures/final%s_%s%s_inclusive.pdf", saveString, jetShapeSaveName[iJetTrack/3], asymmetrySaveName[iAsymmetry]));
     //bigCanvas->SaveAs("js_dr_normal_v3.eps");
     //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
     
@@ -533,7 +552,7 @@ void finalResultPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile = TFile::Open("data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tunedSeagull_processed_2019-10-22.root");
+  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root");
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"
   // data/ppData2017_highForest_pfJets_20EveMixed_finalTrackCorr_JECv4_eschemeAxis_tunedSeagull_allCorrections_processed_2019-10-14.root
   // data/ppData2017_highForest_pfJets_20EveMixed_finalTrackCorr_JECv4_eschemeAxis_allCorrections_processed_2019-10-02.root
@@ -543,7 +562,7 @@ void finalResultPlotter(){
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28.root
-  TFile *pbpbFile = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_fixedFile_newTry_mixingScale16_processed_2019-10-07.root");
+  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04.root");
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull_processed_2019-10-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_allCorrections_allPtTrackDeltaR_processed_2019-10-16.root
@@ -559,10 +578,10 @@ void finalResultPlotter(){
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_allCorrections_noStatErrorFromCorrections_lowPtResidualTrack_processed_2019-10-07_fiveJobsMissing.root
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root
   
-  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPpMC_RecoGen_20eveMix_mcMode_2019-10-21.root");
+  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root");
   // uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root
   // uncertainties/systematicUncertaintyForPythia8RecoGen_mcMode_2019-10-05.root
-  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPbMC_RecoGen_5eveMix_mcMode_2019-10-21.root");
+  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root");
   // uncertainties/systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-06.root
   // uncertainties/systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-05.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
@@ -580,7 +599,7 @@ void finalResultPlotter(){
   bool drawJetShapeSymmetricAsymmetricRatio = false;
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   const char* figureFormat = "pdf";
   TString saveName;
   
@@ -631,10 +650,10 @@ void finalResultPlotter(){
   
   // Plot the figures using Xiao's plotting macro
   plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
-  plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
+  //plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
   //plotJetShapeXiao(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackInclusiveJet);
   return;
-  
+ /*
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[2][nCentralityBins][nAsymmetryBins+1];
   TH1D *sumHistogramPp[2][nAsymmetryBins+1];
@@ -902,5 +921,5 @@ void finalResultPlotter(){
       } // Centrality loop
     } // Asymmetry loop
   } // Draw asymmetry ratio
-  
+  */
 }

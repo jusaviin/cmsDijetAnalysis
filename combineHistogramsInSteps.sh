@@ -24,7 +24,7 @@ root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'"
 for i in `seq 0 3`;
 do
   root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",2,'$FIRSTWEIGHT','$SECONDWEIGHT',-1,'$i')' # Single jet and dijet histograms
-  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",3,'$FIRSTWEIGHT','$SECONDWEIGHT',-1,'$i')' # Track histograms
+#  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",3,'$FIRSTWEIGHT','$SECONDWEIGHT',-1,'$i')' # Track histograms
 done 
 
 # Jet-track correlations have centrality and track pT binning

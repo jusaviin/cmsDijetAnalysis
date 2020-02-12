@@ -689,8 +689,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // ===== Jet-track deltaPhi =====
             if(fDrawJetTrackDeltaPhi){
-              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kSignalEtaRegion);
-              // TODO: Check only analysis region for now (kWholeEta removed)
+              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
+              // TODO: Check only analysis region for now (kWholeEta removed) kSignalEtaRegion
               drawnHistogram->Rebin(4); // XXXXXX Temporary rebin
               drawnHistogram->Scale(1.0/4); // TODO: Remove temporary rebin
               //cout << "Integral of deltaPhi: " << drawnHistogram->Integral("width") << endl; // Can print integral for debug purposes

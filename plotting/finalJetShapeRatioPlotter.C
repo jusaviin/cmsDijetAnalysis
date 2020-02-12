@@ -16,7 +16,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   
-  const char* systemLegendString[] = {"All dijets", "No third jet", "Third jet", "", ""};
+  const char* systemLegendString[] = {"WTA", "E-scheme", "Third jet", "", ""};
     
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[5][nCentralityBins][nAsymmetryBins+1];
@@ -92,6 +92,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
       uncertaintySummerPp[iDataset][iAsymmetry][1] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kFragmentationBias);
       uncertaintySummerPp[iDataset][iAsymmetry][2] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kPairAcceptance);
       uncertaintySummerPp[iDataset][iAsymmetry][3] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundSubtraction);
+      //uncertaintySummerPp[iDataset][iAsymmetry][4] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry, JffCorrector::kJetEnergyScale); // TODO: This added
       
       uncertaintyHistogramPp[iDataset][iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry);
       
@@ -121,6 +122,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
         uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][1] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kFragmentationBias);
         uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][2] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kPairAcceptance);
         uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][3] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kBackgroundSubtraction);
+        //uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][4] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry, JffCorrector::kJetEnergyScale); // TODO: This added
         
         uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry] = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, nTrackPtBins, iAsymmetry);
         
@@ -192,8 +194,8 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   } // Dataset loop
   
   TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
-  int markerColors[5] = {/*kBlack*/kBlue, kBlue, kRed, kGreen+3, kMagenta};
-  int fillColors[5] = {/*kGray+3*/kBlue-6, kBlue-6, kRed-6, kGreen-6, kMagenta-6};
+  int markerColors[5] = {kBlack, kBlue, kRed, kGreen+3, kMagenta};
+  int fillColors[5] = {kGray+3, kBlue-6, kRed-6, kGreen-6, kMagenta-6};
   
   // Set a good drawing style for the uncertainty histograms
   for(int iDataset = 0; iDataset < nDatasets; iDataset++){
@@ -444,7 +446,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryWithColors_%s.png",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_axisComparison.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -460,13 +462,16 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root"), NULL, NULL, NULL, NULL};
+  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root"), NULL, NULL, NULL, NULL};
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root"), NULL, NULL, NULL, NULL};
+  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_onlyJetShapa_manualTuning_wtaAxis_processed_2020-02-04.root"), NULL, NULL, NULL, NULL};
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_finalTuning_wtaAxis_processed_2020-02-04.root
+  //  data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_finalTuning_wtaAxis_processed_2020-01-29.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root
   // dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_onlySeagullAndSpillover_correctedCentralityCorrection_eschemeAxis_processed_2019-12-05.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_processed_2019-11-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root
@@ -487,10 +492,10 @@ void finalJetShapeRatioPlotter(){
     nFilesPerDataset++;
   }
   
-  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root");
+  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root");
   // uncertainties/systematicUncertaintyForPp_20percentSpillJff_2019-09-30.root
   // uncertainties/systematicUncertaintyForPythia8RecoGen_mcMode_2019-10-05.root
-  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root");
+  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root");
   // uncertainties/systematicUncertaintyForPbPbAsymmetryRatio_2019-10-14.root
   
   // Create histogram managers for pp and PbPb
@@ -565,8 +570,8 @@ void finalJetShapeRatioPlotter(){
   // Plot the figures using Xiao's plotting macro
   plotJetShapeXiao(nFilesPerDataset, ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
   plotJetShapeXiao(nFilesPerDataset, ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
-  return;
   
+  /*
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *sumHistogramPp[nAsymmetryBins+1];
@@ -759,5 +764,5 @@ void finalJetShapeRatioPlotter(){
       } // Centrality loop
     } // Asymmetry loop
   } // Draw asymmetry ratio
-  
+  */
 }

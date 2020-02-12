@@ -8,23 +8,29 @@
 void jetShapeCorrectionComparer(){
   
   // Open the files for the JFF corrections
-  TFile *quarkFile = TFile::Open("corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_25pExcessQuark_JECv4_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-23.root");
+  TFile *quarkFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_onlyQuark_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_25pExcessQuark_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root"
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyQuark_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC2017_pfJets_noUncOrInc_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-11-27.root
-  TFile *gluonFile = TFile::Open("corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyGluon_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root");
+  TFile *gluonFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_onlyGluon_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyGluon_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
-  TFile *standardFile = TFile::Open("corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_JECv4_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-23.root");
+  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
-  TFile *files[3] = {quarkFile,gluonFile,standardFile};
+  
+  TFile *quarkExcessFile =  TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_quarkGluonCombined_25pMoreQuark_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
+  
+  const int nFiles = 4;
+  const char* legendText[nFiles] = {"Pure quark", "Pure gluon", "Quark+25%", "Nominal"};
+  
+  TFile *files[nFiles] = {quarkFile,gluonFile,quarkExcessFile,standardFile};
   
   // Figure saving options
-  bool saveFigures = false;         // Flag to determine whather or not save the figures
+  bool saveFigures = true;         // Flag to determine whather or not save the figures
   bool drawCorrection = true;      // Draw the comparison of JFF corrections (RecoGen - GenGen) between two files
   bool drawRatio = false;          // Draw the comparison of JFF ratios (RecoGen/GenGen) between two files
   
@@ -36,8 +42,8 @@ void jetShapeCorrectionComparer(){
   
   // Jff correction histograms
   // First bin = Leading, pT weighted leading, subeading, pT weighted subleading
-  // Second bin = Quark, Gluon, Standard
-  TH1D *jffCorrection[4][3][nCentralityBins][nTrackPtBins];
+  // Second bin = Quark, Gluon, QuarkExcess, Standard
+  TH1D *jffCorrection[4][nFiles][nCentralityBins][nTrackPtBins];
   
   // All the variables needed for figure drawing
   JDrawer *drawer = new JDrawer();
@@ -61,13 +67,10 @@ void jetShapeCorrectionComparer(){
   char centralityString[50];
   char compactCentralityString[50];
   bool notThisType[2] = {!drawCorrection,!drawRatio};
-
-  //JffCorrector *quarkCorrectionFinder = new JffCorrector();
-  //JffCorrector *gluonCorrectionFinder = new JffCorrector();
   
   for(int iType = 0; iType < 2; iType++){
     if(notThisType[iType]) continue; // Only draw the selected types
-    for(int iFile = 0; iFile < 3; iFile++){
+    for(int iFile = 0; iFile < nFiles; iFile++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         if(ppData && (iCentrality > 0)) continue; // No centrality selection for pp
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
@@ -92,46 +95,57 @@ void jetShapeCorrectionComparer(){
       } // Centrality loop
     } // File loop
     
+    int colors[] = {kRed, kBlue, kMagenta, kBlack, kGreen+4, kCyan};
+    double maxValue, minValue;
+    double histogramValue;
+    
     // Draw all the corrections
     for(int iJetTrack = 0; iJetTrack < 4; iJetTrack++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         if(ppData && (iCentrality > 0)) continue; // No centrality selection for pp
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
+          // Find the scales for drawing
+          // First, find the maximum value for uncertainty among all centrality bins
+          maxValue = -1000;
+          minValue = 1000;
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            jffCorrection[iJetTrack][iFile][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+            for(int iBin = 1; iBin < jffCorrection[iJetTrack][iFile][iCentrality][iTrackPt]->GetXaxis()->FindBin(0.99); iBin++){
+              histogramValue = jffCorrection[iJetTrack][iFile][iCentrality][iTrackPt]->GetBinContent(iBin);
+              if(histogramValue > maxValue) maxValue = histogramValue;
+              if(histogramValue < minValue) minValue = histogramValue;
+            }
+          }
+          
           // First, draw the only quark leading JFF correction
-          //drawer->CreateSplitCanvas();
-          jffCorrection[iJetTrack][0][iCentrality][iTrackPt]->SetLineColor(kRed);
-          jffCorrection[iJetTrack][0][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          //drawer->DrawHistogramToUpperPad(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"#DeltaR",axisName[iType]," ");
+          jffCorrection[iJetTrack][0][iCentrality][iTrackPt]->SetLineColor(colors[0]);
+          jffCorrection[iJetTrack][0][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(minValue-(maxValue-minValue)*0.1, maxValue+(maxValue-minValue)*0.1);
           drawer->DrawHistogram(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"#DeltaR",axisName[iType]," ");
           
-          // Next, draw the only gluon JFF correction
-          jffCorrection[iJetTrack][1][iCentrality][iTrackPt]->SetLineColor(kBlue);
-          jffCorrection[iJetTrack][1][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          jffCorrection[iJetTrack][1][iCentrality][iTrackPt]->Draw("same");
-          
-          // Finally, draw the regular JFF correction
-          jffCorrection[iJetTrack][2][iCentrality][iTrackPt]->SetLineColor(kBlack);
-          jffCorrection[iJetTrack][2][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-          jffCorrection[iJetTrack][2][iCentrality][iTrackPt]->Draw("same");
+          // Draw all the other JFF corrections to the same canvas
+          for(int iFile = 1; iFile < nFiles; iFile++){
+            jffCorrection[iJetTrack][iFile][iCentrality][iTrackPt]->SetLineColor(colors[iFile]);
+            jffCorrection[iJetTrack][iFile][iCentrality][iTrackPt]->Draw("same");
+          }
           
           // Draw a legend to the canvas
           if(ppData){
-            sprintf(centralityString,"Pythia6");
+            sprintf(centralityString,"Pythia8");
             sprintf(compactCentralityString,"");
           } else {
             sprintf(centralityString,"P+H %.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
             sprintf(compactCentralityString,"_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
           }
           sprintf(namer,"%.1f < p_{T} < %.1f GeV",trackPtBorders[iTrackPt],trackPtBorders[iTrackPt+1]);
-          legend = new TLegend(0.50,0.02,0.85,0.35);
+          legend = new TLegend(0.57,0.18,0.87,0.53);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           legend->SetHeader(headers[iJetTrack]);
           legend->AddEntry((TObject*)0,centralityString,"");
           legend->AddEntry((TObject*)0,namer,"");
-          legend->AddEntry(jffCorrection[iJetTrack][0][iCentrality][iTrackPt],"Quarks","l");
-          legend->AddEntry(jffCorrection[iJetTrack][1][iCentrality][iTrackPt],"Gluons","l");
-          legend->AddEntry(jffCorrection[iJetTrack][2][iCentrality][iTrackPt],"Both","l");
+          for(int iFile = 0; iFile < nFiles; iFile++){
+            legend->AddEntry(jffCorrection[iJetTrack][iFile][iCentrality][iTrackPt],legendText[iFile],"l");
+          }
           legend->Draw();
           
           // Normalize the smeared jet pT to have the same yield as the reco jet pT

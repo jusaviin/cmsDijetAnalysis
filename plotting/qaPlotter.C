@@ -448,7 +448,7 @@ void qaPlotter(){
   bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
-  bool useAsymmetryBinsForSeagull = false;  // Plot seagull fits in different asymmetry bins
+  bool useAsymmetryBinsForSeagull = true;  // Plot seagull fits in different asymmetry bins
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
@@ -465,7 +465,10 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
 
-  TFile *seagullFile = TFile::Open("data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13_QA.root");
+  TFile *seagullFile = TFile::Open("data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_seagullTuning_processed_2019-12-13_QA.root");
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04_QA.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17_QA.root
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_seagullTuning_processed_2019-12-13_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagull_processed_2020-01-15_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_tunedSeagull_allCorrections_processed_2020-01-14_QA.root
@@ -475,7 +478,7 @@ void qaPlotter(){
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trigger_JECv6_finalTrack_wtaAxis_allCorrectionsWithCentralityShift_processed_2019-10-18_QA.root
   // PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0AtLowPt_wtaAxis_JECv6_noSymmetrySpilloverLooserCutUntil8_processed_2019-09-26_QA.root
 
-  TFile *seagullPpFile = TFile::Open("data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluonCombine_25pMoreQuark_dijetWeight_JECv4_onlySeagull_processed_2020-01-10_QA.root");
+  TFile *seagullPpFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04_QA.root");
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28_QA.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-09-28_QA.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_testSeagull_allCorrections_processed_2019-09-28_QA.root
@@ -488,6 +491,7 @@ void qaPlotter(){
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrections_processed_2019-01-09.root"
   // "data/dijetPbPb_skims_pfJets_noUncorr_improvedPoolMixing_noJetLimit_noCorrectionsOrAdjust_processed_2019-01-09.root"
   TFile *jffPbPbFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_2019-10-23.root");
+  // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_2019-10-23.root
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-15.root
   // corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   // corrections/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
@@ -518,7 +522,7 @@ void qaPlotter(){
   const int nAsymmetryBins = 3;  // TODO: Better switching of bins
   double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
-  double asymmetryBinBorders[] = {0,0.5,0.75,1}; // Bin borders for asymmetry
+  double asymmetryBinBorders[] = {0,0.6,0.8,1}; // Bin borders for asymmetry
   const char *saveNameComment = "";
   
   // Create a JffCorrector for easy reading of spillover histograms from the files
@@ -553,6 +557,7 @@ void qaPlotter(){
   TH1D *backgroundDeltaPhi[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *backgroundDeltaPhiOverlap[DijetHistogramManager::knJetTrackCorrelations][nCentralityBins][nTrackPtBins];
   TH1D *correctionJetShape[2][DijetHistogramManager::knJetTrackCorrelations][nJffAsymmetryBins+1][nCentralityBins+1][nTrackPtBins]; // 0 = JFF, 1 = spillover
+  TH1D *jffAsymmetryRatio[DijetHistogramManager::knJetTrackCorrelations][nJffAsymmetryBins][nCentralityBins+1][nTrackPtBins];
   TH1D *trackPtForGraphs[nCentralityBins];  // Track pT histograms to find proper place to put pT point in graphs
   TH1D *deltaEtaProjectionFromCorrection;
   TH1D *deltaPhiProjectionFromCorrection;
@@ -610,6 +615,20 @@ void qaPlotter(){
               }
               correctionJetShape[0][iJetTrack][iAsymmetry][nCentralityBins][iTrackPt] = (TH1D*) jffPpFile->Get(histogramNamer);
             }
+          }
+          
+          // After all the correction histograms are read, calculate ratio between xj bins and xj integrated
+          for(int iAsymmetry = 0; iAsymmetry < nJffAsymmetryBins; iAsymmetry++){
+            
+            jffAsymmetryRatio[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Clone(Form("jffAsymmetryRatio%d%d%d%d", iJetTrack, iAsymmetry, iCentrality, iTrackPt));
+            jffAsymmetryRatio[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Divide(correctionJetShape[0][iJetTrack][nJffAsymmetryBins][iCentrality][iTrackPt]);
+            
+            // Ratios for pp
+            if(iCentrality == 0){
+              jffAsymmetryRatio[iJetTrack][iAsymmetry][nCentralityBins][iTrackPt] = (TH1D*) correctionJetShape[0][iJetTrack][iAsymmetry][nCentralityBins][iTrackPt]->Clone(Form("jffAsymmetryRatio%d%d%d%d", iJetTrack, iAsymmetry, nCentralityBins, iTrackPt));
+              jffAsymmetryRatio[iJetTrack][iAsymmetry][nCentralityBins][iTrackPt]->Divide(correctionJetShape[0][iJetTrack][nJffAsymmetryBins][nCentralityBins][iTrackPt]);
+            }
+            
           }
         }
         
@@ -836,6 +855,7 @@ void qaPlotter(){
   // ******************************************
   // **       Drawing seagull plots          **
   // ******************************************
+  TString compactAsymmetryString = "";
   
   if(drawSeagull){
     
@@ -856,6 +876,13 @@ void qaPlotter(){
       
       // Loop over asymmetry bins
       for(int iAsymmetry = firstAsymmetry; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+        
+        // Set the asymmetry string based on the selected asymmetry bin
+        compactAsymmetryString = "";
+        if(iAsymmetry < nAsymmetryBins){
+          compactAsymmetryString = Form("_A=%.1f-%.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+          compactAsymmetryString.ReplaceAll(".","v");
+        }
         
         // Create one big canvas with a pad for each centrality and track pT bin
         sprintf(histogramNamer,"seagullDeltaEta%d%d",iJetTrack,iAsymmetry);
@@ -891,7 +918,7 @@ void qaPlotter(){
         
         // After all the canvases are filled, save them
         if(saveFigures) {
-          sprintf(histogramNamer,"figures/%s_seagullDeltaEta.pdf",uncorrectedDataManager->GetJetTrackHistogramName(iJetTrack));
+          sprintf(histogramNamer,"figures/%s_seagullDeltaEta%s.pdf", uncorrectedDataManager->GetJetTrackHistogramName(iJetTrack), compactAsymmetryString.Data());
           seagullCanvas[iJetTrack][iAsymmetry]->SaveAs(histogramNamer);
         } // saving figures
       } // Asymmetry loop
@@ -1025,6 +1052,7 @@ void qaPlotter(){
     // Create canvases for different qa plots
     TCanvas *jffCorrectionCanvas[DijetHistogramManager::knJetTrackCorrelations];
     TCanvas *jffAsymmetryComparisonCanvas[DijetHistogramManager::knJetTrackCorrelations];
+    TCanvas *jffAsymmetryRatioCanvas[DijetHistogramManager::knJetTrackCorrelations];
     TCanvas *jffComparisonCanvas[2]; // One for regular and one for pT-weighted
     TCanvas *spilloverCorrectionCanvas[DijetHistogramManager::knJetTrackCorrelations];
     
@@ -1111,6 +1139,11 @@ void qaPlotter(){
         sprintf(padNamer,"JFF asymmetry comparison %s",uncorrectedDataManager->GetJetTrackHistogramName(iJetTrack));
         jffAsymmetryComparisonCanvas[iJetTrack] = new TCanvas(histogramNamer,padNamer,1250,1800);
         jffAsymmetryComparisonCanvas[iJetTrack]->Divide(nCentralityBins+1,nTrackPtBins);
+        
+        sprintf(histogramNamer,"jffAsymmetryRatio%d",iJetTrack);
+        sprintf(padNamer,"JFF asymmetry ratio %s",uncorrectedDataManager->GetJetTrackHistogramName(iJetTrack));
+        jffAsymmetryRatioCanvas[iJetTrack] = new TCanvas(histogramNamer,padNamer,1250,1800);
+        jffAsymmetryRatioCanvas[iJetTrack]->Divide(nCentralityBins+1,nTrackPtBins);
       }
       
       sprintf(histogramNamer,"spilloverCorrection%d",iJetTrack);
@@ -1205,11 +1238,11 @@ void qaPlotter(){
                 correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(asymmetryColor[iAsymmetry]);
                 
                 // TODO TODO: See how the errors should be properly handled. Need to set a small error to draw data points
-                if(iCentrality < nCentralityBins){
-                  for(int iBin = 0; iBin <= correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
-                    correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin,0.0001);
-                  }
-                }
+                //if(iCentrality < nCentralityBins){
+                //  for(int iBin = 0; iBin <= correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+                //    correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin,0.0001);
+                //  }
+                //}
               }
               
               // Determine the drawing range for all bins from the first centrality bin
@@ -1264,6 +1297,53 @@ void qaPlotter(){
                 legend->AddEntry((TObject*)0,jffLegendName[iJetTrack],"");
                 legend->Draw();
               }
+              
+              // ===============================
+              // == JFF asymmetry ratio plots ==
+              // ===============================
+              
+              for(int iAsymmetry = 0; iAsymmetry < nJffAsymmetryBins; iAsymmetry++){
+                jffAsymmetryRatio[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(asymmetryStyle[iAsymmetry]);
+                jffAsymmetryRatio[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(asymmetryColor[iAsymmetry]);
+                
+                // TODO TODO: See how the errors should be properly handled. Need to set a small error to draw data points
+                //if(iCentrality < nCentralityBins){
+                //  for(int iBin = 0; iBin <= jffAsymmetryRatio[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+                //    jffAsymmetryRatio[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin,0.0001);
+                //  }
+                //}
+              }
+              
+              // Find the correct canvas to draw the histograms
+              jffAsymmetryRatioCanvas[iJetTrack]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
+              gPad->SetTopMargin(0.1);
+              gPad->SetBottomMargin(0.2);
+              
+              // First draw the comparison with the most asymmetric bin
+              gStyle->SetTitleSize(0.09,"t");
+              jffAsymmetryRatio[iJetTrack][0][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0.5,1.5);
+              jffAsymmetryRatio[iJetTrack][0][iCentrality][iTrackPt]->DrawCopy();
+              
+              // Then, draw all the asymmetry bins to the same canvas
+              for(int iAsymmetry = 1; iAsymmetry < nJffAsymmetryBins; iAsymmetry++){
+                jffAsymmetryRatio[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->DrawCopy("same");
+              }
+              
+              // Draw different asymmetry legends to different canvases
+              for(int iAsymmetry = 0; iAsymmetry < nJffAsymmetryBins; iAsymmetry++){
+                if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 30-iAsymmetry){
+                  drawBigCanvasLegend(legend,correctionJetShape[0][iJetTrack][iAsymmetry][iCentrality][iTrackPt],jffAsymmetryLegend[iAsymmetry].Data());
+                }
+              }
+              
+              // Draw the system legend to the pad before the asymmetry legends
+              if(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1 == 30-nJffAsymmetryBins-1){
+                legend = new TLegend(0.15,0.3,0.9,0.5);
+                legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.11);legend->SetTextFont(62);
+                legend->AddEntry((TObject*)0,jffLegendName[iJetTrack],"");
+                legend->Draw();
+              }
+              
               
             } // Asymmetry correction canvas if
             

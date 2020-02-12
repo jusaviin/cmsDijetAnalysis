@@ -12,7 +12,7 @@ void produceTrackingDeltaRCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
 
-  TString genRecoFileName = "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root";  // File from which the GenReco histograms are read for the correction
+  TString genRecoFileName = "data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root";  // File from which the GenReco histograms are read for the correction
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root <-- Sys
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_onlySeagull_processed_2019-10-07.root
   // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root
@@ -21,7 +21,7 @@ void produceTrackingDeltaRCorrection(){
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_tunedSeagull_processed_2019-10-22.root
   // data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString gengenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root"; // File from which the GenGen histograms are read for the correction
+  TString gengenFileName = "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root"; // File from which the GenGen histograms are read for the correction
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_mixingFromSubeNon0_newTry_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root <-- Sys
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_wtaAxis_JECv6_processed_2019-09-26.root
@@ -31,7 +31,7 @@ void produceTrackingDeltaRCorrection(){
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_recoJets_smoothed_2020-01-27.root"; // File name for the output file
+  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_onlyLowPt_centShift5_xjBins_genJets_smoothed_2020-01-29.root"; // File name for the output file
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_until8GeV_noSymmetry_2019-10-18.root
   
   bool regularJetTrack = true;       // Produce the correction for regular jet-track correlations
@@ -41,7 +41,7 @@ void produceTrackingDeltaRCorrection(){
   
   bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
-  int ptCutBin = 666;
+  int ptCutBin = 3;
   
   bool smoothHistograms = true;  // Smoothen the histograms to reduce statistical fluctuations from the MC sample
   
