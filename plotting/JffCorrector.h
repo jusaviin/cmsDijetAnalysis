@@ -43,6 +43,7 @@ public:
   TH1D* GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // Jet shape JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi spillover correction histograms
+  TH2D* GetDeltaEtaDeltaPhiSpilloverCorrectionAsymmetryScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, const int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins, int usedBin = -1) const;  // DeltaEta-DeltaPhi spillover correction histograms. Use scaled xj integrated distribution to calculate correction in different xj bins
   TH2D* GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   double GetTrackDeltaRResidualScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   
@@ -53,6 +54,9 @@ public:
   
   TString GetLongRangeUncertaintyName(const int iUncertainty) const;
   double GetLongRangeSystematicUncertainty(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;
+  
+  // Setters
+  void SetUncertaintySmooth(const bool smooth);  // Setter for smoothing the uncertainties
   
   // Return information, if correction is ready to be obtained
   bool CorrectionReady();  // True if histograms loaded from file, otherwise false
@@ -80,6 +84,7 @@ private:
   bool fTrackingCorrectionLoaded;  // Flag if the tracking correction had been loaded
   int  fTrackingAsymmetryBins;     // Number of asymmetry bins in the residual tracking correction file
   int  fTrackingPtBins;            // Number of track pT bins in the residual tracking correction file
+  bool fSmoothUncertainty;         // Smooth the uncertainty histograms
 
   // JFF correction histograms for jet shape
   TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for jet shape

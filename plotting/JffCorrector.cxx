@@ -19,7 +19,8 @@ JffCorrector::JffCorrector() :
   fSystematicTrackPtBins(0),
   fTrackingCorrectionLoaded(false),
   fTrackingAsymmetryBins(0),
-  fTrackingPtBins(0)
+  fTrackingPtBins(0),
+  fSmoothUncertainty(false)
 {
   
   // JFF correction histograms for jet shape
@@ -45,7 +46,8 @@ JffCorrector::JffCorrector() :
 /*
  * Constructor
  */
-JffCorrector::JffCorrector(TFile *inputFile)
+JffCorrector::JffCorrector(TFile *inputFile) :
+  JffCorrector()
 {
   ReadInputFile(inputFile);
 }
@@ -53,7 +55,8 @@ JffCorrector::JffCorrector(TFile *inputFile)
 /*
  * Constructor
  */
-JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile)
+JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile) :
+  JffCorrector()
 {
   ReadInputFile(inputFile);
   ReadSpilloverFile(spilloverFile);
@@ -62,7 +65,8 @@ JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile)
 /*
  * Constructor
  */
-JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile, TFile *trackingFile)
+JffCorrector::JffCorrector(TFile *inputFile, TFile *spilloverFile, TFile *trackingFile) :
+  JffCorrector()
 {
   ReadInputFile(inputFile);
   ReadSpilloverFile(spilloverFile);
@@ -84,7 +88,8 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
   fSystematicTrackPtBins(in.fSystematicTrackPtBins),
   fTrackingCorrectionLoaded(in.fTrackingCorrectionLoaded),
   fTrackingAsymmetryBins(in.fTrackingAsymmetryBins),
-  fTrackingPtBins(in.fTrackingPtBins)
+  fTrackingPtBins(in.fTrackingPtBins),
+  fSmoothUncertainty(in.fSmoothUncertainty)
 {
   // Copy constructor
   
@@ -305,7 +310,13 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
               for(int iBin = 1; iBin <= jetShapeSum->GetNbinsX(); iBin++){
                 oldContent = jetShapeSum->GetBinContent(iBin);
                 addedContent = fhJetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetBinContent(iBin);
-                newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
+                
+                // For tracking efficiency and residual tracking, add the uncertainty without quadratures
+                if(iUncertainty == kTrackingEfficiency || iUncertainty == kResidualTracking){
+                  newContent = oldContent+addedContent;
+                } else {
+                  newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
+                }
                 
                 jetShapeSum->SetBinContent(iBin, newContent);
               }
@@ -313,7 +324,13 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
               for(int iBin = 1; iBin <= deltaEtaSum->GetNbinsX(); iBin++){
                 oldContent = deltaEtaSum->GetBinContent(iBin);
                 addedContent = fhDeltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetBinContent(iBin);
-                newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
+                
+                // For tracking efficiency and residual tracking, add the uncertainty without quadratures
+                if(iUncertainty == kTrackingEfficiency || iUncertainty == kResidualTracking){
+                  newContent = oldContent+addedContent;
+                } else {
+                  newContent = TMath::Sqrt(oldContent*oldContent+addedContent*addedContent);
+                }
                 
                 deltaEtaSum->SetBinContent(iBin, newContent);
               }
@@ -416,6 +433,22 @@ TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCo
   return fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
 }
 
+// DeltaEta-DeltaPhi spillover correction histograms. Use scaled xj integrated distribution to calculate correction in different xj bins
+TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrectionAsymmetryScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, const int iAsymmetry, int usedBin) const{
+  
+  if(usedBin < 0) usedBin = fSpilloverAsymmetryBins;
+  
+  TH2D *correctionHistogram = (TH2D*) GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrackCorrelation, iCentrality, iTrackPt, usedBin)->Clone();
+  
+  // The spillover correction in different asymmetry bins is for a very good approximation a constant times xj integrated
+  // This method can be used to suppress fluctuations for xj bins.
+  double scale[] = {1.3, 1, 0.7, 1};
+  correctionHistogram->Scale(scale[iAsymmetry]/scale[usedBin]);
+  
+  return correctionHistogram;
+  
+}
+
 // Getter for deltaEta-deltaPhi spillover correction histograms
 TH2D* JffCorrector::GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
   
@@ -456,6 +489,12 @@ TH1D* JffCorrector::GetJetShapeSystematicUncertainty(const int iJetTrackCorrelat
   
   // If uncertainty bin is outside of the uncertainty bin range, return total systematic uncertainty
   if(iUncertainty < 0 || iUncertainty > kTotal) iUncertainty = kTotal;
+  
+  if(iUncertainty != kPairAcceptance && iUncertainty != kBackgroundSubtraction && fSmoothUncertainty){
+    fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetXaxis()->SetRangeUser(0.06,1);
+    fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->Smooth(1,"R");
+    fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetXaxis()->SetRangeUser(0,1);
+  }
   
   // Return the uncertainty in the selected bin
   return fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
@@ -512,4 +551,9 @@ bool JffCorrector::TrackingCorrectionReady(){
 // Return information, if systematic uncertainties are ready to be obtained
 bool JffCorrector::SystematicsReady(){
   return fSystematicErrorLoaded;
+}
+
+// Setter for smoothing the uncertainties
+void JffCorrector::SetUncertaintySmooth(const bool smooth){
+  fSmoothUncertainty = smooth;
 }
