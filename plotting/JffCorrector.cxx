@@ -12,6 +12,7 @@ JffCorrector::JffCorrector() :
   fJffAsymmetryBins(0),
   fJffTrackPtBins(0),
   fSpilloverLoaded(false),
+  fSpilloverDeltaRLoaded(false),
   fSpilloverAsymmetryBins(0),
   fSpilloverTrackPtBins(0),
   fSystematicErrorLoaded(false),
@@ -30,6 +31,8 @@ JffCorrector::JffCorrector() :
         for(int iAsymmetry = 0; iAsymmetry <= DijetHistogramManager::kMaxAsymmetryBins; iAsymmetry++){
           fhJetShapeCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+          fhJetShapeSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
+          fhJetShapeSpilloverCorrectionManualTune[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
           fhTrackDeltaRResidualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = NULL;
@@ -81,6 +84,7 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
   fJffAsymmetryBins(in.fJffAsymmetryBins),
   fJffTrackPtBins(in.fJffTrackPtBins),
   fSpilloverLoaded(in.fSpilloverLoaded),
+  fSpilloverDeltaRLoaded(in.fSpilloverDeltaRLoaded),
   fSpilloverAsymmetryBins(in.fSpilloverAsymmetryBins),
   fSpilloverTrackPtBins(in.fSpilloverTrackPtBins),
   fSystematicErrorLoaded(in.fSystematicErrorLoaded),
@@ -100,6 +104,8 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
         for(int iAsymmetry = 0; iAsymmetry <= DijetHistogramManager::kMaxAsymmetryBins; iAsymmetry++){
           fhJetShapeCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhJetShapeCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+          fhJetShapeSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhJetShapeSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
+          fhJetShapeSpilloverCorrectionManualTune[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhJetShapeSpilloverCorrectionManualTune[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
           fhTrackDeltaRResidualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = in.fhTrackDeltaRResidualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt];
@@ -195,6 +201,51 @@ void JffCorrector::ReadSpilloverFile(TFile *spilloverFile){
   
   // Raise the flag that input file has been loaded
   fSpilloverLoaded = true;
+  
+  // Delete the helper objects
+  delete card;
+  delete namerHelper;
+}
+
+// Read the spillover file with histograms as a function of deltaR
+void JffCorrector::ReadSpilloverDeltaRFile(TFile *spilloverFile){
+  
+  // Create histogram manager to find correct histogram naming in the input file
+  DijetHistogramManager *namerHelper = new DijetHistogramManager();
+  DijetCard *card = new DijetCard(spilloverFile);
+  fSpilloverAsymmetryBins = card->GetNAsymmetryBins();
+  fSpilloverTrackPtBins = card->GetNTrackPtBins();
+  
+  // Load the correction histograms from the file
+  char histogramNamer[200];
+  for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
+    for(int iCentrality = 0; iCentrality < card->GetNCentralityBins(); iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < fSpilloverTrackPtBins; iTrackPt++){
+        
+        sprintf(histogramNamer,"spilloverDeltaR_%s/spilloverDeltaR_%s_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        
+        fhJetShapeSpilloverCorrection[iJetTrack][fSpilloverAsymmetryBins][iCentrality][iTrackPt] = (TH1D*) spilloverFile->Get(histogramNamer);
+        
+        sprintf(histogramNamer,"spilloverDeltaRManualTune_%s/spilloverDeltaRManualTune_%s_C%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack),namerHelper->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        
+        fhJetShapeSpilloverCorrectionManualTune[iJetTrack][fSpilloverAsymmetryBins][iCentrality][iTrackPt] = (TH1D*) spilloverFile->Get(histogramNamer);
+        
+        for(int iAsymmetry = 0; iAsymmetry < fSpilloverAsymmetryBins; iAsymmetry++){
+          
+          sprintf(histogramNamer,"spilloverDeltaR_%s/spilloverDeltaR_%s_A%dC%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
+          fhJetShapeSpilloverCorrection[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) spilloverFile->Get(histogramNamer);
+          
+          sprintf(histogramNamer,"spilloverDeltaRManualTune_%s/spilloverDeltaRManualTune_%s_A%dC%dT%d", namerHelper->GetJetTrackHistogramName(iJetTrack), namerHelper->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt);
+          fhJetShapeSpilloverCorrectionManualTune[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*) spilloverFile->Get(histogramNamer);
+          
+        } // Asymmetry loop
+        
+      } // Track pT loop
+    } // Centrality loop
+  } // Jet-track correlation type loop
+  
+  // Raise the flag that input file has been loaded
+  fSpilloverDeltaRLoaded = true;
   
   // Delete the helper objects
   delete card;
@@ -449,6 +500,44 @@ TH2D* JffCorrector::GetDeltaEtaDeltaPhiSpilloverCorrectionAsymmetryScale(const i
   
 }
 
+// Getter for spillover correction histograms as a function of deltaR
+TH1D* JffCorrector::GetJetShapeSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated correction
+  if(iAsymmetry < 0 || iAsymmetry > fSpilloverAsymmetryBins) iAsymmetry = fSpilloverAsymmetryBins;
+  
+  // If number of pT bins is given as an argument, return a sum of all pT bins
+  if(iTrackPt == fSpilloverTrackPtBins){
+    TH1D *ptSumHistogram = (TH1D*) fhJetShapeSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][0]->Clone(Form("%s_ptSum", fhJetShapeSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][0]->GetName()));
+    for(int iTrackPt = 1; iTrackPt < fSpilloverTrackPtBins; iTrackPt++){
+      ptSumHistogram->Add(fhJetShapeSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt]);
+    }
+    return ptSumHistogram;
+  }
+  
+  // Return the correction in the selected bin
+  return fhJetShapeSpilloverCorrection[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
+}
+
+// Getter for manually tuned spillover correction histograms as a function of deltaR
+TH1D* JffCorrector::GetJetShapeSpilloverCorrectionManualTune(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated correction
+  if(iAsymmetry < 0 || iAsymmetry > fSpilloverAsymmetryBins) iAsymmetry = fSpilloverAsymmetryBins;
+  
+  // If number of pT bins is given as an argument, return a sum of all pT bins
+  if(iTrackPt == fSpilloverTrackPtBins){
+    TH1D *ptSumHistogram = (TH1D*) fhJetShapeSpilloverCorrectionManualTune[iJetTrackCorrelation][iAsymmetry][iCentrality][0]->Clone(Form("%s_ptSum", fhJetShapeSpilloverCorrectionManualTune[iJetTrackCorrelation][iAsymmetry][iCentrality][0]->GetName()));
+    for(int iTrackPt = 1; iTrackPt < fSpilloverTrackPtBins; iTrackPt++){
+      ptSumHistogram->Add(fhJetShapeSpilloverCorrectionManualTune[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt]);
+    }
+    return ptSumHistogram;
+  }
+  
+  // Return the correction in the selected bin
+  return fhJetShapeSpilloverCorrectionManualTune[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt];
+}
+
 // Getter for deltaEta-deltaPhi spillover correction histograms
 TH2D* JffCorrector::GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
   
@@ -541,6 +630,11 @@ bool JffCorrector::CorrectionReady(){
 // Return information, if spillover correction is ready to be obtained
 bool JffCorrector::SpilloverReady(){
   return fSpilloverLoaded;
+}
+
+// Return information, if spillover correction as a function of deltaR is ready to be obtained
+bool JffCorrector::SpilloverDeltaRReady(){
+  return fSpilloverDeltaRLoaded;
 }
 
 // Return information, if residual tracking correction is ready to be obtained

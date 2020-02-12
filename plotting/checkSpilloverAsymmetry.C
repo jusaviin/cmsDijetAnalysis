@@ -33,6 +33,7 @@ void checkSpilloverAsymmetry(){
   
   // If output file name is set, use this to save the spillover correction histograms as a function of deltaR to that file
   TString outputFileName = "corrections/spilloverCorrectionDeltaR_manualTuning_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-05.root";
+  // corrections/spilloverCorrectionDeltaR_manualTuning_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-05.root
   
   bool drawAsymmetryComparison = false;
   bool drawSpilloverAndError = false;
@@ -65,8 +66,8 @@ void checkSpilloverAsymmetry(){
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
   // Asymmetry bins drawn for the file comparison and error study
-  int firstDrawnAsymmetryBin = 2;
-  int lastDrawnAsymmetryBin = 2;
+  int firstDrawnAsymmetryBin = 0;
+  int lastDrawnAsymmetryBin = 0;
   
   // Define arrays for the histograms
   TH2D *spilloverHistogram[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
@@ -678,8 +679,11 @@ void checkSpilloverAsymmetry(){
   // If an output file with .root extension is given, save some histograms to a file!
   if(outputFileName.EndsWith(".root",TString::kExact)){
     
-    // Creat4e histogram manager for histogram naming purposes
+    // Create a histogram manager for histogram naming purposes
     DijetHistogramManager *nameGiver = new DijetHistogramManager();
+    
+    // Read the card configuration from the original spillover file
+    DijetCard *card = new DijetCard(spilloverFile);
     
     // Create the output file
     TFile *outputFile = new TFile(outputFileName,"UPDATE");
@@ -692,9 +696,12 @@ void checkSpilloverAsymmetry(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
           
-          spilloverDeltaR[iAsymmetry][iCentrality][iTrackPt]->Write(Form("spilloverDeltaR_%s_A%dC%dT%d", nameGiver->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iTrackPt, iCentrality),TObject::kOverwrite);
+          spilloverDeltaR[iAsymmetry][iCentrality][iTrackPt]->Write(Form("spilloverDeltaR_%s_A%dC%dT%d", nameGiver->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt),TObject::kOverwrite);
           
         } // Asymmetry loop
+        
+        spilloverDeltaR[nAsymmetryBins][iCentrality][iTrackPt]->Write(Form("spilloverDeltaR_%s_C%dT%d", nameGiver->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt),TObject::kOverwrite);
+        
       } // Track pT loop
     } // Centrality loop
     
@@ -709,19 +716,26 @@ void checkSpilloverAsymmetry(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
           
-          spilloverDeltaRManualTune[iAsymmetry][iCentrality][iTrackPt]->Write(Form("spilloverDeltaRManualTune_%s_A%dC%dT%d", nameGiver->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iTrackPt, iCentrality),TObject::kOverwrite);
+          spilloverDeltaRManualTune[iAsymmetry][iCentrality][iTrackPt]->Write(Form("spilloverDeltaRManualTune_%s_A%dC%dT%d", nameGiver->GetJetTrackHistogramName(iJetTrack), iAsymmetry, iCentrality, iTrackPt),TObject::kOverwrite);
           
         } // Asymmetry loop
+        
+        spilloverDeltaRManualTune[nAsymmetryBins][iCentrality][iTrackPt]->Write(Form("spilloverDeltaRManualTune_%s_C%dT%d", nameGiver->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt),TObject::kOverwrite);
+        
       } // Track pT loop
     } // Centrality loop
     
     // Return back to main directory
     gDirectory->cd("../");
     
+    // Write the card to the output file if it is not already written
+    if(!gDirectory->GetDirectory("JCard")) card->Write(outputFile);
+    
     // Close the file after everything is written
     outputFile->Close();
     
-    // Delete the histogram manager
+    // Delete the histogram manager and card
+    delete card;
     delete nameGiver;
   }
 }

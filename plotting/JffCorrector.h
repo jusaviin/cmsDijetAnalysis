@@ -33,17 +33,20 @@ public:
   ~JffCorrector();                                      // Destructor
   
   // Setter for input file
-  void ReadInputFile(TFile *inputFile);           // Read the histograms related to JFF correction
-  void ReadSpilloverFile(TFile *spilloverFile);   // Read the histograms related to spillover correction
-  void ReadTrackDeltaRFile(TFile *trackFile);     // Read the histograms related to residual R-dependent tracking correction
-  void ReadSystematicFile(TFile *systematicFile); // Read the histograms related to systematic uncertainties
+  void ReadInputFile(TFile *inputFile);               // Read the histograms related to JFF correction
+  void ReadSpilloverFile(TFile *spilloverFile);       // Read the histograms related to spillover correction
+  void ReadSpilloverDeltaRFile(TFile *spilloverFile); // Read the spillover correction histograms as a function of DeltaR
+  void ReadTrackDeltaRFile(TFile *trackFile);         // Read the histograms related to residual R-dependent tracking correction
+  void ReadSystematicFile(TFile *systematicFile);     // Read the histograms related to systematic uncertainties
   void ReadLongRangeSystematicFile(const char *systematicFile); // Read the histograms related to systematic uncertainties of long range correlations
   
-  // Getters JFF correction histograms
+  // Getters for correction histograms
   TH1D* GetJetShapeJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // Jet shape JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiJffCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi JFF correction histograms
   TH2D* GetDeltaEtaDeltaPhiSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;  // DeltaEta-DeltaPhi spillover correction histograms
   TH2D* GetDeltaEtaDeltaPhiSpilloverCorrectionAsymmetryScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, const int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins, int usedBin = -1) const;  // DeltaEta-DeltaPhi spillover correction histograms. Use scaled xj integrated distribution to calculate correction in different xj bins
+  TH1D* GetJetShapeSpilloverCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // Spillover correction as a function of DeltaR
+  TH1D* GetJetShapeSpilloverCorrectionManualTune(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // Manually tuned spillover correction as a function of DeltaR
   TH2D* GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   double GetTrackDeltaRResidualScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   
@@ -59,9 +62,10 @@ public:
   void SetUncertaintySmooth(const bool smooth);  // Setter for smoothing the uncertainties
   
   // Return information, if correction is ready to be obtained
-  bool CorrectionReady();  // True if histograms loaded from file, otherwise false
-  bool SpilloverReady();   // True if spillover correction is loaded, otherwise false
-  bool SystematicsReady(); // True if systematic uncertainties are loaded, otherwise false
+  bool CorrectionReady();         // True if histograms loaded from file, otherwise false
+  bool SpilloverReady();          // True if spillover correction is loaded, otherwise false
+  bool SpilloverDeltaRReady();    // True if spillover histograms as a function of deltaR are loaded
+  bool SystematicsReady();        // True if systematic uncertainties are loaded, otherwise false
   bool TrackingCorrectionReady(); // True if residual tracking correction in loaded
   
 private:
@@ -76,6 +80,7 @@ private:
   int  fJffAsymmetryBins;          // Number of asymmetry bins in the JFF correction file
   int  fJffTrackPtBins;            // Number of track pT bins in the JFF correction file
   bool fSpilloverLoaded;           // Flag if the spillover file has been loaded
+  bool fSpilloverDeltaRLoaded;     // Flag if the spillover histograms as a function of DeltaR have been loaded
   int  fSpilloverAsymmetryBins;    // Number of asymmetry bins in the spillover file
   int  fSpilloverTrackPtBins;      // Number of track pT bins in the spillover file
   bool fSystematicErrorLoaded;     // Flag if a systematic error file has been loaded
@@ -92,6 +97,8 @@ private:
   
   // Spillover correction
   TH2D *fhDeltaEtaDeltaPhiSpilloverCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
+  TH1D *fhJetShapeSpilloverCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
+  TH1D *fhJetShapeSpilloverCorrectionManualTune[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
   
   // Residual tracking correction
   TH2D *fhDeltaEtaDeltaPhiTrackingDeltaRCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];
