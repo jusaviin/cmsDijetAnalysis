@@ -17,7 +17,9 @@ public:
   ~SeagullConfiguration();  // Destructor
   
   int GetSeagullMethod(const int iJetTrack, const int iAsymmetry, const int iCentrality, const int iTrackPt) const;
+  int GetSeagullMethodRecoGen(const int iJetTrack, const int iAsymmetry, const int iCentrality, const int iTrackPt) const;
   int GetSeagullVeto(const int iJetTrack, const int iAsymmetry, const int iCentrality, const int iTrackPt) const;
+  int GetSeagullVetoRecoGen(const int iJetTrack, const int iAsymmetry, const int iCentrality, const int iTrackPt) const;
   
 private:
   
