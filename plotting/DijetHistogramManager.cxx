@@ -10,6 +10,7 @@
 #include "DijetHistogramManager.h"
 #include "JffCorrector.h"
 #include "SeagullConfiguration.h"
+#include "SpilloverFluctuationCleaner.h"
 
 /*
  * Default constructor
@@ -25,6 +26,7 @@ DijetHistogramManager::DijetHistogramManager() :
   fApplyTrackDeltaRCorrection(false),
   fApplyTrackDeltaRResidualScale(false),
   fApplySeagullCorrection(false),
+  fManualSpilloverCleaning(false),
   fLoadEventInformation(false),
   fLoadDijetHistograms(false),
   fLoad2DHistograms(false),
@@ -332,6 +334,7 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   fApplyTrackDeltaRCorrection(in.fApplyTrackDeltaRCorrection),
   fApplyTrackDeltaRResidualScale(in.fApplyTrackDeltaRResidualScale),
   fApplySeagullCorrection(in.fApplySeagullCorrection),
+  fManualSpilloverCleaning(in.fManualSpilloverCleaning),
   fLoadEventInformation(in.fLoadEventInformation),
   fLoadDijetHistograms(in.fLoadDijetHistograms),
   fLoad2DHistograms(in.fLoad2DHistograms),
@@ -820,6 +823,10 @@ void DijetHistogramManager::DoSeagullCorrection(){
               
               // Configuration for subeNon0
               if(fCard->GetSubeventCut() == 1){
+                
+                seagullMethod = seagullMethodProvider->GetSeagullMethodRecoGen(iJetTrack, iAsymmetry, iCentralityBin, iTrackPtBin);
+                
+                /*
                 if(iCentralityBin < 3 && iTrackPtBin < 4 && iTrackPtBin != 0 && iAsymmetry < 2) seagullMethod = 1;
                 if(iCentralityBin == 1 && iTrackPtBin == 0 && iAsymmetry == 0) seagullMethod = 1;
                 if(iCentralityBin == 0 && iTrackPtBin == 4 && iAsymmetry == 0) seagullMethod = 1;
@@ -831,6 +838,7 @@ void DijetHistogramManager::DoSeagullCorrection(){
                 if(iCentralityBin == 1 && iTrackPtBin < 4 && iAsymmetry == 2) seagullMethod = 1;
                 if(iCentralityBin == 2 && iTrackPtBin < 3 && iAsymmetry == 2) seagullMethod = 1;
                 if(iCentralityBin == 0 && iTrackPtBin == 1 && iAsymmetry == fnAsymmetryBins) seagullMethod = 6;
+                 */
                 
                 // Configuration for sube0
               } else if(fCard->GetSubeventCut() == 0){
@@ -881,6 +889,7 @@ void DijetHistogramManager::DoTrackDeltaRCorrection(){
   if(fProcessingStartLevel > kTrackDeltaRCorrection) return;
 
   TH2D *correctionHistogram;
+  int asymmetryBinForCorrection;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -891,7 +900,9 @@ void DijetHistogramManager::DoTrackDeltaRCorrection(){
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
           
-          correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiTrackDeltaRCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+          asymmetryBinForCorrection = iAsymmetry;
+          if(iJetTrack < kTrackSubleadingJet && iAsymmetry == 0 && iCentralityBin == 0 && (iTrackPtBin == 0 || iTrackPtBin == 1)) asymmetryBinForCorrection = fnAsymmetryBins;
+          correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiTrackDeltaRCorrection(iJetTrack, iCentralityBin, iTrackPtBin, asymmetryBinForCorrection);
           
           // Do not propagate the statistical errors of the correction to data
           for(int iDeltaPhi = 1; iDeltaPhi <= correctionHistogram->GetNbinsX(); iDeltaPhi++){
@@ -940,7 +951,19 @@ void DijetHistogramManager::DoSpilloverCorrection(){
               if(iCentralityBin == 1 && iTrackPtBin > 4) continue; // TODO: Debug, changed 3 to 4 here
               if(iCentralityBin == 0 && iTrackPtBin > 4) continue;
             }
-            correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+            
+            if(iJetTrack < kTrackSubleadingJet){
+              // OK to use this smoothing in the lowest pT bin, does not work at high deltaR for higher pT bins
+              if ((iCentralityBin == 0 || iCentralityBin == 1) && iTrackPtBin == 0 && iAsymmetry == 0){
+                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrectionAsymmetryScale(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+              } else if (iCentralityBin == 1 && iTrackPtBin == 0 && iAsymmetry == 1) {
+                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrectionAsymmetryScale(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+              } else {
+                correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+              }
+            } else {
+              correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
+            }
             
             // Do not propagate the statistical errors of the correction to data
             for(int iDeltaPhi = 1; iDeltaPhi <= correctionHistogram->GetNbinsX(); iDeltaPhi++){
@@ -1010,6 +1033,7 @@ void DijetHistogramManager::DoJffCorrection(){
   if(fProcessingStartLevel > kJffCorrection) return;
   
   TH2D *correctionHistogram;
+  int correctionAsymmetryBin;
   
   // Loop over all jet-track correlation types and apply the mixed event correction
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
@@ -1017,11 +1041,33 @@ void DijetHistogramManager::DoJffCorrection(){
     for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
       if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       
-      for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
-        for(int iTrackPtBin = fFirstLoadedTrackPtBin; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
+      for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+        for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
           
-          correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack, iCentralityBin, iTrackPtBin, iAsymmetry);
-          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin]->Add(correctionHistogram, -1);
+          correctionAsymmetryBin = iAsymmetry;
+          
+          // There are few cases where the JFF correction fluctuates badly in some asymmetry bins
+          // These are fixed by reading a correction from an adjacent xj bin, giving better description of the actual correction
+          if(fCard->GetDataType().EqualTo("PbPb",TString::kIgnoreCase)){
+            
+            if(iJetTrack < kTrackSubleadingJet){
+              // Leading jet PbPb
+              
+              if(iTrackPt == 6 && iAsymmetry == 0 && iCentrality > 0) correctionAsymmetryBin = 1;
+              if(iTrackPt == 5 && iAsymmetry == 0) correctionAsymmetryBin = 1;
+              if(iTrackPt == 0 && iCentrality < 2 && iAsymmetry == 0) correctionAsymmetryBin = 1;
+          
+            } else if (iJetTrack < kTrackInclusiveJet){
+              // Subleading jet PbPb
+              
+              if(iTrackPt > 4 && iCentrality == 0 && iAsymmetry == 0) correctionAsymmetryBin = 1;
+              
+            }
+            
+          }
+          
+          correctionHistogram = fJffCorrectionFinder->GetDeltaEtaDeltaPhiJffCorrection(iJetTrack, iCentrality, iTrackPt, correctionAsymmetryBin);
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentrality][iTrackPt]->Add(correctionHistogram, -1);
           
         } // Track pT loop
       } // Centrality loop
@@ -2242,6 +2288,9 @@ void DijetHistogramManager::WriteJetShapeHistograms(){
   // Helper variable for histogram naming
   char histogramNamer[200];
   
+  // Cleaner for manually removing fluctuations from spillover correction
+  SpilloverFluctuationCleaner *cleaner = new SpilloverFluctuationCleaner;
+  
   // Write the jet shape histograms to the output file
   for(int iJetShape = 0; iJetShape < knJetShapeTypes; iJetShape++){
     
@@ -2264,7 +2313,12 @@ void DijetHistogramManager::WriteJetShapeHistograms(){
           // Loop over track pT bins
           for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
             sprintf(histogramNamer,"%s_%s_%sC%dT%d",fJetShapeHistogramName[iJetShape], fJetTrackHistogramNames[iJetTrack],fAsymmetryBinName[iAsymmetry].Data(),iCentrality,iTrackPt);
-            if(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]) fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer, TObject::kOverwrite);
+            if(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]){
+              if(iJetShape == kJetShape && fManualSpilloverCleaning){
+                cleaner->CleanSpilloverFluctuationDeltaR(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt], iJetTrack,  iAsymmetry, iCentrality, iTrackPt);
+              }
+              fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer, TObject::kOverwrite);
+            }
             
           } // Track pT loop
         } // Centrality loop
@@ -2277,6 +2331,7 @@ void DijetHistogramManager::WriteJetShapeHistograms(){
     
   } // Jet shape type loop
   
+  delete cleaner;
 }
 
 /*
@@ -3134,6 +3189,12 @@ void DijetHistogramManager::SetTrackDeltaRCorrection(TFile *trackingFile, const 
 void DijetHistogramManager::SetSeagullCorrection(const bool applyCorrection){
   fApplySeagullCorrection = applyCorrection;
 }
+
+// Setter for manually clearing fluctuations from spillover correction
+void DijetHistogramManager::SetManualSpilloverCleaning(const bool applyCleaning){
+  fManualSpilloverCleaning = applyCleaning;
+}
+
 
 // Getter for the number of centrality bins
 int DijetHistogramManager::GetNCentralityBins() const{

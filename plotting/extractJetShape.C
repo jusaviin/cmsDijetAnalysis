@@ -79,6 +79,9 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
     lastDrawnAsymmetryBin = selectedAsymmetryBin;
   }
   
+  // Smoothed spillover fluctuations from the final jet shape distributions
+  bool manualSpilloverFluctuationSmoothing = true;
+  
   // Binning for jet shape
   
   // Standard binning for this analysis
@@ -141,6 +144,7 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
   histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
   histograms->SetAsymmetryBinRange(firstDrawnAsymmetryBin,lastDrawnAsymmetryBin);
+  histograms->SetManualSpilloverCleaning(manualSpilloverFluctuationSmoothing);
   
   // Set the used dijet methods for jet shape calculation
   histograms->SetDijetMethods(methods);

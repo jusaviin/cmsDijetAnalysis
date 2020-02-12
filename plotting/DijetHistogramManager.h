@@ -167,6 +167,7 @@ public:
   void SetSpilloverCorrection(TFile* spilloverFile, const bool applyCorrection);  // Setter for spillover corrector and flag
   void SetTrackDeltaRCorrection(TFile* trackingFile, const bool applyCorrection, const bool applyResidualScale); // Setter for residual tracking corrector and flag
   void SetSeagullCorrection(const bool applyCorrection);                          // Setter for seagull correction flag
+  void SetManualSpilloverCleaning(const bool applyCleaning);                      // Setter for manually clearing fluctuations from spillover correction
   
   // Getters for number of bins in histograms
   int GetNCentralityBins() const; // Getter for the number of centrality bins
@@ -293,6 +294,7 @@ private:
   bool fApplyTrackDeltaRCorrection;    // Flag for applying the residual tracking correction
   bool fApplyTrackDeltaRResidualScale; // Flag for applying residual scaling (match reco and gen yields) for the tracking correction
   bool fApplySeagullCorrection;        // Flag for applying the seagull correction
+  bool fManualSpilloverCleaning;       // Flag for manually cleaning fluctuations from the spillover correction
   
   // ==============================================
   // ======== Flags for histograms to load ========

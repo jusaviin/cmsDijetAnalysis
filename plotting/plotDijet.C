@@ -56,9 +56,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
+  bool drawPtWeightedTrackLeadingJetCorrelations = true;
   bool drawTrackSubleadingJetCorrelations = false;
   bool drawUncorrectedTrackSubleadingJetCorrelations = false;
   bool drawPtWeightedTrackSubleadingJetCorrelations = false;
@@ -91,7 +91,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Select which deltaPhi regions of the deltaEta projection are drawn
   bool drawDeltaEtaWholePhi = false;
@@ -100,12 +100,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawDeltaEtaBetweenPeaks = false;
   
   // Draw jet shape histograms
-  bool drawJetShape = false;
+  bool drawJetShape = true;
   bool drawJetShapeCounts = false;
   bool drawJetShapeBinMap = false;
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
-  bool drawSameEvent = true;
+  bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
   bool drawCorrected = false;
@@ -114,7 +114,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
   bool drawBackground = false;
-  int backgroundStyle = 4; // Drawing style for background deltaPhi. The following options are currently implemented:
+  int backgroundStyle = 5; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
                            // Bit 2 = Draw background fit (int = 4)
@@ -146,7 +146,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_JECv6_eschemeAxis_xjBins_symmetrizedAndBackgroundSubtracted_2019-11-14.root
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigation_2019-10-24.root
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-10-24.root
-  // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-15.root
+  // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-15.root <-- This is the file that has been used for default results
   // "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_eschemeAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-16.root"
   // "corrections/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root"
   // "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_cutInRange_2019-10-09.root";
@@ -154,7 +154,11 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root
   
   // File for spillover correction
-  TString spilloverCorrectionFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root";
+  bool manualSpilloverFluctuationSmoothing = false;  // In certain bins, manually smooth spillover fluctuations
+  TString spilloverCorrectionFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-10.root";
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-05.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_centShift5_wtaAxis_JECv6_2020-01-30.root
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root <-- This has been used for default results
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_eschemeAxis_JECv6_2019-12-05.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_eschemeAxis_JECv6_2019-11-14.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_wtaAxis_JECv6_2019-10-11.root
@@ -170,9 +174,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
 
   
   // File for residual tracking correction. File name changed for pp automagically
-  bool applyTrackDeltaRCorrection = false;
+  bool applyTrackDeltaRCorrection = true;
   bool applyTrackDeltaRResidualScale = false;
-  TString trackDeltaRCorrectionFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_genJets_smoothed_2020-01-27.root";
+  TString trackDeltaRCorrectionFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_onlyLowPt_centShift5_xjBins_genJets_smoothed_2020-01-29.root";
+  // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_onlyLowPt_centShift5_xjBins_genJets_smoothed_2020-01-29.root <--- In new files
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_recoJets_smoothed_2020-01-27.root
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_genJets_smoothed_2020-01-27.root
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_genJets_2020-01-27.root
@@ -217,13 +222,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
-  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  int firstDrawnAsymmetryBin = 0;
+  int lastDrawnAsymmetryBin = 0;
   
   if(selectedCentralityBin >= 0){
     firstDrawnCentralityBin = selectedCentralityBin;
@@ -308,6 +313,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
     lastDrawnCentralityBin = 0;
     centralityBinBorders[0] = -0.5;
+    lowDeltaPhiBinBorders[3] = 1.5;
     jffCorrectionFileName = "corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root";
     // corrections/jffCorrection_ppMC2018_ak4PFJet_noUncorr_improvisedMixing_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_tightCutInRange_2019-10-16.root
     // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eventsMixed_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
@@ -402,6 +408,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   histograms->SetDijetMethods(methods);
   histograms->SetJffCorrection(jffCorrectionFile,applyJffCorrection);
   histograms->SetSpilloverCorrection(spilloverFile,applySpilloverCorrection);
+  histograms->SetManualSpilloverCleaning(manualSpilloverFluctuationSmoothing);
   histograms->SetTrackDeltaRCorrection(trackDeltaRFile,applyTrackDeltaRCorrection,applyTrackDeltaRResidualScale);
   histograms->SetSeagullCorrection(applySeagullCorrection);
   histograms->SetAvoidMixingPeak(avoidPeaks);
