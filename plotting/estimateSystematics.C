@@ -26,11 +26,11 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root";
+  const char* outputFileName = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root";
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root
   
-  bool ppData = false; // Flag if we are estimating systematics for pp or PbPb
+  bool ppData = true; // Flag if we are estimating systematics for pp or PbPb
   
   bool mcMode = false; // Only adding uncertainty from background subtraction and acceptance correction
   
@@ -74,7 +74,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // For pp data, use pp files instead of PbPb files
   if(ppData){
-    dataFileName = "data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root";
+    dataFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-01-31.root";
     // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
     // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_xjBins_noUncorr_20EventsMixed_JECv4_allCorrections_tunedSeagull_processed_2019-09-28.root
         
@@ -188,21 +188,24 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
     dataHistograms[iHistogramType]->LoadProcessedHistograms();
   }
   
-  for(int iTrackDeltaR = 0; iTrackDeltaR < nTrackDeltaRFiles; iTrackDeltaR++){
-    
-    // For track deltaR histograms, we need to use estimate from higher pT bin for the lowest central bins
-    if(iTrackPtBin == 0) lastLoadedTrackPtBin = 1;
-    
-    trackDeltaRHistograms[iTrackDeltaR]->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
-    trackDeltaRHistograms[iTrackDeltaR]->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
-    trackDeltaRHistograms[iTrackDeltaR]->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
-    trackDeltaRHistograms[iTrackDeltaR]->SetLoad2DHistograms(true);
-    
-    trackDeltaRHistograms[iTrackDeltaR]->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
-    trackDeltaRHistograms[iTrackDeltaR]->SetTrackPtBinRange(firstLoadedTrackPtBin,lastLoadedTrackPtBin);
-    trackDeltaRHistograms[iTrackDeltaR]->SetAsymmetryBinRange(firstDrawnAsymmetryBin,lastDrawnAsymmetryBin);
-    
-    trackDeltaRHistograms[iTrackDeltaR]->LoadProcessedHistograms();
+  // TODO: Currently tracking deltaR uncertainty not estimated for pp
+  if(!ppData){
+    for(int iTrackDeltaR = 0; iTrackDeltaR < nTrackDeltaRFiles; iTrackDeltaR++){
+      
+      // For track deltaR histograms, we need to use estimate from higher pT bin for the lowest central bins
+      if(iTrackPtBin == 0) lastLoadedTrackPtBin = 1;
+      
+      trackDeltaRHistograms[iTrackDeltaR]->SetLoadAllTrackLeadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
+      trackDeltaRHistograms[iTrackDeltaR]->SetLoadAllTrackSubleadingJetCorrelations(regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack);
+      trackDeltaRHistograms[iTrackDeltaR]->SetLoadAllTrackInclusiveJetCorrelations(inclusiveJetTrack,inclusiveJetTrack);
+      trackDeltaRHistograms[iTrackDeltaR]->SetLoad2DHistograms(true);
+      
+      trackDeltaRHistograms[iTrackDeltaR]->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
+      trackDeltaRHistograms[iTrackDeltaR]->SetTrackPtBinRange(firstLoadedTrackPtBin,lastLoadedTrackPtBin);
+      trackDeltaRHistograms[iTrackDeltaR]->SetAsymmetryBinRange(firstDrawnAsymmetryBin,lastDrawnAsymmetryBin);
+      
+      trackDeltaRHistograms[iTrackDeltaR]->LoadProcessedHistograms();
+    }
   }
   
   // Create a DijetMethods to get the estimation of different uncertainties
@@ -550,50 +553,69 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPtBin == 0 && iCentrality == 0) trackPtForDeltaR = 1;
           if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPtBin == 0 && iCentrality == 1 && iAsymmetry != 2) trackPtForDeltaR = 1;
           
-          // Compare the difference between corrections derived from Gen and Reco jets
-          jetShapeLowCut = (TH1D*) trackDeltaRHistograms[2]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR)->Clone(Form("trackDeltaRClone0%d%d%d%d", iJetTrack, iAsymmetry, iCentrality, iTrackPtBin));
-          jetShapeHighCut = (TH1D*) trackDeltaRHistograms[2]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR)->Clone(Form("trackDeltaRClone1%d%d%d%d", iJetTrack, iAsymmetry, iCentrality, iTrackPtBin));;
-          
-          jetShapeLowCut->Divide(trackDeltaRHistograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR));
-          jetShapeHighCut->Divide(trackDeltaRHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR));
+          // TODO: Currently trackDeltaR not implemented for pp
+          if(!ppData){
+            // Compare the difference between corrections derived from Gen and Reco jets
+            jetShapeLowCut = (TH1D*) trackDeltaRHistograms[2]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR)->Clone(Form("trackDeltaRClone0%d%d%d%d", iJetTrack, iAsymmetry, iCentrality, iTrackPtBin));
+            jetShapeHighCut = (TH1D*) trackDeltaRHistograms[2]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR)->Clone(Form("trackDeltaRClone1%d%d%d%d", iJetTrack, iAsymmetry, iCentrality, iTrackPtBin));;
+            
+            jetShapeLowCut->Divide(trackDeltaRHistograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR));
+            jetShapeHighCut->Divide(trackDeltaRHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR));
+          }
           
           helperHistogram = dataHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
           
           for(int iBin = 1; iBin <= helperHistogram->GetNbinsX(); iBin++){
-            ratio = jetShapeLowCut->GetBinContent(iBin);
-            currentBinContent = helperHistogram->GetBinContent(iBin);
-            currentUncertainty = TMath::Abs(currentBinContent - ratio*currentBinContent);
-            ratio = jetShapeHighCut->GetBinContent(iBin);
-            currentBinContent = TMath::Abs(currentBinContent - ratio*currentBinContent);
-            if(currentBinContent < currentUncertainty) currentUncertainty = currentBinContent;
+            
+            // TODO: Currently trackDeltaR not implemented for pp
+            if(!ppData){
+              ratio = jetShapeLowCut->GetBinContent(iBin);
+              currentBinContent = helperHistogram->GetBinContent(iBin);
+              currentUncertainty = TMath::Abs(currentBinContent - ratio*currentBinContent);
+              ratio = jetShapeHighCut->GetBinContent(iBin);
+              currentBinContent = TMath::Abs(currentBinContent - ratio*currentBinContent);
+              if(currentBinContent < currentUncertainty) currentUncertainty = currentBinContent;
+            } else {
+              currentUncertainty = 0;
+            }
             
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingDeltaR]->SetBinContent(iBin, currentUncertainty);
           }
           
           // Repeat the same thingy for deltaEta
-          twoDimensionalHelper = trackDeltaRHistograms[2]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
           
-          jetShapeLowCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("trackingDeltaRDeltaEta0%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
-          jetShapeHighCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("trackingDeltaRDeltaEta0%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
-          
-          twoDimensionalHelper = trackDeltaRHistograms[1]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
-          helperHistogramDeltaEta = methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1));
-          jetShapeLowCut->Divide(helperHistogramDeltaEta);
-          
-          twoDimensionalHelper = trackDeltaRHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
-          helperHistogramDeltaEta = methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1));
-          jetShapeHighCut->Divide(helperHistogramDeltaEta);
+          // TODO: Currently trackDeltaR not implemented for pp
+          if(!ppData){
+            twoDimensionalHelper = trackDeltaRHistograms[2]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
+            
+            jetShapeLowCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("trackingDeltaRDeltaEta0%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+            jetShapeHighCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("trackingDeltaRDeltaEta0%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+            
+            twoDimensionalHelper = trackDeltaRHistograms[1]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
+            helperHistogramDeltaEta = methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1));
+            jetShapeLowCut->Divide(helperHistogramDeltaEta);
+            
+            twoDimensionalHelper = trackDeltaRHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
+            helperHistogramDeltaEta = methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1));
+            jetShapeHighCut->Divide(helperHistogramDeltaEta);
+          }
           
           twoDimensionalHelper = dataHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
           helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1));
           
           for(int iBin = 1; iBin <= helperHistogramDeltaEta->GetNbinsX(); iBin++){
-            ratio = jetShapeLowCut->GetBinContent(iBin);
-            currentBinContent = helperHistogramDeltaEta->GetBinContent(iBin);
-            currentUncertainty = TMath::Abs(currentBinContent - ratio*currentBinContent);
-            ratio = jetShapeHighCut->GetBinContent(iBin);
-            currentBinContent = TMath::Abs(currentBinContent - ratio*currentBinContent);
-            if(currentBinContent < currentUncertainty) currentUncertainty = currentBinContent;
+            
+            // TODO: Currently trackDeltaR not implemented for pp
+            if(!ppData){
+              ratio = jetShapeLowCut->GetBinContent(iBin);
+              currentBinContent = helperHistogramDeltaEta->GetBinContent(iBin);
+              currentUncertainty = TMath::Abs(currentBinContent - ratio*currentBinContent);
+              ratio = jetShapeHighCut->GetBinContent(iBin);
+              currentBinContent = TMath::Abs(currentBinContent - ratio*currentBinContent);
+              if(currentBinContent < currentUncertainty) currentUncertainty = currentBinContent;
+            } else {
+              currentUncertainty = 0;
+            }
             
             deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTrackingDeltaR]->SetBinContent(iBin, currentUncertainty);
           }
