@@ -102,10 +102,12 @@ public:
   void ProcessHistograms();       // Do the mixed event correction, subtract the background and calculate jet shape
   void Write(const char* fileName, const char* fileOption);          // Write all the loaded histograms into a file
   void WriteJetShape(const char* fileName, const char* fileOption);  // Write only the jet shape histograms into a file
+  void WriteSkim(const char* fileName, const char* fileOption);      // Write jet shapes and final deltaEta histograms into a file
   void LoadProcessedHistograms(); // Load processed histograms from the inputfile
   void ApplyJffCorrection(JffCorrector *jffCorrectionFinder);  // Apply the JFF correction to relevant histograms
   void CalculateJetShape();       // Calculate the jet shape from the background subtracted histograms
   void NormalizeJetShape();       // Normalize the jet shape histograms
+  void ProjectFinalDeltaEta();    // Project the final deltaEta yield results from two dimensional distributions
   
   // Setters for binning information
   void SetCentralityBins(const bool readBinsFromFile, const int nBins, const double *binBorders, bool setIndices = true); // Set up centrality bin indices according to provided bin borders
@@ -233,6 +235,7 @@ public:
   TH1D* GetHistogramJetTrackDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, int iAsymmetry, const int iCentrality, const int iTrackPt, const int iDeltaEta) const;  // DeltaPhi between jet and track
   TH1D* GetHistogramJetTrackDeltaEta(const int iJetTrackCorrelation, const int iCorrelationType, int iAsymmetry, const int iCentrality, const int iTrackPt, const int iDeltaPhiRegion) const; // DeltaEta between jet and track
   TH2D* GetHistogramJetTrackDeltaEtaDeltaPhi(const int iJetTrackCorrelation, const int iCorrelationType, int iAsymmetry, const int iCentrality, const int iTrackPt) const;         // DeltaEta and deltaPhi between jet and track
+  TH1D* GetHistogramJetTrackDeltaEtaFinal(const int iJetTrackCorrelation, int iAsymmetry, const int iCentrality, const int iTrackPt) const; // DeltaEta between jet and track using final binning
   
   // Getters for jet shape histograms
   TH1D* GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, int iCentrality, const int iTrackPt) const;  // Jet shape histograms
@@ -391,6 +394,7 @@ private:
   TH1D *fhJetTrackDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins][knDeltaEtaBins]; // DeltaPhi between jet and track
   TH1D *fhJetTrackDeltaEta[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins][knDeltaPhiBins]; // DeltaEta between jet and track
   TH2D *fhJetTrackDeltaEtaDeltaPhi[knJetTrackCorrelations][knCorrelationTypes][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins];         // DeltaEta and deltaPhi between jet and track
+  TH1D *fhJetTrackDeltaEtaFinalResult[knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins]; // DeltaEta between jet and track for final result binning
   
   // Jet shape histograms
   TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins];  // Jet shape histograms
@@ -440,7 +444,13 @@ private:
   void DoProjections();           // Take projections of processed two-dimensional histograms
   
   // Methods for histogram writing
-  void WriteJetShapeHistograms(); // Write the jet shape histograms to the file that is currently open
+  void WriteSingleJetHistograms();           // Write the single jet histograms to the file that is currently open
+  void WriteDijetHistograms();               // Write the dijet histograms to the file that is currently open
+  void WriteTrackHistograms();               // Write the track histograms to the file that is currently open
+  void WriteJetTrackCorrelationHistograms(); // Write the jet-track correlation histograms to the file that is currently open
+  void WriteJetShapeHistograms();            // Write the jet shape histograms to the file that is currently open
+  void WriteFinalDeltaEtaHistograms();       // Write the rebinned deltaEta yield histograms to the file that is currently open
+  void WriteClosureHistograms();             // Write the closure histograms to the file that is currently open
   
 };
 
