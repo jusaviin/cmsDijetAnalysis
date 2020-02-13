@@ -26,11 +26,12 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root";
+  const char* outputFileName = "uncertainties/totallyAnotherTest.root";
+  // uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root
   
-  bool ppData = true; // Flag if we are estimating systematics for pp or PbPb
+  bool ppData = false; // Flag if we are estimating systematics for pp or PbPb
   
   bool mcMode = false; // Only adding uncertainty from background subtraction and acceptance correction
   
@@ -59,18 +60,26 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   // corrections/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root
   // corrections/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
   
-  TString lowJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_newJFF_processed_2019-12-16.root";
-  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_lowJetPtCut_xjBins_JECv4_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-17.root
+  // File with jet energy correction uncertainties subtracted from the nominal jet pT
+  // Note: Should use here a skimmed file that has only the final results, not all the intermediate 2D histograms
+  TString lowJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_newJFF_onlyFinalResults_processed_2019-12-16.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_newJFF_processed_2019-12-16.root
   
-  TString highJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_newJFF_processed_2019-12-29.root";
-  // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_highJetPtCut_xjBins_JECv4_improvisedMixing_wtaAxis_allCorrections_processed_2019-08-17.root
+  // File with jet energy correction uncertainties added to the nominal jet pT
+  // Note: Should use here a skimmed file that has only the final results, not all the intermediate 2D histograms
+  TString highJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_newJFF_onlyFinalResults_processed_2019-12-29.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_newJFF_processed_2019-12-29.root
   
   // File for background uncertainty estimation for the spillover correction
   TString spilloverBackgroundFileName = "uncertainties/systematicUncertaintyForPbPbMC_5eveMix_xjBins_forSpillover_smoothedBackground_2020-01-22.root";
   
+  // File for manually tuned spillover correction
+  TString manuallyTunedSpilloverFileName = "corrections/spilloverCorrectionDeltaR_manualTuning_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-05.root";
+  
   // Files used for estimation of tracking deltaR uncertainty
+  // Note: Should use here a skimmed files that have only the final results, not all the intermediate 2D histograms
   const int nTrackDeltaRFiles = 3;
-  TString trackingDeltaRFileNames[nTrackDeltaRFiles] = {"data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6_allCorrectionsExectTrackingDeltaR_wtaAxis_processed_2020-01-24.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6_allCorrections_smoothedTrackingReco_wtaAxis_processed_2020-01-24.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6_allCorrections_smoothedTrackingGen_wtaAxis_processed_2020-01-24.root"};
+  TString trackingDeltaRFileNames[nTrackDeltaRFiles] = {"data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6_allCorrectionsExceptTrackingDeltaR_wtaAxis_onlyFinalResults_processed_2020-01-24.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6_allCorrections_smoothedTrackingReco_wtaAxis_onlyFinalResults_processed_2020-01-24.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6_allCorrections_smoothedTrackingGen_wtaAxis_onlyFinalResults_processed_2020-01-24.root"};
   
   // For pp data, use pp files instead of PbPb files
   if(ppData){
@@ -80,11 +89,15 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
         
     jffFileName = "corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root";
     
-    lowJetCutFileName = "data/ppData2017_highForest_pfJets_20EveMixed_JECv4minus_xjBins_wtaAxis_allCorrections_processed_2020-01-01.root";
-    // data/ppData2017_highForest_pfJets_xjBins_improvisedMixing_lowJetPtCut_JECv2_wtaAxis_allCorrections_processed_2019-08-17.root
+    // File with jet energy correction uncertainties added to the nominal jet pT
+    // Note: Should use here a skimmed file that has only the final results, not all the intermediate 2D histograms
+    lowJetCutFileName = "data/ppData2017_highForest_pfJets_20EveMixed_JECv4minus_xjBins_wtaAxis_allCorrections_onlyFinalResults_processed_2020-01-01.root";
+    // data/ppData2017_highForest_pfJets_20EveMixed_JECv4minus_xjBins_wtaAxis_allCorrections_processed_2020-01-01.root
     
-    highJetCutFileName = "data/ppData2017_highForest_pfJets_20EveMixed_JECv4plus_xjBins_wtaAxis_allCorrections_processed_2020-01-01.root";
-    // data/ppData2017_highForest_pfJets_xjBins_improvisedMixing_highJetPtCut_JECv2_wtaAxis_allCorrections_processed_2019-08-17.root
+    // File with jet energy correction uncertainties added to the nominal jet pT
+    // Note: Should use here a skimmed file that has only the final results, not all the intermediate 2D histograms
+    highJetCutFileName = "data/ppData2017_highForest_pfJets_20EveMixed_JECv4plus_xjBins_wtaAxis_allCorrections_onlyFinalResults_processed_2020-01-01.root";
+    // data/ppData2017_highForest_pfJets_20EveMixed_JECv4plus_xjBins_wtaAxis_allCorrections_processed_2020-01-01.root
   }
   
   // Data file from which the histograms needed for the systematic uncertainty estimation are read
@@ -102,6 +115,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // For the spillover correction we add also the background uncertainty of the correction
   TFile *spilloverBackgroundFile = TFile::Open(spilloverBackgroundFileName);
+  TFile *manuallyTunedSpilloverFile = TFile::Open(manuallyTunedSpilloverFileName);
   
   // Read the nominal data file
   const int nHistogramTypes = 3;
@@ -113,6 +127,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   spilloverReader->ReadSpilloverFile(spilloverFile);
   spilloverReader->ReadInputFile(jffFile);
   spilloverReader->ReadSystematicFile(spilloverBackgroundFile);
+  spilloverReader->ReadSpilloverDeltaRFile(manuallyTunedSpilloverFile);
 
   // Read the files with low and high jet pT cut and with different jet collection
   dataHistograms[1] = new DijetHistogramManager(lowJetCutFile);
@@ -221,8 +236,8 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // DeltaEta binning: TODO: Better way to propageta the information
   //double projectionRegion = 1;  // Region in deltaPhi which is used to project the deltaEta peak
-  const int nDeltaEtaBinsRebin = 21;
-  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,3,4};
+  const int nDeltaEtaBinsRebin = 23;
+  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2.5,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,2.5,3,4};
   
   // Initialize the uncertainty histograms
   TString asymmetryString;
@@ -343,7 +358,18 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           
           twoDimensionalHelper = spilloverReader->GetDeltaEtaDeltaPhiSpilloverCorrection(iJetTrack,iCentrality,iTrackPt,iAsymmetry);
           twoDimensionalHelper->SetName(Form("spilloverHelper%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt)); // Need renaming here to avoid histograms with same name (can screw up things)
-          helperHistogram = methods->GetJetShape(twoDimensionalHelper);
+          
+          // We have manual tuning done for pT weighted leading jets. Use those distributions for uncertainties also
+          if(iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet){
+            helperHistogram = spilloverReader->GetJetShapeSpilloverCorrectionManualTune(iJetTrack, iCentrality, iTrackPt, iAsymmetry);
+          } else {
+            helperHistogram = methods->GetJetShape(twoDimensionalHelper);
+          }
+          
+          // In some cases we might have NULL helperHistogram here. This is needed to not crash the code
+          if(helperHistogram == NULL){
+            helperHistogram = methods->GetJetShape(twoDimensionalHelper);
+          }
           
           // There is no pT sum for the deltaEta histograms, this needs to be summed in the corrector
           if(iTrackPt < nTrackPtBins) helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaSpillover%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
@@ -459,13 +485,11 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           // Repeat the the same exercise for deltaEta
           if(iTrackPt < nTrackPtBins){
             twoDimensionalHelper = dataHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
-            helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaJEC%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+            helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1), true)->Clone(Form("DeltaEtaJEC%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
             
-            twoDimensionalHelper =  dataHistograms[1]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
-            jetShapeLowCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaLowCutJEC%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+            jetShapeLowCut = (TH1D*) dataHistograms[1]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, iTrackPt)->Clone(Form("DeltaEtaLowCutJEC%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
             
-            twoDimensionalHelper =  dataHistograms[2]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
-            jetShapeHighCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaHighCutJEC%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+            jetShapeHighCut = (TH1D*) dataHistograms[2]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, iTrackPt)->Clone(Form("DeltaEtaHighCutJEC%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
             
             // Calculate the difference between nominal deltaEta and those calculated varying the leading jet cut
             jetShapeLowCut->Add(helperHistogramDeltaEta,-1);
@@ -586,18 +610,16 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           
           // TODO: Currently trackDeltaR not implemented for pp
           if(!ppData){
-            twoDimensionalHelper = trackDeltaRHistograms[2]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
             
-            jetShapeLowCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("trackingDeltaRDeltaEta0%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
-            jetShapeHighCut = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("trackingDeltaRDeltaEta0%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+            jetShapeLowCut = (TH1D*) trackDeltaRHistograms[2]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR)->Clone(Form("trackingDeltaRDeltaEta0%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
+            jetShapeHighCut = (TH1D*) trackDeltaRHistograms[2]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR)->Clone(Form("trackingDeltaRDeltaEta1%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
             
-            twoDimensionalHelper = trackDeltaRHistograms[1]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
-            helperHistogramDeltaEta = methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1));
+            helperHistogramDeltaEta = trackDeltaRHistograms[1]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR);
             jetShapeLowCut->Divide(helperHistogramDeltaEta);
             
-            twoDimensionalHelper = trackDeltaRHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, trackPtForDeltaR);
-            helperHistogramDeltaEta = methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1));
+            helperHistogramDeltaEta = trackDeltaRHistograms[0]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, trackPtForDeltaR);
             jetShapeHighCut->Divide(helperHistogramDeltaEta);
+            
           }
           
           twoDimensionalHelper = dataHistograms[0]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
