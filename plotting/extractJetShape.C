@@ -23,31 +23,28 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   // ========================= Configuration ==========================
   // ==================================================================
   
-  // Flag if you only want to print out numbers of jets
-  bool printJetNumbers = false;
-  
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
   
-  // Choose which figure sets to draw
-  bool drawTrackLeadingJetCorrelations = true;
-  bool drawUncorrectedTrackLeadingJetCorrelations = false;
-  bool drawPtWeightedTrackLeadingJetCorrelations = false;
-  bool drawTrackSubleadingJetCorrelations = false;
-  bool drawUncorrectedTrackSubleadingJetCorrelations = false;
-  bool drawPtWeightedTrackSubleadingJetCorrelations = false;
-  bool drawTrackInclusiveJetCorrelations = false;
-  bool drawPtWeightedTrackInclusiveJetCorrelations = false;
+  // Choose which histograms to load
+  bool loadTrackLeadingJetCorrelations = true;
+  bool loadUncorrectedTrackLeadingJetCorrelations = false;
+  bool loadPtWeightedTrackLeadingJetCorrelations = false;
+  bool loadTrackSubleadingJetCorrelations = false;
+  bool loadUncorrectedTrackSubleadingJetCorrelations = false;
+  bool loadPtWeightedTrackSubleadingJetCorrelations = false;
+  bool loadTrackInclusiveJetCorrelations = false;
+  bool loadPtWeightedTrackInclusiveJetCorrelations = false;
   
   if(histogramSelection > 0){
-    drawTrackLeadingJetCorrelations = (histogramSelection == 1);
-    drawUncorrectedTrackLeadingJetCorrelations = (histogramSelection == 2);
-    drawPtWeightedTrackLeadingJetCorrelations = (histogramSelection == 3);
-    drawTrackSubleadingJetCorrelations = false;
-    drawUncorrectedTrackSubleadingJetCorrelations = false;
-    drawPtWeightedTrackSubleadingJetCorrelations = false;
-    drawTrackInclusiveJetCorrelations = (histogramSelection == 4);
-    drawPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 5);
+    loadTrackLeadingJetCorrelations = (histogramSelection == 1);
+    loadUncorrectedTrackLeadingJetCorrelations = (histogramSelection == 2);
+    loadPtWeightedTrackLeadingJetCorrelations = (histogramSelection == 3);
+    loadTrackSubleadingJetCorrelations = false;
+    loadUncorrectedTrackSubleadingJetCorrelations = false;
+    loadPtWeightedTrackSubleadingJetCorrelations = false;
+    loadTrackInclusiveJetCorrelations = (histogramSelection == 4);
+    loadPtWeightedTrackInclusiveJetCorrelations = (histogramSelection == 5);
   }
   
   // Select processed bins
@@ -55,32 +52,32 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   const int nTrackPtBins = 7;
   const int nAsymmetryBins = 3;
   
-  int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int firstLoadedCentralityBin = 0;
+  int lastLoadedCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int firstLoadedTrackPtBin = 0;
+  int lastLoadedTrackPtBin = nTrackPtBins-1;
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
-  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  int firstLoadedAsymmetryBin = nAsymmetryBins;
+  int lastLoadedAsymmetryBin = nAsymmetryBins;
   
   if(selectedCentralityBin >= 0){
-    firstDrawnCentralityBin = selectedCentralityBin;
-    lastDrawnCentralityBin = selectedCentralityBin;
+    firstLoadedCentralityBin = selectedCentralityBin;
+    lastLoadedCentralityBin = selectedCentralityBin;
   }
   
   if(selectedPtBin >= 0){
-    firstDrawnTrackPtBin = selectedPtBin;
-    lastDrawnTrackPtBin = selectedPtBin;
+    firstLoadedTrackPtBin = selectedPtBin;
+    lastLoadedTrackPtBin = selectedPtBin;
   }
   
   if(selectedAsymmetryBin >= 0){
-    firstDrawnAsymmetryBin = selectedAsymmetryBin;
-    lastDrawnAsymmetryBin = selectedAsymmetryBin;
+    firstLoadedAsymmetryBin = selectedAsymmetryBin;
+    lastLoadedAsymmetryBin = selectedAsymmetryBin;
   }
   
   // Smoothed spillover fluctuations from the final jet shape distributions
-  bool manualSpilloverFluctuationSmoothing = true;
+  bool manualSpilloverFluctuationSmoothing = false;
   
   // Binning for jet shape
   
@@ -115,7 +112,7 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   
   // Remove centrality selection from pp data and local testing
   if(collisionSystem.Contains("pp") || collisionSystem.Contains("localTest")){
-    lastDrawnCentralityBin = 0;
+    lastLoadedCentralityBin = 0;
   }
   
   // ========================== //
@@ -134,24 +131,25 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   // Create and setup a new histogram manager to handle the histograms
   DijetHistogramManager *histograms = new DijetHistogramManager(inputFile);
   
-  // Set which histograms to draw and the drawing style to use
-  histograms->SetLoadAllTrackLeadingJetCorrelations(drawTrackLeadingJetCorrelations, drawUncorrectedTrackLeadingJetCorrelations, drawPtWeightedTrackLeadingJetCorrelations);
-  histograms->SetLoadAllTrackSubleadingJetCorrelations(drawTrackSubleadingJetCorrelations, drawUncorrectedTrackSubleadingJetCorrelations, drawPtWeightedTrackSubleadingJetCorrelations);
-  histograms->SetLoadAllTrackInclusiveJetCorrelations(drawTrackInclusiveJetCorrelations,drawPtWeightedTrackInclusiveJetCorrelations);
+  // Set which histograms are loaded
+  histograms->SetLoadAllTrackLeadingJetCorrelations(loadTrackLeadingJetCorrelations, loadUncorrectedTrackLeadingJetCorrelations, loadPtWeightedTrackLeadingJetCorrelations);
+  histograms->SetLoadAllTrackSubleadingJetCorrelations(loadTrackSubleadingJetCorrelations, loadUncorrectedTrackSubleadingJetCorrelations, loadPtWeightedTrackSubleadingJetCorrelations);
+  histograms->SetLoadAllTrackInclusiveJetCorrelations(loadTrackInclusiveJetCorrelations,loadPtWeightedTrackInclusiveJetCorrelations);
   histograms->SetLoad2DHistograms(true);
 
   // Set the binning information
-  histograms->SetCentralityBinRange(firstDrawnCentralityBin,lastDrawnCentralityBin);
-  histograms->SetTrackPtBinRange(firstDrawnTrackPtBin,lastDrawnTrackPtBin);
-  histograms->SetAsymmetryBinRange(firstDrawnAsymmetryBin,lastDrawnAsymmetryBin);
+  histograms->SetCentralityBinRange(firstLoadedCentralityBin,lastLoadedCentralityBin);
+  histograms->SetTrackPtBinRange(firstLoadedTrackPtBin,lastLoadedTrackPtBin);
+  histograms->SetAsymmetryBinRange(firstLoadedAsymmetryBin,lastLoadedAsymmetryBin);
   histograms->SetManualSpilloverCleaning(manualSpilloverFluctuationSmoothing);
   
   // Set the used dijet methods for jet shape calculation
   histograms->SetDijetMethods(methods);
   
-  // Load the histograms, get the jet shape and write it into a file
+  // Load the histograms, get jet shape and deltaEta histograms and write them to file together with jet distributions
   histograms->LoadProcessedHistograms();
   histograms->CalculateJetShape();
-  histograms->WriteJetShape(outputFileName,fileWriteMode);
+  histograms->ProjectFinalDeltaEta();
+  histograms->WriteSkim(outputFileName,fileWriteMode);
   
 }
