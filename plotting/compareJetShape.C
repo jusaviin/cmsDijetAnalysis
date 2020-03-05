@@ -11,7 +11,7 @@ void compareJetShape(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = { "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tunedSeagull_processed_2019-10-22.root","data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_jetWeight_20EventsMixed_JECv4_onlySeagull_processed_2019-10-30.root"};
+  TString fileNames[] = { "data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_tuning_processed_2019-12-04.root","data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root"};
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull3050_processed_2019-10-23.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull_processed_2019-10-21.root
@@ -58,7 +58,10 @@ void compareJetShape(){
   int firstDrawnCentralityBin = 0;
   int lastDrawnCentralityBin = 0;
   
-  int iJetTrack = DijetHistogramManager::kPtWeightedTrackLeadingJet; // DijetHistogramManager::kPtWeightedTrackSubleadingJet
+  int firstDrawnAsymmetryBin = 1;
+  int lastDrawnAsymmetryBin = 1;
+  
+  int iJetTrack = DijetHistogramManager::kPtWeightedTrackSubleadingJet; // DijetHistogramManager::kPtWeightedTrackSubleadingJet
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -69,7 +72,7 @@ void compareJetShape(){
     histograms[iFile]->SetLoadTrackLeadingJetCorrelationsPtWeighted(true);
     histograms[iFile]->SetLoadTrackSubleadingJetCorrelationsPtWeighted(true);
     //histograms[iFile]->SetLoad2DHistograms(true);
-    //histograms[iFile]->SetAsymmetryBinRange(0,nAsymmetryBins);
+    histograms[iFile]->SetAsymmetryBinRange(0,nAsymmetryBins);
     histograms[iFile]->LoadProcessedHistograms();
   }
 
@@ -77,36 +80,40 @@ void compareJetShape(){
   DijetMethods *projector = new DijetMethods();
  
   // Histograms needed to calculate the deltaR distributions
-  TH1D *jetShapePp[nTrackPtBins+1];
-  TH1D *jetShapePbPb[nCentralityBins][nTrackPtBins+1];
-  TH1D *jetShapeRatio[nCentralityBins][nTrackPtBins+1];
-  double jetShapeNormalizerPp;
-  double jetShapeNormalizerPbPb[nCentralityBins];
+  TH1D *jetShapePp[nAsymmetryBins+1][nTrackPtBins+1];
+  TH1D *jetShapePbPb[nAsymmetryBins+1][nCentralityBins][nTrackPtBins+1];
+  TH1D *jetShapeRatio[nAsymmetryBins+1][nCentralityBins][nTrackPtBins+1];
+  double jetShapeNormalizerPp[nAsymmetryBins+1];
+  double jetShapeNormalizerPbPb[nAsymmetryBins+1][nCentralityBins];
   
   // For normalization of the jet shapes, read the pT summed histograms
-  jetShapePp[nTrackPtBins] = (TH1D*) histograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, 0, nTrackPtBins)->Clone("ppNormalizer");
-  jetShapeNormalizerPp = jetShapePp[nTrackPtBins]->Integral(1,jetShapePp[nTrackPtBins]->FindBin(0.99),"width");
   
-  for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
-    jetShapePbPb[iCentrality][nTrackPtBins] = (TH1D*) histograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, iCentrality, nTrackPtBins)->Clone(Form("PbPbNormalizer%d",iCentrality));
-    jetShapeNormalizerPbPb[iCentrality] = jetShapePbPb[iCentrality][nTrackPtBins]->Integral(1, jetShapePbPb[iCentrality][nTrackPtBins]->FindBin(0.99), "width");
-  }
-  
-  // Read the jet shape histograms from the file and normalize them to one
-  for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
+  for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
     
-    jetShapePp[iTrackPt] = histograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, 0, iTrackPt);
-    if(iTrackPt != nTrackPtBins) jetShapePp[iTrackPt]->Scale(1.0/jetShapeNormalizerPp);
+    jetShapePp[iAsymmetry][nTrackPtBins] = (TH1D*) histograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, nTrackPtBins)->Clone("ppNormalizer");
+    jetShapeNormalizerPp[iAsymmetry] = jetShapePp[iAsymmetry][nTrackPtBins]->Integral(1,jetShapePp[iAsymmetry][nTrackPtBins]->FindBin(0.99),"width");
     
     for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
+      jetShapePbPb[iAsymmetry][iCentrality][nTrackPtBins] = (TH1D*) histograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, nTrackPtBins)->Clone(Form("PbPbNormalizer%d",iCentrality));
+      jetShapeNormalizerPbPb[iAsymmetry][iCentrality] = jetShapePbPb[iAsymmetry][iCentrality][nTrackPtBins]->Integral(1, jetShapePbPb[iAsymmetry][iCentrality][nTrackPtBins]->FindBin(0.99), "width");
+    }
+    
+    // Read the jet shape histograms from the file and normalize them to one
+    for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
       
-      jetShapePbPb[iCentrality][iTrackPt] = histograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, nAsymmetryBins, iCentrality, iTrackPt);
-      if(iTrackPt != nTrackPtBins) jetShapePbPb[iCentrality][iTrackPt]->Scale(1.0/jetShapeNormalizerPbPb[iCentrality]);
+      jetShapePp[iAsymmetry][iTrackPt] = histograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, iTrackPt);
+      if(iTrackPt != nTrackPtBins) jetShapePp[iAsymmetry][iTrackPt]->Scale(1.0/jetShapeNormalizerPp[iAsymmetry]);
       
-      jetShapeRatio[iCentrality][iTrackPt] = (TH1D*) jetShapePbPb[iCentrality][iTrackPt]->Clone(Form("jetShapeRatio%d%d", iCentrality, iTrackPt));
-      jetShapeRatio[iCentrality][iTrackPt]->Divide(jetShapePp[iTrackPt]);
-    } // Centrality loop
-  } // Track pT loop
+      for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
+        
+        jetShapePbPb[iAsymmetry][iCentrality][iTrackPt] = histograms[1]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
+        if(iTrackPt != nTrackPtBins) jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/jetShapeNormalizerPbPb[iAsymmetry][iCentrality]);
+        
+        jetShapeRatio[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->Clone(Form("jetShapeRatio%d%d%d", iAsymmetry, iCentrality, iTrackPt));
+        jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->Divide(jetShapePp[iAsymmetry][iTrackPt]);
+      } // Centrality loop
+    } // Track pT loop
+  } // Asymmetry loop
   
   
   JDrawer *drawer = new JDrawer();
@@ -118,68 +125,86 @@ void compareJetShape(){
   TString compactCentralityString;
   TString trackString;
   TString compactTrackString;
+  TString asymmetryString;
+  TString compactAsymmetryString;
   
   TString figureName;
   int veryNiceColors[] = {kBlue,kRed,kRed,kGreen+3};
   const char *labels[] = {"Leading","Leading","Leading","Subleading","Subleading","Subleading","Inclusive","Inclusive"};
+  TLine *oneLine = new TLine(0,1,1,1);
+  oneLine->SetLineStyle(2);
   
-  for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
+  for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
     
-    centralityString = Form("%.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
-    compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+    // Setup asymmetry strings
+    if(iAsymmetry < nAsymmetryBins){
+      asymmetryString = Form("%.1f < x_{j} < %.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+      compactAsymmetryString = Form("_A=%.1f-%.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+      compactAsymmetryString.ReplaceAll(".","v");
+    } else {
+      asymmetryString = "";
+      compactAsymmetryString = "";
+    }
     
-    for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
+    for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
       
-      drawer->CreateSplitCanvas();
-      drawer->SetLogY(true);
+      centralityString = Form("%.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+      compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
       
-      if(iTrackPt < nTrackPtBins){
-        trackString = Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
-        compactTrackString = Form("_T=%.0f-%.0f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
-      } else {
-        trackString = "0.7 < p_{T} < 300 GeV";
-        compactTrackString = "_T=1-300";
-      }
-      
-      jetShapePp[iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-      //jetShapePp[iTrackPt]->GetYaxis()->SetRangeUser(1.2e-2,20); // TODO: Remove this line
-      jetShapePp[iTrackPt]->SetMarkerStyle(21);
-      jetShapePp[iTrackPt]->SetMarkerColor(kBlack);
-      if(iTrackPt == nTrackPtBins) cout << "pp integral: " << jetShapePp[iTrackPt]->Integral(1, jetShapePp[iTrackPt]->FindBin(0.99), "width") << endl;
-      drawer->DrawHistogramToUpperPad(jetShapePp[iTrackPt],"#Deltar","#rho(#Deltar)"," ");
-      
-      jetShapePbPb[iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
-      jetShapePbPb[iCentrality][iTrackPt]->SetMarkerStyle(20);
-      jetShapePbPb[iCentrality][iTrackPt]->SetMarkerColor(veryNiceColors[1]);
-      jetShapePbPb[iCentrality][iTrackPt]->Draw("same");
-      if(iTrackPt == nTrackPtBins) cout << "PbPb integral: " << jetShapePbPb[iCentrality][iTrackPt]->Integral(1, jetShapePbPb[iCentrality][iTrackPt]->FindBin(0.99), "width") << endl;
-      
-      legend = new TLegend(0.45,0.5,0.9,0.8);
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetTrack]),"");
-      legend->AddEntry((TObject*) 0,trackString.Data(),"");
-      //legend->AddEntry(jetShapePp[iTrackPt],"Pythia8","l"); // TODO: Comment these back in
-      //legend->AddEntry(jetShapePbPb[iCentrality][iTrackPt],Form("P+H %s",centralityString.Data()),"l");
-      legend->AddEntry(jetShapePp[iTrackPt],"Gen Pythia","pl"); // TODO: Comment these out
-      legend->AddEntry(jetShapePbPb[iCentrality][iTrackPt],"Weighted","pl");
-      legend->Draw();
-      
-      // Draw the ratio to the lower pad
-      drawer->SetLogY(false);
-      
-      jetShapeRatio[iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
-      jetShapeRatio[iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0.95,1.05);
-      jetShapeRatio[iCentrality][iTrackPt]->SetMarkerStyle(20);
-      jetShapeRatio[iCentrality][iTrackPt]->SetMarkerColor(veryNiceColors[1]);
-      jetShapeRatio[iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
-      drawer->DrawHistogramToLowerPad(jetShapeRatio[iCentrality][iTrackPt],"#Deltar","Weighted / Gen", " ");
-      
-      // Save the figures into a file
-      if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/jetShapeComparison%s%s%s.pdf", labels[iJetTrack], compactCentralityString.Data(), compactTrackString.Data()));
-      }
-      
-    } // Track pT loop
-  } // Centrality loop
+      for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
+        
+        drawer->CreateSplitCanvas();
+        drawer->SetLogY(true);
+        
+        if(iTrackPt < nTrackPtBins){
+          trackString = Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+          compactTrackString = Form("_T=%.0f-%.0f",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
+        } else {
+          trackString = "0.7 < p_{T} < 300 GeV";
+          compactTrackString = "_T=1-300";
+        }
+        
+        jetShapePp[iAsymmetry][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+        //jetShapePp[iAsymmetry][iTrackPt]->GetYaxis()->SetRangeUser(1.2e-2,20); // TODO: Remove this line
+        jetShapePp[iAsymmetry][iTrackPt]->SetMarkerStyle(21);
+        jetShapePp[iAsymmetry][iTrackPt]->SetMarkerColor(kBlack);
+        if(iTrackPt == nTrackPtBins) cout << "pp integral: " << jetShapePp[iAsymmetry][iTrackPt]->Integral(1, jetShapePp[iAsymmetry][iTrackPt]->FindBin(0.99), "width") << endl;
+        drawer->DrawHistogramToUpperPad(jetShapePp[iAsymmetry][iTrackPt],"#Deltar","#rho(#Deltar)"," ");
+        
+        jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
+        jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(20);
+        jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(veryNiceColors[1]);
+        jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->Draw("same");
+        if(iTrackPt == nTrackPtBins) cout << "PbPb integral: " << jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->Integral(1, jetShapePbPb[iAsymmetry][iCentrality][iTrackPt]->FindBin(0.99), "width") << endl;
+        
+        legend = new TLegend(0.45,0.5,0.9,0.8);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+        legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetTrack]),"");
+        //legend->AddEntry((TObject*) 0,"pp data","");
+        legend->AddEntry((TObject*) 0,trackString.Data(),"");
+        if(iAsymmetry < nAsymmetryBins) legend->AddEntry((TObject*) 0,asymmetryString.Data(),"");
+        legend->AddEntry(jetShapePp[iAsymmetry][iTrackPt],"Pythia8","l");
+        legend->AddEntry(jetShapePbPb[iAsymmetry][iCentrality][iTrackPt],Form("P+H %s",centralityString.Data()),"l");
+        legend->Draw();
+        
+        // Draw the ratio to the lower pad
+        drawer->SetLogY(false);
+        
+        jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(0,1);
+        jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->SetRangeUser(0,10);
+        jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(20);
+        jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(veryNiceColors[1]);
+        jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
+        drawer->DrawHistogramToLowerPad(jetShapeRatio[iAsymmetry][iCentrality][iTrackPt],"#Deltar","Hydjet / Pythia", " ");
+        oneLine->Draw();
+        
+        // Save the figures into a file
+        if(saveFigures){
+          gPad->GetCanvas()->SaveAs(Form("figures/jetShapeComparison%s%s%s%s.png", labels[iJetTrack], compactAsymmetryString.Data(), compactCentralityString.Data(), compactTrackString.Data()));
+        }
+        
+      } // Track pT loop
+    } // Centrality loop
+  } // Asymmetry loop
 
 }
