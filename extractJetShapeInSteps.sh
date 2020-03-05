@@ -19,7 +19,7 @@ do
     root -l -b -q 'plotting/extractJetShape.C("'${INPUT}'","'${OUTPUT}'",1,'$j','$i',10)' # Regular jet-track correlations for leading and subleading jets
 #    root -l -b -q 'plotting/extractJetShape.C("'${INPUT}'","'${OUTPUT}'",2,'$j','$i',10)' # Uncorrected jet-track correlations for leading and subleading jets
     root -l -b -q 'plotting/extractJetShape.C("'${INPUT}'","'${OUTPUT}'",3,'$j','$i',10)' # pT weighted jet-track correlations for leading and subleading jets
-    root -l -b -q 'plotting/extractJetShape.C("'${INPUT}'","'${OUTPUT}'",4,'$j','$i',10)' # Regular jet-track correlations for inclusive jets
-    root -l -b -q 'plotting/extractJetShape.C("'${INPUT}'","'${OUTPUT}'",5,'$j','$i',10)' # pT weighted jet-track correlations for inclusive jets
+#    root -l -b -q 'plotting/extractJetShape.C("'${INPUT}'","'${OUTPUT}'",4,'$j','$i',10)' # Regular jet-track correlations for inclusive jets
+#    root -l -b -q 'plotting/extractJetShape.C("'${INPUT}'","'${OUTPUT}'",5,'$j','$i',10)' # pT weighted jet-track correlations for inclusive jets
   done
 done

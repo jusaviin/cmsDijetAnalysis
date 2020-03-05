@@ -9,28 +9,34 @@ void jetShapeCorrectionComparer(){
   
   // Open the files for the JFF corrections
   TFile *quarkFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_onlyQuark_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
+  // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_onlyQuark_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_25pExcessQuark_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root"
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyQuark_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyQuarkJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC2017_pfJets_noUncOrInc_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-11-27.root
   TFile *gluonFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_onlyGluon_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
+  // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_onlyGluon_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_onlyGluon_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_wtaAxis_onlyGluonJets_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
-  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
+  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrizedSameEvent_2020-02-18.root");
+  // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eveMix_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2020-01-23.root
   // "corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root"
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_2019-09-28.root
   
-  TFile *quarkExcessFile =  TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_quarkGluonCombined_25pMoreQuark_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root");
+  TFile *quarkExcessFile =  TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_2019-10-23.root");
+  // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_5eveMix_quarkGluonCombined_25pMoreQuark_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-01-30.root
   
-  const int nFiles = 4;
-  const char* legendText[nFiles] = {"Pure quark", "Pure gluon", "Quark+25%", "Nominal"};
+  const int nFiles = 2;
+  //const char* legendText[nFiles] = {"Pure quark", "Pure gluon", "Quark+25%", "Nominal"};
+  const char* legendText[nFiles] = {"Old", "New"};
   
-  TFile *files[nFiles] = {quarkFile,gluonFile,quarkExcessFile,standardFile};
+  TFile *files[nFiles] = {quarkExcessFile,standardFile};
+  //TFile *files[nFiles] = {quarkFile,gluonFile,quarkExcessFile,standardFile};
   
   // Figure saving options
-  bool saveFigures = true;         // Flag to determine whather or not save the figures
+  bool saveFigures = false;         // Flag to determine whather or not save the figures
   bool drawCorrection = true;      // Draw the comparison of JFF corrections (RecoGen - GenGen) between two files
   bool drawRatio = false;          // Draw the comparison of JFF ratios (RecoGen/GenGen) between two files
   
