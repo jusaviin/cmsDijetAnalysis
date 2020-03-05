@@ -21,7 +21,7 @@ SpilloverFluctuationCleaner::~SpilloverFluctuationCleaner(){
 }
 
 /*
- * Clean the fluctuations from a given bin
+ * Clean the spillover fluctuations from a given bin
  */
 void SpilloverFluctuationCleaner::CleanSpilloverFluctuationDeltaR(TH1* jetShapeHistogram, const int iJetTrack, const int iAsymmetry, const int iCentrality, const int iTrackPt) const{
   
@@ -183,4 +183,74 @@ void SpilloverFluctuationCleaner::CleanSpilloverFluctuationDeltaR(TH1* jetShapeH
     
   }
 
+}
+
+/*
+ * Clean the JFF fluctuations from a given bin
+ */
+void SpilloverFluctuationCleaner::CleanSubleadingJffFluctuationDeltaR(TH1* jetShapeHistogram, const int iJetTrack, const int iAsymmetry, const int iCentrality, const int iTrackPt) const{
+  
+  // Currently only implemented for pt weighted subleading jet
+  if(iJetTrack != DijetHistogramManager::kPtWeightedTrackSubleadingJet) return;
+  
+  // Cleaning configuration for bin 0.0 < xj < 0.6, C = 0-10 %, 4 < pT < 8 GeV
+  if(iAsymmetry == 0 && iCentrality == 0 && iTrackPt == 4){
+    jetShapeHistogram->SetBinContent(8,4.2601797*0.94);   // Bin 8: 0.35 < DeltaR < 0.4
+    jetShapeHistogram->SetBinContent(10,3.0941298*1.04);   // Bin 10: 0.45 < DeltaR < 0.5
+    
+  // Cleaning configuration for bin 0.0 < xj < 0.6, C = 0-10 %, 8 < pT < 12 GeV
+  } else if(iAsymmetry == 0 && iCentrality == 0 && iTrackPt == 5){
+    jetShapeHistogram->SetBinContent(7,0.94687069*0.94);   // Bin 7: 0.3 < DeltaR < 0.35
+    jetShapeHistogram->SetBinContent(8,0.76343943*0.98);   // Bin 8: 0.35 < DeltaR < 0.4
+    
+  // Cleaning configuration for bin 0.0 < xj < 0.6, C = 10-30 %, 4 < pT < 8 GeV
+  } else if(iAsymmetry == 0 && iCentrality == 1 && iTrackPt == 4){
+    jetShapeHistogram->SetBinContent(8,5.0589961*0.91);    // Bin 8: 0.35 < DeltaR < 0.4
+    jetShapeHistogram->SetBinContent(10,4.1165010*0.93);   // Bin 10: 0.45 < DeltaR < 0.5
+    
+  // Cleaning configuration for bin 0.0 < xj < 0.6, C = 10-30 %, 8 < pT < 12 GeV
+  } else if(iAsymmetry == 0 && iCentrality == 1 && iTrackPt == 6){
+    jetShapeHistogram->SetBinContent(2,21.169864*0.48);   // Bin 2: 0.05 < DeltaR < 0.1
+    jetShapeHistogram->SetBinContent(3,5.2574011*0.63);   // Bin 3: 0.1 < DeltaR < 0.15
+    jetShapeHistogram->SetBinContent(7,0.33520562*1);   // Bin 7: 0.3 < DeltaR < 0.35
+    jetShapeHistogram->SetBinContent(8,0.59191288*1);   // Bin 8: 0.35 < DeltaR < 0.4
+    
+  // Cleaning configuration for bin 0.6 < xj < 0.8, C = 0-10 %, 8 < pT < 12 GeV
+  } else if(iAsymmetry == 1 && iCentrality == 0 && iTrackPt == 5){
+    jetShapeHistogram->SetBinContent(7,1.7710510*0.92);   // Bin 7: 0.3 < DeltaR < 0.35
+    jetShapeHistogram->SetBinContent(8,1.3177135*0.97);    // Bin 8: 0.35 < DeltaR < 0.4
+    
+  // Cleaning configuration for bin 0.6 < xj < 0.8, C = 10-30 %, 4 < pT < 8 GeV
+  } else if(iAsymmetry == 1 && iCentrality == 1 && iTrackPt == 4){
+    jetShapeHistogram->SetBinContent(10,3.7723969*1.25);   // Bin 10: 0.45 < DeltaR < 0.5
+    jetShapeHistogram->SetBinContent(11,2.6744646*1.2);    // Bin 11: 0.5 < DeltaR < 0.6
+    
+  // Cleaning configuration for bin 0.8 < xj < 1.0, C = 0-10 %, 8 < pT < 12 GeV
+  } else if(iAsymmetry == 2 && iCentrality == 0 && iTrackPt == 5){
+    jetShapeHistogram->SetBinContent(6,2.9798531*1.16);    // Bin 6: 0.25 < DeltaR < 0.3
+    jetShapeHistogram->SetBinContent(7,2.1069693*1.14);    // Bin 7: 0.3 < DeltaR < 0.35
+    
+  // Cleaning configuration for bin 0.8 < xj < 1.0, C = 0-10 %, 12 < pT < 300 GeV
+  } else if(iAsymmetry == 2 && iCentrality == 0 && iTrackPt == 6){
+    jetShapeHistogram->SetBinContent(5,5.3227776*1);    // Bin 5: 0.2 < DeltaR < 0.25
+    jetShapeHistogram->SetBinContent(6,3.9020203*1);    // Bin 6: 0.25 < DeltaR < 0.3
+    
+  // Cleaning configuration for bin 0.8 < xj < 1.0, C = 10-30 %, 12 < pT < 300 GeV
+  } else if(iAsymmetry == 2 && iCentrality == 1 && iTrackPt == 6){
+    jetShapeHistogram->SetBinContent(6,4.3019148*1.04);   // Bin 6: 0.25 < DeltaR < 0.3
+    jetShapeHistogram->SetBinContent(7,3.0975613*1.03);   // Bin 7: 0.3 < DeltaR < 0.35
+    jetShapeHistogram->SetBinContent(8,2.3343826*1.02);   // Bin 8: 0.35 < DeltaR < 0.4
+    
+  // Cleaning configuration for bin 0.8 < xj < 1.0, C = 30-50 %, 8 < pT < 12 GeV
+  } else if(iAsymmetry == 2 && iCentrality == 2 && iTrackPt == 5){
+    jetShapeHistogram->SetBinContent(6,4.2418769*0.98);   // Bin 6: 0.25 < DeltaR < 0.3
+    
+  // Cleaning configuration for bin 0.8 < xj < 1.0, C = 30-50 %, 12 < pT < 300 GeV
+  } else if(iAsymmetry == 2 && iCentrality == 2 && iTrackPt == 6){
+    jetShapeHistogram->SetBinContent(6,5.4382768*0.96);   // Bin 6: 0.25 < DeltaR < 0.3
+    jetShapeHistogram->SetBinContent(7,3.8790682*0.97);   // Bin 7: 0.3 < DeltaR < 0.35
+    jetShapeHistogram->SetBinContent(8,2.9606792*0.98);   // Bin 8: 0.35 < DeltaR < 0.4
+    
+  }
+  
 }
