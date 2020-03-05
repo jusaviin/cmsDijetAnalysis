@@ -71,6 +71,7 @@ DijetMethods::DijetMethods() :
   fMaximumDeltaEta(4),
   fMinBackgroundDeltaEta(1.5),
   fMaxBackgroundDeltaEta(2.5),
+  fOneBackgroundRegion(false),
   fAdjustBackground(false),
   fnOverlapBins(3),
   fBackgroundErrorScalingFactor(1),
@@ -125,6 +126,7 @@ DijetMethods::DijetMethods(const DijetMethods& in) :
   fBackgroundOverlap(in.fBackgroundOverlap),
   fMinBackgroundDeltaEta(in.fMinBackgroundDeltaEta),
   fMaxBackgroundDeltaEta(in.fMaxBackgroundDeltaEta),
+  fOneBackgroundRegion(in.fOneBackgroundRegion),
   fAdjustBackground(in.fAdjustBackground),
   fnOverlapBins(in.fnOverlapBins),
   fBackgroundErrorScalingFactor(in.fBackgroundErrorScalingFactor),
@@ -173,6 +175,7 @@ DijetMethods& DijetMethods::operator=(const DijetMethods& in){
   fBackgroundOverlap = in.fBackgroundOverlap;
   fMinBackgroundDeltaEta = in.fMinBackgroundDeltaEta;
   fMaxBackgroundDeltaEta = in.fMaxBackgroundDeltaEta;
+  fOneBackgroundRegion = in.fOneBackgroundRegion;
   fAdjustBackground = in.fAdjustBackground;
   fnOverlapBins = in.fnOverlapBins;
   fBackgroundErrorScalingFactor = in.fBackgroundErrorScalingFactor;
@@ -1392,7 +1395,7 @@ TH1D* DijetMethods::ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram,
  *   return: DeltaPhi distribution projected from the background deltaEta region
  */
 TH1D* DijetMethods::ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
-  return ProjectRegionDeltaPhi(deltaPhiDeltaEtaHistogram,fMinBackgroundDeltaEta,fMaxBackgroundDeltaEta,"BackgroundDeltaPhi");
+  return ProjectRegionDeltaPhi(deltaPhiDeltaEtaHistogram,fMinBackgroundDeltaEta,fMaxBackgroundDeltaEta,"BackgroundDeltaPhi",fOneBackgroundRegion);
 }
 
 /*
@@ -1404,7 +1407,7 @@ TH1D* DijetMethods::ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
  *   return: DeltaPhi distribution projected from the signal deltaEta region
  */
 TH1D* DijetMethods::ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram){
-  return ProjectRegionDeltaPhi(deltaPhiDeltaEtaHistogram,0,fMaxSignalDeltaEta,"SignalDeltaPhi");
+  return ProjectRegionDeltaPhi(deltaPhiDeltaEtaHistogram,0,fMaxSignalDeltaEta,"SignalDeltaPhi",fOneBackgroundRegion);
 }
 
 /*
@@ -1554,7 +1557,8 @@ TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHisto
   
   // Symmetrize the distribution such a thing is requested
   if(symmetrize){
-    double negativeBinContent, negativeBinError;
+    SymmetrizeDeltaEta(helperHistogramDeltaEtaRebin);
+    /*double negativeBinContent, negativeBinError;
     double positiveBinContent, positiveBinError;
     double averageBinContent, averageBinError;
     for(int iDeltaEta = 1; iDeltaEta <= nDeltaEtaBinsRebin/2; iDeltaEta++){
@@ -1576,11 +1580,46 @@ TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHisto
       helperHistogramDeltaEtaRebin->SetBinError(iDeltaEta,averageBinError);
       helperHistogramDeltaEtaRebin->SetBinContent(nDeltaEtaBinsRebin+1-iDeltaEta,averageBinContent);
       helperHistogramDeltaEtaRebin->SetBinError(nDeltaEtaBinsRebin+1-iDeltaEta,averageBinError);
-    }
+    }*/
   }
   
   // Return the rebinned histogram
   return helperHistogramDeltaEtaRebin;
+}
+
+/*
+* Symmetrize a given deltaEta histogram
+*
+*  TH1D *histogramInNeedOfSymmetrization = Histogram from which deltaEta yield is projected from
+*
+*/
+void DijetMethods::SymmetrizeDeltaEta(TH1D *histogramInNeedOfSymmetrization){
+  
+  double negativeBinContent, negativeBinError;
+  double positiveBinContent, positiveBinError;
+  double averageBinContent, averageBinError;
+  int nDeltaEtaBins = histogramInNeedOfSymmetrization->GetNbinsX();
+  for(int iDeltaEta = 1; iDeltaEta <= nDeltaEtaBins/2; iDeltaEta++){
+
+    // Do not symmetrize the bin with itself!
+    if(iDeltaEta == nDeltaEtaBins+1-iDeltaEta) continue;
+    
+    // Find the bin content and error for symmetric bins
+    negativeBinContent = histogramInNeedOfSymmetrization->GetBinContent(iDeltaEta);
+    negativeBinError = histogramInNeedOfSymmetrization->GetBinError(iDeltaEta);
+    positiveBinContent = histogramInNeedOfSymmetrization->GetBinContent(nDeltaEtaBins+1-iDeltaEta);
+    positiveBinError = histogramInNeedOfSymmetrization->GetBinError(nDeltaEtaBins+1-iDeltaEta);
+    
+    // Add the average content and error to both bins
+    averageBinContent = (negativeBinContent + positiveBinContent) / 2.0;
+    averageBinError = TMath::Sqrt(negativeBinError*negativeBinError + positiveBinError*positiveBinError) / 2.0;
+    
+    histogramInNeedOfSymmetrization->SetBinContent(iDeltaEta,averageBinContent);
+    histogramInNeedOfSymmetrization->SetBinError(iDeltaEta,averageBinError);
+    histogramInNeedOfSymmetrization->SetBinContent(nDeltaEtaBins+1-iDeltaEta,averageBinContent);
+    histogramInNeedOfSymmetrization->SetBinError(nDeltaEtaBins+1-iDeltaEta,averageBinError);
+  }
+  
 }
 
 /*
@@ -2019,9 +2058,10 @@ void DijetMethods::SetMixedEventFitRegion(const double etaRangeLow, const double
 }
 
 // Setter for background deltaEta region
-void DijetMethods::SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta){
+void DijetMethods::SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta, const bool oneRegion){
   fMinBackgroundDeltaEta = minDeltaEta;
   fMaxBackgroundDeltaEta = maxDeltaEta;
+  fOneBackgroundRegion = oneRegion;
   
   // Check that minimum value is smaller tham maximum value
   if(fMinBackgroundDeltaEta > fMaxBackgroundDeltaEta){

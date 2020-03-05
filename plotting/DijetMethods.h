@@ -41,6 +41,7 @@ public:
   TH1D* ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize = false);  // Project the deltaEta yield in final analysis binning
   TH1D* RebinAsymmetric(TH1D *histogramInNeedOfRebinning, const int nBins, const double* binEdges); // Asymmetric rebinning for one-dimensional histograms
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
+  void SymmetrizeDeltaEta(TH1D *histogramInNeedOfSymmetrization); // Symmetrize a given deltaEta histogram
   TH2D* SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue = 0, const bool onlyCut = false); // Symmetrize eta and phi in a histogram up to given maximum radius
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
@@ -85,7 +86,7 @@ public:
   void SetMixedEventNormalization(const int normalizationType, const bool smoothenMixing); // Setter for normalization method used for mixed event distributions
   
   // Setters for background subtraction configuration
-  void SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta); // Setter for background deltaEta region
+  void SetBackgroundDeltaEtaRegion(const double minDeltaEta, const double maxDeltaEta, const bool oneSide); // Setter for background deltaEta region
   void SetSignalDeltaEtaRegion(const double maxDeltaEta);                               // Setter for signal deltaEta region
   void SetBackgroundAdjustment(const bool adjust, const int overlapBins);               // Setter for background adjustment
   
@@ -121,6 +122,7 @@ private:
   TH2D *fBackgroundOverlap;             // Fill a few points over the gluing point to see how well the gluing works
   double fMinBackgroundDeltaEta;        // Minimum deltaEta for background subtraction region
   double fMaxBackgroundDeltaEta;        // Maximum deltaEta for background subtraction region
+  bool fOneBackgroundRegion;            // Only use positive or negative eta for background estimation
   bool fAdjustBackground;               // Adjust the level of background based on the ratio of leading and subleading sides in overlapping bins
   int fnOverlapBins;                    // Number of overlapping bins to be used in background adjustment and overlap
   double fBackgroundErrorScalingFactor; // Scaling factor to be used for errors when projecting deltaPhi out of whole distribution
