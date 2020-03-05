@@ -53,26 +53,14 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
-      helperHistogram = pbpbHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, 0);
+      //helperHistogram = pbpbHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, 0);
       
-      deltaEtaArray[iCentrality][0][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, pbpbHistograms->GetTrackPtBinBorder(0), pbpbHistograms->GetTrackPtBinBorder(1), true)->Clone(Form("deltaEtaArray%d%d%d", iCentrality, iAsymmetry, 0));
+      //deltaEtaArray[iCentrality][0][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, pbpbHistograms->GetTrackPtBinBorder(0), pbpbHistograms->GetTrackPtBinBorder(1), true)->Clone(Form("deltaEtaArray%d%d%d", iCentrality, iAsymmetry, 0));
+      
+      deltaEtaArray[iCentrality][0][iAsymmetry] = pbpbHistograms->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, 0);
       
       sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) deltaEtaArray[iCentrality][0][iAsymmetry]->Clone(Form("sumPbPb%d%d",iCentrality,iAsymmetry));
       
-      /*
-       addedHistogram = projector->ProjectRegionDeltaEta(helperHistogram, -projectionRegion, projectionRegion, Form("DeltaEtaStack%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,0));
-       
-       // Since we want to plot yield, we do not want to normalize over the number of bins projected over
-       // but simply look at the yield in certain region
-       addedHistogram->Scale(projector->GetNBinsProjectedOver());
-       
-       // The different pT bins can have different size, so we need to normalize the yield with the pT bin width
-       addedHistogram->Scale(1/(pbpbHistograms->GetTrackPtBinBorder(1) - pbpbHistograms->GetTrackPtBinBorder(0)));
-       
-       // Rebin the histogram to match the binning in the inclusive jet shape paper
-       sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) projector->RebinAsymmetric(addedHistogram, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin)->Clone(Form("sumPbPb%d%d",iCentrality,iAsymmetry));
-       
-       deltaEtaArray[iCentrality][0][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("deltaEtaArray%d%d%d", iCentrality, iAsymmetry, 0));*/
     } // Centrality loop
     
     helperHistogram = ppHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, 0, 0);
@@ -81,20 +69,6 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     sumHistogramPp[iAsymmetry] = (TH1D*) deltaEtaArray[nCentralityBins][0][iAsymmetry]->Clone(Form("sumPp%d",iAsymmetry));
     
-    /*addedHistogram = projector->ProjectRegionDeltaEta(helperHistogram, -projectionRegion, projectionRegion, Form("DeltaEtaStack%d%d%d%d",iJetTrack,iAsymmetry,nCentralityBins,0));
-     
-     // Since we want to plot yield, we do not want to normalize over the number of bins projected over
-     // but simply look at the yield in certain region
-     addedHistogram->Scale(projector->GetNBinsProjectedOver());
-     
-     // The different pT bins can have different size, so we need to normalize the yield with the pT bin width
-     addedHistogram->Scale(1/(ppHistograms->GetTrackPtBinBorder(1) - ppHistograms->GetTrackPtBinBorder(0)));
-     
-     // Rebin the histogram to match the binning in the inclusive jet shape paper
-     sumHistogramPp[iAsymmetry] = (TH1D*) projector->RebinAsymmetric(addedHistogram, nDeltaEtaBinsRebin, deltaEtaBinBordersRebin)->Clone(Form("sumPp%d",iAsymmetry));
-     
-     deltaEtaArray[nCentralityBins][0][iAsymmetry] = (TH1D*) sumHistogramPp[iAsymmetry]->Clone(Form("deltaEtaArray%d%d%d", nCentralityBins, iAsymmetry, 0));*/
-    
   } // Asymmetry loop
   
   // Sum the pT:s
@@ -102,9 +76,11 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         
-        helperHistogram = pbpbHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
+        //helperHistogram = pbpbHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, iCentrality, iTrackPt);
         
-        deltaEtaArray[iCentrality][iTrackPt][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, pbpbHistograms->GetTrackPtBinBorder(iTrackPt), pbpbHistograms->GetTrackPtBinBorder(iTrackPt+1), true)->Clone(Form("deltaEtaArray%d%d%d", iCentrality, iAsymmetry, iTrackPt));
+        //deltaEtaArray[iCentrality][iTrackPt][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, pbpbHistograms->GetTrackPtBinBorder(iTrackPt), pbpbHistograms->GetTrackPtBinBorder(iTrackPt+1), true)->Clone(Form("deltaEtaArray%d%d%d", iCentrality, iAsymmetry, iTrackPt));
+        
+        deltaEtaArray[iCentrality][iTrackPt][iAsymmetry] = pbpbHistograms->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, iTrackPt);
         
         sumHistogramPbPb[iCentrality][iAsymmetry]->Add(deltaEtaArray[iCentrality][iTrackPt][iAsymmetry]);
         
@@ -122,6 +98,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   // Read the inclusive histograms to make a comparison to the published results
   int inclusiveCentralityBins[] = {0,10,30,50,100};
   int inclusiveTrackPtBins[] = {0,1,2,3,4,8,12};
+  int firstSumBin, lastSumBin, firstUncertaintyBin;
   
   // Find the uncertainties for the deltaEta histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
@@ -166,13 +143,22 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     }
     
     // Set the errors for the summed uncertainty histograms from the extracted and summed error from the file
-    for(int iBin = 1; iBin <= sumUncertainty[nCentralityBins][iAsymmetry]->GetNbinsX(); iBin++){
-      sumUncertainty[nCentralityBins][iAsymmetry]->SetBinError(iBin,uncertaintyHistogramPp[iAsymmetry]->GetBinContent(iBin));
+    firstSumBin = sumUncertainty[nCentralityBins][iAsymmetry]->FindBin(-1.4);
+    firstUncertaintyBin = uncertaintyHistogramPp[iAsymmetry]->FindBin(-1.4);
+    lastSumBin = sumUncertainty[nCentralityBins][iAsymmetry]->FindBin(1.4);
+    
+    for(int iBin = firstSumBin; iBin <= lastSumBin; iBin++){
+      sumUncertainty[nCentralityBins][iAsymmetry]->SetBinError(iBin,uncertaintyHistogramPp[iAsymmetry]->GetBinContent(firstUncertaintyBin + (iBin - firstSumBin)));
     }
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      for(int iBin = 1; iBin <= sumUncertainty[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
-        sumUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin,uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin));
+      
+      firstSumBin = sumUncertainty[iCentrality][iAsymmetry]->FindBin(-1.4);
+      firstUncertaintyBin = uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->FindBin(-1.4);
+      lastSumBin = sumUncertainty[iCentrality][iAsymmetry]->FindBin(1.4);
+      
+      for(int iBin = firstSumBin; iBin <= lastSumBin; iBin++){
+        sumUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(firstUncertaintyBin + (iBin - firstSumBin)));
       }
     }
   }
@@ -472,7 +458,7 @@ void finalBigAsymmetryDeltaEtaPlotter_v1(){
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04.root");
+  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root");
   
   TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root");
   TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root");
@@ -484,10 +470,6 @@ void finalBigAsymmetryDeltaEtaPlotter_v1(){
   DijetHistogramManager *pbpbHistograms = new DijetHistogramManager(pbpbFile);
   JffCorrector *ppUncertaintyProvider = new JffCorrector();
   JffCorrector *pbpbUncertaintyProvider = new JffCorrector();
-  
-  // Choose which figure sets to draw
-  bool drawJetShapePptoPbPbRatio = false;
-  bool drawJetShapeSymmetricAsymmetricRatio = true;
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = true;
