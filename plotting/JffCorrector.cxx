@@ -21,7 +21,8 @@ JffCorrector::JffCorrector() :
   fTrackingCorrectionLoaded(false),
   fTrackingAsymmetryBins(0),
   fTrackingPtBins(0),
-  fSmoothUncertainty(false)
+  fSmoothUncertainty(false),
+  fSymmetrizeDeltaEta(true)
 {
   
   // JFF correction histograms for jet shape
@@ -93,7 +94,8 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
   fTrackingCorrectionLoaded(in.fTrackingCorrectionLoaded),
   fTrackingAsymmetryBins(in.fTrackingAsymmetryBins),
   fTrackingPtBins(in.fTrackingPtBins),
-  fSmoothUncertainty(in.fSmoothUncertainty)
+  fSmoothUncertainty(in.fSmoothUncertainty),
+  fSymmetrizeDeltaEta(in.fSymmetrizeDeltaEta)
 {
   // Copy constructor
   
@@ -598,6 +600,13 @@ TH1D* JffCorrector::GetDeltaEtaSystematicUncertainty(const int iJetTrackCorrelat
   // If uncertainty bin is outside of the uncertainty bin range, return total systematic uncertainty
   if(iUncertainty < 0 || iUncertainty > kTotal) iUncertainty = kTotal;
   
+  // If symmetrization is set, symmetrize the uncertainty histogram before returning it
+  if(fSymmetrizeDeltaEta){
+    DijetMethods *symmetrizer = new DijetMethods();
+    symmetrizer->SymmetrizeDeltaEta(fhDeltaEtaUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty]);
+    delete symmetrizer;
+  }
+  
   // Return the uncertainty in the selected bin
   return fhDeltaEtaUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
 }
@@ -650,4 +659,9 @@ bool JffCorrector::SystematicsReady(){
 // Setter for smoothing the uncertainties
 void JffCorrector::SetUncertaintySmooth(const bool smooth){
   fSmoothUncertainty = smooth;
+}
+
+// Setter for smoothing the uncertainties
+void JffCorrector::SetDeltaEtaSymmetrization(const bool symmetrize){
+  fSymmetrizeDeltaEta = symmetrize;
 }

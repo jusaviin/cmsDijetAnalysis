@@ -13,6 +13,7 @@
 // Own includes
 #include "DijetCard.h"
 #include "DijetHistogramManager.h"
+#include "DijetMethods.h"
 
 /*
  * Class for drawing the histograms produced in the dijet analysis
@@ -59,7 +60,8 @@ public:
   double GetLongRangeSystematicUncertainty(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const;
   
   // Setters
-  void SetUncertaintySmooth(const bool smooth);  // Setter for smoothing the uncertainties
+  void SetUncertaintySmooth(const bool smooth);           // Setter for smoothing the uncertainties
+  void SetDeltaEtaSymmetrization(const bool symmetrize);  // Setter for symmetrizing the deltaEta uncertainties
   
   // Return information, if correction is ready to be obtained
   bool CorrectionReady();         // True if histograms loaded from file, otherwise false
@@ -90,6 +92,7 @@ private:
   int  fTrackingAsymmetryBins;     // Number of asymmetry bins in the residual tracking correction file
   int  fTrackingPtBins;            // Number of track pT bins in the residual tracking correction file
   bool fSmoothUncertainty;         // Smooth the uncertainty histograms
+  bool fSymmetrizeDeltaEta;        // Symmetrize the deltaEta uncertainty histograms
 
   // JFF correction histograms for jet shape
   TH1D *fhJetShapeCorrection[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins];  // JFF correction histograms for jet shape
