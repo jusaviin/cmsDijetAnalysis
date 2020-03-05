@@ -220,10 +220,10 @@ public:
   TH2D* GetHistogramJetEtaPhi(const int iJetType, int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const; // 2D eta-phi histogram for jets
   
   // Getters for dijet histograms
-  TH1D* GetHistogramDijetDeltaPhi(const int iCentrality) const;                                  // Dijet deltaPhi histograms
-  TH1D* GetHistogramDijetAsymmetry(const int iCentrality, const int iJetPt = knJetPtBins) const; // Dijet asymmetry AJ histograms
-  TH1D* GetHistogramDijetXj(const int iCentrality, const int iJetPt = knJetPtBins) const;        // Dijet asymmetry xJ histograms
-  TH2D* GetHistogramDijetLeadingVsSubleadingPt(const int iCentrality) const;    // Leading versus subleading jet pT 2D histograms
+  TH1D* GetHistogramDijetDeltaPhi(const int iCentrality) const;                                                  // Dijet deltaPhi histograms
+  TH1D* GetHistogramDijetAsymmetry(const int iCentrality, const int iJetPt = knJetPtBins) const;                 // Dijet asymmetry AJ histograms
+  TH1D* GetHistogramDijetXj(const int iCentrality, const int iJetPt = knJetPtBins) const;                        // Dijet asymmetry xJ histograms
+  TH2D* GetHistogramDijetLeadingVsSubleadingPt(const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const; // Leading versus subleading jet pT 2D histograms
   
   // Getters for histograms for tracks in dijet events
   TH1D* GetHistogramTrackPt(const int iTrackType, const int iCorrelationType, const int iCentrality) const;                      // Track pT histograms
@@ -345,6 +345,7 @@ private:
   int fnCentralityBins;                               // Number of centrality bins in the JCard of the data file
   int fnTrackPtBins;                                  // Number of track pT bins in the JCard of the data file
   int fnAsymmetryBins;                                // Number of asymmetry bins in the JCard of the data file
+  double fAsymmetryBinBorders[kMaxCentralityBins+1];  // Asymmetry bin borders
   TString fAsymmetryBinName[kMaxAsymmetryBins+1];     // Name given to each asymmetry bin
   
   // =============================================
@@ -382,7 +383,7 @@ private:
   TH1D *fhDijetDphi[kMaxCentralityBins];                    // Dijet deltaPhi histograms
   TH1D *fhDijetAsymmetry[kMaxCentralityBins][knJetPtBins+1]; // Dijet asymmetry AJ histograms
   TH1D *fhDijetXj[kMaxCentralityBins][knJetPtBins+1];        // Dijet asymmetry xJ histograms
-  TH2D *fhDijetLeadingVsSubleadingPt[kMaxCentralityBins];   // Leading versus subleading jet pT 2D histograms
+  TH2D *fhDijetLeadingVsSubleadingPt[kMaxAsymmetryBins+1][kMaxCentralityBins];   // Leading versus subleading jet pT 2D histograms
   
   // Histograms for tracks in dijet events
   TH1D *fhTrackPt[knTrackCategories][knCorrelationTypes][kMaxCentralityBins];                        // Track pT histograms
