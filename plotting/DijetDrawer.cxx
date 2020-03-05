@@ -291,6 +291,8 @@ void DijetDrawer::DrawDijetHistograms(){
   TString jetPtString;
   TString compactJetPtString;
   TString dijetString;
+  TString asymmetryString;
+  TString compactAsymmetryString;
 
   // Helper variables for histogram normalization and integral calculation
   double nDijets;
@@ -379,7 +381,7 @@ void DijetDrawer::DrawDijetHistograms(){
       //drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
       drawnHistogram->Scale(drawnHistogram->GetBinWidth(0)); // Show the absolute number of hits in each bin
       fDrawer->DrawHistogram(drawnHistogram,"x_{J}",/*"#frac{1}{N_{dijet}}*/ "#frac{dN}{dx_{J}}"," ");
-      legend = new TLegend(0.17,0.65,0.37,0.9);
+      legend = new TLegend(0.13,0.65,0.33,0.9);
       SetupLegend(legend,centralityString,Form("N_{dijet} = %.0f",nDijets));
       legend->Draw();
       
@@ -398,18 +400,33 @@ void DijetDrawer::DrawDijetHistograms(){
     }
     
     // Change the right margin better suited for 2D-drawing
-    fDrawer->SetRightMargin(0.1);
+    fDrawer->SetRightMargin(0.14);
     
     // === Leading jet pT vs. subleading jet pT ===
-    drawnHistogram2D = fHistograms->GetHistogramDijetLeadingVsSubleadingPt(iCentrality);
-    drawnHistogram2D->Scale(1.0/fHistograms->GetNDijets());   // Normalize by the number of dijets
-    fDrawer->DrawHistogram(drawnHistogram2D,"Leading jet p_{T}","Subleading jet p_{T}"," ",fStyle2D);
-    legend = new TLegend(0.17,0.75,0.37,0.9);
-    SetupLegend(legend,centralityString);
-    legend->Draw();
-    
-    // Save the figure to a file
-    SaveFigure("leadingJetPtVsSubleadingJetPt",compactCentralityString);
+    for(int iAsymmetry = fFirstDrawnAsymmetryBin; iAsymmetry <= fLastDrawnAsymmetryBin; iAsymmetry++){
+      
+      // Setup asymmetry strings
+      if(iAsymmetry < fHistograms->GetNAsymmetryBins()){
+        asymmetryString = Form("%.1f < %s < %.1f", fHistograms->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry), fHistograms->GetCard()->GetAsymmetryBinType(), fHistograms->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry));
+        compactAsymmetryString = Form("_A=%.1f-%.1f", fHistograms->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry), fHistograms->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry));
+        compactAsymmetryString.ReplaceAll(".","v");
+      } else {
+        asymmetryString = "";
+        compactAsymmetryString = "";
+      }
+      
+      drawnHistogram2D = fHistograms->GetHistogramDijetLeadingVsSubleadingPt(iCentrality,iAsymmetry);
+      if(drawnHistogram2D == NULL) continue;  // If histograms are not loaded, do not crash the code, just skip them
+      drawnHistogram2D->Scale(1.0/fHistograms->GetPtIntegral(iCentrality,iAsymmetry));   // Normalize by the number of dijets
+      fDrawer->DrawHistogram(drawnHistogram2D,"Leading jet p_{T}","Subleading jet p_{T}"," ",fStyle2D);
+      legend = new TLegend(0.17,0.75,0.37,0.9);
+      SetupLegend(legend,centralityString,asymmetryString);
+      legend->Draw();
+      
+      // Save the figure to a file
+      SaveFigure("leadingJetPtVsSubleadingJetPt",compactCentralityString,compactAsymmetryString);
+      
+    }
     
     // Change right margin back to 1D-drawing
     fDrawer->SetRightMargin(0.06);
