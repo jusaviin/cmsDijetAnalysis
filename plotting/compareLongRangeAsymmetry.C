@@ -79,17 +79,19 @@ void compareLongRangeAsymmetry(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString pbpbFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing.root";
+  TString pbpbFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing.root";
   //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
-  TString ppFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_adjustedBackground_processed_2019-08-13.root";
+  TString ppFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
   //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root";
   
   // For systematic uncertainty estimation, need files in which the background is not adjusted between leading and subleading side
-  TString pbpbUnadjustedFileName = "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
+  TString pbpbUnadjustedFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_onlySeagull_processed_2019-10-10.root
+  // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
   // "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
   //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root";
-  TString ppUnadjustedFileName = "data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root";
+  TString ppUnadjustedFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
   //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root";
   
   // Name for the file from which systematic uncertainties are read
@@ -106,8 +108,8 @@ void compareLongRangeAsymmetry(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
-  const bool drawFourierFit = true;
-  const bool drawFourierGraph = false;
+  const bool drawFourierFit = false;
+  const bool drawFourierGraph = true;
   
   const bool printChi2 = false;
   const bool printBackgroundAdjustmentUncertainty = false;
@@ -115,7 +117,7 @@ void compareLongRangeAsymmetry(){
   const bool removeFit = false;  // Remove fit function from plots with distribution
   
   const bool saveFigures = false;
-  TString saveComment = "_noFit";
+  TString saveComment = "_genTest";
   
   int firstDrawnAsymmetryBin = 0;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -237,7 +239,7 @@ void compareLongRangeAsymmetry(){
     }
     
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
         
         // Read the histograms for pp
         if(iCentrality == nCentralityBins){
@@ -323,7 +325,7 @@ void compareLongRangeAsymmetry(){
   // Extract the vn parameters from the fits
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      for(int iAsymmetry = 0; iAsymmetry <=nAsymmetryBins; iAsymmetry++){
+      for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
         for(int iFlow = 0; iFlow < nRefit; iFlow++){
           masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = backgroundFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
           masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = backgroundFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
@@ -512,6 +514,7 @@ void compareLongRangeAsymmetry(){
     double yZoomForFlowLow[] = {-0.2,-0.005,-0.005,-0.005};
     double yZoomForFlowHigh[] = {0.06,0.12,0.05,0.02};
     double legendY1, legendY2;
+    double defaultXpoints[] = {0.85, 1.5, 2.5, 3.5, 6, 10, 14};
     
     TLine *zeroLine = new TLine(0,0,8,0);
     zeroLine->SetLineStyle(2);
@@ -524,10 +527,14 @@ void compareLongRangeAsymmetry(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins - 2; iTrackPt++){
         
         // Find a good place to put the track pT points for the graphs
-        lowPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt]);
-        highPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt+1]);
-        tracksForGraph[iCentrality]->GetXaxis()->SetRange(lowPtBin,highPtBin);
-        graphPointsX[iTrackPt] = tracksForGraph[iCentrality]->GetMean();
+        if(tracksForGraph[iCentrality]){
+          lowPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt]);
+          highPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt+1]);
+          tracksForGraph[iCentrality]->GetXaxis()->SetRange(lowPtBin,highPtBin);
+          graphPointsX[iTrackPt] = tracksForGraph[iCentrality]->GetMean();
+        } else {
+          graphPointsX[iTrackPt] = defaultXpoints[iTrackPt];
+        }
         
         // Initialize other arrays to zero
         graphErrorsX[iTrackPt] = 0;
@@ -539,7 +546,7 @@ void compareLongRangeAsymmetry(){
       }
       
       // Create an array for the y-axis and make a graph out of vn values
-      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
         for(int iFlow = 0; iFlow < nRefit; iFlow++){
           for(int iTrackPt = 0; iTrackPt < nTrackPtBins-2; iTrackPt++){
             graphPointsY[iTrackPt] = masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
