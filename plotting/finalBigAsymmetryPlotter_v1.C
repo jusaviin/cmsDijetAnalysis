@@ -6,6 +6,10 @@
 
 void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogramManager *pbpbHistograms, JffCorrector *ppUncertaintyProvider, JffCorrector *pbpbUncertaintyProvider, int iJetTrack){
   
+  //  Note, changing the first track pT bin properly requires some manual work. Not all is done automagically.
+  const int iFirstTrackPtBin = 0;  // Can change the lower bound of the drawn track pT bins. Default is 0.
+  bool printIntegrals = true;     // Print the integrals of all the distributions to slides
+  
   const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
   const int nCentralityBins = pbpbHistograms->GetNCentralityBins();
   const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
@@ -17,7 +21,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const char* saveString = {"JetShape"};
   
   bool drawUncertainties = true;
-  bool monteCarloLabels = true;
+  bool monteCarloLabels = false;
   bool normalizeJetShape = true;           // True: draw rho. False: draw P.
   
   // Change the titles if the jet shape is not normalized to one
@@ -38,20 +42,22 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   TH1D *helperHistogram;
   double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
   double shapeIntegralPp[nAsymmetryBins+1];
+  double integralAfterNormalization[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
+  double integralErrorAfterNormalization[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
   
   // Read the pT summed jet shape histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0)->Clone(Form("sumPbPb%d",iCentrality));
-      jetShapeArray[iCentrality][0][iAsymmetry] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, 0);
+      sumHistogramPbPb[iCentrality][iAsymmetry] = (TH1D*) pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iFirstTrackPtBin)->Clone(Form("sumPbPb%d",iCentrality));
+      jetShapeArray[iCentrality][iFirstTrackPtBin][iAsymmetry] = pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iFirstTrackPtBin);
     }
-    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0)->Clone("sumPp");
-    jetShapeArray[nCentralityBins][0][iAsymmetry] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, 0);
+    sumHistogramPp[iAsymmetry] = (TH1D*) ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, iFirstTrackPtBin)->Clone("sumPp");
+    jetShapeArray[nCentralityBins][iFirstTrackPtBin][iAsymmetry] = ppHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, 0, iFirstTrackPtBin);
   }
   
   // Sum the pT:s
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-    for(int iTrackPt = 1; iTrackPt < nTrackPtBins; iTrackPt++){
+    for(int iTrackPt = iFirstTrackPtBin+1; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         helperHistogram = (TH1D*)pbpbHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack, iAsymmetry,iCentrality,iTrackPt)->Clone();
         sumHistogramPbPb[iCentrality][iAsymmetry]->Add(helperHistogram);
@@ -73,8 +79,9 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       sumUncertainty[iCentrality][iAsymmetry] = (TH1D*) sumHistogramPbPb[iCentrality][iAsymmetry]->Clone(Form("sumUncertaintyPbPb%d%d", iCentrality, iAsymmetry));
       
       if(normalizeJetShape){
-        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins; iTrackPt++){
           jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+          integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry] = jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->IntegralAndError(1, jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->FindBin(0.99), integralErrorAfterNormalization[iCentrality][iTrackPt][iAsymmetry], "width");
         }
       }
       
@@ -87,8 +94,9 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     sumUncertainty[nCentralityBins][iAsymmetry] = (TH1D*) sumHistogramPp[iAsymmetry]->Clone(Form("sumUncertaintyPp%d", iAsymmetry));
     
     if(normalizeJetShape){
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+      for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins; iTrackPt++){
         jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
+        integralAfterNormalization[nCentralityBins][iTrackPt][iAsymmetry] = jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->IntegralAndError(1, jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->FindBin(0.99), integralErrorAfterNormalization[nCentralityBins][iTrackPt][iAsymmetry], "width");
       }
     }
     
@@ -154,7 +162,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       } else {
         jetShapeStack[iCentrality][iAsymmetry]->setRange(0.5, 3000, "y");
       }
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins ; iTrackPt++){
+      for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins ; iTrackPt++){
         jetShapeStack[iCentrality][iAsymmetry]->addHist((TH1*) jetShapeArray[iCentrality][iTrackPt][iAsymmetry]);
       }
       //js_dr_err_all[iCentrality]->Scale(1.0/fac);
@@ -280,7 +288,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   lt4->SetLineColor(kWhite);
   lt4->SetFillColor(kWhite);
   
-  
+  // Original
   ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(0), "0.7 < p_{T}^{trk}< 1 GeV","f");
   ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(1), "1 < p_{T}^{trk}< 2 GeV","f");
   
@@ -294,6 +302,21 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
   
   lt4->AddEntry(ratioUncertainty[0][0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
+  
+  // No low pT
+  /*ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(0), "1 < p_{T}^{trk}< 2 GeV","f");
+  ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(1), "2 < p_{T}^{trk}< 3 GeV","f");
+  
+  ptLegend2->AddEntry(jetShapeStack[4][0]->hist_trunk.at(2), "3 < p_{T}^{trk}< 4 GeV","f");
+  ptLegend2->AddEntry(jetShapeStack[4][0]->hist_trunk.at(3), "4 < p_{T}^{trk}< 8 GeV","f");
+  
+  ptLegend3->AddEntry(jetShapeStack[4][0]->hist_trunk.at(4), "8 < p_{T}^{trk}< 12 GeV","f");
+  ptLegend3->AddEntry(jetShapeStack[4][0]->hist_trunk.at(5), "12 < p_{T}^{trk}< 300 GeV","f");
+  
+  ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
+  
+  //lt4->AddEntry(ratioUncertainty[0][0], "1 < p_{T}^{trk}< 300 GeV","lpfe"); */
+  
   //bigCanvas->CD(9);
   //lt4->Draw();
   
@@ -364,8 +387,12 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   //mainTitle->DrawLatexNDC(xjPosition[iJetTrack/3], 0.94, xjString[iAsymmetry]);
   
   mainTitle->SetTextSize(0.03);
-  //mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
-  mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   Pythia8   Pythia+Hydjet");
+  if(monteCarloLabels){
+    mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   Pythia8   Pythia+Hydjet");
+  } else {
+    mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+  }
+
   mainTitle->SetTextSize(0.022);
   mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
@@ -500,10 +527,14 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(.14, 0.95, Form("%s ratios",jetShapeTitle[iJetTrack/3]));
+  mainTitle->DrawLatexNDC(0.14, 0.95, Form("%s ratios",jetShapeTitle[iJetTrack/3]));
   mainTitle->SetTextSize(0.024);
-  //mainTitle->DrawLatexNDC(.58, 0.975, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
-  mainTitle->DrawLatexNDC(.58, 0.975, "5.02 TeV   Pythia8   Pythia+Hydjet");
+  if(monteCarloLabels){
+    mainTitle->DrawLatexNDC(0.58, 0.975, "5.02 TeV   Pythia8   Pythia+Hydjet");
+  } else {
+    mainTitle->DrawLatexNDC(0.58, 0.975, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+  }
+  
   mainTitle->SetTextSize(0.02);
   mainTitle->DrawLatexNDC(0.505, 0.945, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
   
@@ -540,8 +571,47 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   ltc2->Draw();
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/final%s_%s_mcCheck.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
-  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioMcCheck.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/final%s_%s_lul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioLul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  
+  // Print the integrals for different bins to the console
+  if(printIntegrals){
+    char namer[200];
+    double ptBinBorders[] = {0.7, 1, 2, 3, 4, 8, 12, 300};
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      
+      sprintf(namer,"\\frametitle{%s integral, $%s$}",jetShapeTitle[iJetTrack/3], xjbin[iAsymmetry].Data());
+      
+      cout << endl;
+      cout << "\\begin{frame}" << endl;
+      cout << namer << endl;
+      cout << "\\begin{center}" << endl;
+      cout << "  \\begin{tabular}{cccccc}" << endl;
+      cout << "    \\toprule" << endl;
+      cout << "     p_{\\mathrm{T}} (GeV) & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 & pp \\\\" << endl;
+      cout << "    \\midrule" << endl;
+      
+      // Set the correct precision for printing floating point numbers
+      cout << fixed << setprecision(3);
+      
+      for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins; iTrackPt++){
+        
+        sprintf(namer, "$%.1f < p_{\\mathrm{T}} < %.1f$", ptBinBorders[iTrackPt], ptBinBorders[iTrackPt+1]);
+        cout << namer;
+        for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+          cout << " & $" << integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry] << "$";
+        }
+        cout << " \\\\" << endl;
+      }
+      
+      cout << "    \\bottomrule" << endl;
+      cout << "  \\end{tabular}" << endl;
+      cout << "\\end{center}" << endl;
+      cout << "\\end{frame}" << endl;
+      cout << endl;
+      
+    }
+  }
   
 }
 
@@ -555,9 +625,9 @@ void finalBigAsymmetryPlotter_v1(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_tuning_processed_2019-12-04.root");
+  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root");
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root <--- Nominal result file
-  TFile *pbpbFile = TFile::Open("data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root");
+  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root");
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root <-- File with manual fluctuation reduction
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_onlyJetShapa_manualTuning_wtaAxis_processed_2020-02-04.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04.root
