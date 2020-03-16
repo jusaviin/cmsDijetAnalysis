@@ -39,6 +39,7 @@ public:
   void ReadSpilloverDeltaRFile(TFile *spilloverFile); // Read the spillover correction histograms as a function of DeltaR
   void ReadTrackDeltaRFile(TFile *trackFile);         // Read the histograms related to residual R-dependent tracking correction
   void ReadSystematicFile(TFile *systematicFile);     // Read the histograms related to systematic uncertainties
+  void ReadJetReconstructionBiasFile(const char *fileName);     // Read the correction to v2 due to jet reconstruction bias
   void ReadLongRangeSystematicFile(const char *systematicFile); // Read the histograms related to systematic uncertainties of long range correlations
   
   // Getters for correction histograms
@@ -50,6 +51,9 @@ public:
   TH1D* GetJetShapeSpilloverCorrectionManualTune(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // Manually tuned spillover correction as a function of DeltaR
   TH2D* GetDeltaEtaDeltaPhiTrackDeltaRCorrection(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   double GetTrackDeltaRResidualScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
+  
+  // Getters for corrections for long range correlations
+  double GetJetReconstructionBiasCorrection(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // Jet reconstruction bias correction
   
   // Getters related to systematic uncertainties
   TString GetUncertaintyName(const int iUncertainty) const;
@@ -88,6 +92,7 @@ private:
   bool fSystematicErrorLoaded;     // Flag if a systematic error file has been loaded
   int  fSystematicAsymmetryBins;   // Number of asymmetry bins in the systematic uncertainty file
   int  fSystematicTrackPtBins;     // Number of track pT bins in the systematic uncertainty file
+  int  fLongRangeAsymmetryBins;    // Number of asymmetry bins in the long range correction file
   bool fTrackingCorrectionLoaded;  // Flag if the tracking correction had been loaded
   int  fTrackingAsymmetryBins;     // Number of asymmetry bins in the residual tracking correction file
   int  fTrackingPtBins;            // Number of track pT bins in the residual tracking correction file
@@ -110,6 +115,9 @@ private:
   // Systematic uncertainty
   TH1D *fhJetShapeUncertainty[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][knUncertaintySources];
   TH1D *fhDeltaEtaUncertainty[DijetHistogramManager::knJetTrackCorrelations][DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][knUncertaintySources];
+  
+  // Corrections to Fourier components from jet reconstruction bias
+  double fJetReconstructionBiasCorrection[DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][4] = {{{{0}}}}; // Last bin = Different flow components
   
   // Systematic uncertainty for long range correlations
   double fLongRangeUncertaintyTable[DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][4] = {{{{0}}}}; // Last bin = Different flow components

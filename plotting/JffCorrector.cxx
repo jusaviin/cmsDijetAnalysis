@@ -18,6 +18,7 @@ JffCorrector::JffCorrector() :
   fSystematicErrorLoaded(false),
   fSystematicAsymmetryBins(0),
   fSystematicTrackPtBins(0),
+  fLongRangeAsymmetryBins(0),
   fTrackingCorrectionLoaded(false),
   fTrackingAsymmetryBins(0),
   fTrackingPtBins(0),
@@ -91,6 +92,7 @@ JffCorrector::JffCorrector(const JffCorrector& in) :
   fSystematicErrorLoaded(in.fSystematicErrorLoaded),
   fSystematicAsymmetryBins(in.fSystematicAsymmetryBins),
   fSystematicTrackPtBins(in.fSystematicTrackPtBins),
+  fLongRangeAsymmetryBins(in.fLongRangeAsymmetryBins),
   fTrackingCorrectionLoaded(in.fTrackingCorrectionLoaded),
   fTrackingAsymmetryBins(in.fTrackingAsymmetryBins),
   fTrackingPtBins(in.fTrackingPtBins),
@@ -408,6 +410,38 @@ void JffCorrector::ReadSystematicFile(TFile *systematicFile){
   
 }
 
+// Read the correction to v2 due to jet reconstruction bias
+void JffCorrector::ReadJetReconstructionBiasFile(const char *fileName){
+  
+  // Create a stream to read the input file
+  std::string lineInFile;
+  std::ifstream fourierCorrections(fileName);
+  
+  // The first line contains binning information
+  std::getline(fourierCorrections, lineInFile);
+  int nCentralityBins, nFlowComponents, nTrackPtBins;
+  
+  std::istringstream lineStream(lineInFile);
+  lineStream >> nCentralityBins;
+  lineStream >> nFlowComponents;
+  lineStream >> fLongRangeAsymmetryBins;
+  lineStream >> nTrackPtBins;
+  
+  // Loop over the file and read all the uncertainties to the master table
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    for(int iFlow = 0; iFlow < nFlowComponents; iFlow++){
+      for(int iAsymmetry = 0; iAsymmetry <= fLongRangeAsymmetryBins; iAsymmetry++){
+        std::getline(fourierCorrections, lineInFile);
+        std::istringstream lineStream(lineInFile);
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          lineStream >> fJetReconstructionBiasCorrection[iAsymmetry][iCentrality][iTrackPt][iFlow];
+        } // Track pT loop
+      } // Asymmetry loop
+    } // Flow component loop
+  } // Centrality loop
+  
+}
+
 // Read the histograms related to systematic uncertainties of long range correlations
 void JffCorrector::ReadLongRangeSystematicFile(const char *systematicFile){
   
@@ -609,6 +643,16 @@ TH1D* JffCorrector::GetDeltaEtaSystematicUncertainty(const int iJetTrackCorrelat
   
   // Return the uncertainty in the selected bin
   return fhDeltaEtaUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty];
+}
+
+// Getter for jet reconstruction bias correction
+double JffCorrector::GetJetReconstructionBiasCorrection(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry >= fLongRangeAsymmetryBins) iAsymmetry = fLongRangeAsymmetryBins;
+  
+  // Return the uncertainty in the selected bin
+  return fJetReconstructionBiasCorrection[iAsymmetry][iCentrality][iTrackPt][iFlow];
 }
 
 // Getter for absolute systematic uncertainty for long range correlations
