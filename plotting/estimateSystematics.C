@@ -26,7 +26,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "uncertainties/totallyAnotherTest.root";
+  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root";
   // uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root
@@ -36,12 +36,12 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   bool mcMode = false; // Only adding uncertainty from background subtraction and acceptance correction
   
   bool readPairAcceptanceAndBackgroundSubtractionFromSmoothedFile = true; // If set to true, pair acceptance and background subtraction uncertainties are read from a smoothed text file. If false, they are evaluated for the tails of the deltaEta distribution.
-  const char* smoothedBackgroundFile = "uncertainties/pairBackgroundSmoothing_allXj_2020-10-17.txt";
+  const char* smoothedBackgroundFile = "uncertainties/pairBackgroundSmoothing_allXj_2020-01-17.txt";
   // uncertainties/pairBackgroundSmoothing_allXj_2020-10-17.txt
   // uncertainties/pairBackgroundSmoothing_mcForSpillover_onlyLeadingBackground_allXj_2020-01-22.txt
   
-  TString dataFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root";
-  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root
+  TString dataFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_tunedSeagull_allCorrections_processed_2020-01-14.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithCentShift_trackDeltaRonlyLowPt_processed_2019-10-16.root
@@ -51,24 +51,25 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_allCorrections_modifiedSeagull_wtaAxis_JECv4_processed_2019-08-13_fiveJobsMissing.root
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_5eveMix_allCorrections_tunedTracking_processed_2019-11-21.root
     
-  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root";
+  TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-10.root";
+  // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root
   // corrections/spilloverCorrection_PbPbMC_akFlowPuCsPfJets_jet100Trigger_xjBins_noUncorr_improviseMixing_wta_cutFluctuation_preliminary_2019-09-06.root
   // spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
   
-  TString jffFileName = "corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-15.root";
+  TString jffFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_noErrors_2020-02-17.root";
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_xjBins_JECv6_wtaAxis_centShift5_symmetrizedAndBackgroundSubtracted_noErrors_cutInRange_2019-10-15.root
   // corrections/jffCorrection_PbPbMC_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-26.root
   // corrections/jffCorrection_PbPbMC_pfCsJets_noUncOrInc_improvisedMixing_xjBins_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-07-15.root
   
   // File with jet energy correction uncertainties subtracted from the nominal jet pT
   // Note: Should use here a skimmed file that has only the final results, not all the intermediate 2D histograms
-  TString lowJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_newJFF_onlyFinalResults_processed_2019-12-16.root";
-  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_newJFF_processed_2019-12-16.root
+  TString lowJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_finalTuning_onlyFinalResults_processed_2019-12-16.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_newJFF_onlyFinalResults_processed_2019-12-16.root
   
   // File with jet energy correction uncertainties added to the nominal jet pT
   // Note: Should use here a skimmed file that has only the final results, not all the intermediate 2D histograms
-  TString highJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_newJFF_onlyFinalResults_processed_2019-12-29.root";
-  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_newJFF_processed_2019-12-29.root
+  TString highJetCutFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_finalTuning_onlyFinalResults_processed_2019-12-29.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_newJFF_onlyFinalResults_processed_2019-12-29.root
   
   // File for background uncertainty estimation for the spillover correction
   TString spilloverBackgroundFileName = "uncertainties/systematicUncertaintyForPbPbMC_5eveMix_xjBins_forSpillover_smoothedBackground_2020-01-22.root";

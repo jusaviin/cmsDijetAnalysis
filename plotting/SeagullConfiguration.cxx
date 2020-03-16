@@ -152,7 +152,7 @@ void SeagullConfiguration::InitializeArrays(){
   trackSubleadingJetPbPb[1][2][0] = 1;   // C = 30-50, 0.7 < pT < 2 GeV
   
   // 0.8 < xj < 1
-  trackSubleadingJetPbPb[2][0][1] = 6;   // C = 0-10,    1 < pT < 2 GeV
+  trackSubleadingJetPbPb[2][0][1] = 5;   // C = 0-10,    1 < pT < 2 GeV
   
   trackSubleadingJetPbPb[2][1][1] = 6;   // C = 10-30,   1 < pT < 2 GeV
   

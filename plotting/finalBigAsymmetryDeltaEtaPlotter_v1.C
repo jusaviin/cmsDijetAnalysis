@@ -436,7 +436,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
    mainTitle->DrawLatex(0.982, 0.0285, "1");*/
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/final%s_bigCanvas_closeToFinal.pdf", deltaEtaSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/final%s_bigCanvas_fixedSystError.pdf", deltaEtaSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("deltaEta_normal_v3.png");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   

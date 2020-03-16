@@ -439,13 +439,13 @@ void qaPlotter(){
   bool saveFigures = false;          // Save the figures to a file
   
   bool drawSpillover = false;              // Draw the QA plots for spillover correction
-  bool drawSeagull = false;                // Draw the QA plots for seagull correction
+  bool drawSeagull = true;                // Draw the QA plots for seagull correction
   bool calculateBackgroundOverlap = false; // Check difference in background overlap region of leading and subleading jets
-  bool drawJetShapeCorrections = true;    // Draw the jet shape corrections as a function or R
+  bool drawJetShapeCorrections = false;    // Draw the jet shape corrections as a function or R
   
-  bool regularJetTrack = false;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
-  bool ptWeightedJetTrack = true;    // Produce the correction for pT weighted jet-track correlations
+  bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
   bool useAsymmetryBinsForSeagull = true;  // Plot seagull fits in different asymmetry bins
@@ -465,7 +465,7 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
 
-  TFile *seagullFile = TFile::Open("data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21_QA.root");
+  TFile *seagullFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13_QA.root");
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17_QA.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_seagullTuning_processed_2019-12-13_QA.root

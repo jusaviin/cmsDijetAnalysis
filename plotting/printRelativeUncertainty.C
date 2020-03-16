@@ -16,10 +16,12 @@ void printRelativeUncertainty(){
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root";
   TString uncertaintyFileName[2];
   TString ppUncertaintyFileName[2];
-  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root";
+  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root";
   ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root";
-  uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root";
+  uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root";
   ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverWithSmoothedBackground_newJES_tunedSeagull_smoothedPairBackground_2020-01-23.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_seagullTuningProcess_2020-01-15.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverJES_tunedSeagull_smoothedPairBackground_2020-01-21.root
@@ -31,16 +33,16 @@ void printRelativeUncertainty(){
   bool smoothHistograms = true;
   int nFiles = drawComparisonUncertaintyFile ? 2 : 1;
   
-  const char* legendLabels[] = {"Dijet analysis", "Dijet analysis (no bg)", "lul", "Toinen lul"};  // Labels referring to different uncertainty files
+  const char* legendLabels[] = {"Dijet analysis", "New estimate", "lul", "Toinen lul"};  // Labels referring to different uncertainty files
   
   TString inclusiveFileName = "uncertainties/inclusiveAnalysis/js_AllSource_syst_err.root";
   
-  bool printSlides = false;  // Print slides showing the R-integrated uncertainty in each pT bin
-  bool combineTracking = false; // Combine all tracking related uncertainty to one when printing the table
-  bool drawUncertaintySourceComparison = true; // Draw all uncertainty sources as a function of R in each pT bin
+  bool printSlides = true;  // Print slides showing the R-integrated uncertainty in each pT bin
+  bool combineTracking = true; // Combine all tracking related uncertainty to one when printing the table
+  bool drawUncertaintySourceComparison = false; // Draw all uncertainty sources as a function of R in each pT bin
   bool drawUncertaintySystemComparison = false; // Draw single uncertainty source for all systems as a function of R in each pT bin
   bool drawComparisonToInclusive = false;        // Draw comparison to systematic uncertainty histograms from inclusive analysis
-  bool saveFigures = true;   // Save the drawn figures to file
+  bool saveFigures = false;   // Save the drawn figures to file
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -234,6 +236,7 @@ void printRelativeUncertainty(){
   
   // Print a slide with uncertainties for each source and each centrality
   if(printSlides){
+
     for(int iJetType = 0; iJetType < 2; iJetType++){
       for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
         
