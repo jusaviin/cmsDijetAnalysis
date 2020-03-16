@@ -306,7 +306,7 @@ TH2D* DijetMethods::MixedEventCorrect(const TH2D *sameEventHistogram, const TH2D
   double averageScale = (leadingScale+subleadingScale)/2.0;
   double normalizationScale = leadingScale;
   if(fMixedEventNormalizationMethod == kAverage) normalizationScale = averageScale;
-
+  
   // Normalize the mixed event histogram and do the correction
   sprintf(newName,"%sNormalized",leadingMixedEventHistogram->GetName());
   fNormalizedMixedEventHistogram = (TH2D*)leadingMixedEventHistogram->Clone(newName);
@@ -1627,10 +1627,11 @@ void DijetMethods::SymmetrizeDeltaEta(TH1D *histogramInNeedOfSymmetrization){
  *
  *  TH1D* backgroundDeltaPhi = Background deltaPhi histogram
  *  const int maxVn = Largest vn included in the Fourier fit
+ *  const bool onlyNearSideFit = Do the fit only on the near side of the distribution
  *
  *  return = The Fourier fit function
  */
-TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi, const int maxVn){
+TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi, const int maxVn, const bool onlyNearSideFit){
   
   // Define the fourier fit. Use fit parameters up to maxVn
   char fourierFormula[300] = "[0]*(1";
@@ -1663,7 +1664,10 @@ TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi, const int maxVn){
   }
   
   // Do the fit!
-  backgroundDeltaPhi->Fit("fourier","","",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+  double lowerFitBound = -TMath::Pi()/2.0;
+  double upperFitBound = 3.0*TMath::Pi()/2.0;
+  if(onlyNearSideFit) upperFitBound = TMath::Pi()/2.0;
+  backgroundDeltaPhi->Fit("fourier","","",lowerFitBound,upperFitBound);
   
   // Return the fitted distribution
   return fourier;
