@@ -1194,9 +1194,9 @@ void DijetHistogramManager::DoProjections(){
               for(int iBin = 1; iBin < fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta]->GetNbinsX(); iBin++){
                 binError = fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta]->GetBinError(iBin);
                 errorScale = fMethods->GetBackgroundErrorScalingFactor();
-                fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta]->SetBinError(iBin,binError*errorScale);
+                fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta]->SetBinError(iBin, binError*errorScale);
               }
-              //fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta],knFittedFlowComponents); // TODO: Turning off Fourier fit
+              fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta], knFittedFlowComponents);
             }
             
             // DeltaPhi histogram over signal eta region
@@ -2273,8 +2273,10 @@ void DijetHistogramManager::WriteDijetHistograms(){
       // Leading jet pT vs. subleading jet pT
       if(fLoad2DHistograms) {
         for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
-          sprintf(histogramNamer,"leadingVsSubleadingPt_%sC%d", fAsymmetryBinName[iAsymmetry].Data(), iCentralityBin);
-          fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentralityBin]->Write(histogramNamer, TObject::kOverwrite);
+          if(fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentralityBin]){
+            sprintf(histogramNamer,"leadingVsSubleadingPt_%sC%d", fAsymmetryBinName[iAsymmetry].Data(), iCentralityBin);
+            fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentralityBin]->Write(histogramNamer, TObject::kOverwrite);
+          }
         }
       }
     }
