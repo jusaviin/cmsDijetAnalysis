@@ -1,23 +1,15 @@
+// C++ includes
 #include <iostream>
+#include <fstream>
+#include <vector>
+
+// Root includes
 #include "TFile.h"
 #include "TTree.h"
-#include "TH1F.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TH2D.h"
-#include "TF1.h"
-#include "TDirectory.h"
-
-#include "TH2F.h"
 #include "TMath.h"
-#include <TNtuple.h>
 #include "TChain.h"
-#include <TString.h>
-#include <TCut.h>
-
-#include <fstream>
+#include "TString.h"
 #include "TMath.h"
-#include <vector>
 
 using namespace std;
 
