@@ -99,6 +99,9 @@ bool checkBool(string str) {
   return b;
 }
 
+/*
+ * Main function of the skimmer
+ */
 int main(int argc,char *argv[]){
   
   //==== Read arguments =====
@@ -738,6 +741,7 @@ int main(int argc,char *argv[]){
       
       if(passTrackCuts){
         trackPtOutput[iTrackOutput] = trackPtArray[iTrack];
+        trackPtErrorOutput[iTrackOutput] = trackPtErrorArray[iTrack];
         trackPhiOutput[iTrackOutput] = trackPhiArray[iTrack];
         trackEtaOutput[iTrackOutput] = trackEtaArray[iTrack];
         trackHighPurityOutput[iTrackOutput] = trackHighPurityArray[iTrack];
@@ -745,7 +749,7 @@ int main(int argc,char *argv[]){
         trackVertexDistanceZErrorOutput[iTrackOutput] = trackVertexDistanceZErrorArray[iTrack];
         trackVertexDistanceXYOutput[iTrackOutput] = trackVertexDistanceXYArray[iTrack];
         trackVertexDistanceXYErrorOutput[iTrackOutput] = trackVertexDistanceXYErrorArray[iTrack];
-        trackChi2Output[iTrackOutput] = trackChi2Output[iTrack];
+        trackChi2Output[iTrackOutput] = trackChi2Array[iTrack];
         nTrackDegreesOfFreedomOutput[iTrackOutput] = nTrackDegreesOfFreedomArray[iTrack];
         nHitsTrackerLayerOutput[iTrackOutput] = nHitsTrackerLayerArray[iTrack];
         nHitsTrackOutput[iTrackOutput] = nHitsTrackArray[iTrack];
