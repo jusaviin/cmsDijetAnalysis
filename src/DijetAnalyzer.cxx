@@ -1387,7 +1387,7 @@ void DijetAnalyzer::RunAnalysis(){
         nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
         for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
           
-          /// Check that all the track cuts are passed
+          // Check that all the track cuts are passed
           if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
           
           // Get the efficiency correction
