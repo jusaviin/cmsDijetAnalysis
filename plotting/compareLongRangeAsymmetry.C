@@ -79,14 +79,14 @@ void compareLongRangeAsymmetry(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString pbpbFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
+  TString pbpbFileName = "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_noCorrections_processed_2020-03-16.root";//"data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing.root";
   //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
   //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root";
   
   // For systematic uncertainty estimation, need files in which the background is not adjusted between leading and subleading side
-  TString pbpbUnadjustedFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
+  TString pbpbUnadjustedFileName = "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_noCorrections_processed_2020-03-16.root";//"data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_onlySeagull_processed_2019-10-10.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
   // "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
@@ -119,8 +119,11 @@ void compareLongRangeAsymmetry(){
   const bool saveFigures = false;
   TString saveComment = "_genTest";
   
-  int firstDrawnAsymmetryBin = 0;
+  int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
+  
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = 1;
   
   const int fourierV = 0;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
   TString vString = "";
@@ -238,8 +241,10 @@ void compareLongRangeAsymmetry(){
       
     }
     
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
       for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+        
+        cout << "In the bin iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << " iAsymmetry: " << iAsymmetry << endl;
         
         // Read the histograms for pp
         if(iCentrality == nCentralityBins){
@@ -324,7 +329,7 @@ void compareLongRangeAsymmetry(){
   
   // Extract the vn parameters from the fits
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
       for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
         for(int iFlow = 0; iFlow < nRefit; iFlow++){
           masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = backgroundFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
@@ -335,7 +340,7 @@ void compareLongRangeAsymmetry(){
       } // Asymmetry loop
     } // track pT
   } // centrality
-  
+
   // Draw all asymmery bins deltaR curves to a single plot to see if the spillover is similar regardless of asymmetry bin
   JDrawer *drawer = new JDrawer();
   
@@ -363,7 +368,7 @@ void compareLongRangeAsymmetry(){
   
   if(drawFourierFit){
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+      for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
         
         // Setup a legend for the figure
         legend = new TLegend(0.39,0.87-(lastDrawnAsymmetryBin-firstDrawnAsymmetryBin)*0.06,0.75,0.99);
@@ -524,7 +529,7 @@ void compareLongRangeAsymmetry(){
     
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
       
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins - 2; iTrackPt++){
+      for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
         
         // Find a good place to put the track pT points for the graphs
         if(tracksForGraph[iCentrality]){
@@ -548,7 +553,7 @@ void compareLongRangeAsymmetry(){
       // Create an array for the y-axis and make a graph out of vn values
       for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
         for(int iFlow = 0; iFlow < nRefit; iFlow++){
-          for(int iTrackPt = 0; iTrackPt < nTrackPtBins-2; iTrackPt++){
+          for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
             graphPointsY[iTrackPt] = masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
             graphErrorsY[iTrackPt] = masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow];
             graphSystematicsY[iTrackPt] = disableSystematicUncertainty ? 0 : uncertaintyProvider->GetLongRangeSystematicUncertainty(iFlow, iCentrality, iTrackPt, iAsymmetry);

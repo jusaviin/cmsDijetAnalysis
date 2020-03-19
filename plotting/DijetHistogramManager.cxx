@@ -1046,8 +1046,8 @@ void DijetHistogramManager::SubtractBackground(){
           
           // Subtract the background from the spillover corrected histogram
           // TODO TODO TODO: Option to remove background combination
-          //fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),true); // Do not combine background
-          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),isInclusive); // Nominal
+          fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),true); // Do not combine background
+          //fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->SubtractBackground(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fhJetTrackDeltaEtaDeltaPhi[connectedIndex][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin],fCard->GetMaxDeltaEta(),isInclusive); // Nominal
           
           // Get also the background and background overlap region for QA purposes
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackground][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->GetBackground();
@@ -1196,6 +1196,7 @@ void DijetHistogramManager::DoProjections(){
                 errorScale = fMethods->GetBackgroundErrorScalingFactor();
                 fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta]->SetBinError(iBin, binError*errorScale);
               }
+              cout << "Fitting background for " << iJetTrack << endl;
               fMethods->FourierFit(fhJetTrackDeltaPhi[iJetTrack][iCorrelationType][iAsymmetry][iCentralityBin][iTrackPtBin][kWholeEta], knFittedFlowComponents);
             }
             
