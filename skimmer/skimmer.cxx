@@ -531,13 +531,7 @@ int main(int argc,char *argv[]){
   //           Define output trees
   // ========================================== //
   
-  TFile *outputFile = new TFile(outputFileName, "RECREATE");
-  outputFile->cd();
-  
   // Copy the heavy ion tree to the output
-  gDirectory->mkdir("hiEvtAnalyzer");
-  gDirectory->cd("hiEvtAnalyzer");
-  
   TTree *heavyIonTreeOutput = new TTree("HiTree","");
   
   // Connect the branches of the heavy ion tree
@@ -550,24 +544,14 @@ int main(int argc,char *argv[]){
     heavyIonTreeOutput->Branch("weight",&eventWeight,"weight/F");
   }
   
-  gDirectory->cd("../");
-  
-  // Copy the HTL tree to the output
-  gDirectory->mkdir("hltanalysis");
-  gDirectory->cd("hltanalysis");
-  
+  // Copy the HLT tree to the output
   TTree *hltTreeOutput = new TTree("HltTree","");
   
   // Connect the branches of the HLT tree
   hltTreeOutput->Branch("HLT_HIPuAK4CaloJet80Eta5p1_v1",&caloJetFilterBit80,"HLT_HIPuAK4CaloJet80Eta5p1_v1/I");
   hltTreeOutput->Branch("HLT_HIPuAK4CaloJet100Eta5p1_v1",&caloJetFilterBit100,"HLT_HIPuAK4CaloJet100Eta5p1_v1/I");
   
-  gDirectory->cd("../");
-  
   // Copy the skim tree to the output
-  gDirectory->mkdir("skimanalysis");
-  gDirectory->cd("skimanalysis");
-  
   TTree *skimTreeOutput = new TTree("HltTree","");
   
   skimTreeOutput->Branch("pprimaryVertexFilter",&primaryVertexFilterBit,"pprimaryVertexFilter/I");
@@ -578,17 +562,11 @@ int main(int argc,char *argv[]){
   skimTreeOutput->Branch("phfCoincFilter2Th4", &hfCoincidenceFilterBit2Th4, "phfCoincFilter2Th4/I");
   skimTreeOutput->Branch("pclusterCompatibilityFilter",&clusterCompatibilityFilterBit,"pclusterCompatibilityFilter/I");
   skimTreeOutput->Branch("pBeamScrapingFilter",&beamScrapingFilterBit,"pBeamScrapingFilter/I");
-  
-  gDirectory->cd("../");
        
   // Copy the jet trees to the output
-  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akPu4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer"};
   TTree *jetTreeOutput[nJetTrees];
   
   for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
-    
-    gDirectory->mkdir(jetDirectories[iJetType]);
-    gDirectory->cd(jetDirectories[iJetType]);
     
     jetTreeOutput[iJetType] = new TTree("t","");
     
@@ -624,50 +602,60 @@ int main(int argc,char *argv[]){
       jetTreeOutput[iJetType]->Branch("WTAgeneta",&genJetEtaArrayWTA[iJetType],"WTAgeneta[ngen]/F");
       
     } // Branches only for MC
-    
-    gDirectory->cd("../");
-    
+
   } // Jet type loop
   
   // Copy the track trees to the output
-  gDirectory->mkdir("ppTrack");
-  gDirectory->cd("ppTrack");
-  
   TTree *trackTreeOutput = new TTree("trackTree","");
   
-  trackTreeOutput->Branch("nTrk",&nTracks,"nTrk/I");
-  trackTreeOutput->Branch("trkPt",&trackPtArray,"trkPt[nTrk]/F");
-  trackTreeOutput->Branch("trkPtError",&trackPtErrorArray,"trkPtError[nTrk]/F");
-  trackTreeOutput->Branch("trkPhi",&trackPhiArray,"trkPhi[nTrk]/F");
-  trackTreeOutput->Branch("trkEta",&trackEtaArray,"trkEta[nTrk]/F");
+  Int_t nTracksOutput;                                       // Number of tracks
+  Float_t trackPtOutput[nMaxTrack] = {0};                    // Array for track pT:s
+  Float_t trackPtErrorOutput[nMaxTrack] = {0};               // Array for track pT errors
+  Float_t trackPhiOutput[nMaxTrack] = {0};                   // Array for track phis
+  Float_t trackEtaOutput[nMaxTrack] = {0};                   // Array for track etas
+  Bool_t trackHighPurityOutput[nMaxTrack] = {0};             // Array for the high purity of tracks
+  Float_t trackVertexDistanceZOutput[nMaxTrack] = {0};       // Array for track distance from primary vertex in z-direction
+  Float_t trackVertexDistanceZErrorOutput[nMaxTrack] = {0};  // Array for error for track distance from primary vertex in z-direction
+  Float_t trackVertexDistanceXYOutput[nMaxTrack] = {0};      // Array for track distance from primary vertex in xy-direction
+  Float_t trackVertexDistanceXYErrorOutput[nMaxTrack] = {0}; // Array for error for track distance from primary vertex in xy-direction
+  Float_t trackChi2Output[nMaxTrack] = {0};                  // Array for track chi2 value from reconstruction fit
+  UChar_t nTrackDegreesOfFreedomOutput[nMaxTrack] = {0};     // Array for number of degrees of freedom in reconstruction fit
+  UChar_t nHitsTrackerLayerOutput[nMaxTrack] = {0};          // Array for number of hits in tracker layers
+  UChar_t nHitsTrackOutput[nMaxTrack] = {0};                 // Array for number of hits for the track
+  Float_t trackEnergyEcalOutput[nMaxTrack] = {0};            // Array for track energy in ECal
+  Float_t trackEnergyHcalOutput[nMaxTrack] = {0};            // Array for track energy in HCal
+  UChar_t trackAlgorithmOutput[nMaxTrack] = {0};             // Array for track algorithm
+  UChar_t trackOriginalAlgorithmOutput[nMaxTrack] = {0};     // Array for track original algorithm
+  Float_t trackMVAOutput[nMaxTrack] = {0};                   // Array for track MVA
+  Int_t trackChargeOutput[nMaxTrack] = {0};                  // Array for track charge
   
-  trackTreeOutput->Branch("highPurity",&trackHighPurityArray,"highPurity[nTrk]/O");
-  trackTreeOutput->Branch("trkDz1",&trackVertexDistanceZArray,"trkDz1[nTrk]/F");
-  trackTreeOutput->Branch("trkDzError1",&trackVertexDistanceZErrorArray,"trkDzError1[nTrk]/F");
-  trackTreeOutput->Branch("trkDxy1",&trackVertexDistanceXYArray,"trkDxy1[nTrk]/F");
-  trackTreeOutput->Branch("trkDxyError1",&trackVertexDistanceXYErrorArray,"trkDxyError1[nTrk]/F");
-  trackTreeOutput->Branch("trkChi2",&trackChi2Array,"trkChi2[nTrk]/F");
-  trackTreeOutput->Branch("trkNdof",&nTrackDegreesOfFreedomArray,"trkNdof[nTrk]/b");
-  trackTreeOutput->Branch("trkNlayer",&nHitsTrackerLayerArray,"trkNlayer[nTrk]/b");
-  trackTreeOutput->Branch("trkNHit",&nHitsTrackArray,"trkNHit[nTrk]/b");
-  trackTreeOutput->Branch("pfEcal",&trackEnergyEcalArray,"pfEcal[nTrk]/F");
-  trackTreeOutput->Branch("pfHcal",&trackEnergyHcalArray,"pfHcal[nTrk]/F");
+  trackTreeOutput->Branch("nTrk",&nTracksOutput,"nTrk/I");
+  trackTreeOutput->Branch("trkPt",&trackPtOutput,"trkPt[nTrk]/F");
+  trackTreeOutput->Branch("trkPtError",&trackPtErrorOutput,"trkPtError[nTrk]/F");
+  trackTreeOutput->Branch("trkPhi",&trackPhiOutput,"trkPhi[nTrk]/F");
+  trackTreeOutput->Branch("trkEta",&trackEtaOutput,"trkEta[nTrk]/F");
+  
+  trackTreeOutput->Branch("highPurity",&trackHighPurityOutput,"highPurity[nTrk]/O");
+  trackTreeOutput->Branch("trkDz1",&trackVertexDistanceZOutput,"trkDz1[nTrk]/F");
+  trackTreeOutput->Branch("trkDzError1",&trackVertexDistanceZErrorOutput,"trkDzError1[nTrk]/F");
+  trackTreeOutput->Branch("trkDxy1",&trackVertexDistanceXYOutput,"trkDxy1[nTrk]/F");
+  trackTreeOutput->Branch("trkDxyError1",&trackVertexDistanceXYErrorOutput,"trkDxyError1[nTrk]/F");
+  trackTreeOutput->Branch("trkChi2",&trackChi2Output,"trkChi2[nTrk]/F");
+  trackTreeOutput->Branch("trkNdof",&nTrackDegreesOfFreedomOutput,"trkNdof[nTrk]/b");
+  trackTreeOutput->Branch("trkNlayer",&nHitsTrackerLayerOutput,"trkNlayer[nTrk]/b");
+  trackTreeOutput->Branch("trkNHit",&nHitsTrackOutput,"trkNHit[nTrk]/b");
+  trackTreeOutput->Branch("pfEcal",&trackEnergyEcalOutput,"pfEcal[nTrk]/F");
+  trackTreeOutput->Branch("pfHcal",&trackEnergyHcalOutput,"pfHcal[nTrk]/F");
   
   // Additional information needed for 2018 track cuts
-  trackTreeOutput->Branch("trkAlgo",&trackAlgorithmArray,"trkAlgo[nTrk]/b");
-  trackTreeOutput->Branch("trkOriginalAlgo",&trackOriginalAlgorithmArray,"trkOriginalAlgo[nTrk]/b");
-  trackTreeOutput->Branch("trkMVA",&trackMVAArray,"trkMVA[nTrk]/F");
+  trackTreeOutput->Branch("trkAlgo",&trackAlgorithmOutput,"trkAlgo[nTrk]/b");
+  trackTreeOutput->Branch("trkOriginalAlgo",&trackOriginalAlgorithmOutput,"trkOriginalAlgo[nTrk]/b");
+  trackTreeOutput->Branch("trkMVA",&trackMVAOutput,"trkMVA[nTrk]/F");
   
   // Additional branches
-  trackTreeOutput->Branch("trkCharge",&trackChargeArray,"trkCharge[nTrk]/I");
-  
-  gDirectory->cd("../");
-  
+  trackTreeOutput->Branch("trkCharge",&trackChargeOutput,"trkCharge[nTrk]/I");
   
   // Generator level tracks only in Monte Carlo
-  gDirectory->mkdir("HiGenParticleAna");
-  gDirectory->cd("HiGenParticleAna");
-  
   TTree *genTrackTreeOutput = new TTree("hi","");
   
   std::vector<float> *genTrackPtVector = new std::vector<float>(); genTrackPtVector->clear();
@@ -685,13 +673,7 @@ int main(int argc,char *argv[]){
     genTrackTreeOutput->Branch("sube","vector<int>", &genTrackSubeventVector);
   }
   
-  gDirectory->cd("../");
-  
-  
   // Copy the particle flow candidate tree to the output
-  gDirectory->mkdir("pfcandAnalyzer");
-  gDirectory->cd("pfcandAnalyzer");
-  
   TTree *particleFlowCandidateTreeOutput = new TTree("pfTree","");
   
   std::vector<int> *particleFlowCandidateIdOutputVector = new std::vector<int>(); particleFlowCandidateIdOutputVector->clear();
@@ -704,16 +686,17 @@ int main(int argc,char *argv[]){
   particleFlowCandidateTreeOutput->Branch("pfPhi","vector<float>",&particleFlowCandidatePhiOutputVector);
   particleFlowCandidateTreeOutput->Branch("pfEta","vector<float>",&particleFlowCandidateEtaOutputVector);
   
-  gDirectory->cd("../");
-  
-  int nEvents = heavyIonTree->GetEntries();
-  cout << "There are " << nEvents << " events" << endl;
   // ========================================== //
   //          Loop over all events              //
   // ========================================== //
   
-  // TODO: For testing purposes, only read a few events!!!
-  for(int iEvent = 0; iEvent < 2; iEvent++) {
+  int nEvents = heavyIonTree->GetEntries();
+  cout << "There are " << nEvents << " events" << endl;
+  
+  bool passTrackCuts;
+  int iTrackOutput;
+  
+  for(int iEvent = 0; iEvent < nEvents; iEvent++) {
     
     if( iEvent % 1000 == 0 )  std::cout << "iEvent: " << iEvent <<  " of " << nEvents << std::endl;
     
@@ -735,12 +718,59 @@ int main(int argc,char *argv[]){
     heavyIonTreeOutput->Fill();
     hltTreeOutput->Fill();
     skimTreeOutput->Fill();
-    trackTreeOutput->Fill();
+    
     
     for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
       jetTreeOutput[iJetType]->Fill();
     }
     
+    
+    // Reco track loop
+    nTracksOutput = nTracks;
+    iTrackOutput = 0;
+    for(int iTrack = 0; iTrack < nTracks; iTrack++){
+      
+      passTrackCuts = true;
+      
+      // Do basic track cuts for the reconstructed tracks
+      if(trackHighPurityArray[iTrack] != 1) passTrackCuts = false;
+      
+      if(trackPtErrorArray[iTrack]/trackPtArray[iTrack] > 0.1) passTrackCuts = false;
+      if(TMath::Abs(trackVertexDistanceZArray[iTrack]/trackVertexDistanceZErrorArray[iTrack]) > 3) passTrackCuts = false;
+      if(TMath::Abs(trackVertexDistanceXYArray[iTrack]/trackVertexDistanceXYErrorArray[iTrack]) > 3) passTrackCuts = false;
+      
+      if(TMath::Abs(trackEtaArray[iTrack]) >= 2.4) passTrackCuts = false;  //acceptance of the tracker
+      
+      if(trackPtArray[iTrack] < 0.7) passTrackCuts = false;   // Minimum track pT
+      if(trackPtArray[iTrack] > 300 ) passTrackCuts = false;  // Maximum track pT
+      
+      if(passTrackCuts){
+        trackPtOutput[iTrackOutput] = trackPtArray[iTrack];
+        trackPhiOutput[iTrackOutput] = trackPhiArray[iTrack];
+        trackEtaOutput[iTrackOutput] = trackEtaArray[iTrack];
+        trackHighPurityOutput[iTrackOutput] = trackHighPurityArray[iTrack];
+        trackVertexDistanceZOutput[iTrackOutput] = trackVertexDistanceZArray[iTrack];
+        trackVertexDistanceZErrorOutput[iTrackOutput] = trackVertexDistanceZErrorArray[iTrack];
+        trackVertexDistanceXYOutput[iTrackOutput] = trackVertexDistanceXYArray[iTrack];
+        trackVertexDistanceXYErrorOutput[iTrackOutput] = trackVertexDistanceXYErrorArray[iTrack];
+        trackChi2Output[iTrackOutput] = trackChi2Output[iTrack];
+        nTrackDegreesOfFreedomOutput[iTrackOutput] = nTrackDegreesOfFreedomArray[iTrack];
+        nHitsTrackerLayerOutput[iTrackOutput] = nHitsTrackerLayerArray[iTrack];
+        nHitsTrackOutput[iTrackOutput] = nHitsTrackArray[iTrack];
+        trackEnergyEcalOutput[iTrackOutput] = trackEnergyEcalArray[iTrack];
+        trackEnergyHcalOutput[iTrackOutput] = trackEnergyHcalArray[iTrack];
+        trackAlgorithmOutput[iTrackOutput] = trackAlgorithmArray[iTrack];
+        trackOriginalAlgorithmOutput[iTrackOutput] = trackOriginalAlgorithmArray[iTrack];
+        trackMVAOutput[iTrackOutput] = trackMVAArray[iTrack];
+        trackChargeOutput[iTrackOutput] = trackChargeArray[iTrack];
+        iTrackOutput++;
+      } else {
+        nTracksOutput--;
+      }
+      
+    }
+    
+    trackTreeOutput->Fill();
     
     // Gen track loop
     if(isMC){
@@ -776,11 +806,76 @@ int main(int argc,char *argv[]){
     
     particleFlowCandidateTreeOutput->Fill();
     
+    // Clear the vectors before the next event! Otherwise all the tracks pile up cumulatively
+    if(isMC){
+      genTrackPtVector->clear();
+      genTrackPhiVector->clear();
+      genTrackEtaVector->clear();
+      genTrackChargeVector->clear();
+      genTrackSubeventVector->clear();
+    }
+    
+    particleFlowCandidateIdOutputVector->clear();
+    particleFlowCandidatePtOutputVector->clear();
+    particleFlowCandidatePhiOutputVector->clear();
+    particleFlowCandidateEtaOutputVector->clear();
+    
   } // Event loop
   
-  cout<<"writing"<<endl;
+  // Write the skimmed trees to the output file
   
-  outputFile->Write();
+  TFile *outputFile = new TFile(outputFileName, "RECREATE");
+  
+  gDirectory->mkdir("hiEvtAnalyzer");
+  gDirectory->cd("hiEvtAnalyzer");
+  
+  heavyIonTreeOutput->Write();
+  
+  gDirectory->cd("../");
+  gDirectory->mkdir("hltanalysis");
+  gDirectory->cd("hltanalysis");
+  
+  hltTreeOutput->Write();
+  
+  gDirectory->cd("../");
+  gDirectory->mkdir("skimanalysis");
+  gDirectory->cd("skimanalysis");
+  
+  skimTreeOutput->Write();
+  
+  gDirectory->cd("../");
+  
+  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akPu4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer"};
+  
+  for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
+    
+    gDirectory->mkdir(jetDirectories[iJetType]);
+    gDirectory->cd(jetDirectories[iJetType]);
+    
+    jetTreeOutput[iJetType]->Write();
+    
+    gDirectory->cd("../");
+    
+  } // Loop over jet types
+  
+  gDirectory->mkdir("ppTrack");
+  gDirectory->cd("ppTrack");
+  
+  trackTreeOutput->Write();
+  
+  gDirectory->cd("../");
+  gDirectory->mkdir("HiGenParticleAna");
+  gDirectory->cd("HiGenParticleAna");
+  
+  genTrackTreeOutput->Write();
+  
+  gDirectory->cd("../");
+  gDirectory->mkdir("pfcandAnalyzer");
+  gDirectory->cd("pfcandAnalyzer");
+
+  particleFlowCandidateTreeOutput->Write();
+  
+  gDirectory->cd("../");
   
   outputFile->Close();
   
