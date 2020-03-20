@@ -1656,6 +1656,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       
       // Get the efficiency correction
       trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);
+      trackEfficiencyCorrection *= triggerTrackEfficiencyCorrection; // As the trigger is a particle also, we need to multiply the efficiency corrections to get the pair efficiency correction
       
       // Calculate deltaEta and deltaPhi between track and leading and subleading jets
       deltaEtaTrackLeadingJet = leadingJetEta - trackEta;
