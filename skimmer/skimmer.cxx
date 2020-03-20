@@ -1,7 +1,14 @@
 // C++ includes
-#include <iostream>
-#include <fstream>
-#include <vector>
+#include <iostream>   // Input/output stream. Needed for cout.
+#include <fstream>    // File stream for intup/output to/from files
+#include <stdlib.h>   // Standard utility libraries
+#include <assert.h>   // Standard c++ debugging tool. Terminates the program if expression given evaluates to 0.
+#include <vector>     // C++ vector class
+#include <sstream>    // Libraries for checking boolean input
+#include <string>     // Libraries for checking boolean input
+#include <iomanip>    // Libraries for checking boolean input
+#include <algorithm>  // Libraries for checking boolean input
+#include <cctype>     // Libraries for checking boolean input
 
 // Root includes
 #include "TFile.h"
