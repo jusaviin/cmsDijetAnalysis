@@ -6,7 +6,9 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "rofl.root" "rofl_preprocessed.root" false false 2 "data/"
+./processHistogramsInStepsManual.sh "dihadronTest_preprocessed.root" "dihadronTest_processed.root" false false -1 "data/"
+
+#./processHistogramsInSteps.sh "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_preprocessed_2020-03-20.root" "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_processed_2020-03-20.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_preprocessed_2020-03-16.root" "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_noCorrections_processed_2020-03-16.root" false false -1 "data/"
 

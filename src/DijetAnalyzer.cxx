@@ -1196,8 +1196,8 @@ void DijetAnalyzer::RunAnalysis(){
                 inclusiveJetInfo[nJetsInThisEvent][2] = leadingParticleFlowCandidateEta;
               }
               
-              // Correlate inclusive jets with tracks
-              if(!onlyMix) CorrelateTracksAndJets(inclusiveJetInfo[nJetsInThisEvent],inclusiveJetInfo[nJetsInThisEvent],DijetHistograms::kSameEvent,true);
+              // Correlate inclusive jets with tracks. Only do this once per event for dihadrons
+              if(!onlyMix && nJetsInThisEvent == 0) CorrelateTracksAndJets(inclusiveJetInfo[nJetsInThisEvent],inclusiveJetInfo[nJetsInThisEvent],DijetHistograms::kSameEvent,true);
               
               // Increase the number of jets we have found in the event
               nJetsInThisEvent++;
@@ -1611,6 +1611,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   // Calculate the dijet asymmetry. Choose AJ or xJ based on selection from JCard.
   Double_t dijetAsymmetry = (fAsymmetryBinType == 0) ? (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt) : subleadingJetPt/leadingJetPt;
   
+  Double_t triggerLowBorder = fCard->Get("TriggerTrackLow");
+  Double_t triggerHighBorder = fCard->Get("TriggerTrackHigh");
+  
   // Loop over all track in the event
   Int_t nTracks = fTrackReader[correlationType]->GetNTracks();
   for(Int_t iTriggerTrack = 0; iTriggerTrack < nTracks; iTriggerTrack++){
@@ -1625,6 +1628,10 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     leadingJetPhi = fTrackReader[correlationType]->GetTrackPhi(iTriggerTrack);
     leadingJetEta = fTrackReader[correlationType]->GetTrackEta(iTriggerTrack);
     
+    // Read the track information also to the subleading jet histograms so they can be filled at the same time
+    subleadingJetPhi = fTrackReader[correlationType]->GetTrackPhi(iTriggerTrack);
+    subleadingJetEta = fTrackReader[correlationType]->GetTrackEta(iTriggerTrack);
+    
     triggerTrackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTriggerTrack);
     
     // Fill track histograms if selected to do so. Inclusive tracks are filled in separate place
@@ -1638,8 +1645,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       fHistograms->fhTrackUncorrected->Fill(fillerTrack,fTotalEventWeight);                 // Fill the uncorrected track histogram
     }
     
-    // For a quick test, only look at 3 < pT < 4 GeV and 4 < pT < 8 pT bins for the trigger track in dihadron correlations
-    if(triggerPt < 3 || triggerPt > 8) continue;
+    // Read the trigger bin from the card
+    if(triggerPt < triggerLowBorder || triggerPt > triggerHighBorder) continue;
     
     for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
       
@@ -1685,8 +1692,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       
       if(useInclusiveJets){
         
-        jetPtWeight = GetJetPtWeight(leadingJetPt);
+        jetPtWeight = 1;
         
+        // Use inclusive jet histograms for tracks in all events
         fillerJetTrackInclusive[0] = trackPt;                    // Axis 0: Track pT
         fillerJetTrackInclusive[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and inclusive jet
         fillerJetTrackInclusive[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and inclusive jet
@@ -1696,29 +1704,27 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
         
         if(fFillInclusiveJetTrackCorrelation){
           fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
-          fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
+          // fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram Do not fill pT weighted histograms for dihadron
         }
       } else {
         
         jetPtWeight = 1;
         
-        // Use leading jet histograms for trigger pT 3-4
-        if(triggerPt >= 3 && triggerPt < 4){
-          fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
-          fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
-          fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
-          fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
-          fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
-          fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
-          fillerJetTrack[6] = leadingJetFlavor;           // Axis 6: Leading jet flavor (quark or gluon)
-          if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-leading jet correlation histogram
-          if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-leading jet correlation histogram
-          if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-leading jet correlation histogram
-        }
+        // Use leading jet histograms for tracks in dijet events
+        fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
+        fillerJetTrack[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and leading jet
+        fillerJetTrack[2] = deltaEtaTrackLeadingJet;    // Axis 2: DeltaEta between track and leading jet
+        fillerJetTrack[3] = dijetAsymmetry;             // Axis 3: Dijet asymmetry
+        fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
+        fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
+        fillerJetTrack[6] = leadingJetFlavor;           // Axis 6: Leading jet flavor (quark or gluon)
+        if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-leading jet correlation histogram
+        if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-leading jet correlation histogram
+        if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-leading jet correlation histogram
         
         
         // Use subleading jet histograms for trigger pT 4-8
-        if(triggerPt >= 4 && triggerPt < 8){
+        /*if(triggerPt >= 4 && triggerPt < 8){
           fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
           fillerJetTrack[1] = deltaPhiTrackSubleadingJet; // Axis 1: DeltaPhi between track and subleading jet
           fillerJetTrack[2] = deltaEtaTrackSubleadingJet; // Axis 2: DeltaEta between track and subleading jet
@@ -1729,7 +1735,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
           if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-subleading jet correlation histogram
           if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-subleading jet correlation histogram
           if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-subleading jet correlation histogram
-        }
+        }*/ // Do not fill subleading for dihadron
       }
       
     } // Loop over tracks
