@@ -624,7 +624,7 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder6D[4] = minCorrelationType;   // low bin border for correlation types
   highBinBorder6D[4] = maxCorrelationType;  // high bin border for correlation types
   
-  // Axis 6 for the track-inclusive jet correlation histogram: jet flavor (quark/gluon)
+  // Axis 5 for the track-inclusive jet correlation histogram: jet flavor (quark/gluon)
   nBins6D[5] = nClosureParticleTypeBins;        // nBins for jet flavors
   lowBinBorder6D[5] = minClosureParticleType;   // low bin border for jet flavor
   highBinBorder6D[5] = maxClosureParticleType;  // high bin border for jet flavor
