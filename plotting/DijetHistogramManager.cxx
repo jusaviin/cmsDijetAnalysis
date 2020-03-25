@@ -3269,12 +3269,15 @@ void DijetHistogramManager::SetLoadAllInclusiveTracks(const bool drawTracks, con
 void DijetHistogramManager::SetLoadJetTrackCorrelations(const bool loadOrNot, const int primaryIndex, const int connectedIndex){
   
   // If we are loading the connected index, do not disable this since it is needed in background subtraction
-  if(fLoadJetTrackCorrelations[connectedIndex]){
-    fLoadJetTrackCorrelations[primaryIndex] = true;
-  } else {
-    fLoadJetTrackCorrelations[primaryIndex] = loadOrNot;
-    fLoadJetTrackCorrelations[connectedIndex] = loadOrNot;
-  }
+  //if(fLoadJetTrackCorrelations[connectedIndex]){
+  //  fLoadJetTrackCorrelations[primaryIndex] = true;
+  //} else {
+  //  fLoadJetTrackCorrelations[primaryIndex] = loadOrNot;
+  //  fLoadJetTrackCorrelations[connectedIndex] = loadOrNot;
+  //}
+  
+  // Dihadron mode: do not load connected index
+  fLoadJetTrackCorrelations[primaryIndex] = loadOrNot;
   
 }
 
