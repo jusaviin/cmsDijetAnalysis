@@ -36,6 +36,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   TH1D *sumHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *sumHistogramPp[nAsymmetryBins+1];
   TH1D *jetShapeArray[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
+  TH1D *jetShapeForIntegral[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPp[nAsymmetryBins+1];
   TH1D *sumUncertainty[nCentralityBins+1][nAsymmetryBins+1];
@@ -81,7 +82,6 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       if(normalizeJetShape){
         for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins; iTrackPt++){
           jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
-          integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry] = jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->IntegralAndError(1, jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->FindBin(0.99), integralErrorAfterNormalization[iCentrality][iTrackPt][iAsymmetry], "width");
         }
       }
       
@@ -96,7 +96,6 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     if(normalizeJetShape){
       for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins; iTrackPt++){
         jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
-        integralAfterNormalization[nCentralityBins][iTrackPt][iAsymmetry] = jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->IntegralAndError(1, jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->FindBin(0.99), integralErrorAfterNormalization[nCentralityBins][iTrackPt][iAsymmetry], "width");
       }
     }
     
@@ -122,6 +121,68 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     }
   }
   
+  // Calculate the jet shape integrals and errors taking into account the systematic uncertainties
+  TH1D *systematicErrorHistogram;
+  TH1D *resultPlusSystematicError;
+  TH1D *resultMinusSystematicError;
+  int oneBin;
+  double binContent;
+  double statisticalError, systematicError, totalError;
+  double systematicPlusIntegral, systematicMinusIntegral;
+  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        
+        // Clone the jet shape histogram including statistical uncertainties
+        jetShapeForIntegral[iCentrality][iTrackPt][iAsymmetry] = (TH1D*)jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Clone(Form("jetShapeForIntegral%d%d%d", iAsymmetry, iCentrality, iTrackPt));
+        
+        resultPlusSystematicError = (TH1D*)jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Clone(Form("resultPlus%d%d%d", iAsymmetry, iCentrality, iTrackPt));
+        
+        resultMinusSystematicError = (TH1D*)jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Clone(Form("resultMinus%d%d%d", iAsymmetry, iCentrality, iTrackPt));
+        
+        // Find the systematic uncertainties for this bin
+        if(iCentrality == nCentralityBins){
+          systematicErrorHistogram = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, iTrackPt, iAsymmetry);
+          if(normalizeJetShape) systematicErrorHistogram->Scale(1.0/shapeIntegralPp[iAsymmetry]);
+        } else {
+          systematicErrorHistogram = pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, iTrackPt, iAsymmetry);
+          if(normalizeJetShape) systematicErrorHistogram->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+        }
+        
+        // Add systematic errors to the main histogram to evaluate the systematic error of the integral
+        oneBin = jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->FindBin(0.99);
+        for(int iBin = 1; iBin <= oneBin; iBin++){
+          
+          // Find the bin content and systematic error
+          binContent = jetShapeForIntegral[iCentrality][iTrackPt][iAsymmetry]->GetBinContent(iBin);
+          systematicError = systematicErrorHistogram->GetBinError(iBin);
+          
+          // Add and subtract the systematic error to/from the distribution
+          resultPlusSystematicError->SetBinContent(iBin, binContent+systematicError);
+          resultMinusSystematicError->SetBinContent(iBin, binContent-systematicError);
+          
+        } // Loop over bins of the histogram
+        
+        // Calculate the integral with statistical errors errors
+        integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry] = jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->IntegralAndError(1, oneBin, statisticalError, "width");
+        
+        // Calculate the integrals for distributions shifted by the systematic uncertainty
+        systematicPlusIntegral = resultPlusSystematicError->Integral(1, oneBin, "width");
+        systematicMinusIntegral = resultMinusSystematicError->Integral(1, oneBin, "width");
+        
+        // Systematic uncertainty of the integral is the bigger deviation from the nominal
+        systematicError = TMath::Max(systematicPlusIntegral-integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry], integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry]-systematicMinusIntegral);
+        
+        // Combine the statistical and systematic uncertainty for the total error
+        totalError = TMath::Sqrt(systematicError*systematicError+statisticalError*statisticalError);
+        
+        // Set the total error as the error of the integral
+        integralErrorAfterNormalization[iCentrality][iTrackPt][iAsymmetry] = totalError;
+        
+      } // Track pT loop
+    } // Centrality loop
+  } // Asymmetry loop
+    
   TH1D* ratioHistogram[nCentralityBins][nAsymmetryBins+1];
   
   // Create uncertainty histograms for the ratio using standard jet shape binning
@@ -570,7 +631,6 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   ratioCanvas->cd(1);
   ltc2->Draw();
   
-  //bigCanvas->SaveAs("js_dr_normal_new.eps");
   bigCanvas->SaveAs(Form("figures/final%s_%s_lul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
   ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioLul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
   
@@ -599,7 +659,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
         sprintf(namer, "$%.1f < p_{\\mathrm{T}} < %.1f$", ptBinBorders[iTrackPt], ptBinBorders[iTrackPt+1]);
         cout << namer;
         for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-          cout << " & $" << integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry] << "$";
+          cout << " & $" << integralAfterNormalization[iCentrality][iTrackPt][iAsymmetry] << " \\pm " <<  integralErrorAfterNormalization[iCentrality][iTrackPt][iAsymmetry] << "$";
         }
         cout << " \\\\" << endl;
       }
