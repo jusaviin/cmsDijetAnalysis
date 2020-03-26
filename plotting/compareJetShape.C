@@ -11,7 +11,7 @@ void compareJetShape(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = { "data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_tuning_processed_2019-12-04.root","data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root"};
+  TString fileNames[] = { "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrectionsExceptSpillover_wtaAxis_processed_2020-02-06.root" };
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull3050_processed_2019-10-23.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull_processed_2019-10-21.root
@@ -30,6 +30,7 @@ void compareJetShape(){
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tunedSeagull_processed_2019-10-22.root
   
   const int nFilesToCompare = 2;
+  const bool mcLabel = false;
   
   // Open all the files for the comparison
   TFile *files[nFilesToCompare];
@@ -58,10 +59,10 @@ void compareJetShape(){
   int firstDrawnCentralityBin = 0;
   int lastDrawnCentralityBin = 0;
   
-  int firstDrawnAsymmetryBin = 1;
-  int lastDrawnAsymmetryBin = 1;
+  int firstDrawnAsymmetryBin = nAsymmetryBins;
+  int lastDrawnAsymmetryBin = nAsymmetryBins;
   
-  int iJetTrack = DijetHistogramManager::kPtWeightedTrackSubleadingJet; // DijetHistogramManager::kPtWeightedTrackSubleadingJet
+  int iJetTrack = DijetHistogramManager::kPtWeightedTrackLeadingJet; // DijetHistogramManager::kPtWeightedTrackSubleadingJet
   
   // ==================================================================
   // ===================== Configuration ready ========================
@@ -180,11 +181,15 @@ void compareJetShape(){
         legend = new TLegend(0.45,0.5,0.9,0.8);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetTrack]),"");
-        //legend->AddEntry((TObject*) 0,"pp data","");
         legend->AddEntry((TObject*) 0,trackString.Data(),"");
         if(iAsymmetry < nAsymmetryBins) legend->AddEntry((TObject*) 0,asymmetryString.Data(),"");
-        legend->AddEntry(jetShapePp[iAsymmetry][iTrackPt],"Pythia8","l");
-        legend->AddEntry(jetShapePbPb[iAsymmetry][iCentrality][iTrackPt],Form("P+H %s",centralityString.Data()),"l");
+        if(mcLabel){
+          legend->AddEntry(jetShapePp[iAsymmetry][iTrackPt],"Pythia8","l");
+          legend->AddEntry(jetShapePbPb[iAsymmetry][iCentrality][iTrackPt],Form("P+H %s",centralityString.Data()),"l");
+        } else {
+          legend->AddEntry(jetShapePp[iAsymmetry][iTrackPt],"pp","l");
+          legend->AddEntry(jetShapePbPb[iAsymmetry][iCentrality][iTrackPt],Form("PbPb %s",centralityString.Data()),"l");
+        }
         legend->Draw();
         
         // Draw the ratio to the lower pad
@@ -195,7 +200,11 @@ void compareJetShape(){
         jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(20);
         jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(veryNiceColors[1]);
         jetShapeRatio[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(veryNiceColors[1]);
-        drawer->DrawHistogramToLowerPad(jetShapeRatio[iAsymmetry][iCentrality][iTrackPt],"#Deltar","Hydjet / Pythia", " ");
+        if(mcLabel){
+          drawer->DrawHistogramToLowerPad(jetShapeRatio[iAsymmetry][iCentrality][iTrackPt],"#Deltar","Hydjet / Pythia", " ");
+        } else {
+          drawer->DrawHistogramToLowerPad(jetShapeRatio[iAsymmetry][iCentrality][iTrackPt],"#Deltar","PbPb / pp", " ");
+        }
         oneLine->Draw();
         
         // Save the figures into a file
