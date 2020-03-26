@@ -36,7 +36,7 @@ void printNumberSlide(double (*numberArray)[5][7], int nAsymmetryBins, const cha
     cout << "\\begin{center}" << endl;
     cout << "  \\begin{tabular}{cccccc}" << endl;
     cout << "    \\toprule" << endl;
-    cout << "    $p_{\\mathrm{T}} (GeV)$ & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-100 & pp \\\\" << endl;
+    cout << "    $p_{\\mathrm{T}} (GeV)$ & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 & pp \\\\" << endl;
     cout << "    \\midrule" << endl;
     
     // Set the correct precision for printing floating point numbers
@@ -96,7 +96,7 @@ void compareLongRangeAsymmetry(){
   
   // Name for the file from which systematic uncertainties are read
   const char *uncertaintyFile = "data/vnUncertaintyPreliminary2018.txt";
-  const bool disableSystematicUncertainty = false;
+  const bool disableSystematicUncertainty = true;
   
   // Open the PbPb input file and read bin numbers from it
   TFile *pbpbDataFile = TFile::Open(pbpbFileName);
@@ -108,6 +108,8 @@ void compareLongRangeAsymmetry(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
+  const bool drawSameEvent = false;
+  
   const bool drawFourierFit = false;
   const bool drawFourierGraph = true;
   
@@ -117,9 +119,9 @@ void compareLongRangeAsymmetry(){
   const bool removeFit = false;  // Remove fit function from plots with distribution
   
   const bool saveFigures = false;
-  TString saveComment = "_genTest";
+  TString saveComment = "_sameEventComparison";
   
-  int firstDrawnAsymmetryBin = 0;
+  int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   const int fourierV = 0;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
@@ -163,12 +165,20 @@ void compareLongRangeAsymmetry(){
   TH1D *background[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
   TF1 *backgroundFit[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
   
+  // Histograms needed to determine the long range from same event distribution
+  TH1D *sameEventDeltaPhiLongRange[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TH2D *sameEventDeltaEtaDeltaPhiLeading[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TH2D *sameEventDeltaEtaDeltaPhiSubleading[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TH2D *sameEventDeltaEtaDeltaPhiLongRange[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TF1 *sameEventFourierFit[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  
   // Define arrays needed for systematic uncertainty estimation
   TH1D *leadingUnadjustedBackground[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
   TH1D *leadingUnadjustedBackgroundOverlap[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
   
   // Define histograms to draw the systematic uncertainties
   TH1D *adjustmentHistogram[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TH1D *adjustmentHistogramSameEvent[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
   
   // We will fit also the unadjusted histogram to estimate systematic uncertainties
   TF1 *unadjustedFit[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
@@ -184,6 +194,10 @@ void compareLongRangeAsymmetry(){
   // Read the numbers also for unadjusted fits to estimate systematic uncertainties
   double unadjustedFlowTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   double unadjustedFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  
+  // Define arrays for vn numbers extracted from the same event distribution
+  double sameEventFlowTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double sameEventFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   
   // To pass the array as an argument, the numbers will need to be given by hand.
   if(nAsymmetryBins != 3 || nCentralityBins != 4 || nTrackPtBins != 7){
@@ -202,11 +216,13 @@ void compareLongRangeAsymmetry(){
   pbpbReader->SetLoadTracks(true);
   pbpbReader->SetLoadTrackLeadingJetCorrelations(true);
   pbpbReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  pbpbReader->SetLoad2DHistograms(drawSameEvent);
   pbpbReader->LoadProcessedHistograms();
   
   ppReader->SetLoadTracks(true);
   ppReader->SetLoadTrackLeadingJetCorrelations(true);
   ppReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  ppReader->SetLoad2DHistograms(drawSameEvent);
   ppReader->LoadProcessedHistograms();
   
   pbpbUnadjustedReader->SetLoadTrackLeadingJetCorrelations(true);
@@ -219,11 +235,12 @@ void compareLongRangeAsymmetry(){
   
   double chi2;  // Chi2 for fit quality estimation
   int ndf;      // Number of degrees of freedom for fit quality estimation
-  double leadingAdjustmentFactor, subleadingAdjustmentFactor;  // Background adjustment factors for systematic unceratinty estimation
+  double leadingAdjustmentFactor, subleadingAdjustmentFactor;  // Background adjustment factors for systematic uncertainty estimation
   double backgroundLevel;
   double currentV, currentUncertainty;
   double valueLow, valueHigh;
-  double binCenter;
+  double binCenter, binError, errorScale;
+  int nBins;
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     
     // Track histogram for pp (needed for graph binning)
@@ -253,6 +270,17 @@ void compareLongRangeAsymmetry(){
           // Track-subleading jet unadjusted background histogram for systematic uncertainty estimation
           leadingUnadjustedBackgroundOverlap[iAsymmetry][nCentralityBins][iTrackPt] = ppUnadjustedReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackgroundOverlap, iAsymmetry, 0, iTrackPt, DijetHistogramManager::kWholeEta);
           
+          // Read the two dimensional distribution from the same event
+          if(drawSameEvent){
+            sameEventDeltaEtaDeltaPhiLeading[iAsymmetry][nCentralityBins][iTrackPt] = ppReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, 0, iTrackPt);
+            sameEventDeltaEtaDeltaPhiLeading[iAsymmetry][nCentralityBins][iTrackPt]->Scale(1.0 / ppReader->GetPtIntegral(0, iAsymmetry));
+            
+            sameEventDeltaEtaDeltaPhiSubleading[iAsymmetry][nCentralityBins][iTrackPt] = ppReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, 0, iTrackPt);
+            sameEventDeltaEtaDeltaPhiSubleading[iAsymmetry][nCentralityBins][iTrackPt]->Scale(1.0 / ppReader->GetPtIntegral(0, iAsymmetry));
+            
+          }
+          
+          
         // Read the histograms for PbPb
         } else {
           
@@ -264,6 +292,46 @@ void compareLongRangeAsymmetry(){
           
           // Track-subleading jet unadjusted background histogram for systematic uncertainty estimation
           leadingUnadjustedBackgroundOverlap[iAsymmetry][iCentrality][iTrackPt] = pbpbUnadjustedReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackgroundOverlap, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          // Read the two dimensional distribution from the same event
+          if(drawSameEvent){
+            sameEventDeltaEtaDeltaPhiLeading[iAsymmetry][iCentrality][iTrackPt] = pbpbReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+            sameEventDeltaEtaDeltaPhiLeading[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0 / pbpbReader->GetPtIntegral(iCentrality, iAsymmetry));
+            
+            sameEventDeltaEtaDeltaPhiSubleading[iAsymmetry][iCentrality][iTrackPt] = pbpbReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+            sameEventDeltaEtaDeltaPhiSubleading[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0 / pbpbReader->GetPtIntegral(iCentrality, iAsymmetry));
+          }
+          
+        }
+        
+        // Project the background deltaPhi from the same event distribution
+        if(drawSameEvent){
+          
+          refitter->SubtractBackground(sameEventDeltaEtaDeltaPhiLeading[iAsymmetry][iCentrality][iTrackPt], sameEventDeltaEtaDeltaPhiSubleading[iAsymmetry][iCentrality][iTrackPt], 4, false);
+          
+          sameEventDeltaEtaDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt] = refitter->GetBackground();
+          
+          nBins = sameEventDeltaEtaDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->GetNbinsY();
+          sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt] = sameEventDeltaEtaDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->ProjectionX(Form("sameLong%d%d%d", iAsymmetry, iCentrality, iTrackPt), 1, nBins);  // Exclude underflow and overflow bins by specifying range
+          
+          sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale( sameEventDeltaEtaDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->GetBinWidth(1) );  // For correct normalization, need to divide out deltaEta bin width of the two-dimensional histogram
+          
+          /*
+           * Do error scaling and for the background deltaPhi distribution
+           *
+           * Error scaling is needed because information only from 1.5 < |deltaEta| < 2.5 is used to determine the background.
+           * When doing projection, root by default scaled the histogram with square root of bins projected over
+           * The whole range of the analysis is |deltaEta| < 4, which means that four times the bins used to determine
+           * the background are used in normalixing the error. We can fix this be scaling the error up by sqrt(4) = 2.
+           * This number is provided by the DijetMethods, since if we change the limits described above, the number is
+           * automatically adjusted for the new limits inside DijetMethods.
+           */
+          
+          for(int iBin = 1; iBin < sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+            binError = sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->GetBinError(iBin);
+            errorScale = refitter->GetBackgroundErrorScalingFactor();
+            sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin, binError*errorScale);
+          }
           
         }
         
@@ -314,6 +382,20 @@ void compareLongRangeAsymmetry(){
           adjustmentHistogram[iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin, backgroundLevel*backgroundAdjustmentUncertainty[iAsymmetry][iCentrality][iTrackPt]);
         }
         
+        // Fit the long range distribution from the same event
+        if(drawSameEvent){
+          
+          sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
+          sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          
+          refitter->FourierFit(sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt], nRefit);
+          sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt] = sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          
+          // Clone the background histogram for uncertainty drawing
+          adjustmentHistogramSameEvent[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt]->Clone(Form("adjustmentHistogramSameEvent%d%d%d", iAsymmetry, iCentrality, iTrackPt));
+          
+        }
+        
       } // asymmetry loop
     } // track pT loop
   } // centrality loop
@@ -331,6 +413,11 @@ void compareLongRangeAsymmetry(){
           masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = backgroundFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
           unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
           unadjustedFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          
+          if(drawSameEvent){
+            sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+            sameEventFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          }
         } // flow components
       } // Asymmetry loop
     } // track pT
@@ -360,6 +447,8 @@ void compareLongRangeAsymmetry(){
   char namerY[100];
   TH1D *uncertaintyHistogram = new TH1D("uncertainties","uncertainties",200,-TMath::Pi()/2.0,3*TMath::Pi()/2.0);
   TString legendString;
+  TH1D *drawnHistogram;
+  TF1 *drawnFit;
   
   if(drawFourierFit){
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
@@ -383,19 +472,21 @@ void compareLongRangeAsymmetry(){
         // If we are drawing the whole fits and the histograms, set the scale using systematic uncertainty histogram
         // if the background was adjusted, otherside use the asymmetric histogram
         } else {
-          if(backgroundAdjustmentUncertainty[firstDrawnAsymmetryBin][iCentrality][iTrackPt] > 0){
+          if(backgroundAdjustmentUncertainty[firstDrawnAsymmetryBin][iCentrality][iTrackPt] > 0 && !disableSystematicUncertainty){
             adjustmentHistogram[firstDrawnAsymmetryBin][iCentrality][iTrackPt]->SetLineColor(0);
             drawer->DrawHistogram(adjustmentHistogram[firstDrawnAsymmetryBin][iCentrality][iTrackPt], "#Delta#phi", "#frac{1}{N_{dijet}}  #frac{dN}{d#Delta#phi}", " ");
           } else {
             //drawer->DrawHistogram(background[firstDrawnAsymmetryBin][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{d#Delta#phi}", " "); // Adjusted default
-            drawer->DrawHistogram(leadingUnadjustedBackground[firstDrawnAsymmetryBin][iCentrality][iTrackPt], "#Delta#phi", "#frac{1}{N_{dijet}} #frac{dN}{d#Delta#phi}", " "); // Unadjusted default
+            drawnHistogram = leadingUnadjustedBackground[firstDrawnAsymmetryBin][iCentrality][iTrackPt];
+            if(drawSameEvent) drawnHistogram = sameEventDeltaPhiLongRange[firstDrawnAsymmetryBin][iCentrality][iTrackPt];
+            drawer->DrawHistogram(drawnHistogram, "#Delta#phi", "#frac{1}{N_{dijet}} #frac{dN}{d#Delta#phi}", " "); // Unadjusted default
           }
         }
         
         // If we draw the distribution, draw first the uncertainty bands from background adjustment
         if(fourierV == 0){
           for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
-            if(backgroundAdjustmentUncertainty[iAsymmetry][iCentrality][iTrackPt] > 0){
+            if(backgroundAdjustmentUncertainty[iAsymmetry][iCentrality][iTrackPt] > 0 && !disableSystematicUncertainty){
               adjustmentHistogram[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(adjustmentHistogram[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier"));
               adjustmentHistogram[iAsymmetry][iCentrality][iTrackPt]->SetFillColorAlpha(colors[iAsymmetry],0.25);
               adjustmentHistogram[iAsymmetry][iCentrality][iTrackPt]->Draw("same,E2");
@@ -445,34 +536,35 @@ void compareLongRangeAsymmetry(){
         
         // Draw all the asymmetry bins to the same figure
         for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
-          /*// Adjusted default
-          background[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
-          background[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(colors[iAsymmetry]);
-          background[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(markers[iAsymmetry]);
-          backgroundFit[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
-           */
           
-          // Unadjusted default
-          leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
-          leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(colors[iAsymmetry]);
-          leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(markers[iAsymmetry]);
-          unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
-          if(removeFit) unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0);
+          // drawnHistogram = background[iAsymmetry][iCentrality][iTrackPt]; // Adjusted default
+          // drawnFit = backgroundFit[iAsymmetry][iCentrality][iTrackPt]; // Adjusted default
+          
+          drawnHistogram = leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]; // Unadjusted default
+          drawnFit = unadjustedFit[iAsymmetry][iCentrality][iTrackPt]; // Unadjusted default
+          if(drawSameEvent){
+            drawnHistogram = sameEventDeltaPhiLongRange[iAsymmetry][iCentrality][iTrackPt];
+            drawnFit = sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt];
+          }
+          
+          // Set the style
+          drawnHistogram->SetLineColor(colors[iAsymmetry]);
+          drawnHistogram->SetMarkerColor(colors[iAsymmetry]);
+          drawnHistogram->SetMarkerStyle(markers[iAsymmetry]);
+          drawnFit->SetLineColor(colors[iAsymmetry]);
+          if(removeFit) drawnFit->SetLineWidth(0);
           
           // Select the wanted vn component and scale it around one
           if(fourierV > 0){
-            //backgroundFit[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Adjusted default
-            unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Unadjusted default
+            drawnFit->Draw("same");
           } else {
-            //background[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Adjusted default
-            leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Unadjusted default
+            drawnHistogram->Draw("same");
           }
           
           // Add the histogram to legend
           legendString = Form("%.1f < x_{j} < %.1f",xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
           if(iAsymmetry == nAsymmetryBins) legendString = "x_{j} > 0";
-          //legend->AddEntry(background[iAsymmetry][iCentrality][iTrackPt], legendString.Data(), "lp"); // Adjusted default
-          legend->AddEntry(leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt], legendString.Data(), "lp"); // Unadjusted default
+          legend->AddEntry(drawnHistogram, legendString.Data(), "lp");
         } // asymmetry loop
         
         // Draw the legend
@@ -508,6 +600,8 @@ void compareLongRangeAsymmetry(){
     double graphErrorsY[nTrackPtBins-2];      // Statistical errors for Vn
     double graphSystematicsY[nTrackPtBins-2]; // Systematic errors for Vn
     double graphSystematicsX[nTrackPtBins-2]; // Width of the systematic band in x axis
+    double graphPointsYSameEvent[nTrackPtBins-2];      // Vn values from same event
+    double graphErrorsYSameEvent[nTrackPtBins-2];      // Statistical errors for Vn from same event
     
     // Helper variables for finding track pT information
     int lowPtBin, highPtBin;
@@ -520,6 +614,7 @@ void compareLongRangeAsymmetry(){
     zeroLine->SetLineStyle(2);
     
     TGraphErrors *flowGraphPt[nAsymmetryBins+1][nCentralityBins+1][nRefit];
+    TGraphErrors *flowGraphPtSameEvent[nAsymmetryBins+1][nCentralityBins+1][nRefit];
     TGraphErrors *flowUncertaintyPt[nAsymmetryBins+1][nCentralityBins+1][nRefit];
     
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
@@ -552,6 +647,12 @@ void compareLongRangeAsymmetry(){
             graphPointsY[iTrackPt] = masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
             graphErrorsY[iTrackPt] = masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow];
             graphSystematicsY[iTrackPt] = disableSystematicUncertainty ? 0 : uncertaintyProvider->GetLongRangeSystematicUncertainty(iFlow, iCentrality, iTrackPt, iAsymmetry);
+            
+            if(drawSameEvent){
+              graphPointsYSameEvent[iTrackPt] = sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
+              graphErrorsYSameEvent[iTrackPt] = sameEventFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow];
+            }
+            
           }
           flowGraphPt[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsY, graphErrorsX, graphErrorsY);
           flowGraphPt[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(colors[iAsymmetry]);
@@ -561,13 +662,19 @@ void compareLongRangeAsymmetry(){
           flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->SetFillColorAlpha(colors[iAsymmetry],0.25);
           flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->SetFillStyle(1001);
           
+          if(drawSameEvent){
+            flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYSameEvent, graphErrorsX, graphErrorsYSameEvent);
+            flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(colors[iAsymmetry]);
+            flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(markers[iAsymmetry]);
+          }
+          
           // Remove two last points from the peripheral bin
-          if(iCentrality == 3){
+          /*if(iCentrality == 3){
             flowGraphPt[iAsymmetry][iCentrality][iFlow]->RemovePoint(4);
             flowGraphPt[iAsymmetry][iCentrality][iFlow]->RemovePoint(3);
             flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->RemovePoint(4);
             flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->RemovePoint(3);
-          }
+          }*/
           
         } // Loop over flow components
       } // Loop over asymmetry bins
@@ -606,6 +713,11 @@ void compareLongRangeAsymmetry(){
             legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],"x_{j} > 0.0","p");
           } else {
             legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],Form("%.1f < x_{j} < %.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]),"p");
+          }
+          
+          if(drawSameEvent){
+            flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->Draw("psame");
+            legend->AddEntry(flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow],"From same event","p");
           }
         }
         
