@@ -1615,24 +1615,25 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   Double_t triggerHighBorder = fCard->Get("TriggerTrackHigh");
   
   // Loop over all track in the event
-  Int_t nTracks = fTrackReader[correlationType]->GetNTracks();
-  for(Int_t iTriggerTrack = 0; iTriggerTrack < nTracks; iTriggerTrack++){
+  Int_t nTracksTrigger = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();  // Trigger tracks always from same event
+  Int_t nTracksAssociated = fTrackReader[correlationType]->GetNTracks();  // Associated tracks can be also from mixed event
+  for(Int_t iTriggerTrack = 0; iTriggerTrack < nTracksTrigger; iTriggerTrack++){
     
     // Check that all the track cuts are passed for the trigger track
-    if(!PassTrackCuts(iTriggerTrack,fHistograms->fhTrackCuts,correlationType)) continue;
+    if(!PassTrackCuts(iTriggerTrack,fHistograms->fhTrackCuts,DijetHistograms::kSameEvent)) continue;
     
     // Get the most important track information to variables
-    triggerPt = fTrackReader[correlationType]->GetTrackPt(iTriggerTrack);
+    triggerPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTriggerTrack);
     
     // Read the track information to leading jet variables so they will be correctly filled to leading jet histograms
-    leadingJetPhi = fTrackReader[correlationType]->GetTrackPhi(iTriggerTrack);
-    leadingJetEta = fTrackReader[correlationType]->GetTrackEta(iTriggerTrack);
+    leadingJetPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTriggerTrack);
+    leadingJetEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTriggerTrack);
     
     // Read the track information also to the subleading jet histograms so they can be filled at the same time
-    subleadingJetPhi = fTrackReader[correlationType]->GetTrackPhi(iTriggerTrack);
-    subleadingJetEta = fTrackReader[correlationType]->GetTrackEta(iTriggerTrack);
+    subleadingJetPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTriggerTrack);
+    subleadingJetEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTriggerTrack);
     
-    triggerTrackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTriggerTrack);
+    triggerTrackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTriggerTrack);
     
     // Fill track histograms if selected to do so. Inclusive tracks are filled in separate place
     if(fFillTrackHistograms && !useInclusiveJets){
@@ -1648,10 +1649,10 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     // Read the trigger bin from the card
     if(triggerPt < triggerLowBorder || triggerPt > triggerHighBorder) continue;
     
-    for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+    for(Int_t iTrack = 0; iTrack < nTracksAssociated; iTrack++){
       
       // Do not correlate the track with itself
-      if(iTriggerTrack == iTrack) continue;
+      if(iTriggerTrack == iTrack && correlationType == DijetHistograms::kSameEvent) continue;
       
       // Check that all the track cuts are passed
       if(!PassTrackCuts(iTrack,fHistograms->fhTrackCuts,correlationType)) continue;
