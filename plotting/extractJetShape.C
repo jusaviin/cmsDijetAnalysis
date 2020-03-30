@@ -77,7 +77,7 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   }
   
   // Smoothed spillover fluctuations from the final jet shape distributions
-  bool manualSpilloverFluctuationSmoothing = true;
+  bool manualSpilloverFluctuationSmoothing = false;
   
   // Binning for jet shape
   

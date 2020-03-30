@@ -89,9 +89,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = true;
+  bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = false;
+  bool drawJetTrackDeltaEtaDeltaPhi = true;
   
   // Select which deltaPhi regions of the deltaEta projection are drawn
   bool drawDeltaEtaWholePhi = false;
@@ -106,14 +106,14 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
-  bool drawMixedEvent = false;
-  bool drawNormalizedMixedEvent = false;
+  bool drawMixedEvent = true;
+  bool drawNormalizedMixedEvent = true;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
+  bool drawBackground = false;
   int backgroundStyle = 0; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -222,8 +222,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
   }
   
-  int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int firstDrawnCentralityBin = 2;
+  int lastDrawnCentralityBin = 2;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -254,7 +254,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
