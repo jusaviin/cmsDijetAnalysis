@@ -79,7 +79,10 @@ void compareLongRangeAsymmetry(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString pbpbFileName = "data/dihadronPbPb2018_trigger3-4_processed_2020-03-23.root"; //"data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
+  TString pbpbFileName = "data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root";
+  // data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root
+  // data/dihadronPbPb2018_trigger3-4_processed_2020-03-23.root
+  //"data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing.root";
   //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
@@ -87,6 +90,8 @@ void compareLongRangeAsymmetry(){
   
   // For systematic uncertainty estimation, need files in which the background is not adjusted between leading and subleading side
   TString pbpbUnadjustedFileName = "data/dihadronPbPb2018_trigger3-4_processed_2020-03-23.root";
+  // data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root
+  // data/dihadronPbPb2018_trigger3-4_processed_2020-03-23.root
   // "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_onlySeagull_processed_2019-10-10.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
@@ -118,7 +123,7 @@ void compareLongRangeAsymmetry(){
   const bool removeFit = false;  // Remove fit function from plots with distribution
   
   const bool saveFigures = true;
-  TString saveComment = "_dihadron";
+  TString saveComment = "_dihadronMixingComparison";
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -287,20 +292,29 @@ void compareLongRangeAsymmetry(){
         if(refitBackground){
           background[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(backgroundFit[iAsymmetry][iCentrality][iTrackPt]);
           background[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
-          background[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          //background[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          
+          // TODO: For comparison purposes, normalize background to one
+          background[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/background[iAsymmetry][iCentrality][iTrackPt]->Integral("width"));
           
           
           //adjustmentHistogram[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) background[iAsymmetry][iCentrality][iTrackPt]->Clone(Form("adjustmentHistogram%d%d%d", iAsymmetry, iCentrality, iTrackPt)); // Adjusted default
           
           refitter->FourierFit(background[iAsymmetry][iCentrality][iTrackPt], nRefit);
           backgroundFit[iAsymmetry][iCentrality][iTrackPt] = background[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          backgroundFit[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0); // TODO: Do not draw fit
           
           // Refit also the unadjusted background to have same exactly the settings as for adjusted background
           leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(unadjustedFit[iAsymmetry][iCentrality][iTrackPt]);
           leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
-          leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          //leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          
+          // TODO: For comparison purposes, normalize background to one
+          leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Integral("width"));
+          
           refitter->FourierFit(leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt], nRefit);
           unadjustedFit[iAsymmetry][iCentrality][iTrackPt] = leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0); // TODO: Do not draw fit
           
           // Clone the background histogram for uncertainty drawing
           adjustmentHistogram[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Clone(Form("adjustmentHistogram%d%d%d", iAsymmetry, iCentrality, iTrackPt)); // Unadjusted default
@@ -372,7 +386,7 @@ void compareLongRangeAsymmetry(){
       for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
         
         // Setup a legend for the figure
-        legend = new TLegend(0.39,0.87-(lastDrawnAsymmetryBin-firstDrawnAsymmetryBin)*0.06,0.75,0.99);
+        legend = new TLegend(0.39,0.81-(lastDrawnAsymmetryBin-firstDrawnAsymmetryBin)*0.06,0.75,0.99);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         if(iCentrality == nCentralityBins){
           legend->SetHeader(Form("%.1f < p_{T} < %.1f GeV, pp",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]));
@@ -451,17 +465,16 @@ void compareLongRangeAsymmetry(){
         
         // Draw all the asymmetry bins to the same figure
         for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
-          /*// Adjusted default
-          background[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
-          background[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(colors[iAsymmetry]);
-          background[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(markers[iAsymmetry]);
-          backgroundFit[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
-           */
+          // With mixed event for dihadron
+          background[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
+          background[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(kRed);
+          background[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(fullMarkers[0]);
+          backgroundFit[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(kRed);
           
-          // Unadjusted default
+          // Without mixed event for dihadron
           leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
           leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->SetMarkerColor(colors[iAsymmetry]);
-          leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(markers[iAsymmetry]);
+          leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->SetMarkerStyle(fullMarkers[iAsymmetry]);
           unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->SetLineColor(colors[iAsymmetry]);
           if(removeFit) unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0);
           
@@ -470,15 +483,15 @@ void compareLongRangeAsymmetry(){
             //backgroundFit[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Adjusted default
             unadjustedFit[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Unadjusted default
           } else {
-            //background[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Adjusted default
-            leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Unadjusted default
+            leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // Without mixed event
+            background[iAsymmetry][iCentrality][iTrackPt]->Draw("same"); // With mixed events
           }
           
           // Add the histogram to legend
           legendString = Form("%.1f < x_{j} < %.1f",xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
           if(iAsymmetry == nAsymmetryBins) legendString = "x_{j} > 0";
-          //legend->AddEntry(background[iAsymmetry][iCentrality][iTrackPt], legendString.Data(), "lp"); // Adjusted default
-          legend->AddEntry(leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt], legendString.Data(), "lp"); // Unadjusted default
+          legend->AddEntry(leadingUnadjustedBackground[iAsymmetry][iCentrality][iTrackPt], "No mixing", "lp"); // No mixing
+          legend->AddEntry(background[iAsymmetry][iCentrality][iTrackPt], "Mixing", "lp"); // Mixing
         } // asymmetry loop
         
         // Draw the legend
