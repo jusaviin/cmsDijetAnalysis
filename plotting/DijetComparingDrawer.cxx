@@ -729,6 +729,9 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
   TString compactTrackPtString;
   char namerX[100];
   
+  // Background fit
+  TF1 *backgroundFit;
+  
   // TODO TEST TODO TEST Extract ad hoc factors
   //TF1 *fun1 = new TF1("myFun","pol0",-2.5,-0.5);
   //TF1 *fun2 = new TF1("noreFun","pol0",0.5,2.5);
@@ -764,8 +767,20 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
 
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
-
+  
             PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta); // TODO: Change deltaEta region kWholeEta kSignalEtaRegion
+            
+            // Remove fits from background
+            if(iCorrelationType == DijetHistogramManager::kBackground){
+              backgroundFit = fMainHistogram->GetFunction("fourier");
+              fMainHistogram->RecursiveRemove(backgroundFit);
+              
+              for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+                backgroundFit = fComparisonHistogram[iAdditional]->GetFunction("fourier");
+                fComparisonHistogram[iAdditional]->RecursiveRemove(backgroundFit);
+              }
+              
+            }
             
             // Draw the track phi distributions to the upper panel of a split canvas plot
             sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
@@ -775,7 +790,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
             if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
               if(iCorrelationType == DijetHistogramManager::kBackground) { // Move legend to top left corner for leading jet-track background figures
-                legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
+                legendX1 = 0.45; legendY1 = 0.68; legendX2 = 0.65; legendY2 = 0.95;
               } else if (iCorrelationType == DijetHistogramManager::kCorrected || iCorrelationType == DijetHistogramManager::kBackgroundSubtracted){ // Move legend away from peaks
                 if(iTrackPt == 2 || iTrackPt == 3){
                   legendX1 = 0.31; legendY1 = 0.75; legendX2 = 0.61; legendY2 = 0.9;
@@ -1303,6 +1318,10 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   }
   if(maxRange > minRange) fMainHistogram->GetXaxis()->SetRangeUser(minRange,maxRange);
   if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
+  
+  // TODO: For testing purposes, normalize histograms to one
+  fMainHistogram->Scale(1.0/fMainHistogram->Integral());
+  
   //fMainHistogram->Scale(lulFactor[bin4][bin5]); // TODO: Remove this argitrary scaling!!!
   //if(bin1 == 1) bin1 = 0;  // TODO: This was needed in some cases, but breaks some other cases
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
@@ -1318,8 +1337,10 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     //fComparisonHistogram[iAdditional]->Scale(lulFactor[bin4][bin5]); // TODO: Temporary hack
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
     
-    // TODO: Temporarily reverse how the ratio is taken
+    // TODO: For testing purposes, normalize histograms to one
+    fComparisonHistogram[iAdditional]->Scale(1.0/fComparisonHistogram[iAdditional]->Integral());
     
+    // TODO: Temporarily reverse how the ratio is taken
     fRatioHistogram[iAdditional] = (TH1D*)fComparisonHistogram[iAdditional]->Clone(namer);
     if(fUseDifferenceInsteadOfRatio){
       fRatioHistogram[iAdditional]->Add(fMainHistogram,-1);
