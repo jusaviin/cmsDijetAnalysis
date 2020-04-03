@@ -60,10 +60,10 @@ for i in range(5):
    
 # Table1: uncertainties for histograms
 for i in range(5):
-    statUncertainty = Uncertainty("Statistical uncertainty", is_symmetric=True)
+    statUncertainty = Uncertainty("stat", is_symmetric=True)
     statUncertainty.values = deltaEtaHistogram[i]["dy"]
 
-    systUncertainty = Uncertainty("Systematic uncertainty", is_symmetric=True)
+    systUncertainty = Uncertainty("sys", is_symmetric=True)
     systUncertainty.values = deltaEtaError[i]["dy"]
 
     yDeltaEta[i].add_uncertainty(statUncertainty)
