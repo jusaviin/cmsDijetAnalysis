@@ -11,7 +11,12 @@ void compareJetShape(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = { "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrectionsExceptSpillover_wtaAxis_processed_2020-02-06.root" };
+  TString fileNames[] = { "data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_onlySeagull_processed_2019-12-04.root", "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root" };
+  // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrectionsExceptSpillover_wtaAxis_processed_2020-02-06.root
+  // data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_onlySeagull_processed_2019-12-04.root
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_processed_2019-10-07.root
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull3050_processed_2019-10-23.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_testSeagull_processed_2019-10-21.root
@@ -30,7 +35,7 @@ void compareJetShape(){
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tunedSeagull_processed_2019-10-22.root
   
   const int nFilesToCompare = 2;
-  const bool mcLabel = false;
+  const bool mcLabel = true;
   
   // Open all the files for the comparison
   TFile *files[nFilesToCompare];

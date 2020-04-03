@@ -135,7 +135,7 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC_GenGen_akPu4CaloJet_jetClosures_noMixing_matchedJets_eschemeAxis_oldJEC_processed_2019-09-20.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC_GenGen_akFlowPuCs4PfJets_jetsNtracks_JECv5b_jetClosures_processed_2019-09-03.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC_GenGen_akPu4CaloJet_jetClosures_noMixing_matchedJets_eschemeAxis_oldJEC_processed_2019-09-20.root
   // data/PbPbMC_GenGen_akFlowPuCs4PfJets_jetsNtracks_JECv5b_jetClosures_processed_2019-09-03.root
   // data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root
@@ -143,11 +143,11 @@ void constructJetPtClosures(){
   // "data/PbPbMC_GenGen_pfCsJets_noCorrelations_jetPtClosure_eta1v3_2019-06-26_processed.root"
   
   bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
-  bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
-  bool drawInclusiveClosure = true;     // Produce the closure plots for inclusive jet pT
+  bool drawSubleadingClosure = false;    // Produce the closure plots for subleading jet pT
+  bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
   
   bool drawPtClosure = true;
-  bool drawEtaClosure = true;
+  bool drawEtaClosure = false;
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
@@ -223,7 +223,7 @@ void constructJetPtClosures(){
       for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
         if(drawPtClosure){
           for(int iGenJetPt = minGenPt; iGenJetPt < DijetHistogramManager::knGenJetPtBins; iGenJetPt++){
-            cout << "Fitting for pT: " << iGenJetPt << endl;
+            // cout << "Fitting for pT: " << iGenJetPt << " closureParticle: " << iClosureParticle << " centrality: " << iCentrality << " closureType:" << iClosureType << endl;
             // Read the reco/gen histogram from the file
             hRecoGenRatio[iClosureType][iGenJetPt][iCentrality][iClosureParticle] = closureHistograms->GetHistogramJetPtClosure(iClosureType, iGenJetPt, DijetHistogramManager::knJetEtaBins, iCentrality, iClosureParticle);
             

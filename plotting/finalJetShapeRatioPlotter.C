@@ -16,7 +16,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   
-  const char* systemLegendString[] = {"Asymmetry", "Integrated", "Third jet", "", ""};
+  const char* systemLegendString[] = {"WTA", "E-scheme", "Third jet", "", ""};
     
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[5][nCentralityBins][nAsymmetryBins+1];
@@ -446,9 +446,12 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_finalTuning.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_eschemeComparison.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
+  
+  // Save the histograms to a file for HepData submission
+  
   
 }
 
@@ -462,18 +465,20 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root"), NULL, NULL, NULL, NULL};
+  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root"), NULL, NULL, NULL};
+  // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root"), NULL, NULL, NULL, NULL};
+  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_onlyJetShapes_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_onlySeagullAndSpillover_correctedCentralityCorrection_eschemeAxis_onlyJetShape_processed_2019-12-05.root"), NULL, NULL, NULL};
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_finalTuning_wtaAxis_processed_2020-02-04.root
   //  data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_finalTuning_wtaAxis_processed_2020-01-29.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrections_seagullTuningProcess_processed_2020-01-15.root
-  // dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_onlySeagullAndSpillover_correctedCentralityCorrection_eschemeAxis_processed_2019-12-05.root
-  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_processed_2019-11-21.root
+  // dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_onlySeagullAndSpillover_correctedCentralityCorrection_eschemeAxis_onlyJetShape_processed_2019-12-05.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_onlyJetShapes_processed_2019-11-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_eschemeAxis_onlySeagull_processed_2019-11-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_xjBins_JECv6_finalTrack_eschemeAxis_noTrackDeltaRCorrection_firstTry_processed_2019-11-14.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root

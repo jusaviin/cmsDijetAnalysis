@@ -6,7 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_preprocessed_2020-03-20.root" "data/dihadronPbPb2018_leadingTrigger3-4_subleadingTrigger4-8_processed_2020-03-20.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_preprocessed_2019-10-07.root" "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_processed_2019-10-07.root" false false -1 "data/"
 
 #./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_preprocessed_2019-10-06.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_fixSeagull_allCorrections_processed_2020-02-17.root" true true -1 "data/"
 
