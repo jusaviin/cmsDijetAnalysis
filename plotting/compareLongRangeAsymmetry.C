@@ -79,14 +79,16 @@ void compareLongRangeAsymmetry(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString pbpbFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
-  // "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_adjustedBackground_processed_2019-08-13_fiveJobsMissing.root";
+  TString pbpbFileName = "data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root";
+  // data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
   //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
   //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root";
   
   // For systematic uncertainty estimation, need files in which the background is not adjusted between leading and subleading side
-  TString pbpbUnadjustedFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
+  TString pbpbUnadjustedFileName = "data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root";
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_onlySeagull_processed_2019-10-10.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
   // "data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root";
@@ -111,15 +113,21 @@ void compareLongRangeAsymmetry(){
   const bool drawSameEvent = false;
   
   const bool drawFourierFit = false;
-  const bool drawFourierGraph = true;
+  
+  const bool drawGraphAsymmetryComparison = false;    // Draw all selected asymmetry bins to the same graph
+  const bool drawGraphVnComparison = true;            // Draw selected flow components to the same graph
+  const bool drawFourierGraph = drawGraphAsymmetryComparison || drawGraphVnComparison;
+  
+  const int firstGraphFlowComponent = 2;    // First drawn flow component to comparison graphs
+  const int lastGraphFlowComponent = 3;     // Last drawn flow component to the comparison graphs
   
   const bool printChi2 = false;
   const bool printBackgroundAdjustmentUncertainty = false;
   
   const bool removeFit = false;  // Remove fit function from plots with distribution
   
-  const bool saveFigures = false;
-  TString saveComment = "_sameEventComparison";
+  const bool saveFigures = true;
+  TString saveComment = "_dihadronFit";
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -440,6 +448,7 @@ void compareLongRangeAsymmetry(){
   int markers[] = {kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross};
   int fullMarkers[] = {kFullCircle, kFullSquare, kFullDiamond, kFullCross};
   int colors[] = {kBlue,kRed,kGreen+2,kBlack};
+  int flowColors[] = {kBlue, kBlack, kRed, kGreen+3};
   double vx1 = 0.2; double vx2 = 0.25;  // x position of vn information legend
   if(fourierV == 0){
     vx1 = 0.183; vx2 = 0.233;
@@ -680,62 +689,134 @@ void compareLongRangeAsymmetry(){
       } // Loop over asymmetry bins
     } // Centrality loop
     
-    // Draw the graphs as a function of pT
-    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-      for(int iFlow = 0; iFlow < 4; iFlow++){
-        
-        legendY1 = 0.6; legendY2 = 0.9;
-        if(iFlow == 0){
-          legendY1 = 0.2; legendY2 = 0.5;
-        }
-        
-        // Setup a legend for the figure
-        legend = new TLegend(0.2,legendY1,0.6,legendY2);
-        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        if(iCentrality == nCentralityBins){
-          legend->SetHeader("pp");
-        } else {
-          legend->SetHeader(Form("PbPb C: %.0f-%.0f %%", centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
-        }
-        
-        // First, draw the systematic uncertainty bands to the canvas
-        sprintf(namerY,"V_{%d}",iFlow+1);
-        drawer->DrawGraph(flowUncertaintyPt[firstDrawnAsymmetryBin][iCentrality][iFlow], 0, 8, yZoomForFlowLow[iFlow], yZoomForFlowHigh[iFlow], "Track p_{T} (GeV)", namerY, " ", "2,same");
-        
-        for(int iAsymmetry = firstDrawnAsymmetryBin+1; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
-          flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->Draw("2,same");
-        }
-        
-        // After systematic uncertainties are drawn, draw the points on top of the bands
-        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
-          flowGraphPt[iAsymmetry][iCentrality][iFlow]->Draw("psame");
-          if(iAsymmetry == nAsymmetryBins){
-            legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],"x_{j} > 0.0","p");
-          } else {
-            legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],Form("%.1f < x_{j} < %.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]),"p");
+    // Draw all selected flow components to the same graph
+    if(drawGraphAsymmetryComparison){
+      
+      // Draw the graphs as a function of pT
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+        for(int iFlow = 0; iFlow < 4; iFlow++){
+          
+          legendY1 = 0.6; legendY2 = 0.9;
+          if(iFlow == 0){
+            legendY1 = 0.2; legendY2 = 0.5;
           }
           
-          if(drawSameEvent){
-            flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->Draw("psame");
-            legend->AddEntry(flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow],"From same event","p");
-          }
-        }
-        
-        legend->Draw();
-        
-        if(iFlow == 0) zeroLine->Draw();
-
-        // Save the figures to file
-        if(saveFigures){
+          // Setup a legend for the figure
+          legend = new TLegend(0.2,legendY1,0.6,legendY2);
+          legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           if(iCentrality == nCentralityBins){
-            gPad->GetCanvas()->SaveAs(Form("figures/fourierGraphPt%s_v%d_pp.pdf", saveComment.Data(), iFlow+1));
+            legend->SetHeader("pp");
           } else {
-            gPad->GetCanvas()->SaveAs(Form("figures/fourierGraphPt%s_v%d_C=%.0f-%.0f.pdf", saveComment.Data(), iFlow+1, centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+            legend->SetHeader(Form("PbPb C: %.0f-%.0f %%", centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]));
           }
-        } // Saving figures
-        
-      } // Flow loop
-    } // Centrality loop
+          
+          // First, draw the systematic uncertainty bands to the canvas
+          sprintf(namerY,"V_{%d}",iFlow+1);
+          drawer->DrawGraph(flowUncertaintyPt[firstDrawnAsymmetryBin][iCentrality][iFlow], 0, 8, yZoomForFlowLow[iFlow], yZoomForFlowHigh[iFlow], "Track p_{T} (GeV)", namerY, " ", "2,same");
+          
+          for(int iAsymmetry = firstDrawnAsymmetryBin+1; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+            flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->Draw("2,same");
+          }
+          
+          // After systematic uncertainties are drawn, draw the points on top of the bands
+          for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+            flowGraphPt[iAsymmetry][iCentrality][iFlow]->Draw("psame");
+            if(iAsymmetry == nAsymmetryBins){
+              legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],"x_{j} > 0.0","p");
+            } else {
+              legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],Form("%.1f < x_{j} < %.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]),"p");
+            }
+            
+            if(drawSameEvent){
+              flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->Draw("psame");
+              legend->AddEntry(flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow],"From same event","p");
+            }
+          }
+          
+          legend->Draw();
+          
+          if(iFlow == 0) zeroLine->Draw();
+          
+          // Save the figures to file
+          if(saveFigures){
+            if(iCentrality == nCentralityBins){
+              gPad->GetCanvas()->SaveAs(Form("figures/fourierGraphPt%s_v%d_pp.pdf", saveComment.Data(), iFlow+1));
+            } else {
+              gPad->GetCanvas()->SaveAs(Form("figures/fourierGraphPt%s_v%d_C=%.0f-%.0f.pdf", saveComment.Data(), iFlow+1, centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+            }
+          } // Saving figures
+          
+        } // Flow loop
+      } // Centrality loop
+    } // Draw asymmetry comparison graphs
+    
+    // Draw all the different asymmetry bins to the same graph
+    if(drawGraphVnComparison){
+      
+      TString asymmetryString;
+      TString compactAsymmetryString;
+      
+      // Draw the graphs as a function of pT
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+          
+          // Set the asymmetry string based on the selected asymmetry bin
+          if(iAsymmetry < nAsymmetryBins){
+            asymmetryString = Form(", %.1f < x_{j} < %.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
+            compactAsymmetryString = Form("_A=%.1f-%.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
+            compactAsymmetryString.ReplaceAll(".","v");
+          } else {
+            asymmetryString = ", x_{j} > 0.0";
+            compactAsymmetryString = "";
+          }
+          
+          legendY1 = 0.6; legendY2 = 0.9;
+          
+          // Setup a legend for the figure
+          legend = new TLegend(0.2,legendY1,0.6,legendY2);
+          legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+          if(iCentrality == nCentralityBins){
+            legend->SetHeader(Form("pp%s", asymmetryString.Data()));
+          } else {
+            legend->SetHeader(Form("PbPb C: %.0f-%.0f %%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString.Data()));
+          }
+          
+          // First, draw the systematic uncertainty bands to the canvas
+          flowUncertaintyPt[iAsymmetry][iCentrality][firstGraphFlowComponent-1]->SetFillColorAlpha(flowColors[firstGraphFlowComponent-1],0.25);
+          drawer->DrawGraph(flowUncertaintyPt[iAsymmetry][iCentrality][firstGraphFlowComponent-1], 0, 8, yZoomForFlowLow[firstGraphFlowComponent-1], yZoomForFlowHigh[firstGraphFlowComponent-1], "Track p_{T} (GeV)", "V_{n}", " ", "2,same"); // TODO: Check zooms
+          
+          for(int iFlow = firstGraphFlowComponent; iFlow <= lastGraphFlowComponent-1; iFlow++){
+            flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->SetFillColorAlpha(flowColors[iFlow],0.25);
+            flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->Draw("2,same");
+          }
+          
+          // After systematic uncertainties are drawn, draw the points on top of the bands
+          for(int iFlow = firstGraphFlowComponent-1; iFlow <= lastGraphFlowComponent-1; iFlow++){
+            flowGraphPt[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(flowColors[iFlow]);
+            flowGraphPt[iAsymmetry][iCentrality][iFlow]->Draw("psame");
+            legend->AddEntry(flowGraphPt[iAsymmetry][iCentrality][iFlow],Form("V_{%d}",iFlow+1),"p");
+            
+            if(drawSameEvent){
+              flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(flowColors[iFlow]);
+              flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->Draw("psame");
+              legend->AddEntry(flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow],"From same event","p");
+            }
+          }
+          
+          legend->Draw();
+          
+          // Save the figures to file
+          if(saveFigures){
+            if(iCentrality == nCentralityBins){
+              gPad->GetCanvas()->SaveAs(Form("figures/fourierGraphPt%s%s_pp.pdf", saveComment.Data(), compactAsymmetryString.Data()));
+            } else {
+              gPad->GetCanvas()->SaveAs(Form("figures/fourierGraphPt%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+            }
+          } // Saving figures
+          
+        } // Asymmetry loop
+      } // Centrality loop
+    } // Draw flow component comparison graphs
     
   } // Draw Fourier graph
   
