@@ -8,7 +8,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   //  Note, changing the first track pT bin properly requires some manual work. Not all is done automagically.
   const int iFirstTrackPtBin = 0;  // Can change the lower bound of the drawn track pT bins. Default is 0.
-  bool printIntegrals = true;     // Print the integrals of all the distributions to slides
+  bool printIntegrals = false;     // Print the integrals of all the distributions to slides
   
   const int nTrackPtBins = pbpbHistograms->GetNTrackPtBins();
   const int nCentralityBins = pbpbHistograms->GetNCentralityBins();
@@ -20,9 +20,11 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   const char* saveString = {"JetShape"};
   
-  bool drawUncertainties = true;
-  bool monteCarloLabels = false;
-  bool normalizeJetShape = true;           // True: draw rho. False: draw P.
+  const bool drawUncertainties = true;
+  const bool monteCarloLabels = false;
+  const bool normalizeJetShape = true;         // True: draw rho. False: draw P.
+  const bool drawExtraRatio = false;           // Draw illustration of third jet effects to the ratio
+  const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
   
   // Change the titles if the jet shape is not normalized to one
   if(!normalizeJetShape){
@@ -184,6 +186,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   } // Asymmetry loop
     
   TH1D* ratioHistogram[nCentralityBins][nAsymmetryBins+1];
+  TH1D* extraRatio[nCentralityBins];   // Extra ratio histograms to illustrate third jet effects
   
   // Create uncertainty histograms for the ratio using standard jet shape binning
   TH1D* ratioUncertainty[nCentralityBins][nAsymmetryBins+1];
@@ -245,6 +248,12 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     }
     if(monteCarloLabels){
     }
+  }
+  
+  // Create the extra ratio histograms
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    extraRatio[iCentrality] = (TH1D*) sumHistogramPbPb[iCentrality][0]->Clone(Form("extraRatio%d", iCentrality)); // For PbPb use 0.0 < xj < 0.6 bin
+    extraRatio[iCentrality]->Divide(sumHistogramPp[3]); // For pp, use the xj integrated bin
   }
   
   // ==============================
@@ -324,6 +333,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
         mainTitle->DrawLatexNDC(0.19, 0.9, pbpbLabel);
         mainTitle->DrawLatexNDC(0.19, 0.80, cent_lab[iCentrality]);
       }
+      
     } // Centrality loop
   } // Asymmetry loop for drawing distributions to the really big canvas
   
@@ -565,14 +575,18 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       ratioUncertainty[iCentrality][nAsymmetryBins]->SetMarkerStyle(20);
       ratioUncertainty[iCentrality][nAsymmetryBins]->SetMarkerSize(1.1);
       
-      if(iAsymmetry== 0 && iCentrality == 0 ){
-      }
       ratioUncertainty[iCentrality][iAsymmetry]->SetTitle("");
       ratioUncertainty[iCentrality][iAsymmetry]->Draw("same e2");
       ratioUncertainty[iCentrality][nAsymmetryBins]->Draw("same e2");
       ratioHistogram[iCentrality][iAsymmetry]->Draw("same");
       ratioHistogram[iCentrality][nAsymmetryBins]->Draw("same");
       auxi_hist[iCentrality]->Draw("same e2");
+      if(iAsymmetry == 0 && iCentrality != 3 && drawExtraRatio){
+        extraRatio[iCentrality]->SetLineColor(kRed+2);
+        extraRatio[iCentrality]->SetLineStyle(2);
+        extraRatio[iCentrality]->SetLineWidth(2);
+        extraRatio[iCentrality]->Draw("l,hist,same");
+      }
       
       line[iAsymmetry] = new TLine();
       line[iAsymmetry]->SetLineStyle(2);
@@ -631,8 +645,24 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   ratioCanvas->cd(1);
   ltc2->Draw();
   
+  // Legend for extra ratio
+  if(drawExtraRatio){
+    ratioCanvas->cd(2);
+    TLegend *extraLegend = new TLegend(0.05, 0.68, 0.72, 0.84);
+    extraLegend->SetFillStyle(0);extraLegend->SetBorderSize(0);extraLegend->SetTextSize(0.07);extraLegend->SetTextFont(62);
+    extraLegend->AddEntry(extraRatio[0], "PbPb(x_{j} < 0.6) / pp (all x_{j})","l");
+    extraLegend->Draw();
+  } // Drawing extra ratio for illustration
+  
   bigCanvas->SaveAs(Form("figures/final%s_%s_lul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
-  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioLul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioWithoutIllustration.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  
+  // Save the histograms to a file for HepData submission
+  if(saveHistogramsForHepData){
+    
+    // TODO: Add histograms for distribution, ratio and systemtic uncertainties for both and write them to file
+    
+  }
   
   // Print the integrals for different bins to the console
   if(printIntegrals){
