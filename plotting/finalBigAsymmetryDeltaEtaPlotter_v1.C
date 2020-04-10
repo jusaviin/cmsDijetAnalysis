@@ -18,7 +18,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const char* deltaEtaSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
-  double deltaEtaZoom[] = {37,37,30};
+  double deltaEtaZoom[] = {27,37,30};
   double subtractionZoom[] = {23,23,15};
   
   const bool drawInclusive = false;
@@ -209,7 +209,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       
       deltaEtaStack[iCentrality][iAsymmetry] = new stackHist(Form("st_%d",iCentrality));
       deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5, 1.5, "x");
-      deltaEtaStack[iCentrality][iAsymmetry]->setRange(-4, deltaEtaZoom[iJetTrack/3], "y");
+      deltaEtaStack[iCentrality][iAsymmetry]->setRange(-3-iJetTrack/3, deltaEtaZoom[iJetTrack/3], "y");
       for(int iTrackPt = nTrackPtBins-2; iTrackPt >= 0; iTrackPt--){
         deltaEtaStack[iCentrality][iAsymmetry]->addHist((TH1*) deltaEtaArray[iCentrality][iTrackPt][iAsymmetry]);
       }
@@ -273,9 +273,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
     
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-      
-      cout << "In the loop iAsymmetry: " << iAsymmetry << " iCentrality: " << iCentrality << endl;
-      
+            
       if(iAsymmetry == 3 ) bigCanvas->CD(5-iCentrality);
       else bigCanvas->CD(10+iAsymmetry*5-iCentrality);
       
@@ -320,18 +318,18 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
           mainTitle->SetTextSize(0.08);
         else
           mainTitle->SetTextSize(0.11);
-        mainTitle->DrawLatex(-1.15,deltaEtaZoom[0]-5, ppLabel);
-        mainTitle->DrawLatex(-0.4,deltaEtaZoom[0]-5, xjbin[iAsymmetry]);
+        mainTitle->DrawLatex(-1.15,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);
+        mainTitle->DrawLatex(-0.5,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]);
       }
       else {
         mainTitle->SetTextFont(22);
         mainTitle->SetTextSize(0.11);
-        mainTitle->DrawLatex(-1.15, deltaEtaZoom[0]-3.15, pbpbLabel);
-        mainTitle->DrawLatex(-1.15, deltaEtaZoom[0]-7, cent_lab[iCentrality]);
+        mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel);
+        mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]);
       }
     } // Centrality loop
   } // Asymmetry loop for drawing distributions to the really big canvas
-  cout << "Loopity loop done" << endl;
+  
   TLegend* ptLegend1 = new TLegend(0.04, 0.82, 0.27, 0.89);
   TLegend* ptLegend2 = new TLegend(0.28, 0.82, 0.51, 0.89);
   TLegend* ptLegend3 = new TLegend(0.53 ,0.82, 0.76, 0.89);
