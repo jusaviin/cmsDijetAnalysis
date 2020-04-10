@@ -121,6 +121,7 @@ DijetHistogramManager::DijetHistogramManager() :
   // Centrality loop
   for(int iCentrality = 0; iCentrality < kMaxCentralityBins; iCentrality++){
     fhDijetDphi[iCentrality] = NULL;                  // Dijet deltaPhi histograms
+    fhDijetXjMatrix[iCentrality] = NULL;              // Matrix between reconstructed and generated dijet xj values
     
     for(int iAsymmetry = 0; iAsymmetry <= kMaxAsymmetryBins; iAsymmetry++){
       fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentrality] = NULL; // Leading versus subleading jet pT 2D histograms
@@ -427,7 +428,8 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   
   // Centrality loop
   for(int iCentrality = 0; iCentrality < kMaxCentralityBins; iCentrality++){
-    fhDijetDphi[iCentrality] = in.fhDijetDphi[iCentrality];                                   // Dijet deltaPhi histograms
+    fhDijetDphi[iCentrality] = in.fhDijetDphi[iCentrality];                      // Dijet deltaPhi histograms
+    fhDijetXjMatrix[iCentrality] = in.fhDijetXjMatrix[iCentrality];              // Matrix between reconstructed and generated dijet xj values
     
     // Asymmetry loop
     for(int iAsymmetry = 0; iAsymmetry <= kMaxAsymmetryBins; iAsymmetry++){
@@ -1474,9 +1476,9 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
  *        dijet              Axis 0         Leading jet pT
  *        dijet              Axis 1        Subleading jet pT
  *        dijet              Axis 2         Dijet deltaPhi
- *        dijet              Axis 3        Dijet asymmetry AJ
+ *        dijet              Axis 3     Dijet momentum balance xj
  *        dijet              Axis 4           Centrality
- *        dijet              Axis 5        Dijet asymmetry xj
+ *        dijet              Axis 5     xj from matched (reco/gen) dijet
  */
 void DijetHistogramManager::LoadDijetHistograms(){
   
@@ -1501,22 +1503,26 @@ void DijetHistogramManager::LoadDijetHistograms(){
     higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
     
     fhDijetDphi[iCentralityBin] = FindHistogram(fInputFile,"dijet",2,4,lowerCentralityBin,higherCentralityBin);
-    fhDijetAsymmetry[iCentralityBin][knJetPtBins] = FindHistogram(fInputFile,"dijet",3,4,lowerCentralityBin,higherCentralityBin);
-    fhDijetXj[iCentralityBin][knJetPtBins] = FindHistogram(fInputFile,"dijet",5,4,lowerCentralityBin,higherCentralityBin);
+    fhDijetAsymmetry[iCentralityBin][knJetPtBins] = FindHistogram(fInputFile,"dijet",5,4,lowerCentralityBin,higherCentralityBin);
+    fhDijetXj[iCentralityBin][knJetPtBins] = FindHistogram(fInputFile,"dijet",3,4,lowerCentralityBin,higherCentralityBin);
     
-    // Load the leading vs. subleading jet pT histograms
+    // Load two-dimensional histograms
     if(fLoad2DHistograms){
       
+      // Load the dijet xj matrix
+      fhDijetXjMatrix[iCentralityBin] = FindHistogram2D(fInputFile,"dijet",3,5,4,lowerCentralityBin,higherCentralityBin);
+      
+      // Load the leading vs. subleading jet pT histograms
       fhDijetLeadingVsSubleadingPt[fnAsymmetryBins][iCentralityBin] = FindHistogram2D(fInputFile,"dijet",0,1,4,lowerCentralityBin,higherCentralityBin);
 
       for(int iAsymmetry = 0; iAsymmetry < fnAsymmetryBins; iAsymmetry++){
         
-        // Setup axes with restrictions (4 = centrality, 5 = xj)
+        // Setup axes with restrictions (4 = centrality, 3 = xj)
         axisIndices[0] = 4;
         lowLimits[0] = lowerCentralityBin;
         highLimits[0] = higherCentralityBin;
         
-        axisIndices[1] = 5;
+        axisIndices[1] = 3;
         lowLimits[1] = fhDijetXj[iCentralityBin][knJetPtBins]->FindBin(fAsymmetryBinBorders[iAsymmetry]+0.001);
         highLimits[1] = fhDijetXj[iCentralityBin][knJetPtBins]->FindBin(fAsymmetryBinBorders[iAsymmetry+1]-0.001);
         
@@ -1539,8 +1545,8 @@ void DijetHistogramManager::LoadDijetHistograms(){
       highLimits[0] = higherJetPtBin; highLimits[1] = higherCentralityBin;
       
       // Find the histograms with restrictions
-      fhDijetAsymmetry[iCentralityBin][iJetPt] = FindHistogram(fInputFile,"dijet",3,2,axisIndices,lowLimits,highLimits);
-      fhDijetXj[iCentralityBin][iJetPt] = FindHistogram(fInputFile,"dijet",5,2,axisIndices,lowLimits,highLimits);
+      fhDijetAsymmetry[iCentralityBin][iJetPt] = FindHistogram(fInputFile,"dijet",5,2,axisIndices,lowLimits,highLimits);
+      fhDijetXj[iCentralityBin][iJetPt] = FindHistogram(fInputFile,"dijet",3,2,axisIndices,lowLimits,highLimits);
     }
     
   }
@@ -2272,6 +2278,12 @@ void DijetHistogramManager::WriteDijetHistograms(){
       
       // Leading jet pT vs. subleading jet pT
       if(fLoad2DHistograms) {
+        
+        if(fhDijetXjMatrix[iCentralityBin] != NULL){
+          sprintf(histogramNamer,"dijetXjMatrix_C%d", iCentralityBin);
+          fhDijetXjMatrix[iCentralityBin]->Write(histogramNamer, TObject::kOverwrite);
+        }
+        
         for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
           if(fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentralityBin]){
             sprintf(histogramNamer,"leadingVsSubleadingPt_%sC%d", fAsymmetryBinName[iAsymmetry].Data(), iCentralityBin);
@@ -2644,6 +2656,10 @@ void DijetHistogramManager::LoadProcessedHistograms(){
       
       // Leading jet pT vs. subleading jet pT
       if(fLoad2DHistograms){
+        
+        sprintf(histogramNamer,"dijet/dijetXjMatrix_C%d", iCentralityBin);
+        fhDijetXjMatrix[iCentralityBin] = (TH2D*) fInputFile->Get(histogramNamer);
+        
         for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
           sprintf(histogramNamer,"dijet/leadingVsSubleadingPt_%sC%d", fAsymmetryBinName[iAsymmetry].Data(), iCentralityBin);
           fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentralityBin] = (TH2D*) fInputFile->Get(histogramNamer);
@@ -2901,6 +2917,9 @@ bool DijetHistogramManager::CheckNull(const bool preprocess) const{
       
       // Leading jet pT vs. subleading jet pT
       if(fLoad2DHistograms){
+        
+        if(fhDijetXjMatrix[iCentralityBin] == NULL) return true;
+        
         for(int iAsymmetry = 0; iAsymmetry <= fnAsymmetryBins; iAsymmetry++){
           if(fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentralityBin] == NULL) return true;
         }
@@ -3666,6 +3685,11 @@ TH2D* DijetHistogramManager::GetHistogramDijetLeadingVsSubleadingPt(const int iC
   return fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentrality];
 }
 
+// Getter for matrix between reconstructed and generated dijet xj values
+TH2D* DijetHistogramManager::GetHistogramDijetXjMatrix(const int iCentrality) const{
+  return fhDijetXjMatrix[iCentrality];
+}
+
 // Getters for histograms for tracks in dijet events
 
 // Getter for track pT histograms
@@ -3840,6 +3864,7 @@ TH1D* DijetHistogramManager::GetOneDimensionalHistogram(TString name, int bin1, 
 TH2D* DijetHistogramManager::GetTwoDimensionalHistogram(TString name, int bin1, int bin2, int bin3, int bin4, int bin5) const{
   if(name.EqualTo("jetetaphi",TString::kIgnoreCase) || name.EqualTo("fhjetetaphi",TString::kIgnoreCase)) return GetHistogramJetEtaPhi(bin1,bin2);
   if(name.EqualTo("dijetleadingvssubleadingpt",TString::kIgnoreCase) || name.EqualTo("fhdijetleadingvssubleadingpt",TString::kIgnoreCase)) return GetHistogramDijetLeadingVsSubleadingPt(bin1,bin2);
+  if(name.EqualTo("dijetxjmatrix",TString::kIgnoreCase) || name.EqualTo("fhdijetxjmatrix",TString::kIgnoreCase)) return GetHistogramDijetXjMatrix(bin1);
   if(name.EqualTo("tracketaphi",TString::kIgnoreCase) || name.EqualTo("fhtracketaphi",TString::kIgnoreCase)) return GetHistogramTrackEtaPhi(bin1,bin2,bin3,bin4);
   if(name.EqualTo("jettrackdeltaetadeltaphi",TString::kIgnoreCase) || name.EqualTo("fhjettrackdeltaetadeltaphi",TString::kIgnoreCase)) return GetHistogramJetTrackDeltaEtaDeltaPhi(bin1,bin2,bin3,bin4,bin5);
   return NULL;
