@@ -50,7 +50,7 @@ stackHist** makeStack(TString name, TH1D**** js, int iasym){
 }
 
 void drawStack(stackHist *jstk, bool isconner = 0){
-  jstk->setRange(.5, 3000, "y");
+  jstk->setRange(.5, 2000, "y");
   jstk->setRange(0.0, 0.99, "x");
   jstk->drawStack();
   jstk->hst->GetYaxis()->SetNdivisions(505);
@@ -155,11 +155,11 @@ void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D**
       mainTitle->SetTextFont(22);
       mainTitle->SetTextSize(0.12);
       mainTitle->DrawLatexNDC(0.35, 0.88, ppLabel);
-      mainTitle->SetTextSize(0.10);
-      mainTitle->DrawLatexNDC(0.55, 0.88, "Leading jet");
+      mainTitle->SetTextSize(0.12);
+      mainTitle->DrawLatexNDC(0.52, 0.88, "Leading jet");
       bigCanvas->CD(10-i);
-      mainTitle->SetTextSize(0.09);
-      mainTitle->DrawLatexNDC(0.49, 0.88, "Subleading jet");
+      mainTitle->SetTextSize(0.095);
+      mainTitle->DrawLatexNDC(0.42, 0.88, "Subleading jet");
     }
     else {
       bigCanvas->CD(5-i);

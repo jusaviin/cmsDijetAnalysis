@@ -534,7 +534,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->CenterTitle();
       ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitle("#Deltar");
       ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->CenterTitle();
-      ratioUncertainty[iCentrality][iAsymmetry]->SetAxisRange(0.01, 3.7, "Y");
+      ratioUncertainty[iCentrality][iAsymmetry]->SetAxisRange(0.01, 3.1 - (iJetTrack/3)*0.5, "Y");
       ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetNdivisions(505);
       ratioUncertainty[iCentrality][iAsymmetry]->SetAxisRange(0, 0.99, "X");
       
@@ -624,13 +624,24 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   x= 0.746,y=0.058; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
   x= 0.973, y=0.058; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "1");
   
-  auto ltc2 = new TLegend(0.27, 0.45, 0.72, 0.8);
+  TLegend *ltc2 = new TLegend(0.27, 0.6, 0.72, 0.8);
   ltc2->SetLineColor(0);
+  ltc2->SetTextSize(0.085);
   ltc2->AddEntry(ratioUncertainty[0][3], xjbin[3], "lpf");
-  for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
-    ltc2->AddEntry(ratioUncertainty[0][iAsymmetry], xjbin[iAsymmetry], "lpf");
-    ratioCanvas->cd(4+iAsymmetry*4-3);
-  }
+  ltc2->AddEntry(ratioUncertainty[0][0], xjbin[0], "lpf");
+
+  TLegend *ltc3 = new TLegend(0.27, 0.75, 0.72, 0.95);
+  ltc3->SetLineColor(0);
+  ltc3->SetTextSize(0.085);
+  ltc3->AddEntry(ratioUncertainty[0][3], xjbin[3], "lpf");
+  ltc3->AddEntry(ratioUncertainty[0][1], xjbin[1], "lpf");
+  
+  TLegend *ltc4 = new TLegend(0.27, 0.78, 0.72, 0.95);
+  ltc4->SetLineColor(0);
+  ltc4->SetTextSize(0.07);
+  ltc4->AddEntry(ratioUncertainty[0][3], xjbin[3], "lpf");
+  ltc4->AddEntry(ratioUncertainty[0][2], xjbin[2], "lpf");
+  
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     ratioCanvas->cd(4-iCentrality);
     mainTitle->SetTextFont(22);
@@ -644,6 +655,10 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   ratioCanvas->cd(1);
   ltc2->Draw();
+  ratioCanvas->cd(5);
+  ltc3->Draw();
+  ratioCanvas->cd(9);
+  ltc4->Draw();
   
   // Legend for extra ratio
   if(drawExtraRatio){
@@ -654,8 +669,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     extraLegend->Draw();
   } // Drawing extra ratio for illustration
   
-  bigCanvas->SaveAs(Form("figures/final%s_%s_lul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
-  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioWithoutIllustration.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/final%s_%s_adjustZoom.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioAdjustZoom.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
   
   // Save the histograms to a file for HepData submission
   if(saveHistogramsForHepData){

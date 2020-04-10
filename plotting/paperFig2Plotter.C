@@ -5,7 +5,7 @@ void drawRatio(TH1D** ratio, TH1D** err, int i, Color_t color,  bool isconner = 
   auto hist = ratio[i];
   auto syst = err[i];
   syst->SetAxisRange(0, .99, "X");
-  syst->SetAxisRange(0.05, 3.9, "Y");
+  syst->SetAxisRange(0.05, 2.9, "Y");
   hist->SetMarkerSize(1.5);
   hist->SetMarkerStyle(20);
   hist->SetMarkerColor(kWhite);
@@ -109,12 +109,18 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
       mainTitle->DrawLatexNDC(0.1, 0.9, "Cent: "+cent_lab[i]);
     }
   }
-  TLegend* ptLegend1 = new TLegend(0.3, 0.45, 0.77, 0.85);
+  TLegend* ptLegend1 = new TLegend(0.3, 0.65, 0.77, 0.85);
   ptLegend1->SetLineColor(kWhite);
   ptLegend1->AddEntry(ld_ratio_err[0], "Leading jet", "lpf");
-  ptLegend1->AddEntry(sub_ratio_err[0], "Subleading jet", "lpf");
   bigCanvas->CD(1);
   ptLegend1->Draw();
+  
+  TLegend* ptLegend2 = new TLegend(0.3, 0.75, 0.77, 0.95);
+  ptLegend2->SetLineColor(kWhite);
+  ptLegend2->SetTextSize(0.076);
+  ptLegend2->AddEntry(sub_ratio_err[0], "Subleading jet", "lpf");
+  bigCanvas->CD(5);
+  ptLegend2->Draw();
   
   bigCanvas->cd(0);
   mainTitle->SetTextFont(42);

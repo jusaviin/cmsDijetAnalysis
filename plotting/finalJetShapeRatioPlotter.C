@@ -223,13 +223,14 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   bigCanvas->divide(2,5);
   
   mainTitle = new TLatex();
-  double axisZoom[] = {2.2,3.2,2.2};
+  double axisZoom[] = {1.5,2.6,2.2};
+  double axisLow[] = {0.5,0.2,0.5};
   
   for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
     bigCanvas->CD(5-iCentrality);
     
     asymmetryRatioHistogram[0][iCentrality][0]->SetTitle("");
-    asymmetryRatioHistogram[0][iCentrality][0]->SetAxisRange(0, axisZoom[iJetTrack/3], "Y");
+    asymmetryRatioHistogram[0][iCentrality][0]->SetAxisRange(axisLow[iJetTrack/3], axisZoom[iJetTrack/3], "Y");
     asymmetryRatioHistogram[0][iCentrality][0]->SetAxisRange(0, 0.99, "X");
     if(iCentrality < 4)  {
       asymmetryRatioHistogram[0][iCentrality][0]->GetXaxis()->SetTitleOffset(0.7);
@@ -289,7 +290,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
     asymmetryRatioHistogram[0][iCentrality][2]->SetTitle("");
     asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(1.1);
     asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitle("#Deltar");
-    asymmetryRatioHistogram[0][iCentrality][2]->SetAxisRange(0, axisZoom[iJetTrack/3], "Y");
+    asymmetryRatioHistogram[0][iCentrality][2]->SetAxisRange(axisLow[iJetTrack/3], axisZoom[iJetTrack/3], "Y");
     asymmetryRatioHistogram[0][iCentrality][2]->SetAxisRange(0, 0.99, "X");
     if( iCentrality<4 )  {
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(0.65);
@@ -446,7 +447,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_eschemeComparison.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_adjustZoom.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -465,14 +466,14 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root"), TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root"), NULL, NULL, NULL};
+  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root"), NULL, NULL, NULL, NULL};
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_onlySeagullAndSpillover_onlyJetShapes_processed_2019-11-21.root"), TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trig_JECv6_finalTrack_onlySeagullAndSpillover_correctedCentralityCorrection_eschemeAxis_onlyJetShape_processed_2019-12-05.root"), NULL, NULL, NULL};
+  TFile *pbpbFile[5] = { TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root"), NULL, NULL, NULL, NULL};
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_finalTuning_wtaAxis_processed_2020-02-04.root
   //  data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_finalTuning_wtaAxis_processed_2020-01-29.root

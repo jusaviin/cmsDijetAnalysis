@@ -15,7 +15,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   // Define labels and plotting layout
   const char* deltaEtaTitle[] = {"Particle yields associated with leading jets","Particle yields associated with subleading jets","Particle yield wrt. inclusive jet"};
   //const char* deltaEtaTitle[] = {"Particle yield w.r.t. the leading jet","Particle yield w.r.t. the subleading jet","Particle yield wrt. inclusive jet"};
-  const char* deltaEtaSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
+  const char* deltaEtaSaveName[] = {"LeadingJet","SubleadingJet","InclusiveJet"};
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   double deltaEtaZoom[] = {27,37,30};
@@ -434,7 +434,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
    mainTitle->DrawLatex(0.982, 0.0285, "1");*/
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/final%s_bigCanvas_fixedSystError.pdf", deltaEtaSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_adjustedZoom.pdf", deltaEtaSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("deltaEta_normal_v3.png");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
