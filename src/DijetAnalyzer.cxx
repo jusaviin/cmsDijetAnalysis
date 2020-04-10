@@ -606,6 +606,7 @@ void DijetAnalyzer::RunAnalysis(){
   fMatchDijet = (fCard->Get("MatchJets") == 2 || fCard->Get("MatchJets") == 4);
   fMatchLeadingJet = (fCard->Get("MatchJets") == 3 || fCard->Get("MatchJets") == 5);
   Bool_t reverseMatchVeto = (fCard->Get("MatchJets") == 4 || fCard->Get("MatchJets") == 5);
+  Bool_t findMatchedDijet = fCard->Get("MatchJets") == 6;
   
   //*************************************************************
   //    Turn off certain track cuts for generated tracks and pp
@@ -631,14 +632,14 @@ void DijetAnalyzer::RunAnalysis(){
   TFile *mixedEventFile;
   
   // Event variables
-  Int_t nEvents = 0;               // Number of events
-  Bool_t dijetFound = false;       // Is there a dijet in the event?
-  Bool_t twoJetsFound = false;     // Are there two jets in the event?
-  Bool_t matchVeto = false;        // Veto the found dijet because it did not match with Gen or Reco
-  Double_t vz = 0;                 // Vertex z-position
-  Double_t centrality = 0;         // Event centrality
-  Int_t hiBin = 0;                 // CMS hiBin (centrality * 2)
-  Double_t ptHat = 0;              // pT hat for MC events
+  Int_t nEvents = 0;                // Number of events
+  Bool_t dijetFound = false;        // Is there a dijet in the event?
+  Bool_t twoJetsFound = false;      // Are there two jets in the event?
+  Bool_t matchVeto = false;         // Veto the found dijet because it did not match with Gen or Reco
+  Double_t vz = 0;                  // Vertex z-position
+  Double_t centrality = 0;          // Event centrality
+  Int_t hiBin = 0;                  // CMS hiBin (centrality * 2)
+  Double_t ptHat = 0;               // pT hat for MC events
   
   // Combining bools to make the code more readable
   Bool_t useDifferentReaderFotJetsAndTracks = (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenReco); // Use different forest reader for jets and tracks
@@ -650,9 +651,9 @@ void DijetAnalyzer::RunAnalysis(){
   std::vector<TString> mixingFiles;  // List of mixing files
   
   // Variables for jets
-  Double_t dijetAsymmetry = -99;    // Dijet asymmetry used for binning
-  Double_t dijetAJ = -99;           // Dijet asymmetry AJ
-  Double_t dijetXj = -99;           // Dijet asymmetry xJ
+  Double_t dijetAsymmetry = -99;    // Dijet momuntem balance used for binning
+  Double_t dijetXj = -99;           // Dijet momentum balance xj
+  Double_t dijetMatchedXj = -99;    // Matched dijet momentum balance
   Double_t leadingJetPt = 0;        // Leading jet pT
   Double_t leadingJetPhi = 0;       // Leading jet phi
   Double_t leadingJetEta = 0;       // Leading jet eta
@@ -685,7 +686,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t subleadingJetInfo[4] = {0};    // Array for subleading jet pT, phi and eta
   Double_t inclusiveJetInfo[60][4] = {{0}}; // Array for jet pT, phi and eta for all the jets in the event
   Int_t nJetsInThisEvent = 0;             // Number of jets in the event
-  Double_t matchedLeadingJetPt = 0;       // Leading matched jet pT
+  Double_t matchedLeadingJetPt = 1;       // Leading matched jet pT
   Double_t matchedLeadingJetPhi = 0;      // Leading matched jet phi
   Double_t matchedLeadingJetEta = 0;      // Leading matched jet eta
   Double_t matchedSubleadingJetPt = 0;    // Subleading matched jet pT
@@ -873,6 +874,9 @@ void DijetAnalyzer::RunAnalysis(){
   //************************************************
   //       Main analysis loop over all files
   //************************************************
+  
+  // Randomizer for smearing TODO: Remove SMEAR
+  //TRandom3 *rng = new TRandom3();
   
   // Loop over files
   Int_t nFiles = fFileNames.size();
@@ -1100,6 +1104,11 @@ void DijetAnalyzer::RunAnalysis(){
         
         jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
         
+        // Add random smearing of 20 % to the jet pT TODO: Remove SMEAR
+        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.666); // Smearing corresponding to 20 % increase in resolution
+        
+        
         // Only do the correction for 2018 data and reconstructed Monte Carlo
         if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
           jetPt = jetPtCorrected;
@@ -1269,6 +1278,10 @@ void DijetAnalyzer::RunAnalysis(){
         
         jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
         
+        // Add random smearing of 20 % to the jet pT TODO: Remove SMEAR
+        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.666); // Smearing corresponding to 20 % increase in resolution
+        
         // Only do the correction for 2018 data and reconstructed Monte Carlo
         if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
           jetPt = jetPtCorrected;
@@ -1413,7 +1426,7 @@ void DijetAnalyzer::RunAnalysis(){
       
       // If we require to match the dijet, check that the matching jet pairs also fulfill the dijet definition
       matchVeto = false;
-      if(dijetFound && (fMatchDijet || fMatchLeadingJet)){
+      if((dijetFound && (fMatchDijet || fMatchLeadingJet)) || (findMatchedDijet && twoJetsFound)){
         matchedLeadingJetPt = fJetReader->GetMatchedPt(highestIndex);
         matchedLeadingJetPhi = fJetReader->GetMatchedPhi(highestIndex);
         matchedLeadingJetEta = fJetReader->GetMatchedEta(highestIndex);
@@ -1425,6 +1438,13 @@ void DijetAnalyzer::RunAnalysis(){
         if((matchedLeadingJetPt < matchedSubleadingJetPt) && fMatchDijet) {
           matchVeto = true;
           jetSwapCounter++;
+        }
+        
+        // Swap matched leading and subleading jet values if they are in the wrong order
+        if(matchedSubleadingJetPt > matchedLeadingJetPt){
+          swapJetPt = matchedLeadingJetPt;   matchedLeadingJetPt = matchedSubleadingJetPt;    matchedSubleadingJetPt = swapJetPt;
+          swapJetPhi = matchedLeadingJetPhi; matchedLeadingJetPhi = matchedSubleadingJetPhi;  matchedSubleadingJetPhi = swapJetPhi;
+          swapJetEta = matchedLeadingJetEta; matchedLeadingJetEta = matchedSubleadingJetEta;  matchedSubleadingJetEta = swapJetEta;
         }
         
         // Calculate the deltaPhi between mathed jets
@@ -1441,14 +1461,15 @@ void DijetAnalyzer::RunAnalysis(){
            ((TMath::Abs(matchedDeltaPhi) <= fDeltaPhiCut) && fMatchDijet)){        // DeltaPhi cut
           matchVeto = true;
         }
-      }
+        
+      } // Matching the yet
       
       // If reverse veto is in place, do the opposite as with regular veto
       if(reverseMatchVeto) matchVeto = !matchVeto;
       
       // If a dijet is found and not vetoed, fill some information to fHistograms
-      if(dijetFound && !matchVeto){
-                
+      if((dijetFound && !matchVeto) || (dijetFound && findMatchedDijet)){
+                        
         matchedDijetCounter++;
         
         // Histograms for jet pT closure
@@ -1468,9 +1489,10 @@ void DijetAnalyzer::RunAnalysis(){
         if(fFillJetHistograms){
           
           // Calculate the asymmetry
-          dijetAJ = (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt);
           dijetXj = subleadingJetPt/leadingJetPt;
-          dijetAsymmetry = (fAsymmetryBinType == 0) ? dijetAJ : dijetXj;
+          
+          dijetMatchedXj = matchedSubleadingJetPt/matchedLeadingJetPt;
+          dijetAsymmetry = dijetXj;
           
           jetPtWeight = GetDijetWeight(leadingJetPt);
           
@@ -1496,9 +1518,9 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
           fillerDijet[1] = subleadingJetPt;                // Axis 1: Subleading jet pT
           fillerDijet[2] = TMath::Abs(dphi);               // Axis 2: deltaPhi
-          fillerDijet[3] = dijetAJ;                        // Axis 3: Asymmetry AJ
+          fillerDijet[3] = dijetXj;                        // Axis 3: Dijet momentum balance xj
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fillerDijet[5] = dijetXj;                        // Axis 5: Asymmetry xJ
+          fillerDijet[5] = dijetMatchedXj;                 // Axis 5: Matched dijet momentum balance xj
           fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight);         // Fill the data point to dijet histogram
           
         }

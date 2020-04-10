@@ -429,20 +429,20 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder6D[2] = minDeltaPhi;  // low bin border for deltaPhi
   highBinBorder6D[2] = maxDeltaPhi; // high bin border for deltaPhi
   
-  // Axis 3 for the dijet histogram: asymmetry AJ
-  nBins6D[3] = nAsymmetryBins;         // nBins for asymmetry
-  lowBinBorder6D[3] = minAsymmetry;    // low bin border for asymmetry
-  highBinBorder6D[3] = maxAsymmetry;   // high bin border for asymmetry
+  // Axis 3 for the dijet histogram: dijet momentum balance xj
+  nBins6D[3] = nXjBins;         // nBins for xj
+  lowBinBorder6D[3] = minXj;    // low bin border for xj
+  highBinBorder6D[3] = maxXj;   // high bin border for xj
   
   // Axis 4 for the dijet histogram: centrality
   nBins6D[4] = nWideCentralityBins;   // nBins for wide centrality bins
   lowBinBorder6D[4] = minCentrality;  // low bin border for centrality
   highBinBorder6D[4] = maxCentrality; // high bin border for centrality
   
-  // Axis 5 for the dijet histogram: asymmetry xJ
-  nBins6D[5] = nXjBins;         // nBins for xJ asymmetry
-  lowBinBorder6D[5] = minXj;    // low bin border for xJ asymmetry
-  highBinBorder6D[5] = maxXj;   // high bin border for xJ asymmetry
+  // Axis 5 for the dijet histogram: matched dijet momentum balance xj
+  nBins6D[5] = nXjBins;         // nBins for matched xj
+  lowBinBorder6D[5] = minXj;    // low bin border for matched xj
+  highBinBorder6D[5] = maxXj;   // high bin border for matched xj
   
   // Create the dijet histogram using the above binning information
   fhDijet = new THnSparseF("dijet","dijet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhDijet->Sumw2();
