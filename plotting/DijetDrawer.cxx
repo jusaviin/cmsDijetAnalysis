@@ -282,8 +282,15 @@ void DijetDrawer::DrawDijetHistograms(){
   TH2D *drawnHistogram2D;
   TH1D *asymmetryIntegral;
   TH1D *jetPtHistogram;
+  TH1D *projectionX;
+  TH1D *projectionY;
   TLegend *legend;
   TF1 *fitFunction;
+  TLine *diagonalLine = new TLine(0,0,1,1);
+  diagonalLine->SetLineStyle(2);
+  TLine *oneLine = new TLine(0,1,1,1);
+  oneLine->SetLineStyle(2);
+  DijetMethods *normalizer = new DijetMethods();
   
   // Helper variables for centrality naming in figures
   TString centralityString;
@@ -300,12 +307,20 @@ void DijetDrawer::DrawDijetHistograms(){
   double integralError;
   const int nJetPtBins = fHistograms->GetNJetPtBins();
   const int nAsymmetryBins = fHistograms->GetNAsymmetryBins();
+  int lowBorder,highBorder;            // Bin indices for low and high borders
+  double lowBinBorder, highBinBorder;  // Bin border values for low and high borders
   
   // Loop over centrality
   for(int iCentrality = fFirstDrawnCentralityBin; iCentrality <= fLastDrawnCentralityBin; iCentrality++){
     
     centralityString = Form("Cent: %.0f-%.0f%%",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
     compactCentralityString = Form("_C=%.0f-%.0f",fHistograms->GetCentralityBinBorder(iCentrality),fHistograms->GetCentralityBinBorder(iCentrality+1));
+    
+    if(fSystemAndEnergy.Contains("pp")){
+      centralityString = "pp";
+      compactCentralityString = "_pp";
+    }
+    
     nDijets = fHistograms->GetPtIntegral(iCentrality);
     
     // === Dijet DeltaPhi ===
@@ -372,15 +387,15 @@ void DijetDrawer::DrawDijetHistograms(){
     }
     cout << "Total number of jets in the centrality bin: " << fHistograms->GetPtIntegral(iCentrality,nAsymmetryBins) << endl;
     
-    // === Dijet asymmetry xJ ===
+    // === Dijet asymmetry xj ===
     drawnHistogram = fHistograms->GetHistogramDijetXj(iCentrality);
     
-    // xJ histogram are newer addition, do not crash the code if they are not there
+    // xj histogram are newer addition, do not crash the code if they are not there
     if(drawnHistogram != NULL){
       drawnHistogram->SetMarkerStyle(34);
       //drawnHistogram->Scale(1.0/nDijets);   // Normalize by the number of dijets
       drawnHistogram->Scale(drawnHistogram->GetBinWidth(0)); // Show the absolute number of hits in each bin
-      fDrawer->DrawHistogram(drawnHistogram,"x_{J}",/*"#frac{1}{N_{dijet}}*/ "#frac{dN}{dx_{J}}"," ");
+      fDrawer->DrawHistogram(drawnHistogram,"x_{j}",/*"#frac{1}{N_{dijet}}*/ "#frac{dN}{dx_{j}}"," ");
       legend = new TLegend(0.13,0.65,0.33,0.9);
       SetupLegend(legend,centralityString,Form("N_{dijet} = %.0f",nDijets));
       legend->Draw();
@@ -389,18 +404,60 @@ void DijetDrawer::DrawDijetHistograms(){
       SaveFigure("asymmetryXj",compactCentralityString);
       
       // Do some integration of histogram
-      double integrationBorders[] = {0,0.6,0.8,1};
-      int lowBorder,highBorder;
-      for(int i = 0; i < 3; i++){
-        lowBorder = drawnHistogram->FindBin(integrationBorders[i]+0.001);
-        highBorder = drawnHistogram->FindBin(integrationBorders[i+1]-0.001);
+      for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+        lowBinBorder = fHistograms->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry);
+        highBinBorder = fHistograms->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry);
+        lowBorder = drawnHistogram->FindBin(lowBinBorder+0.001);
+        highBorder = drawnHistogram->FindBin(highBinBorder-0.001);
         integralValue = drawnHistogram->Integral(lowBorder,highBorder);
-        cout << Form("Number of jets in asymmetry bin %.2f < xj < %.2f: %.0f",integrationBorders[i],integrationBorders[i+1],integralValue) << endl;
+        cout << Form("Number of jets in asymmetry bin %.2f < xj < %.2f: %.0f",lowBinBorder,highBinBorder,integralValue) << endl;
       }
     }
     
     // Change the right margin better suited for 2D-drawing
     fDrawer->SetRightMargin(0.14);
+    
+    // For xj matrix, use logarithmic scale to better see the structures
+    fDrawer->SetLogZ(true);
+    
+    // Make the plot square
+    fDrawer->SetCanvasSize(700,600);  // 600 for range 0-1, 1250 for range 0-2
+    
+    // === Reco xj vs. gen xj ===
+    drawnHistogram2D = (TH2D*) fHistograms->GetHistogramDijetXjMatrix(iCentrality)->Clone(Form("xjMatrix%d",iCentrality));
+    
+    // If histograms are not loaded, do not crash the code, just skip them
+    if(drawnHistogram2D != NULL){
+      
+      projectionX = drawnHistogram2D->ProjectionX(Form("xjXprojection%d", iCentrality));
+      
+      // Determine the mean xj in the analysis xj bins for reco and gen
+      for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
+        lowBinBorder = fHistograms->GetCard()->GetLowBinBorderAsymmetry(iAsymmetry);
+        highBinBorder = fHistograms->GetCard()->GetHighBinBorderAsymmetry(iAsymmetry);
+        lowBorder = drawnHistogram2D->GetXaxis()->FindBin(lowBinBorder+0.001);
+        highBorder = drawnHistogram2D->GetXaxis()->FindBin(highBinBorder-0.001);
+        
+        projectionY = drawnHistogram2D->ProjectionY(Form("xjYprojection%d%d", iCentrality, iAsymmetry), lowBorder, highBorder);
+        
+        projectionX->GetXaxis()->SetRangeUser(lowBinBorder,highBinBorder);
+        cout << endl;
+        cout << "Bin " << lowBinBorder << " < xj < " <<highBinBorder << endl;
+        cout << "Mean reconstructed xj = " << projectionX->GetMean() << " +- " << projectionX->GetMeanError() << endl;
+        cout << "Mean generator level xj = " << projectionY->GetMean() << " +- " << projectionY->GetMeanError() << endl;
+        cout << endl;
+        
+      }
+      
+      if(fNormalizeXjMatrix) normalizer->NormalizeColumns(drawnHistogram2D,1);
+      fDrawer->DrawHistogram(drawnHistogram2D,"Reconstructed x_{j}","Generator level x_{j}",centralityString,fStyle2D);
+      diagonalLine->Draw();
+      //oneLine->Draw();
+      
+      // Save the figure to a file
+      SaveFigure("dijetXjMatrix",compactCentralityString);
+      
+    }
     
     // === Leading jet pT vs. subleading jet pT ===
     for(int iAsymmetry = fFirstDrawnAsymmetryBin; iAsymmetry <= fLastDrawnAsymmetryBin; iAsymmetry++){
@@ -429,6 +486,8 @@ void DijetDrawer::DrawDijetHistograms(){
     }
     
     // Change right margin back to 1D-drawing
+    fDrawer->SetCanvasSize(700,500);
+    fDrawer->SetLogZ(false);
     fDrawer->SetRightMargin(0.06);
     
     // Asymmetries in jet pT bins
@@ -485,9 +544,9 @@ void DijetDrawer::DrawDijetHistograms(){
       }
       
     } // jet pT loop
-    
-    
   } // Centrality loop
+  
+  delete normalizer;
 }
 
 /*
@@ -1379,8 +1438,9 @@ void DijetDrawer::SetDrawEventInformation(const bool drawOrNot){
 }
 
 // Setter for drawing dijet histograms
-void DijetDrawer::SetDrawDijetHistograms(const bool drawOrNot){
+void DijetDrawer::SetDrawDijetHistograms(const bool drawOrNot, const bool normalizeXjMatrix){
   fDrawDijetHistograms = drawOrNot;
+  fNormalizeXjMatrix = normalizeXjMatrix;
 }
 
 // Setter for drawing leading jet histograms
