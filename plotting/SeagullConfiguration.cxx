@@ -372,8 +372,18 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackSubleadingJetPbPb[3][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[3][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
   
+  // Smearing study
+  // vetoTrackSubleadingJetPbPb[3][2][0] = 2;   // C = 30-50, 0.7 < pT < 1 GeV
+  // vetoTrackSubleadingJetPbPb[3][2][1] = 1;   // C = 30-50,   1 < pT < 2 GeV
+  // vetoTrackSubleadingJetPbPb[3][2][2] = 2;   // C = 30-50,   2 < pT < 3 GeV
+  // Smearing study
+  
   vetoTrackSubleadingJetPbPb[3][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[3][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
+  
+  // Smearing study
+  // vetoTrackSubleadingJetPbPb[3][3][4] = 2;   // C = 50-90,   4 < pT < 8 GeV
+  // Smearing study
   
   vetoTrackSubleadingJetPbPb[3][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[3][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV

@@ -692,6 +692,8 @@ void DijetHistogramManager::DoMixedEventCorrection(){
               mixingPeakVisible = false;
               fMethods->SetMixedEventFitRegion(-0.65,-0.45);
             }
+            
+            //fMethods->SetMixedEventFitRegion(0.45,0.65); // Smearing test!!!
           }
           
           // Special mixing ranges for RecoReco mixing

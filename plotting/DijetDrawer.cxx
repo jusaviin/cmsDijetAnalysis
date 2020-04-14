@@ -879,6 +879,10 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 drawnHistogram2D->GetYaxis()->SetRangeUser(-1,1);
               }
               
+              // Possibility to zoom around the peak
+              //drawnHistogram2D->GetXaxis()->SetRangeUser(-0.8,0.8);
+              //drawnHistogram2D->GetYaxis()->SetRangeUser(-0.8,0.8);
+              
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               sprintf(namerY,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));
               fDrawer->DrawHistogram(drawnHistogram2D, namerX, namerY ,fHistograms->GetCorrelationTypeString(iCorrelationType), drawingStyle);

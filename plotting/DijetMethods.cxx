@@ -375,7 +375,7 @@ double DijetMethods::GetMixedEventScale(const TH2D* mixedEventHistogram, const b
   int nBinsProjectedOver;
   double binSum;
   double maxSum = 0;
-  int peakFinderSideWidth = 16;
+  int peakFinderSideWidth = 16;  // Default = 16
   
   if(findPeak){
     

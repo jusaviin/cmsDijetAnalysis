@@ -925,9 +925,14 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
       for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
         
         // Set the correct track pT bins
+        if(iTrackPt < fBaseHistograms->GetCard()->GetNTrackPtBins()){
         trackPtString = Form("Track pT: %.1f-%.1f GeV",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
         compactTrackPtString = Form("_pT=%.1f-%.1f",fBaseHistograms->GetTrackPtBinBorder(iTrackPt),fBaseHistograms->GetTrackPtBinBorder(iTrackPt+1));
         compactTrackPtString.ReplaceAll(".","v");
+        } else {
+          trackPtString = "Track pT: 0.7-300 GeV";
+          compactTrackPtString = "_pTsummed";
+        }
         
         sprintf(namerX,"#DeltaR");
         sprintf(namerY,"%s",fBaseHistograms->GetJetShapeAxisName(DijetHistogramManager::kJetShape));
