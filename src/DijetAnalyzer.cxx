@@ -695,7 +695,8 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t matchedDeltaPhi = 0;           // DeltaPhi between matched leading and subleading jets
   Double_t jetPtWeight = 1;               // Weighting for jet pT
   
-//  // Variables for smearing study
+  // Variables for smearing study
+  Double_t maxUncertaintyJEC = 0;       // Larger of the JEC uncertainties
 //  Double_t jetPtSmeared = 0;          // Smeared jet pT
 //  Double_t jetPtErrorUp = 0;          // Uncertainty to be added to the jet pT
 //  Double_t jetPtErrorDown = 0;        // Uncertainty to be subtracted from the jet pT
@@ -1140,6 +1141,12 @@ void DijetAnalyzer::RunAnalysis(){
           if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
           if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
           
+          // If we are using smearing scenatio, modify the jet pT using gaussian smearing
+          if(fJetUncertaintyMode == 3){
+            maxUncertaintyJEC = TMath::Max(fJetUncertainty2018->GetUncertainty().first, fJetUncertainty2018->GetUncertainty().second);
+            jetPt = jetPt * rng->Gaus(1,maxUncertaintyJEC);
+          }
+          
         }
         
         // Remember the highest jet pT
@@ -1320,10 +1327,6 @@ void DijetAnalyzer::RunAnalysis(){
         
         jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
         
-        // Add random smearing of 20 % to the jet pT TODO: Remove SMEAR
-        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
-        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.666); // Smearing corresponding to 20 % increase in resolution
-        
         // Only do the correction for 2018 data and reconstructed Monte Carlo
         if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
           jetPt = jetPtCorrected;
@@ -1331,6 +1334,12 @@ void DijetAnalyzer::RunAnalysis(){
           // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
           if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
           if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
+          
+          // If we are using smearing scenatio, modify the jet pT using gaussian smearing
+          if(fJetUncertaintyMode == 3){
+            maxUncertaintyJEC = TMath::Max(fJetUncertainty2018->GetUncertainty().first, fJetUncertainty2018->GetUncertainty().second);
+            jetPt = jetPt * rng->Gaus(1,maxUncertaintyJEC);
+          }
           
         }
         
