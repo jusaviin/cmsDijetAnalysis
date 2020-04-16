@@ -695,6 +695,14 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t matchedDeltaPhi = 0;           // DeltaPhi between matched leading and subleading jets
   Double_t jetPtWeight = 1;               // Weighting for jet pT
   
+//  // Variables for smearing study
+//  Double_t jetPtSmeared = 0;          // Smeared jet pT
+//  Double_t jetPtErrorUp = 0;          // Uncertainty to be added to the jet pT
+//  Double_t jetPtErrorDown = 0;        // Uncertainty to be subtracted from the jet pT
+//  Double_t highestJetPtSmeared = 0;   // Smeared pT of the highest jet
+//  Double_t highestJetPtErrorUp = 0;   // Uncertainty to be added to the jet with highest pT
+//  Double_t highestJetPtErrorDown = 0; // Uncertainty to be subtracted from the jet with highest pT
+  
   // Variables for jet matching and closure
   Int_t unmatchedCounter = 0;       // Number of jets that fail the matching
   Int_t matchedCounter = 0;         // Number of jets that are matched
@@ -721,8 +729,12 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentMixedEventFile;
   
   // Fillers for THnSparses
-  Double_t fillerJet[5];
-  Double_t fillerDijet[6];
+  const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
+  const Int_t nFillLeadingJet = 6;  // 6 is nominal, 9 used for smearing study
+  const Int_t nFillDijet = 6;
+  Double_t fillerJet[nFillJet];
+  Double_t fillerLeadingJet[nFillLeadingJet];
+  Double_t fillerDijet[nFillDijet];
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
   std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V4_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt"};
@@ -876,7 +888,7 @@ void DijetAnalyzer::RunAnalysis(){
   //************************************************
   
   // Randomizer for smearing TODO: Remove SMEAR
-  //TRandom3 *rng = new TRandom3();
+  TRandom3 *rng = new TRandom3();
   
   // Loop over files
   Int_t nFiles = fFileNames.size();
@@ -1046,6 +1058,11 @@ void DijetAnalyzer::RunAnalysis(){
       highestEta = 0;
       nJetsInThisEvent = 0;
       
+//      // Extra variables for smearing study
+//      highestJetPtSmeared = 0;
+//      highestJetPtErrorUp = 0;
+//      highestJetPtErrorDown = 0;
+      
       //************************************************
       //    Loop over all jets and find leading jet
       //************************************************
@@ -1104,10 +1121,16 @@ void DijetAnalyzer::RunAnalysis(){
         
         jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
         
-        // Add random smearing of 20 % to the jet pT TODO: Remove SMEAR
-        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
-        //jetPtCorrected = jetPtCorrected*rng->Gaus(1,0.666); // Smearing corresponding to 20 % increase in resolution
-        
+//        // Extra code for smearing study
+//
+//        // Add random smearing of 20 % to the jet pT
+//        jetPtSmeared = jetPtCorrected*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+//
+//        // For the uncertainties, calculate the relative uncertainty
+//        jetPtErrorUp = fJetUncertainty2018->GetUncertainty().second;
+//        jetPtErrorDown = fJetUncertainty2018->GetUncertainty().first;
+//
+//        // Extra code for smearing study
         
         // Only do the correction for 2018 data and reconstructed Monte Carlo
         if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
@@ -1160,6 +1183,13 @@ void DijetAnalyzer::RunAnalysis(){
             fillerJet[2] = jetEta;                  // Axis 2 = any jet eta
             fillerJet[3] = centrality;              // Axis 3 = centrality
             fillerJet[4] = jetFlavor;               // Axis 4 = flavor of the jet
+            
+//            // Extra axes filled for smearing study
+//            fillerJet[5] = jetPtSmeared;            // Axis 5 = Smeared jet pT
+//            fillerJet[6] = jetPtErrorUp;            // Axis 6 = Relative uncertainty added to the jet pT
+//            fillerJet[7] = jetPtErrorDown;          // Axis 7 = Relative uncertainty subtracted from the jet pT
+//            // Extra axes filled for smearing study
+            
             fHistograms->fhAnyJet->Fill(fillerJet,fTotalEventWeight*jetPtWeight); // Fill the data point to histogram
             
             // Remember the hishest pT filled to any jet histograms
@@ -1167,6 +1197,11 @@ void DijetAnalyzer::RunAnalysis(){
               highestAnyPt = jetPtCorrected;
               highestPhi = jetPhi;
               highestEta = jetEta;
+              
+//              // Extra axes filled for the smearing study
+//              highestJetPtSmeared = jetPtSmeared;
+//              highestJetPtErrorUp = jetPtErrorUp;
+//              highestJetPtErrorDown = jetPtErrorDown;
             }
             
           } // Check if we want to fill any jet histograms
@@ -1232,6 +1267,13 @@ void DijetAnalyzer::RunAnalysis(){
         fillerJet[2] = highestEta;            // Axis 2 = any leading jet eta
         fillerJet[3] = centrality;            // Axis 3 = centrality
         fillerJet[4] = leadingJetFlavor;      // Axis 4 = any leading jet flavor
+        
+//        // Extra axes for the smearing study
+//        fillerJet[5] = highestJetPtSmeared;   // Axis 5 = Smeared jet pT
+//        fillerJet[6] = highestJetPtErrorUp;   // Axis 6 = Relative uncertainty added to the jet pT
+//        fillerJet[7] = highestJetPtErrorDown; // Axis 7 = Relative uncertainty subtracted from the jet pT
+//        // Extra axes for the smearing study
+        
         fHistograms->fhLeadingJet->Fill(fillerJet,fTotalEventWeight*jetPtWeight);
       }
       
@@ -1496,23 +1538,51 @@ void DijetAnalyzer::RunAnalysis(){
           
           jetPtWeight = GetDijetWeight(leadingJetPt);
           
+//          // For smearing study, smear the jet pT and find uncertainties for jet pT
+//          jetPtSmeared = leadingJetPt*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+//          fJetUncertainty2018->SetJetPT(leadingJetPt);
+//          fJetUncertainty2018->SetJetEta(leadingJetEta);
+//          fJetUncertainty2018->SetJetPhi(leadingJetPhi);
+//          jetPtErrorUp = fJetUncertainty2018->GetUncertainty().second;
+//          jetPtErrorDown = fJetUncertainty2018->GetUncertainty().first;
+          
           // Fill the leading jet histogram
-          fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
-          fillerDijet[1] = leadingJetPhi;                  // Axis 1: Leading jet phi
-          fillerDijet[2] = leadingJetEta;                  // Axis 2: Leading jet eta
-          fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
-          fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fillerDijet[5] = leadingJetFlavor;               // Axis 5: Leading jet flavor
-          fHistograms->fhLeadingDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight);    // Fill the data point to leading jet histogram
-                    
+          fillerLeadingJet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
+          fillerLeadingJet[1] = leadingJetPhi;                  // Axis 1: Leading jet phi
+          fillerLeadingJet[2] = leadingJetEta;                  // Axis 2: Leading jet eta
+          fillerLeadingJet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
+          fillerLeadingJet[4] = centrality;                     // Axis 4: Centrality
+          fillerLeadingJet[5] = leadingJetFlavor;               // Axis 5: Leading jet flavor
+          
+//          // Extra axes filled for the smearing study
+//          fillerLeadingJet[6] = jetPtSmeared;                   // Axis 6: Smeared leading jet pT
+//          fillerLeadingJet[7] = jetPtErrorUp;                   // Axis 7: Uncertainty added to the leading jet pT
+//          fillerLeadingJet[8] = jetPtErrorDown;                 // Axis 8: Uncertainty subtracted from the leading jet pT
+          
+          fHistograms->fhLeadingDijet->Fill(fillerLeadingJet,fTotalEventWeight*jetPtWeight);    // Fill the data point to leading jet histogram
+               
+//          // For smearing study, smear the jet pT and find uncertainties for jet pT
+//          jetPtSmeared = subleadingJetPt*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+//          fJetUncertainty2018->SetJetPT(subleadingJetPt);
+//          fJetUncertainty2018->SetJetEta(subleadingJetEta);
+//          fJetUncertainty2018->SetJetPhi(subleadingJetPhi);
+//          jetPtErrorUp = fJetUncertainty2018->GetUncertainty().second;
+//          jetPtErrorDown = fJetUncertainty2018->GetUncertainty().first;
+          
           // Fill the subleading jet histogram
-          fillerDijet[0] = subleadingJetPt;                // Axis 0: Subleading jet pT
-          fillerDijet[1] = subleadingJetPhi;               // Axis 1: Subleading jet phi
-          fillerDijet[2] = subleadingJetEta;               // Axis 2: Subleading jet eta
-          fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
-          fillerDijet[4] = centrality;                     // Axis 4: Centrality
-          fillerDijet[5] = subleadingJetFlavor;            // Axis 5: Subleading jet flavor
-          fHistograms->fhSubleadingDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight); // Fill the data point to subleading jet histogram
+          fillerLeadingJet[0] = subleadingJetPt;                // Axis 0: Subleading jet pT
+          fillerLeadingJet[1] = subleadingJetPhi;               // Axis 1: Subleading jet phi
+          fillerLeadingJet[2] = subleadingJetEta;               // Axis 2: Subleading jet eta
+          fillerLeadingJet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
+          fillerLeadingJet[4] = centrality;                     // Axis 4: Centrality
+          fillerLeadingJet[5] = subleadingJetFlavor;            // Axis 5: Subleading jet flavor
+          
+//          // Extra axes filled for the smearing study
+//          fillerLeadingJet[6] = jetPtSmeared;                   // Axis 6: Smeared subleading jet pT
+//          fillerLeadingJet[7] = jetPtErrorUp;                   // Axis 7: Uncertainty added to the subleading jet pT
+//          fillerLeadingJet[8] = jetPtErrorDown;                 // Axis 8: Uncertainty subtracted from the subleading jet pT
+          
+          fHistograms->fhSubleadingDijet->Fill(fillerLeadingJet,fTotalEventWeight*jetPtWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
