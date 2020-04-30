@@ -41,6 +41,7 @@ public:
   TH1D* ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize = false);  // Project the deltaEta yield in final analysis binning
   TH1D* RebinAsymmetric(TH1D *histogramInNeedOfRebinning, const int nBins, const double* binEdges); // Asymmetric rebinning for one-dimensional histograms
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
+  TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning, const int nBinsX, const double* binBordersX, const int nBinsY, const double* binBordersY, const bool undoBinArea, const bool normalizeBinArea); // Rebin a two-dimensional histogram with given bin borders
   void SymmetrizeDeltaEta(TH1D *histogramInNeedOfSymmetrization); // Symmetrize a given deltaEta histogram
   TH2D* SymmetrizeHistogram(const TH2D *histogramToBeSymmetrized, const double maxR, const double fillValue = 0, const bool onlyCut = false); // Symmetrize eta and phi in a histogram up to given maximum radius
   TH1D* ProjectSignalDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the signal region in eta out of a two-dimensional deltaPhi-deltaEta distribution

@@ -1867,6 +1867,95 @@ TH1D* DijetMethods::RebinAsymmetric(TH1D* histogramInNeedOfRebinning, const int 
   return clonedHistogram;
 }
 
+/*
+ * Rebin a two-dimensional histogram
+ *
+ *  Arguments:
+ *   TH2D *histogramInNeedOfRebinning = The two dimensional histogram that is going to be rebinned
+ *   const int nBinsX = Number of bins after rebinning in the x-axis
+ *   const double* binBordersX = Bin borders for rebinning for the x-axis
+ *   const int nBinsY = Number of bins after rebinning in the y-axis
+ *   const double* binBordersY = Bin borders for rebinning for the y-axis
+ *   const bool undoBinArea = Undo bin area normalization from the input histogram
+ *   const bool normalizeBinArea = Normalize the output histogram contents with bin area
+ *
+ *   return: Rebinned histogram
+ */
+TH2D* DijetMethods::RebinHistogram(TH2D *histogramInNeedOfRebinning, const int nBinsX, const double* binBordersX, const int nBinsY, const double* binBordersY, const bool undoBinArea, const bool normalizeBinArea){
+
+  // First, check that the new bin boundaries are also bin boundaries in the original histogram
+  bool binsGood = CheckBinBoundaries(nBinsX, binBordersX, histogramInNeedOfRebinning->GetXaxis());
+  if(!binsGood){
+    std::cout << "Cannot rebin histogram " << histogramInNeedOfRebinning->GetName() << " because of a bin edge problem in x-axis!" << std::endl;
+    return histogramInNeedOfRebinning;
+  }
+  
+  binsGood = CheckBinBoundaries(nBinsY, binBordersY, histogramInNeedOfRebinning->GetYaxis());
+  if(!binsGood){
+    std::cout << "Cannot rebin histogram " << histogramInNeedOfRebinning->GetName() << " because of a bin edge problem in y-axis!" << std::endl;
+    return histogramInNeedOfRebinning;
+  }
+  
+  // Root does not offer a method to directly rebin a two-dimensional histogram, so I have implemented my own
+  // Helper variables for rebinning
+  double currentBinContent;
+  double currentBinError;
+  double nonRebinnedContent;
+  double nonRebinnedError;
+  int newHistogramIndex;
+  double xValue;
+  double yValue;
+  double binWidthX;
+  double binWidthY;
+  double binArea = 1;
+  
+  // Create the histogram with new binning
+  char newName[200];
+  sprintf(newName,"%sRebinned",histogramInNeedOfRebinning->GetName());
+  TH2D *rebinnedHistogram = new TH2D(newName,newName,nBinsX,binBordersX,nBinsY,binBordersY);
+  
+  // Loop over all the bins in the old histogram and insert the content to the new histogram
+  for(int iBinX = 1; iBinX <= histogramInNeedOfRebinning->GetNbinsX(); iBinX++){
+    xValue = histogramInNeedOfRebinning->GetXaxis()->GetBinCenter(iBinX);
+    binWidthX = histogramInNeedOfRebinning->GetXaxis()->GetBinWidth(iBinX);
+    
+    for(int iBinY = 1; iBinY <= histogramInNeedOfRebinning->GetNbinsY(); iBinY++){
+      yValue = histogramInNeedOfRebinning->GetYaxis()->GetBinCenter(iBinY);
+      binWidthY = histogramInNeedOfRebinning->GetYaxis()->GetBinWidth(iBinY);
+      
+      // If requested, undo bin area normalization from the input histogram
+      if(undoBinArea) binArea = binWidthX*binWidthY;
+      
+      // Find the global bin index from the new histogram correcponding to the bin in the old histogram
+      newHistogramIndex = rebinnedHistogram->FindBin(xValue,yValue);
+      
+      // Add the bin content from the old histogram to the new histogram, adding errors in quadrature
+      nonRebinnedContent = histogramInNeedOfRebinning->GetBinContent(iBinX,iBinY) * binArea;
+      nonRebinnedError = histogramInNeedOfRebinning->GetBinError(iBinX,iBinY) * binArea;
+      currentBinContent = rebinnedHistogram->GetBinContent(newHistogramIndex);
+      currentBinError = rebinnedHistogram->GetBinError(newHistogramIndex);
+      rebinnedHistogram->SetBinContent(newHistogramIndex,currentBinContent+nonRebinnedContent);
+      rebinnedHistogram->SetBinError(newHistogramIndex,TMath::Sqrt(TMath::Power(currentBinError,2)+TMath::Power(nonRebinnedError,2)));
+    } // DeltaEta loop
+  } // DeltaPhi loop
+  
+  // After rebinning, do bin area normalization for each bin if requested
+  if(normalizeBinArea){
+    for(int iBinX = 1; iBinX <= rebinnedHistogram->GetNbinsX(); iBinX++){
+      binWidthX = rebinnedHistogram->GetXaxis()->GetBinWidth(iBinX);
+      for(int iBinY = 1; iBinY <= rebinnedHistogram->GetNbinsY(); iBinY++){
+        binWidthY = rebinnedHistogram->GetYaxis()->GetBinWidth(iBinY);
+        currentBinContent = rebinnedHistogram->GetBinContent(iBinX,iBinY);
+        currentBinError = rebinnedHistogram->GetBinError(iBinX,iBinY);
+        rebinnedHistogram->SetBinContent(iBinX,iBinY,currentBinContent/(binWidthY*binWidthX));
+        rebinnedHistogram->SetBinError(iBinX,iBinY,currentBinError/(binWidthY*binWidthX));
+      } // y-axis loop
+    } // x-axis loop
+  } // Normalizing by bin area
+  
+  return rebinnedHistogram;
+  
+}
 
 /*
  * Rebin a two-dimensional deltaPhi-deltaEta histogram
@@ -1891,55 +1980,7 @@ TH2D* DijetMethods::RebinHistogram(TH2D *histogramInNeedOfRebinning){
     return histogramInNeedOfRebinning;
   }
   
-  // Root does not offer a method to directly rebin a two-dimensional histogram, so I have implemented my own
-  // Helper variables for rebinning
-  double currentBinContent;
-  double currentBinError;
-  double nonRebinnedContent;
-  double nonRebinnedError;
-  int newHistogramIndex;
-  double deltaPhiValue;
-  double deltaEtaValue;
-  
-  // Create the histogram with new binning
-  char newName[200];
-  sprintf(newName,"%sRebinned",histogramInNeedOfRebinning->GetName());
-  TH2D *rebinnedHistogram = new TH2D(newName,newName,fnRebinDeltaPhi,fRebinDeltaPhi,fnRebinDeltaEta,fRebinDeltaEta);
-  
-  // Loop over all the bins in the old histogram and insert the content to the new histogram
-  for(int iDeltaPhi = 1; iDeltaPhi <= histogramInNeedOfRebinning->GetNbinsX(); iDeltaPhi++){
-    deltaPhiValue = histogramInNeedOfRebinning->GetXaxis()->GetBinCenter(iDeltaPhi);
-    for(int iDeltaEta = 1; iDeltaEta <= histogramInNeedOfRebinning->GetNbinsY(); iDeltaEta++){
-      deltaEtaValue = histogramInNeedOfRebinning->GetYaxis()->GetBinCenter(iDeltaEta);
-      
-      // Find the global bin index from the new histogram correcponding to the bin in the old histogram
-      newHistogramIndex = rebinnedHistogram->FindBin(deltaPhiValue,deltaEtaValue);
-      
-      // Add the bin content from the old histogram to the new histogram, adding errors in quadrature
-      nonRebinnedContent = histogramInNeedOfRebinning->GetBinContent(iDeltaPhi,iDeltaEta);
-      nonRebinnedError = histogramInNeedOfRebinning->GetBinError(iDeltaPhi,iDeltaEta);  
-      currentBinContent = rebinnedHistogram->GetBinContent(newHistogramIndex);
-      currentBinError = rebinnedHistogram->GetBinError(newHistogramIndex);
-      rebinnedHistogram->SetBinContent(newHistogramIndex,currentBinContent+nonRebinnedContent);
-      rebinnedHistogram->SetBinError(newHistogramIndex,TMath::Sqrt(TMath::Power(currentBinError,2)+TMath::Power(nonRebinnedError,2)));
-    } // DeltaEta loop
-  } // DeltaPhi loop
-  
-  // After rebinning, we need to do bin area normalization for each bin
-  double binWidthDeltaPhi;
-  double binWidthDeltaEta;
-  for(int iDeltaPhi = 1; iDeltaPhi <= rebinnedHistogram->GetNbinsX(); iDeltaPhi++){
-    binWidthDeltaPhi = rebinnedHistogram->GetXaxis()->GetBinWidth(iDeltaPhi);
-    for(int iDeltaEta = 1; iDeltaEta <= rebinnedHistogram->GetNbinsY(); iDeltaEta++){
-      binWidthDeltaEta = rebinnedHistogram->GetYaxis()->GetBinWidth(iDeltaEta);
-      currentBinContent = rebinnedHistogram->GetBinContent(iDeltaPhi,iDeltaEta);
-      currentBinError = rebinnedHistogram->GetBinError(iDeltaPhi,iDeltaEta);
-      rebinnedHistogram->SetBinContent(iDeltaPhi,iDeltaEta,currentBinContent/(binWidthDeltaEta*binWidthDeltaPhi));  // TODO: If already normalized by bin area, need to
-      rebinnedHistogram->SetBinError(iDeltaPhi,iDeltaEta,currentBinError/(binWidthDeltaEta*binWidthDeltaPhi));      // undo that here before renormalizing
-    }
-  }
-  
-  return rebinnedHistogram;
+  return RebinHistogram(histogramInNeedOfRebinning, fnRebinDeltaPhi, fRebinDeltaPhi, fnRebinDeltaEta, fRebinDeltaEta, false, true);
 }
 
 /*
