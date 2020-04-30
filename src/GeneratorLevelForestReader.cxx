@@ -216,16 +216,11 @@ void GeneratorLevelForestReader::Initialize(){
     fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
     fCaloJetFilterBit = 1; // No filtering for Monte Carlo
-  } else if (fDataType == kPbPb){ // PbPb
-    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
-    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPbMC){
-    
-    fCaloJetFilterBit = 1; // No filtering for Monte carlo
-    //fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1); // Old filter
-    //fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch); // Old filter
-  } else { // Local test
-    fCaloJetFilterBit = 1;  // No filter for local test
+  } else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb or MC is specifically required
+    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1);
+    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else {
+    fCaloJetFilterBit = 1;  // No filter for local test of MC if not specifically required
   }
   fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   
