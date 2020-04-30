@@ -242,7 +242,7 @@ public:
   TH1D* GetHistogramJetShape(const int iJetShapeType, const int iJetTrackCorrelation, int iAsymmetry, int iCentrality, const int iTrackPt) const;  // Jet shape histograms
   
   // Getter for jet pT closure histograms
-  TH1D* GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, const int iClosureParticle) const; // Jet pT closure
+  TH1D* GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, int iAsymmetry, const int iClosureParticle) const; // Jet pT closure
   
   TH1D* GetOneDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0, int bin6 = 0) const; // Getter for any one-dimensional histogram based on input string
   TH2D* GetTwoDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0) const; // Getter for any two-dimensional histogram based on input string
@@ -375,10 +375,15 @@ private:
   TH1D *fhPtHatWeighted;      // Weighted pT hat distribution (only meaningful for MC)
   
   // Histograms for single jets
-  TH1D *fhJetPt[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];      // Jet pT histograms
-  TH1D *fhJetPhi[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];     // Jet phi histograms
-  TH1D *fhJetEta[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];     // Jet eta histograms
-  TH2D *fhJetEtaPhi[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];  // 2D eta-phi histogram for jets
+  TH1D *fhJetPt[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];          // Jet pT histograms
+  TH1D *fhJetPhi[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];         // Jet phi histograms
+  TH1D *fhJetEta[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];         // Jet eta histograms
+  TH2D *fhJetEtaPhi[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];      // 2D eta-phi histogram for jets
+  
+  // Extra histograms for smearing study
+  TH1D *fhJetPtUncertaintyPlus[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];   // Jet pT plus error histograms
+  TH1D *fhJetPtUncertaintyMinus[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];  // Jet pT minus error histograms
+  TH2D *fhJetPtSmearMap[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];  // 2D jet pT smearing map for sanity check
   
   // Histograms for dijets
   TH1D *fhDijetDphi[kMaxCentralityBins];                     // Dijet deltaPhi histograms
@@ -403,7 +408,7 @@ private:
   TH1D *fhJetShape[knJetShapeTypes][knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins];  // Jet shape histograms
   
   // Histograms for jet pT closure
-  TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins+1][knJetEtaBins+1][kMaxCentralityBins][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
+  TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins+1][knJetEtaBins+1][kMaxCentralityBins][kMaxAsymmetryBins+1][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
   
   // QA histograms for seagull correction
   TH1D *fhSeagullDeltaEta[knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins]; // Background eta projection for seagull fit

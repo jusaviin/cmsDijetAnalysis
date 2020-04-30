@@ -139,6 +139,11 @@ DijetHistogramManager::DijetHistogramManager() :
         fhJetPhi[iJetCategory][iCentrality][iAsymmetry] = NULL;     // Jet phi histograms
         fhJetEta[iJetCategory][iCentrality][iAsymmetry] = NULL;     // Jet eta histograms
         fhJetEtaPhi[iJetCategory][iCentrality][iAsymmetry] = NULL;  // 2D eta-phi histogram for jets
+        
+        // Extra histograms for smearing study
+        fhJetPtUncertaintyPlus[iJetCategory][iCentrality][iAsymmetry] = NULL;  // Jet pT plus error histograms
+        fhJetPtUncertaintyMinus[iJetCategory][iCentrality][iAsymmetry] = NULL; // Jet pT minus error histograms
+        fhJetPtSmearMap[iJetCategory][iCentrality][iAsymmetry] = NULL;         // 2D jet pT smearing map for sanity check
       }
     } // Single jet categories loop
     
@@ -207,9 +212,11 @@ DijetHistogramManager::DijetHistogramManager() :
     for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
       for(int iGenJetPt = 0; iGenJetPt <= knGenJetPtBins; iGenJetPt++){
         for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
-          for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
-            fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle] = NULL;
-          } // Closure particle loop
+          for(int iAsymmetry = 0; iAsymmetry <= kMaxAsymmetryBins; iAsymmetry++){
+            for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+              fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iAsymmetry][iClosureParticle] = NULL;
+            } // Closure particle loop
+          } // Asymmetry loop
         } // Jet eta bin loop
       } // Gen jet pT loop
     } // Closure type loop
@@ -428,8 +435,8 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
   
   // Centrality loop
   for(int iCentrality = 0; iCentrality < kMaxCentralityBins; iCentrality++){
-    fhDijetDphi[iCentrality] = in.fhDijetDphi[iCentrality];                      // Dijet deltaPhi histograms
-    fhDijetXjMatrix[iCentrality] = in.fhDijetXjMatrix[iCentrality];              // Matrix between reconstructed and generated dijet xj values
+    fhDijetDphi[iCentrality] = in.fhDijetDphi[iCentrality];                       // Dijet deltaPhi histograms
+    fhDijetXjMatrix[iCentrality] = in.fhDijetXjMatrix[iCentrality];               // Matrix between reconstructed and generated dijet xj values
     
     // Asymmetry loop
     for(int iAsymmetry = 0; iAsymmetry <= kMaxAsymmetryBins; iAsymmetry++){
@@ -449,6 +456,11 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
         fhJetPhi[iJetCategory][iCentrality][iAsymmetry] = in.fhJetPhi[iJetCategory][iCentrality][iAsymmetry];       // Jet phi histograms
         fhJetEta[iJetCategory][iCentrality][iAsymmetry] = in.fhJetEta[iJetCategory][iCentrality][iAsymmetry];       // Jet eta histograms
         fhJetEtaPhi[iJetCategory][iCentrality][iAsymmetry] = in.fhJetEtaPhi[iJetCategory][iCentrality][iAsymmetry]; // 2D eta-phi histogram for jets
+        
+        // Extra histograms for smearing study
+        fhJetPtUncertaintyPlus[iJetCategory][iCentrality][iAsymmetry] = in.fhJetPtUncertaintyPlus[iJetCategory][iCentrality][iAsymmetry];  // Jet pT plus error histograms
+        fhJetPtUncertaintyMinus[iJetCategory][iCentrality][iAsymmetry] = in.fhJetPtUncertaintyMinus[iJetCategory][iCentrality][iAsymmetry]; // Jet pT minus error histograms
+        fhJetPtSmearMap[iJetCategory][iCentrality][iAsymmetry] = in.fhJetPtSmearMap[iJetCategory][iCentrality][iAsymmetry];         // 2D jet pT smearing map for sanity check
       } // Asymmetry loop
     } // Single jet categories loop
     
@@ -518,9 +530,11 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
     for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
       for(int iGenJetPt = 0; iGenJetPt <= knGenJetPtBins; iGenJetPt++){
         for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
+          for(int iAsymmetry = 0; iAsymmetry <= kMaxAsymmetryBins; iAsymmetry++){
           for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
-            fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle] = in.fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle];
+            fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iAsymmetry][iClosureParticle] = in.fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iAsymmetry][iClosureParticle];
           } // Closure particle loop
+          } // Asymmetry loop
         } // Jet eta bin loop
       } // Gen jet pT loop
     } // Closure type loop
@@ -1389,6 +1403,12 @@ void DijetHistogramManager::LoadHistograms(){
  *       Axis 3             Dijet asymmetry                      (for anyJet: Centrality)
  *       Axis 4               Centrality                         (for anyJet: Jet flavor)
  *       Axis 5   Jet flavor (for MC) 1 = Quark, 2 = Gluon       (for anyJet: Nothing)
+ *
+ *  Additional axes included in the smearing test
+ *
+ *       Axis 6             Smeared jet pT                       (for anyJet: index-1)
+ *       Axis 7        Plus uncertainty to jet pT                (for anyJet: index-1)
+ *       Axis 8       Minus uncertainty from jet pT              (for anyJet: index-1)
  */
 void DijetHistogramManager::LoadSingleJetHistograms(){
   
@@ -1413,7 +1433,22 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
   double lowPtBinLimit[1] = {120};
   double highPtBinLimit[1] = {5020};
   
+//  // Extra variables needed for smearing study
+//  int smearedPtAxis = 6;
+//  int plusUncertaintyAxis = 7;
+//  int minusUncertaintyAxis = 8;
+  
   for(int iJetCategory = 0; iJetCategory < knSingleJetCategories; iJetCategory++){
+    
+//    // Smearing study: set the axis numbers based on jet type
+//    smearedPtAxis = 6;
+//    plusUncertaintyAxis = 7;
+//    minusUncertaintyAxis = 8;
+//    if(iJetCategory > kSubleadingJet){
+//      smearedPtAxis--;
+//      plusUncertaintyAxis--;
+//      minusUncertaintyAxis--;
+//    }
     
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
@@ -1463,6 +1498,12 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
         fhJetPhi[iJetCategory][iCentralityBin][iAsymmetry] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],1,nAxes,axisIndices,lowLimits,highLimits);
         fhJetEta[iJetCategory][iCentralityBin][iAsymmetry] = FindHistogram(fInputFile,fSingleJetHistogramName[iJetCategory],2,nAxes,axisIndices,lowLimits,highLimits);
         if(fLoad2DHistograms) fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry] = FindHistogram2D(fInputFile,fSingleJetHistogramName[iJetCategory],1,2,nAxes,axisIndices,lowLimits,highLimits);
+                
+//        // Extra histograms for smearing study
+//        fhJetPtUncertaintyPlus[iJetCategory][iCentralityBin][iAsymmetry] = FindHistogram(fInputFile, fSingleJetHistogramName[iJetCategory], plusUncertaintyAxis, nAxes, axisIndices, lowLimits, highLimits);
+//        fhJetPtUncertaintyMinus[iJetCategory][iCentralityBin][iAsymmetry] = FindHistogram(fInputFile, fSingleJetHistogramName[iJetCategory], minusUncertaintyAxis, nAxes, axisIndices, lowLimits, highLimits);
+//        if(fLoad2DHistograms) fhJetPtSmearMap[iJetCategory][iCentralityBin][iAsymmetry] = FindHistogram2D(fInputFile, fSingleJetHistogramName[iJetCategory], 0, smearedPtAxis, nAxes, axisIndices, lowLimits, highLimits);
+        
       } // Loop over dijet asymmetry bins
     } // Loop over centrality bins
   } // Loop over single jet categories
@@ -1780,6 +1821,7 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
  *       Axis 4                       Centrality
  *       Axis 5                      Quark / gluon
  *       Axis 6             Matched reco to gen jet pT ratio
+ *       Axis 7                Dijet momentum balance xj       (only in new files)
  */
 void DijetHistogramManager::LoadJetPtClosureHistograms(){
   
@@ -1797,7 +1839,7 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
   int higherCentralityBin = 0;
   
   // Load all the histograms from the file
-  for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+  for(int iClosureType = 2; iClosureType < 3; iClosureType++){  // TODO: Manually loading here less histograms
     for(int iGenJetPt = 0; iGenJetPt < knGenJetPtBins; iGenJetPt++){
       for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
@@ -1811,49 +1853,75 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
           lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
           higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
           
-          // Setup the axes with restrictions
-          nRestrictionAxes = 4;
-          axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
-          axisIndices[1] = 1; lowLimits[1] = iGenJetPt+1;    highLimits[1] = iGenJetPt+1;      // Gen jet pT
-          axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
-          axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
-          
-          // For the last closure particle bin no restrictions for quark/gluon jets
-          if(iClosureParticle == DijetHistograms::knClosureParticleTypes) nRestrictionAxes = 3;
-          
-        fhJetPtClosure[iClosureType][iGenJetPt][knJetEtaBins][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
-          
-          // Eta binning for the closure histogram
-          for(int iJetEta = 0; iJetEta < knJetEtaBins; iJetEta++){
+          for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+            if(iClosureType == DijetHistograms::kInclusiveClosure && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
+            
+            // Setup the axes with restrictions
+            nRestrictionAxes = 5;
+            axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
+            axisIndices[1] = 1; lowLimits[1] = iGenJetPt+1;    highLimits[1] = iGenJetPt+1;      // Gen jet pT
+            axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
+            axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
+            axisIndices[4] = 7; lowLimits[4] = iAsymmetry+1;       highLimits[4] = iAsymmetry+1;        // Asymmetry
             
             // For the last closure particle bin no restrictions for quark/gluon jets
-            /*if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
-              nRestrictionAxes = 4;
-              axisIndices[3] = 2; lowLimits[3] = iJetEta+1; highLimits[3] = iJetEta+1; // Jet eta
-            } else {
-              nRestrictionAxes = 5;
-              axisIndices[4] = 2; lowLimits[4] = iJetEta+1; highLimits[4] = iJetEta+1; // Jet eta
+            if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
+              
+              // Move asymmetry restriction one spece in the array
+              axisIndices[3] = 7; lowLimits[3] = iAsymmetry+1; highLimits[3] = iAsymmetry+1;  // Asymmetry
+              
+              // Remove the last set array bin
+              nRestrictionAxes--;
             }
             
-            fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",5,nRestrictionAxes,axisIndices,lowLimits,highLimits);*/
+            // Remove the asymmetry restriction for the last iAsymmetry bin. That will be asymmetry inclusive.
+            if(iAsymmetry == fnAsymmetryBins) nRestrictionAxes--;
             
-            // Fill the pT integrated ets slices only once
-            if(iGenJetPt == 0){
-              
-              // Setup the axes with restrictions
-              nRestrictionAxes = 4;
-              axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
-              axisIndices[1] = 3; lowLimits[1] = iJetEta+1;    highLimits[1] = iJetEta+1;          // Jet eta
-              axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
-              axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
-              
-              // For the last closure particle bin no restrictions for quark/gluon jets
-              if(iClosureParticle == DijetHistograms::knClosureParticleTypes) nRestrictionAxes = 3;
-              
-              fhJetPtClosure[iClosureType][knGenJetPtBins][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
-            }
+            fhJetPtClosure[iClosureType][iGenJetPt][knJetEtaBins][iCentralityBin][iAsymmetry][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
             
-          } // Jet eta bin loop
+//            // Eta binning for the closure histogram
+//            for(int iJetEta = 0; iJetEta < knJetEtaBins; iJetEta++){
+//              
+//              // For the last closure particle bin no restrictions for quark/gluon jets
+//              /*if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
+//               nRestrictionAxes = 4;
+//               axisIndices[3] = 2; lowLimits[3] = iJetEta+1; highLimits[3] = iJetEta+1; // Jet eta
+//               } else {
+//               nRestrictionAxes = 5;
+//               axisIndices[4] = 2; lowLimits[4] = iJetEta+1; highLimits[4] = iJetEta+1; // Jet eta
+//               }
+//               
+//               fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",5,nRestrictionAxes,axisIndices,lowLimits,highLimits);*/
+//              
+//              // Fill the pT integrated ets slices only once
+//              if(iGenJetPt == 0){
+//                
+//                // Setup the axes with restrictions
+//                nRestrictionAxes = 4;
+//                axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
+//                axisIndices[1] = 3; lowLimits[1] = iJetEta+1;    highLimits[1] = iJetEta+1;          // Jet eta
+//                axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
+//                axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
+//                axisIndices[4] = 7; lowLimits[4] = iAsymmetry+1;       highLimits[4] = iAsymmetry+1;        // Asymmetry
+//                
+//                // For the last closure particle bin no restrictions for quark/gluon jets
+//                if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
+//                  
+//                  // Move asymmetry restriction one spece in the array
+//                  axisIndices[3] = 7; lowLimits[3] = iAsymmetry+1; highLimits[3] = iAsymmetry+1;  // Asymmetry
+//                  
+//                  // Remove the last set array bin
+//                  nRestrictionAxes--;
+//                }
+//                
+//                // Remove the asymmetry restriction for the last iAsymmetry bin. That will be asymmetry inclusive.
+//                if(iAsymmetry == fnAsymmetryBins) nRestrictionAxes--;
+//                
+//                fhJetPtClosure[iClosureType][knGenJetPtBins][iJetEta][iCentralityBin][iAsymmetry][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
+//              }
+//              
+//            } // Jet eta bin loop
+          } // Dijet asymmetry loop
         } // Centrality loop
       } // Closure particle loop
     } // Gen jet pT loop
@@ -2222,9 +2290,24 @@ void DijetHistogramManager::WriteSingleJetHistograms(){
         sprintf(histogramNamer,"%sEta_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         if(fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEta[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
         
-        //Single jet eta-phi
+        // Single jet eta-phi
         sprintf(histogramNamer,"%sEtaPhi_C%d%s",fSingleJetHistogramName[iJetCategory],iCentralityBin,fAsymmetryBinName[iAsymmetry].Data());
         if(fLoad2DHistograms && fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]) fhJetEtaPhi[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
+        
+        // Extra histograms for the smearing study
+        
+        // Jet pT uncertainty plus
+        sprintf(histogramNamer,"%sPtUncertaintyPlus_C%d%s", fSingleJetHistogramName[iJetCategory], iCentralityBin, fAsymmetryBinName[iAsymmetry].Data());
+        if(fhJetPtUncertaintyPlus[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPtUncertaintyPlus[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
+        
+        // Jet pT uncertainty minus
+        sprintf(histogramNamer,"%sPtUncertaintyMinus_C%d%s", fSingleJetHistogramName[iJetCategory], iCentralityBin, fAsymmetryBinName[iAsymmetry].Data());
+        if(fhJetPtUncertaintyMinus[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPtUncertaintyMinus[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
+        
+        // Jet pT smearing map
+        sprintf(histogramNamer,"%sPtSmearMap_C%d%s", fSingleJetHistogramName[iJetCategory], iCentralityBin, fAsymmetryBinName[iAsymmetry].Data());
+        if(fLoad2DHistograms && fhJetPtSmearMap[iJetCategory][iCentralityBin][iAsymmetry]) fhJetPtSmearMap[iJetCategory][iCentralityBin][iAsymmetry]->Write(histogramNamer, TObject::kOverwrite);
+        
       } // Loop over asymmetry bins
     } // Loop over centrality bins
     
@@ -2446,24 +2529,29 @@ void DijetHistogramManager::WriteClosureHistograms(){
       // Centrality loop
       for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
         
-        // Loop over closure particles (quark/gluon/no selection)
-        for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+        // Dijet momentum balance loop
+        for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+          if(iClosureType == DijetHistograms::kInclusiveClosure && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track closures
           
-          // Loop over generator level jet pT bins
-          for(int iGenJetPt = 0; iGenJetPt <= knGenJetPtBins; iGenJetPt++){
+          // Loop over closure particles (quark/gluon/no selection)
+          for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
             
-            // Loop ovet jet eta bins
-            for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
-           
-              // Only write histogram that are non-NULL
-              if(fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]){
-                sprintf(histogramNamer, "jetPtClosure_%s%s_C%dT%dE%d", fSingleJetHistogramName[iClosureType], fClosureParticleName[iClosureParticle], iCentrality, iGenJetPt, iJetEta);
-                fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle]->Write(histogramNamer, TObject::kOverwrite);
-              }
-            
-            } // Jet eta bin loop
-          } // Generator level jet pT loop
-        } // Closure particle type (quark/gluon) loop
+            // Loop over generator level jet pT bins
+            for(int iGenJetPt = 0; iGenJetPt <= knGenJetPtBins; iGenJetPt++){
+              
+              // Loop ovet jet eta bins
+              for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
+                
+                // Only write histogram that are non-NULL
+                if(fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iAsymmetry][iClosureParticle]){
+                  sprintf(histogramNamer, "jetPtClosure_%s%s_%sC%dT%dE%d", fSingleJetHistogramName[iClosureType], fClosureParticleName[iClosureParticle], fAsymmetryBinName[iAsymmetry].Data(), iCentrality, iGenJetPt, iJetEta);
+                  fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iAsymmetry][iClosureParticle]->Write(histogramNamer, TObject::kOverwrite);
+                }
+                
+              } // Jet eta bin loop
+            } // Generator level jet pT loop
+          } // Closure particle type (quark/gluon) loop
+        } // Asymmetry loop
       } // Centrality loop
       
       // Return back to main directory
@@ -2819,21 +2907,28 @@ void DijetHistogramManager::LoadProcessedHistograms(){
       // Centrality loop
       for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
         
-        // Loop over closure particles (quark/gluon/no selection)
-        for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
+        // Dijet momentum balance loop
+        for(int iAsymmetry = fFirstLoadedAsymmetryBin; iAsymmetry <= fLastLoadedAsymmetryBin; iAsymmetry++){
+          if(iClosureType == DijetHistograms::kInclusiveClosure && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track closures
           
-          // Loop over generator level jet pT bins
-          for(int iGenJetPt = 0; iGenJetPt <= knGenJetPtBins; iGenJetPt++){
+          // Loop over closure particles (quark/gluon/no selection)
+          for(int iClosureParticle = 0; iClosureParticle < DijetHistograms::knClosureParticleTypes+1; iClosureParticle++){
             
-            // Loop over jet eta bins
-            for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
+            // Loop over generator level jet pT bins
+            for(int iGenJetPt = 0; iGenJetPt <= knGenJetPtBins; iGenJetPt++){
               
-              sprintf(histogramNamer,"jetPtClosure_%s/jetPtClosure_%s%s_C%dT%dE%d",fSingleJetHistogramName[iClosureType], fSingleJetHistogramName[iClosureType], fClosureParticleName[iClosureParticle], iCentrality, iGenJetPt, iJetEta);
-              fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle] = (TH1D*) fInputFile->Get(histogramNamer);
-              
-            } // Jet eta bin loop
-          } // Generator level jet pT loop
-        } // Closure particle type (quark/gluon) loop
+              // Loop over jet eta bins
+              for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
+                
+                sprintf(histogramNamer, "jetPtClosure_%s/jetPtClosure_%s%s_%sC%dT%dE%d", fSingleJetHistogramName[iClosureType], fSingleJetHistogramName[iClosureType], fClosureParticleName[iClosureParticle], fAsymmetryBinName[iAsymmetry].Data(), iCentrality, iGenJetPt, iJetEta);
+                fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iAsymmetry][iClosureParticle] = (TH1D*) fInputFile->Get(histogramNamer);
+                
+                //if(iGenJetPt == 7 && iJetEta == knJetEtaBins) cout << "Loaded histogram " << histogramNamer << endl;
+                
+              } // Jet eta bin loop
+            } // Generator level jet pT loop
+          } // Closure particle type (quark/gluon) loop
+        } // Asymmetry loop
       } // Centrality loop
       
       // Return back to main directory
@@ -3049,7 +3144,7 @@ bool DijetHistogramManager::CheckNull(const bool preprocess) const{
             // Loop over jet eta bins
             for(int iJetEta = 0; iJetEta <= knJetEtaBins; iJetEta++){
               
-              if(fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][iClosureParticle] == NULL) return true;
+              if(fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentrality][fnAsymmetryBins][iClosureParticle] == NULL) return true;
               
             } // Jet eta bin loop
           } // Generator level jet pT loop
@@ -3810,8 +3905,12 @@ TH1D* DijetHistogramManager::GetHistogramJetShape(const int iJetShapeType, const
 }
 
 // Getter for jet pT closure histograms
-TH1D* DijetHistogramManager::GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, const int iClosureParticle) const{
-  return fhJetPtClosure[iClosureType][iGenPtBin][iEtaBin][iCentrality][iClosureParticle];
+TH1D* DijetHistogramManager::GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, int iAsymmetry, const int iClosureParticle) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated closures
+  if(iAsymmetry < 0 || iAsymmetry > fnAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  return fhJetPtClosure[iClosureType][iGenPtBin][iEtaBin][iCentrality][iAsymmetry][iClosureParticle];
 }
 
 /*
