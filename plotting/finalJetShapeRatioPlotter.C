@@ -17,6 +17,16 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   
   const char* systemLegendString[] = {"WTA", "E-scheme", "Third jet", "", ""};
+  
+  // Number of events in each xj bin. Provided as a table so these do not have to be in the data file
+  double xjJetCount[5][4] = {
+  // xj = 0.0     0.6      0.8      1.0      all
+           { 229806,  190605,  155115,  575526},  // Centrality 0-10 %
+           { 234582,  228419,  203306,  666307},  // Centrality 10-30 %
+           {  76433,   91979,   91974,  260386},  // Centrality 30-50 %
+           {  20115,   27350,   30536,   78001},  // Centrality 50-90 %
+           {2690056, 3913971, 4391792, 10995819}  // pp
+  };
     
   // Temporary: Get the ratio between pp and PbPb jet shape
   TH1D *sumHistogramPbPb[5][nCentralityBins][nAsymmetryBins+1];
@@ -133,7 +143,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
             correlationFactor = 1;
             
             // JFF and spillover unceratinties are correlated, so they partially cancel on the ratio
-            if(iUncertainty < 2) correlationFactor = 0.25;
+            //if(iUncertainty < 2) correlationFactor = 0.25;
             uncertaintySum += TMath::Power(uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][iUncertainty]->GetBinContent(iBin)*correlationFactor,2);
           }
           uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry]->SetBinContent(iBin,TMath::Sqrt(uncertaintySum));
@@ -155,6 +165,8 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   TH1D* asymmetryRatioUncertainty[5][nCentralityBins+1][nAsymmetryBins];
   double ppValue, pbpbValue, ratioValue;
   double ppUncertainty, pbpbUncertainty, ratioUncertaintyValue;
+  double correlationSpillover, correlationJff;
+  double uncertaintyXjBin, uncertaintyXjIntegrated;
   
   for(int iDataset = 0; iDataset < nDatasets; iDataset++){
     for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins; iAsymmetry++){
@@ -168,6 +180,30 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
           asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->Divide(sumHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]);
         }
         
+        // The statistical uncertainties are partially correlated, since xj bins are part of the xj integrated sample
+        // To take this into account, we need to calculate the statistical uncertainty by hand
+        for(int iBin = 1; iBin < asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
+          if(iCentrality == nCentralityBins){
+            ppValue = sumHistogramPp[iDataset][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbValue = sumHistogramPp[iDataset][iAsymmetry]->GetBinContent(iBin);
+            ppUncertainty = sumHistogramPp[iDataset][nAsymmetryBins]->GetBinError(iBin);
+            pbpbUncertainty = sumHistogramPp[iDataset][iAsymmetry]->GetBinError(iBin);
+          } else {
+            ppValue = sumHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]->GetBinContent(iBin);
+            pbpbValue = sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin);
+            ppUncertainty = sumHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]->GetBinError(iBin);
+            pbpbUncertainty = sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetBinError(iBin);
+          }
+          
+          // Correlation term
+          ratioValue = 2 * (1.0/ppValue) * (-1.0 * pbpbValue/TMath::Power(ppValue,2)) * (xjJetCount[iCentrality][iAsymmetry] / xjJetCount[iCentrality][nAsymmetryBins]) * ppUncertainty * pbpbUncertainty;
+          
+          ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2)+TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2) + ratioValue);
+                              
+          asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->SetBinError(iBin,ratioUncertaintyValue);
+          
+        } // Calculating statistical uncertainty
+        
         asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry] = (TH1D*) asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->Clone(Form("asymmetryRatioUncertainty%d%d%d", iDataset, iAsymmetry, iCentrality));
         
         // Calculate the systematic uncertainty for the ratio
@@ -177,14 +213,30 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
             pbpbValue = sumHistogramPp[iDataset][iAsymmetry]->GetBinContent(iBin);
             ppUncertainty = uncertaintyHistogramPp[iDataset][nAsymmetryBins]->GetBinContent(iBin);
             pbpbUncertainty = uncertaintyHistogramPp[iDataset][iAsymmetry]->GetBinContent(iBin);
+            
+            // No correlation terms for pp
+            correlationSpillover = 0;
+            correlationJff = 0;
+            
           } else {
             ppValue = sumHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]->GetBinContent(iBin);
             pbpbValue = sumHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin);
             ppUncertainty = uncertaintyHistogramPbPb[iDataset][iCentrality][nAsymmetryBins]->GetBinContent(iBin);
             pbpbUncertainty = uncertaintyHistogramPbPb[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin);
+            
+            // JFF and spillover uncertainties share partially the datasets from which they are derived, so we need correlation terms for them
+            uncertaintyXjBin = uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][0]->GetBinContent(iBin) / shapeIntegralPbPb[iDataset][iCentrality][iAsymmetry];
+            uncertaintyXjIntegrated = uncertaintySummerPbPb[iDataset][iCentrality][nAsymmetryBins][0]->GetBinContent(iBin) / shapeIntegralPbPb[iDataset][iCentrality][nAsymmetryBins];
+            correlationSpillover = 2 * (1.0/ppValue) * (-1.0 * pbpbValue/TMath::Power(ppValue,2)) * (xjJetCount[iCentrality][iAsymmetry] / xjJetCount[iCentrality][nAsymmetryBins]) * uncertaintyXjBin * uncertaintyXjIntegrated;
+            
+            uncertaintyXjBin = uncertaintySummerPbPb[iDataset][iCentrality][iAsymmetry][1]->GetBinContent(iBin) / shapeIntegralPbPb[iDataset][iCentrality][iAsymmetry];
+            uncertaintyXjIntegrated = uncertaintySummerPbPb[iDataset][iCentrality][nAsymmetryBins][1]->GetBinContent(iBin) / shapeIntegralPbPb[iDataset][iCentrality][nAsymmetryBins];
+            correlationJff = 2 * (1.0/ppValue) * (-1.0 * pbpbValue/TMath::Power(ppValue,2)) * (xjJetCount[iCentrality][iAsymmetry] / xjJetCount[iCentrality][nAsymmetryBins]) * uncertaintyXjBin * uncertaintyXjIntegrated;
+            
           }
+          
           ratioValue = asymmetryRatioHistogram[iDataset][iCentrality][iAsymmetry]->GetBinContent(iBin);
-          ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2)+TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2));
+          ratioUncertaintyValue = TMath::Sqrt(TMath::Power(pbpbUncertainty/ppValue,2) + TMath::Power(pbpbValue*ppUncertainty/TMath::Power(ppValue,2),2) + correlationSpillover + correlationJff);
           asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetBinContent(iBin,ratioValue);
           asymmetryRatioUncertainty[iDataset][iCentrality][iAsymmetry]->SetBinError(iBin,ratioUncertaintyValue);
         }
@@ -447,7 +499,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_adjustZoom.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_systErrorCorrelations.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
