@@ -34,7 +34,6 @@ DijetAnalyzer::DijetAnalyzer() :
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
-  fTrackPreCorrector(), // TODO: Remove this after final track corrections are good enough
   fDataType(-1),
   fForestType(0),
   fReadMode(0),
@@ -230,7 +229,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       fVzWeightFunction = new TF1("fvz","pol6",-15,15);  // Weight function for 2017 MC
       fVzWeightFunction->SetParameters(0.973805, 0.00339418, 0.000757544, -1.37331e-06, -2.82953e-07, -3.06778e-10, 3.48615e-09);
     }
-    fTrackPreCorrector = NULL; // TODO: Remove this after 2018 track corrections are decent
     fCentralityWeightFunction = NULL;
     
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
@@ -240,9 +238,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     
     // Track correction for 2018 PbPb data
     fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
-    
-    // Initialize the class for weighting tracks from 2018 data to match 2015
-    fTrackPreCorrector = new TrackPreCorrector("trackCorrectionTables/preCorrection/minimumBiasTrackRatio.root"); // TODO: Remove this after 2018 track corrections are good enough
     
     // Flag for PbPb data
     ppData = false;
@@ -273,7 +268,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     fTrackCorrection = new TrkCorr(""); // Bad data type, no corrections initialized
     fVzWeightFunction = NULL;
     fCentralityWeightFunction = NULL;
-    fTrackPreCorrector = NULL; // TODO: Remove this after 2018 track corrections are decent
   }
   
   // Initialize the class for JFF correction
@@ -469,7 +463,6 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fTrackEfficiencyCorrector2018) delete fTrackEfficiencyCorrector2018;
   if(fJetCorrector2018) delete fJetCorrector2018;
   if(fJetUncertainty2018) delete fJetUncertainty2018;
-  if(fTrackPreCorrector) delete fTrackPreCorrector;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
@@ -2145,6 +2138,7 @@ Double_t DijetAnalyzer::GetJetPtWeight(const Double_t jetPt) const{
  *   return: Multiplicative correction factor to account for trigger efficiency
  */
 Double_t DijetAnalyzer::GetTriggerEfficiencyWeight(const Double_t jetPt, const Double_t centrality) const{
+  
   if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC) return 1; // No weight for pp or Pythia.
   if(fDataType == ForestReader::kPbPbMC && fReadMode < 2019) return 1;  // No weight if trigger not used in PbPb MC
   
@@ -2501,17 +2495,10 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   } // If for heavy ions
     
   // Find and return the track efficiency correction
-  
-  // Weight the 2018 tracks to match 2015 tracks. TODO: Remove this after 2018 track correction is usable
-  preWeight = 1;
-  if(fTrackPreCorrector && fReadMode > 2000){
-    preWeight = fTrackPreCorrector->GetTrackWeight(trackPt, trackEta, trackPhi, hiBin/2.0);
-  }
-  
   double trackEfficiency = 1;
   trackEfficiency = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
   
-  return preWeight*trackEfficiency;
+  return trackEfficiency;
   
 }
 

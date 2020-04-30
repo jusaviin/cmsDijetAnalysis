@@ -33,7 +33,6 @@
 #include "trackingEfficiency2018PbPb.h"
 #include "trackingEfficiency2017pp.h"
 #include "TrackingEfficiencyInterface.h"
-#include "TrackPreCorrector.h"
 
 class DijetAnalyzer{
   
@@ -101,7 +100,6 @@ private:
   TrackingEfficiencyInterface *fTrackEfficiencyCorrector2018;  // Tracking efficiency corrector for 2018 PbPb and 2017 pp data.
   JetCorrector *fJetCorrector2018;     // Class for making jet energy correction for 2018 data
   JetUncertainty *fJetUncertainty2018; // Class for finding uncertainty for jet pT for 2018 data
-  TrackPreCorrector *fTrackPreCorrector; // Class to weight 2018 tracks to 2015 distribution so 2015 correction can be used // TODO: Remove this after final track corrections for 2018 are good
   
   // Analyzed data and forest types
   Int_t fDataType;                   // Analyzed data type
