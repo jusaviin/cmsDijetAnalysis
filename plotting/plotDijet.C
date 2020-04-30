@@ -47,7 +47,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = false;
+  bool drawDijetHistograms = true;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
@@ -56,7 +56,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -89,7 +89,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Normalization for the xj matrix
-  bool normalizeXjMatrix = false;  // True = show probability to see gen xj given reco xj. False = show counts
+  bool normalizeXjMatrix = true;  // True = show probability to see gen xj given reco xj. False = show counts
+  bool wideXjMatrixBins = true; // False = fine bins for xj matrix. True = 3x3 xj matrix with analysis binning
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
@@ -126,8 +127,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
-  const char* figureFormat = "pdf";
-  TString figureNameSuffix = "_noGenSwap";
+  const char* figureFormat = "png";
+  TString figureNameSuffix = "_recoDijet";
   
   // Normalization for jet shape plotting
   bool normalizeJetShapePlot = false;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
@@ -203,15 +204,15 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5.root
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = true ;
+  bool applySeagullCorrection = false ;
   if(preprocess >= 0 && preprocess <= 2) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
   const int nCentralityBins = 4;
   const int nTrackPtBins = 7;
   const int nAsymmetryBins = 3;
-  double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
-  //double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
+  //double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
+  double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.5}; // Low bin borders for deltaPhi (2017 pp set for 1.5, wide peak)
@@ -225,8 +226,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
   }
   
-  int firstDrawnCentralityBin = 2;
-  int lastDrawnCentralityBin = 2;
+  int firstDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins-1;
@@ -477,7 +478,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
 
   // Set which histograms to draw and the drawing style to use
   resultDrawer->SetDrawEventInformation(drawEventInformation);
-  resultDrawer->SetDrawDijetHistograms(drawDijetHistograms, normalizeXjMatrix);
+  resultDrawer->SetDrawDijetHistograms(drawDijetHistograms, normalizeXjMatrix, wideXjMatrixBins);
   resultDrawer->SetDrawAllJets(drawLeadingJetHistograms,drawSubleadingJetHistograms,drawAnyJetHistograms,drawAnyLeadingJetHistograms);
   resultDrawer->SetDrawAllTracks(drawTracks,drawUncorrectedTracks);
   resultDrawer->SetDrawAllInclusiveTracks(drawInclusiveTracks,drawUncorrectedInclusiveTracks);

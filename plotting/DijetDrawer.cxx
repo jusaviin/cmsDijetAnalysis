@@ -23,6 +23,8 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   fSaveFigures(false),
   fFigureFormat("pdf"),
   fNormalizeJetShape(false),
+  fNormalizeXjMatrix(false),
+  fWideXjMatrixBins(false),
   fLogPt(true),
   fLogCorrelation(true),
   fLogJetShape(true),
@@ -424,7 +426,7 @@ void DijetDrawer::DrawDijetHistograms(){
     fDrawer->SetCanvasSize(700,600);  // 600 for range 0-1, 1250 for range 0-2
     
     // === Reco xj vs. gen xj ===
-    drawnHistogram2D = (TH2D*) fHistograms->GetHistogramDijetXjMatrix(iCentrality)->Clone(Form("xjMatrix%d",iCentrality));
+    drawnHistogram2D = (TH2D*) fHistograms->GetHistogramDijetXjMatrix(iCentrality);
     
     // If histograms are not loaded, do not crash the code, just skip them
     if(drawnHistogram2D != NULL){
@@ -439,8 +441,8 @@ void DijetDrawer::DrawDijetHistograms(){
         highBorder = drawnHistogram2D->GetXaxis()->FindBin(highBinBorder-0.001);
         
         projectionY = drawnHistogram2D->ProjectionY(Form("xjYprojection%d%d", iCentrality, iAsymmetry), lowBorder, highBorder);
+        projectionX->GetXaxis()->SetRangeUser(lowBinBorder+0.001,highBinBorder-0.001);
         
-        projectionX->GetXaxis()->SetRangeUser(lowBinBorder,highBinBorder);
         cout << endl;
         cout << "Bin " << lowBinBorder << " < xj < " <<highBinBorder << endl;
         cout << "Mean reconstructed xj = " << projectionX->GetMean() << " +- " << projectionX->GetMeanError() << endl;
@@ -449,10 +451,23 @@ void DijetDrawer::DrawDijetHistograms(){
         
       }
       
+      if(fWideXjMatrixBins){
+        int nXjBins = 3;
+        double xjBinBorders[4] = {0, 0.6, 0.8, 1};
+        drawnHistogram2D = normalizer->RebinHistogram(drawnHistogram2D, nXjBins, xjBinBorders, nXjBins, xjBinBorders, true, false);
+        fDrawer->SetLogZ(false);
+      }
+      
       if(fNormalizeXjMatrix) normalizer->NormalizeColumns(drawnHistogram2D,1);
       fDrawer->DrawHistogram(drawnHistogram2D,"Reconstructed x_{j}","Generator level x_{j}",centralityString,fStyle2D);
+      
+      
       diagonalLine->Draw();
       //oneLine->Draw();
+      
+      if(fWideXjMatrixBins){
+        fDrawer->SetLogZ(true);
+      }
       
       // Save the figure to a file
       SaveFigure("dijetXjMatrix",compactCentralityString);
@@ -1442,9 +1457,10 @@ void DijetDrawer::SetDrawEventInformation(const bool drawOrNot){
 }
 
 // Setter for drawing dijet histograms
-void DijetDrawer::SetDrawDijetHistograms(const bool drawOrNot, const bool normalizeXjMatrix){
+void DijetDrawer::SetDrawDijetHistograms(const bool drawOrNot, const bool normalizeXjMatrix, const bool wideBins){
   fDrawDijetHistograms = drawOrNot;
   fNormalizeXjMatrix = normalizeXjMatrix;
+  fWideXjMatrixBins = wideBins;
 }
 
 // Setter for drawing leading jet histograms

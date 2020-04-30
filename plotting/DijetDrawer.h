@@ -39,7 +39,7 @@ public:
   
   // Setters for event information and dijets
   void SetDrawEventInformation(const bool drawOrNot); // Setter for drawing event information
-  void SetDrawDijetHistograms(const bool drawOrNot, const bool normalizeXjMatrix = false);  // Setter for drawing dijet histograms
+  void SetDrawDijetHistograms(const bool drawOrNot, const bool normalizeXjMatrix = false, const bool wideBins = false);  // Setter for drawing dijet histograms
   
   // Setters for single jets
   void SetDrawLeadingJetHistograms(const bool drawOrNot);    // Setter for drawing leading jet histograms
@@ -151,6 +151,7 @@ private:
   // Normalization settings
   bool fNormalizeJetShape;     // Normalize jet shape to one, meaning draw rho instead of P
   bool fNormalizeXjMatrix;     // True = draw probability to see gen xj given reco xj. False = draw counts
+  bool fWideXjMatrixBins;      // False = fine bins for xj matrix. True = 3x3 xj matrix with analysis binning
   
   // Logarithmic scales for figures
   bool fLogPt;          // pT distributions
