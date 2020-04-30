@@ -694,6 +694,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t matchedSubleadingJetEta = 0;   // Subleading matched jet eta
   Double_t matchedDeltaPhi = 0;           // DeltaPhi between matched leading and subleading jets
   Double_t jetPtWeight = 1;               // Weighting for jet pT
+  Double_t triggerEfficiencyWeight = 1;   // Weight for trigger efficiency in pT
   
   // Variables for smearing study
   Double_t maxUncertaintyJEC = 0;       // Larger of the JEC uncertainties
@@ -732,7 +733,7 @@ void DijetAnalyzer::RunAnalysis(){
   // Fillers for THnSparses
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
   const Int_t nFillLeadingJet = 6;  // 6 is nominal, 9 used for smearing study
-  const Int_t nFillDijet = 6;
+  const Int_t nFillDijet = 6;      // 6 is nominal, 10 used for xj study
   Double_t fillerJet[nFillJet];
   Double_t fillerLeadingJet[nFillLeadingJet];
   Double_t fillerDijet[nFillDijet];
@@ -1513,7 +1514,7 @@ void DijetAnalyzer::RunAnalysis(){
           matchVeto = true;
         }
         
-      } // Matching the yet
+      } // Matching the jet
       
       // If reverse veto is in place, do the opposite as with regular veto
       if(reverseMatchVeto) matchVeto = !matchVeto;
@@ -1525,8 +1526,11 @@ void DijetAnalyzer::RunAnalysis(){
         
         // Histograms for jet pT closure
         if(fFillJetPtClosure && fMatchJets){
-          FillJetPtClosureHistograms(highestIndex, DijetHistograms::kLeadingClosure);
-          FillJetPtClosureHistograms(secondHighestIndex, DijetHistograms::kSubleadingClosure);
+          
+          // Last argument only used for xj study
+          FillJetPtClosureHistograms(highestIndex, DijetHistograms::kLeadingClosure, subleadingJetPt/leadingJetPt);
+          FillJetPtClosureHistograms(secondHighestIndex, DijetHistograms::kSubleadingClosure, subleadingJetPt/leadingJetPt);
+          
         }
         
         // Dijet event information
@@ -1546,6 +1550,7 @@ void DijetAnalyzer::RunAnalysis(){
           dijetAsymmetry = dijetXj;
           
           jetPtWeight = GetDijetWeight(leadingJetPt);
+          triggerEfficiencyWeight = GetTriggerEfficiencyWeight(leadingJetPt, centrality);
           
 //          // For smearing study, smear the jet pT and find uncertainties for jet pT
 //          jetPtSmeared = leadingJetPt*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
@@ -1568,7 +1573,7 @@ void DijetAnalyzer::RunAnalysis(){
 //          fillerLeadingJet[7] = jetPtErrorUp;                   // Axis 7: Uncertainty added to the leading jet pT
 //          fillerLeadingJet[8] = jetPtErrorDown;                 // Axis 8: Uncertainty subtracted from the leading jet pT
           
-          fHistograms->fhLeadingDijet->Fill(fillerLeadingJet,fTotalEventWeight*jetPtWeight);    // Fill the data point to leading jet histogram
+          fHistograms->fhLeadingDijet->Fill(fillerLeadingJet,fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);    // Fill the data point to leading jet histogram
                
 //          // For smearing study, smear the jet pT and find uncertainties for jet pT
 //          jetPtSmeared = subleadingJetPt*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
@@ -1591,7 +1596,7 @@ void DijetAnalyzer::RunAnalysis(){
 //          fillerLeadingJet[7] = jetPtErrorUp;                   // Axis 7: Uncertainty added to the subleading jet pT
 //          fillerLeadingJet[8] = jetPtErrorDown;                 // Axis 8: Uncertainty subtracted from the subleading jet pT
           
-          fHistograms->fhSubleadingDijet->Fill(fillerLeadingJet,fTotalEventWeight*jetPtWeight); // Fill the data point to subleading jet histogram
+          fHistograms->fhSubleadingDijet->Fill(fillerLeadingJet,fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
           fillerDijet[0] = leadingJetPt;                   // Axis 0: Leading jet pT
@@ -1600,7 +1605,14 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[3] = dijetXj;                        // Axis 3: Dijet momentum balance xj
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
           fillerDijet[5] = dijetMatchedXj;                 // Axis 5: Matched dijet momentum balance xj
-          fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight);         // Fill the data point to dijet histogram
+          
+//          // Extra axes for xj study
+//          fillerDijet[6] = leadingJetPhi;                  // Axis 1: Leading jet phi
+//          fillerDijet[7] = leadingJetEta;                  // Axis 2: Leading jet eta
+//          fillerDijet[8] = subleadingJetPhi;               // Axis 1: Subleading jet phi
+//          fillerDijet[9] = subleadingJetEta;               // Axis 2: Subleading jet eta
+          
+          fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);         // Fill the data point to dijet histogram
           
         }
         
@@ -1686,6 +1698,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   // Event information
   Double_t centrality = fTrackReader[correlationType]->GetCentrality();
   Double_t jetPtWeight = 1;
+  Double_t triggerEfficiencyWeight = 1;
   
   // Variables for tracks
   Double_t trackPt;       // Track pT
@@ -1753,6 +1766,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     if(useInclusiveJets){
       
       jetPtWeight = GetJetPtWeight(leadingJetPt);
+      triggerEfficiencyWeight = GetTriggerEfficiencyWeight(leadingJetPt, centrality);
       
       fillerJetTrackInclusive[0] = trackPt;                    // Axis 0: Track pT
       fillerJetTrackInclusive[1] = deltaPhiTrackLeadingJet;    // Axis 1: DeltaPhi between track and inclusive jet
@@ -1762,12 +1776,13 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       fillerJetTrackInclusive[5] = leadingJetFlavor;           // Axis 5: Jet flavor (quark of gluon)
       
       if(fFillInclusiveJetTrackCorrelation){
-        fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
-        fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
+        fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive, trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight); // Fill the track-inclusive jet correlation histogram
+        fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive, trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight); // Fill the track-inclusive jet correlation histogram
       }
     } else {
       
       jetPtWeight = GetDijetWeight(leadingJetPt);
+      triggerEfficiencyWeight = GetTriggerEfficiencyWeight(leadingJetPt, centrality);
       
       // Fill the track-leading jet correlation histograms
       fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
@@ -1777,9 +1792,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
       fillerJetTrack[6] = leadingJetFlavor;           // Axis 6: Leading jet flavor (quark or gluon)
-      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-leading jet correlation histogram
-      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-leading jet correlation histogram
-      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-leading jet correlation histogram
+      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack, trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight); // Fill the track-leading jet correlation histogram
+      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);                // Fill the uncorrected track-leading jet correlation histogram
+      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack, trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight); // Fill the pT weighted track-leading jet correlation histogram
             
       // Fill the track-subleading jet correlation histograms
       fillerJetTrack[0] = trackPt;                    // Axis 0: Track pT
@@ -1789,9 +1804,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
       fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
       fillerJetTrack[6] = subleadingJetFlavor;        // Axis 6: Subleading jet flavor (quark or gluon)
-      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-subleading jet correlation histogram
-      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-subleading jet correlation histogram
-      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-subleading jet correlation histogram
+      if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackSubleadingJet->Fill(fillerJetTrack, trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight); // Fill the track-subleading jet correlation histogram
+      if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetUncorrected->Fill(fillerJetTrack, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);                // Fill the uncorrected track-subleading jet correlation histogram
+      if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackSubleadingJetPtWeighted->Fill(fillerJetTrack, trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight); // Fill the pT weighted track-subleading jet correlation histogram
     }
     
   } // Loop over tracks
@@ -1802,11 +1817,13 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
  *
  *  const Int_t jetIndex = Index of a jet for which the closure is filled
  *  const Int_t closureType = Leading/subleading/inclusive
+ *  const Double_t xj = Dijet momentum balance for the dijet part of which this jet is
  */
-void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType){
+void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType, const Double_t xj){
 
   // Define a filler for the closure histogram
-  Double_t fillerClosure[7];
+  const Int_t nAxesClosure = 8; // 7 nominal, 8 used for xj study
+  Double_t fillerClosure[nAxesClosure];
   
   // Find the pT of the matched gen jet and flavor of reference parton
   Float_t matchedGenPt = fJetReader->GetMatchedPt(jetIndex);
@@ -1865,7 +1882,9 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   fillerClosure[4] = centrality;           // Axis 4: Centrality of the event
   fillerClosure[5] = referencePartonIndex; // Axis 5: Reference parton type (quark/gluon)
   fillerClosure[6] = recoPt/matchedGenPt;  // Axis 6: Reconstructed level jet to generator level jet pT ratio
-  // Add eta of reco or gen jet
+  
+  // Extra axis used for xj study
+  fillerClosure[7] = xj;                   // Axis 7: Dijet momentum balance
   
   // Fill the closure histogram
   fHistograms->fhJetPtClosure->Fill(fillerClosure,fTotalEventWeight);
@@ -2111,6 +2130,50 @@ Double_t DijetAnalyzer::GetJetPtWeight(const Double_t jetPt) const{
   } else {
     return fPtWeightFunction->Eval(jetPt);  // No weighting for the most peripheral centrality bins 2018
   }
+}
+
+/*
+ * Get a trigger efficiency weight
+ *
+ *  The numbers are obtained with centrality binning 0-10, 10-30, 30-50, 50-90.
+ *  If different binning is used, you will get wrong weights using this function.
+ *
+ *  Arguments:
+ *   const Double_t jetPt = Jet pT for triggering jet
+ *   const Double_t centrality = Centrality of the event
+ *
+ *   return: Multiplicative correction factor to account for trigger efficiency
+ */
+Double_t DijetAnalyzer::GetTriggerEfficiencyWeight(const Double_t jetPt, const Double_t centrality) const{
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC) return 1; // No weight for pp or Pythia.
+  if(fDataType == ForestReader::kPbPbMC && fReadMode < 2019) return 1;  // No weight if trigger not used in PbPb MC
+  
+  // For jets above 250 GeV, the efficiency is 1 within errors.
+  if(jetPt >= 250) return 1;
+  
+  // Efficiency tables for different centralities and jet pT:s
+  // In the tables each number represents trigger efficiency in a 5 GeV wide bin starting from 0 up until 500 GeV.
+  double triggerEfficiencyTable[4][100] = {
+    // Centrality: 0-10 %
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0752386, 0.0869706, 0.111874, 0.142504, 0.183662, 0.235107, 0.286736, 0.348411, 0.405188, 0.464605, 0.528057, 0.586119, 0.643719, 0.697473, 0.747104, 0.791623, 0.8325, 0.865514, 0.896188, 0.920954, 0.939565, 0.95004, 0.963755, 0.966277, 0.971066, 0.977124, 0.982302, 0.979379, 0.981975, 0.984987, 0.985513, 0.983373, 0.987799, 0.988764, 0.990123, 0.987269, 0.990842, 0.991504, 0.991676, 0.993958, 0.993402, 0.990756, 0.985158, 0.990476, 0.993007, 0.994681, 0.994228, 0.995253, 0.991135, 0.995927, 0.993318, 0.997347, 1, 1, 1, 0.996226, 0.995885, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    // Centrality: 10-30 %
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0776977, 0.0938393, 0.122861, 0.161901, 0.217981, 0.275934, 0.337427, 0.400179, 0.458118, 0.512993, 0.579228, 0.630421, 0.686575, 0.736895, 0.781909, 0.831157, 0.866775, 0.895112, 0.92346, 0.942908, 0.955689, 0.967166, 0.973694, 0.977134, 0.982978, 0.984804, 0.987916, 0.987677, 0.988022, 0.989157, 0.991467, 0.991854, 0.991879, 0.99356, 0.991771, 0.993716, 0.99505, 0.995378, 0.993445, 0.994758, 0.996177, 0.996522, 1, 0.996855, 1, 1, 0.996914, 0.998296, 0.998134, 0.997904, 1, 1, 1, 1, 0.996109, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.985714, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.952381, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    // Centrality: 30-50 %
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0225389, 0.0357853, 0.0625854, 0.114652, 0.186116, 0.26918, 0.352576, 0.424547, 0.487839, 0.553765, 0.618316, 0.681713, 0.740319, 0.789176, 0.831279, 0.873132, 0.91255, 0.92833, 0.945552, 0.959786, 0.971815, 0.975448, 0.971097, 0.980313, 0.984648, 0.988947, 0.986328, 0.990765, 0.987174, 0.993049, 0.994162, 0.992768, 0.993483, 0.991127, 0.996967, 0.995381, 0.992867, 0.998447, 0.992687, 0.99793, 0.997831, 1, 0.997283, 0.99654, 0.996815, 1, 0.995349, 1, 1, 1, 0.993421, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    // Centrality: 50-90 %
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.00391389, 0.00688976, 0.0192549, 0.0619815, 0.141893, 0.241798, 0.343937, 0.413673, 0.477422, 0.559137, 0.639819, 0.717685, 0.764019, 0.824119, 0.862554, 0.898145, 0.928348, 0.945772, 0.95873, 0.973406, 0.97358, 0.981122, 0.981965, 0.987635, 0.987374, 0.996862, 0.987764, 0.987788, 0.995098, 0.982363, 0.997881, 0.98977, 1, 0.993789, 0.993127, 0.986842, 1, 0.99422, 0.994152, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1}
+  };
+  
+  // Transform jet pT and centrality to bin indices
+  Int_t jetPtBin = jetPt / 5;
+  Int_t centralityBin = 0;
+  if(centrality > fCard->Get("CentralityBinEdges",2)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",3)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",4)) centralityBin++;
+  
+  // Read the trigger efficiency weight from the table
+  return 1.0/triggerEfficiencyTable[centralityBin][jetPtBin];
+  
 }
 
 /*

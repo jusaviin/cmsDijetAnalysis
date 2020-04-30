@@ -70,7 +70,7 @@ private:
   void CreateMixingPool(); // Create a pool of mixed events
   void ValidateMixingPool();  // Check that all vz and centrality bins have entries
   std::tuple<Int_t,Double_t,Double_t> GetNParticleFlowCandidatesInJet(const Double_t jetPhi, const Double_t jetEta); // Find the number of particle flow cnadidates in a jet and the direction of leading particle flow candidate
-  void FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType); // Fill jet pT closure histograms
+  void FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType, const Double_t xj = 0); // Fill jet pT closure histograms
   
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
   Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
@@ -79,6 +79,7 @@ private:
   Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
   Double_t GetJetPtWeight(const Double_t jetPt) const; // Get the proper jet pT weighting for 2017 and 2018 MC
+  Double_t GetTriggerEfficiencyWeight(const Double_t jetPt, const Double_t centrality) const; // Get a trigger efficiency weight
   Double_t GetDijetWeight(const Double_t jetPt) const; // Get a jet pT weight for the leading jet
   Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
   Int_t FindMixingVzBin(const Double_t vz) const; // Find a vz bin from mixing table for a given vz value

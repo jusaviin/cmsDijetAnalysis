@@ -334,17 +334,17 @@ void DijetHistograms::CreateHistograms(){
   // Smearing study variables complete!
   
   // Arrays for creating THnSparses
-  const Int_t nAxesJets = 6;   // 6 is nominal, 3 added for smearing study
+  const Int_t nAxesJets = 6;   // 6 is nominal, 3 more added for smearing study
   Int_t nBinsJets[nAxesJets];
   Double_t lowBinBorderJets[nAxesJets];
   Double_t highBinBorderJets[nAxesJets];
   
-  const Int_t nAxesDijet = 6;
+  const Int_t nAxesDijet = 6; // 6 is nominal, 4 more added for xj study
   Int_t nBinsDijet[nAxesDijet];
   Double_t lowBinBorderDijet[nAxesDijet];
   Double_t highBinBorderDijet[nAxesDijet];
   
-  const Int_t nAxesAnyJet = 5; // 5 is nominal, 3 added for smearing study
+  const Int_t nAxesAnyJet = 5; // 5 is nominal, 3 more added for smearing study
   Int_t nBinsAnyJet[nAxesAnyJet];
   Double_t lowBinBorderAnyJet[nAxesAnyJet];
   Double_t highBinBorderAnyJet[nAxesAnyJet];
@@ -364,7 +364,7 @@ void DijetHistograms::CreateHistograms(){
   Double_t lowBinBorderJetTrackInclusive[nAxesJetTrackInclusive];
   Double_t highBinBorderJetTrackInclusive[nAxesJetTrackInclusive];
   
-  const Int_t nAxesJetClosure = 7;
+  const Int_t nAxesJetClosure = 8;  // 7 is nominal, 1 more added for xj study
   Int_t nBinsJetClosure[nAxesJetClosure];
   Double_t lowBinBorderJetClosure[nAxesJetClosure];
   Double_t highBinBorderJetClosure[nAxesJetClosure];
@@ -492,6 +492,30 @@ void DijetHistograms::CreateHistograms(){
   nBinsDijet[5] = nXjBins;         // nBins for matched xj
   lowBinBorderDijet[5] = minXj;    // low bin border for matched xj
   highBinBorderDijet[5] = maxXj;   // high bin border for matched xj
+  
+//  // Extra axes for xj study:
+//
+//  // Axis 6 for the jet histogram: leading jet phi
+//  nBinsDijet[6] = nPhiBins;        // nBins for leading jet phi
+//  lowBinBorderDijet[6] = minPhi;   // low bin border for leading jet phi
+//  highBinBorderDijet[6] = maxPhi;  // high bin border for leading jet phi
+//
+//  // Axis 7 for the jet histogram: leading jet eta
+//  nBinsDijet[7] = nEtaBins;        // nBins for leading jet eta
+//  lowBinBorderDijet[7] = minEta;   // low bin border for leading jet eta
+//  highBinBorderDijet[7] = maxEta;  // high bin border for leading jet eta
+//
+//  // Axis 8 for the jet histogram: subleading jet phi
+//  nBinsDijet[8] = nPhiBins;        // nBins for subleading jet phi
+//  lowBinBorderDijet[8] = minPhi;   // low bin border for subleading jet phi
+//  highBinBorderDijet[8] = maxPhi;  // high bin border for subleading jet phi
+//
+//  // Axis 9 for the jet histogram: subleading jet eta
+//  nBinsDijet[9] = nEtaBins;        // nBins for subleading jet eta
+//  lowBinBorderDijet[9] = minEta;   // low bin border for subleading jet eta
+//  highBinBorderDijet[9] = maxEta;  // high bin border for subleading jet eta
+//
+//  // xj study
   
   // Create the dijet histogram using the above binning information
   fhDijet = new THnSparseF("dijet","dijet",nAxesDijet,nBinsDijet,lowBinBorderDijet,highBinBorderDijet); fhDijet->Sumw2();
@@ -744,11 +768,24 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorderJetClosure[6] = minClosureRatio;   // low bin border for closure ratio
   highBinBorderJetClosure[6] = maxClosureRatio;  // high bin border for closure ratio
   
+  // Extra axes added for xj study
+  
+  // Axis 7 for the jet pT closure histogram: dijet momentum balance xj
+  nBinsJetClosure[7] = nWideAsymmetryBins;     // nBins for wide dijet asymmetry bins
+  lowBinBorderJetClosure[7] = minXj;           // low bin border for dijet asymmetry
+  highBinBorderJetClosure[7] = maxXj;          // high bin border for dijet asymmetry
+  
+  // xj study
+  
   // Create histograms for jet pT closure
   fhJetPtClosure = new THnSparseF("jetPtClosure", "jetPtClosure", nAxesJetClosure, nBinsJetClosure, lowBinBorderJetClosure, highBinBorderJetClosure); fhJetPtClosure->Sumw2();
   
   // Set custom centrality bins for histograms
   fhJetPtClosure->SetBinEdges(4,wideCentralityBins);
+  
+  // Set up wide xj bins for extra axis used in xj study
+  fhJetPtClosure->SetBinEdges(7,wideAsymmetryBins);
+  // xj study
 }
 
 /*
