@@ -38,7 +38,7 @@ public:
   double GetSpilloverYieldError() const; // Getter for the most recent spillover yield error
   TH2D* GetSpilloverCorrection(TH2D *onlyHydjetHistogram, int fitMethod, double spilloverEtaFitRange = 1.5, double spilloverPhiFitRange = 1.5, double lowConstantRange = 1, double highConstantRange = 2, double fixedYield = 0, double fixedEtaWidth = 0, double fixedPhiWidth = 0);  // Get the spillover correction from only hydjet histogram
   TH1D* GetJetShape(TH2D *backgroundSubtractedHistogram); // Extract the jet shape from the two-dimensional histogram
-  TH1D* ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize = false);  // Project the deltaEta yield in final analysis binning
+  TH1D* ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize = false, const bool splitZero = false);  // Project the deltaEta yield in final analysis binning
   TH1D* RebinAsymmetric(TH1D *histogramInNeedOfRebinning, const int nBins, const double* binEdges); // Asymmetric rebinning for one-dimensional histograms
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning); // Rebin a two-dimensional deltaPhi-deltaEta histogram
   TH2D* RebinHistogram(TH2D *histogramInNeedOfRebinning, const int nBinsX, const double* binBordersX, const int nBinsY, const double* binBordersY, const bool undoBinArea, const bool normalizeBinArea); // Rebin a two-dimensional histogram with given bin borders

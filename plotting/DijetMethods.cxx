@@ -1532,15 +1532,28 @@ TH1D* DijetMethods::GetJetShape(TH2D *backgroundSubtractedHistogram){
  *  const double lowPtEdge = Lower edge of the pT bin of the histogram
  *  const double highPtEdge = Higher edge of the pT bin of the histogram
  *  const bool symmetrize = Symmetrize the rebinned histogram
+ *  const bool splitZero = Split the zero bin when rebinning
  *
  *  return = DeltaEta yield in the final analysis binning
  */
-TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize){
+TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHistogram, const double lowPtEdge, const double highPtEdge, const bool symmetrize, const bool splitZero){
 
   // Projection region and bin edges used in final deltaEta yield plots
   const double projectionRegion = 1;  // Region in deltaPhi which is used to project the deltaEta peak
-  const int nDeltaEtaBinsRebin = 23;
-  const double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1] = {-4,-3,-2.5,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,2.5,3,4};
+  int nDeltaEtaBinsRebin = splitZero ? 24 : 23;  // Add one more bin if zero is split
+  double deltaEtaBinBordersRebin[nDeltaEtaBinsRebin+1];
+  
+  if(splitZero){
+    const double binBordersIfZeroIsSplit[] = {-4,-3,-2.5,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,2.5,3,4};
+    for(int iBin = 0; iBin < nDeltaEtaBinsRebin+1; iBin++){
+      deltaEtaBinBordersRebin[iBin] = binBordersIfZeroIsSplit[iBin];
+    }
+  } else {
+    const double binBordersNotSplit[] = {-4,-3,-2.5,-2,-1.5,-1,-0.8,-0.6,-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4,0.6,0.8,1,1.5,2,2.5,3,4};
+    for(int iBin = 0; iBin < nDeltaEtaBinsRebin+1; iBin++){
+      deltaEtaBinBordersRebin[iBin] = binBordersNotSplit[iBin];
+    }
+  }
   
   // Project deltaEta distribution in the final analysis deltaPhi region from the two-dimensional histogram
   TH1D *helperHistogramDeltaEta = ProjectRegionDeltaEta(backgroundSubtractedHistogram, -projectionRegion, projectionRegion, "FinalDeltaEtaYield");
@@ -1558,29 +1571,6 @@ TH1D* DijetMethods::ProjectAnalysisYieldDeltaEta(TH2D *backgroundSubtractedHisto
   // Symmetrize the distribution such a thing is requested
   if(symmetrize){
     SymmetrizeDeltaEta(helperHistogramDeltaEtaRebin);
-    /*double negativeBinContent, negativeBinError;
-    double positiveBinContent, positiveBinError;
-    double averageBinContent, averageBinError;
-    for(int iDeltaEta = 1; iDeltaEta <= nDeltaEtaBinsRebin/2; iDeltaEta++){
-
-      // Do not symmetrize the bin with itself!
-      if(iDeltaEta == nDeltaEtaBinsRebin+1-iDeltaEta) continue;
-      
-      // Find the bin content and error for symmetric bins
-      negativeBinContent = helperHistogramDeltaEtaRebin->GetBinContent(iDeltaEta);
-      negativeBinError = helperHistogramDeltaEtaRebin->GetBinError(iDeltaEta);
-      positiveBinContent = helperHistogramDeltaEtaRebin->GetBinContent(nDeltaEtaBinsRebin+1-iDeltaEta);
-      positiveBinError = helperHistogramDeltaEtaRebin->GetBinError(nDeltaEtaBinsRebin+1-iDeltaEta);
-      
-      // Add the average content and error to both bins
-      averageBinContent = (negativeBinContent + positiveBinContent) / 2.0;
-      averageBinError = TMath::Sqrt(negativeBinError*negativeBinError + positiveBinError*positiveBinError) / 2.0;
-      
-      helperHistogramDeltaEtaRebin->SetBinContent(iDeltaEta,averageBinContent);
-      helperHistogramDeltaEtaRebin->SetBinError(iDeltaEta,averageBinError);
-      helperHistogramDeltaEtaRebin->SetBinContent(nDeltaEtaBinsRebin+1-iDeltaEta,averageBinContent);
-      helperHistogramDeltaEtaRebin->SetBinError(nDeltaEtaBinsRebin+1-iDeltaEta,averageBinError);
-    }*/
   }
   
   // Return the rebinned histogram

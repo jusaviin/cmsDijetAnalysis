@@ -1247,8 +1247,10 @@ void DijetHistogramManager::DoProjections(){
 
 /*
  * Project the final deltaEta yield results from two dimensional distributions
+ *
+ *  const bool splitZero = Split the zero bin into two bins
  */
-void DijetHistogramManager::ProjectFinalDeltaEta(){
+void DijetHistogramManager::ProjectFinalDeltaEta(const bool splitZero){
   
   for(int iJetTrack = 0; iJetTrack < knJetTrackCorrelations; iJetTrack++){
     if(!fLoadJetTrackCorrelations[iJetTrack]) continue; // Only project the histograms that are selected for analysis
@@ -1259,7 +1261,7 @@ void DijetHistogramManager::ProjectFinalDeltaEta(){
       for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
         for(int iTrackPt = fFirstLoadedTrackPtBin; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
          
-          fhJetTrackDeltaEtaFinalResult[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = fMethods->ProjectAnalysisYieldDeltaEta(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentrality][iTrackPt], GetTrackPtBinBorder(iTrackPt), GetTrackPtBinBorder(iTrackPt+1), true);
+          fhJetTrackDeltaEtaFinalResult[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = fMethods->ProjectAnalysisYieldDeltaEta(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kBackgroundSubtracted][iAsymmetry][iCentrality][iTrackPt], GetTrackPtBinBorder(iTrackPt), GetTrackPtBinBorder(iTrackPt+1), true, splitZero);
 
         } // Track pT loop
       } // Centrality loop

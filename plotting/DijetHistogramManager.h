@@ -107,7 +107,7 @@ public:
   void ApplyJffCorrection(JffCorrector *jffCorrectionFinder);  // Apply the JFF correction to relevant histograms
   void CalculateJetShape();       // Calculate the jet shape from the background subtracted histograms
   void NormalizeJetShape();       // Normalize the jet shape histograms
-  void ProjectFinalDeltaEta();    // Project the final deltaEta yield results from two dimensional distributions
+  void ProjectFinalDeltaEta(const bool splitZero = false);    // Project the final deltaEta yield results from two dimensional distributions
   
   // Setters for binning information
   void SetCentralityBins(const bool readBinsFromFile, const int nBins, const double *binBorders, bool setIndices = true); // Set up centrality bin indices according to provided bin borders
