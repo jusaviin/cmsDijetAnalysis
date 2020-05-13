@@ -84,11 +84,15 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
   
   if(legendNzoom == 1){
     yZoomLow = 0;
-    yZoomHigh = 0.24;
-    legendX1 = 0.19;
-    legendX2 = 0.61;
-    legendY1 = 0.18;
-    legendY2 = 0.45;
+    yZoomHigh = 0.34; // 0.24
+    //legendX1 = 0.19;
+    //legendX2 = 0.61;
+    //legendY1 = 0.18;
+    //legendY2 = 0.45;
+    legendX1 = 0.46;
+    legendX2 = 0.88;
+    legendY1 = 0.65;
+    legendY2 = 0.92;
   }
   
   // Set a good style for the inclusive histogram
@@ -138,7 +142,7 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jet100trigger_jetClosuresWithXj_processed_2020-04-21.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC2018_RecoReco_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jet100trigger_jetClosuresWithXj_processed_2020-04-21.root
@@ -148,7 +152,7 @@ void constructJetPtClosures(){
   // "data/PbPbMC_GenGen_pfJets_noCorrelations_jetPtClosure_processed_2019-06-25.root"
   // "data/PbPbMC_GenGen_pfCsJets_noCorrelations_jetPtClosure_eta1v3_2019-06-26_processed.root"
   
-  bool drawLeadingClosure = false;       // Produce the closure plots for leading jet pT
+  bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
   bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
   bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
   
@@ -157,7 +161,9 @@ void constructJetPtClosures(){
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
-  bool saveFigures = false;  // Save the figures to file
+  bool fitResolution = true;  // Fit the jet pT resolution histograms
+  
+  bool saveFigures = false ;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================
@@ -279,6 +285,28 @@ void constructJetPtClosures(){
       } // Asymmetry loop
     } // Centrality loop
   } // Closure type loop (leading/subleading/inclusive)
+  
+  double minFitPt = 120;
+  double maxFitPt = 500;
+  
+  // Fit the resolution plots with a polynomial function
+  if(fitResolution){
+    for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
+      if(!closureSelector[iClosureType]) continue;
+      
+      minFitPt = 50;
+      if(iClosureType == DijetHistograms::kLeadingClosure) minFitPt = 120;
+      
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawAsymmetryBin; iAsymmetry++){
+          
+          cout << "Fitting iClosureType: " << iClosureType << " iCentrality: " << iCentrality << endl;
+          hJetPtClosureSigma[iClosureType][iCentrality][iAsymmetry][DijetHistograms::knClosureParticleTypes]->Fit("pol4","","",minFitPt,maxFitPt);
+          
+        } // Asymmetry loop
+      } // Centrality loop
+    } // Closure type loop (leading/subleading/inclusive)
+  } // Fitting the resolution
   
   // Draw the closure plots
   int lineColors[2] = {kBlue,kRed};
