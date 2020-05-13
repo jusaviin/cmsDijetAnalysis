@@ -79,6 +79,7 @@ private:
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
   Double_t GetJetPtWeight(const Double_t jetPt) const; // Get the proper jet pT weighting for 2017 and 2018 MC
   Double_t GetTriggerEfficiencyWeight(const Double_t jetPt, const Double_t centrality) const; // Get a trigger efficiency weight
+  Double_t GetSmearingFactor(Double_t jetPt, const Double_t centrality); // Getter for jet pT smearing factor
   Double_t GetDijetWeight(const Double_t jetPt) const; // Get a jet pT weight for the leading jet
   Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
   Int_t FindMixingVzBin(const Double_t vz) const; // Find a vz bin from mixing table for a given vz value
@@ -97,6 +98,7 @@ private:
   TF1 *fCentralityWeightFunction;      // Weighting function for centrality. Needed for MC.
   TF1 *fPtWeightFunction;              // Weighting function for jet pT. Needed for MC.
   TF1 *fDijetWeightFunction;           // Weighting function for leading jet pT. Needed for MC.
+  TF1 *fSmearingFunction;              // Additional smearing for jets. Needed in systematic uncertainty study.
   TrackingEfficiencyInterface *fTrackEfficiencyCorrector2018;  // Tracking efficiency corrector for 2018 PbPb and 2017 pp data.
   JetCorrector *fJetCorrector2018;     // Class for making jet energy correction for 2018 data
   JetUncertainty *fJetUncertainty2018; // Class for finding uncertainty for jet pT for 2018 data

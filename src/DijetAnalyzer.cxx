@@ -31,6 +31,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fCentralityWeightFunction(0),
   fPtWeightFunction(0),
   fDijetWeightFunction(0),
+  fSmearingFunction(0),
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
@@ -203,6 +204,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fDijetWeightFunction = new TF1("fDijetWeightFunction","pol3",0,500);
   fDijetWeightFunction->SetParameters(0.723161,0.00236126,-3.90984e-06,3.10631e-09);
   
+  // Function for smearing the jet pT for systemtic uncertainties
+  fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
+  
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
   //fDijetWeightFunction->SetParameters(0.683267,2.97273e-03,-6.71989e-06,6.26340e-09,1.81108,16.8066,84.4603);
@@ -313,6 +317,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fCentralityWeightFunction(in.fCentralityWeightFunction),
   fPtWeightFunction(in.fPtWeightFunction),
   fDijetWeightFunction(in.fDijetWeightFunction),
+  fSmearingFunction(in.fSmearingFunction),
   fDataType(in.fDataType),
   fForestType(in.fForestType),
   fReadMode(in.fReadMode),
@@ -393,6 +398,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fCentralityWeightFunction = in.fCentralityWeightFunction;
   fPtWeightFunction = in.fPtWeightFunction;
   fDijetWeightFunction = in.fDijetWeightFunction;
+  fSmearingFunction = in.fSmearingFunction;
   fDataType = in.fDataType;
   fForestType = in.fForestType;
   fReadMode = in.fReadMode;
@@ -466,6 +472,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
+  if(fSmearingFunction) delete fSmearingFunction;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
   if(fTrackReader[DijetHistograms::kMixedEvent]) delete fTrackReader[DijetHistograms::kMixedEvent];
@@ -690,7 +697,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t triggerEfficiencyWeight = 1;   // Weight for trigger efficiency in pT
   
   // Variables for smearing study
-  Double_t maxUncertaintyJEC = 0;       // Larger of the JEC uncertainties
+  Double_t smearingFactor = 0;       // Larger of the JEC uncertainties
 //  Double_t jetPtSmeared = 0;          // Smeared jet pT
 //  Double_t jetPtErrorUp = 0;          // Uncertainty to be added to the jet pT
 //  Double_t jetPtErrorDown = 0;        // Uncertainty to be subtracted from the jet pT
@@ -884,6 +891,7 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Randomizer for smearing TODO: Remove SMEAR
   TRandom3 *rng = new TRandom3();
+  rng->SetSeed(0);
   
   // Loop over files
   Int_t nFiles = fFileNames.size();
@@ -1137,17 +1145,26 @@ void DijetAnalyzer::RunAnalysis(){
           
           // If we are using smearing scenatio, modify the jet pT using gaussian smearing
           if(fJetUncertaintyMode == 3){
-            maxUncertaintyJEC = TMath::Max(fJetUncertainty2018->GetUncertainty().first, fJetUncertainty2018->GetUncertainty().second);
-            jetPt = jetPt * rng->Gaus(1,maxUncertaintyJEC);
+            smearingFactor = GetSmearingFactor(jetPt, centrality);
+            jetPt = jetPt * rng->Gaus(1,smearingFactor);
           }
           
         }
         
-        // Remember the highest jet pT
+        // Find leading, subleading and third highest jet pT
         if(jetPt > leadingJetPt){
+          thirdJetPt = subleadingJetPt;
+          subleadingJetPt = leadingJetPt;
+          secondHighestIndex = highestIndex;
           leadingJetPt = jetPt;
           highestIndex = jetIndex;
           leadingJetFlavor = jetFlavor;
+        } else if(jetPt > subleadingJetPt){
+          thirdJetPt = subleadingJetPt;
+          subleadingJetPt = jetPt;
+          secondHighestIndex = jetIndex;
+        } else if (jetPt > thirdJetPt){
+          thirdJetPt = jetPt;
         }
         
         // For jets within the specified eta range, collect any jet histograms and inclusive jet-track correlations
@@ -1277,75 +1294,6 @@ void DijetAnalyzer::RunAnalysis(){
         
         fHistograms->fhLeadingJet->Fill(fillerJet,fTotalEventWeight*jetPtWeight);
       }
-      
-      //************************************************
-      //   Loop over all jets and find subleading jet
-      //************************************************
-      
-      // Search for subleading jet
-      for(Int_t jetIndex = 0 ; jetIndex < fJetReader->GetNJets(); jetIndex++){
-        jetPt = fJetReader->GetJetPt(jetIndex);
-        jetPhi = fJetReader->GetJetPhi(jetIndex);
-        jetEta = fJetReader->GetJetEta(jetIndex);
-        
-        //  ========================================
-        //  ======== Apply jet quality cuts ========
-        //  ========================================
-        
-        if(jetIndex == highestIndex) continue; // Do not consider leading particle
-        if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
-        if(fMinimumMaxTrackPtFraction >= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
-        if(fMaximumMaxTrackPtFraction <= fJetReader->GetJetMaxTrackPt(jetIndex)/fJetReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
-        
-        // Jet matching between reconstructed and generator level jets
-        if(fMatchJets && !fJetReader->HasMatchingJet(jetIndex)) continue;
-        
-        // Parton flavor cut for subleading jets
-        if(fMatchJets){
-          partonFlavor = fJetReader->GetPartonFlavor(jetIndex);
-          if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21) || partonFlavor == 0) continue;
-        }
-        
-        //  ========================================
-        //  ======= Jet quality cuts applied =======
-        //  ========================================
-        
-        // For 2018 data: do a correction for the jet pT
-        fJetCorrector2018->SetJetPT(jetPt);
-        fJetCorrector2018->SetJetEta(jetEta);
-        fJetCorrector2018->SetJetPhi(jetPhi);
-        
-        fJetUncertainty2018->SetJetPT(jetPt);
-        fJetUncertainty2018->SetJetEta(jetEta);
-        fJetUncertainty2018->SetJetPhi(jetPhi);
-        
-        jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
-        
-        // Only do the correction for 2018 data and reconstructed Monte Carlo
-        if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
-          jetPt = jetPtCorrected;
-          
-          // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
-          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
-          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
-          
-          // If we are using smearing scenatio, modify the jet pT using gaussian smearing
-          if(fJetUncertaintyMode == 3){
-            maxUncertaintyJEC = TMath::Max(fJetUncertainty2018->GetUncertainty().first, fJetUncertainty2018->GetUncertainty().second);
-            jetPt = jetPt * rng->Gaus(1,maxUncertaintyJEC);
-          }
-          
-        }
-        
-        // Remember subleading jet pT and the third highest jet pT
-        if(jetPt > subleadingJetPt){
-          thirdJetPt = subleadingJetPt;
-          subleadingJetPt = jetPt;
-          secondHighestIndex = jetIndex;
-        } else if (jetPt > thirdJetPt){
-          thirdJetPt = jetPt;
-        }
-      }  //End of subleading jet search
       
       //************************************************
       //              Apply dijet criteria
@@ -2138,7 +2086,7 @@ Double_t DijetAnalyzer::GetJetPtWeight(const Double_t jetPt) const{
  *   return: Multiplicative correction factor to account for trigger efficiency
  */
 Double_t DijetAnalyzer::GetTriggerEfficiencyWeight(const Double_t jetPt, const Double_t centrality) const{
-  
+  return 1;  // Trigger efficiency weighting is disabled
   if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC) return 1; // No weight for pp or Pythia.
   if(fDataType == ForestReader::kPbPbMC && fReadMode < 2019) return 1;  // No weight if trigger not used in PbPb MC
   
@@ -2167,6 +2115,46 @@ Double_t DijetAnalyzer::GetTriggerEfficiencyWeight(const Double_t jetPt, const D
   
   // Read the trigger efficiency weight from the table
   return 1.0/triggerEfficiencyTable[centralityBin][jetPtBin];
+  
+}
+
+/*
+ * Get a smearing factor corresponding to worsening the smearing resolution in MC by 20 %
+ * This is obtained by multiplying the MC smearing resolution by 0.666 and using this as additional
+ * smearing for the data. Smearing factor depends on jet pT and centrality.
+ *
+ *  Arguments:
+ *   Double_t jetPt = Jet pT
+ *   const Double_t centrality = Centrality of the event
+ *
+ *  return: Additional smearing factor
+ */
+Double_t DijetAnalyzer::GetSmearingFactor(Double_t jetPt, const Double_t centrality) {
+  
+  // For all the jets above 500 GeV, use the resolution for 500 GeV jet
+  if(jetPt > 500) jetPt = 500;
+  
+  // Find the correct centrality bin
+  Int_t centralityBin = 0;
+  if(centrality > fCard->Get("CentralityBinEdges",2)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",3)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",4)) centralityBin++;
+  
+  // Parameters for the smearing function
+  Double_t resolutionFit[4][5] = {
+    {0.451855, -0.00331992, 1.25897e-05, -2.26434e-08, 1.55081e-11},
+    {0.366326, -0.00266997, 1.04733e-05, -1.95302e-08, 1.38409e-11},
+    {0.268453, -0.00184878, 7.45201e-06, -1.43486e-08, 1.04726e-11},
+    {0.202255, -0.00114677, 4.2566e-06, -7.69286e-09, 5.32617e-12}
+  };
+  
+  // Set the parameters to the smearing function
+  for(int iParameter = 0; iParameter < 5; iParameter++){
+    fSmearingFunction->SetParameter(iParameter, resolutionFit[centralityBin][iParameter]);
+  }
+  
+  // After the smearing function is set, read the value to return
+  return fSmearingFunction->Eval(jetPt)*0.666;
   
 }
 
@@ -2352,10 +2340,9 @@ Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fill
   if(eventReader->GetClusterCompatibilityFilterBit() == 0) return false;
   if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kClusterCompatibility);
   
-  // Cut for calorimeter jet quality. Only applied for data.
+  // Jet trigger requirement.
   if(fDataType != ForestReader::kPbPb && eventReader->GetCaloJetFilterBit() == 0) return false;  // Not PbPb, use unprescaled trigger
-  else if(fDataType == ForestReader::kPbPb && correlationType == DijetHistograms::kSameEvent && eventReader->GetCaloJetFilterBit() == 0) return false; // Regular PbPb, use unprescaled trigger
-  else if(fDataType == ForestReader::kPbPb && correlationType == DijetHistograms::kMixedEvent && eventReader->GetPrescaledCaloJetFilterBit() == 0) return false; // PbPb mixing, use prescaled trigger
+  else if(fDataType == ForestReader::kPbPb && correlationType == DijetHistograms::kSameEvent && eventReader->GetCaloJetFilterBit() == 0) return false; // Regular PbPb, use unprescaled trigger. No trigger requirement for mixed events.
   if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCaloJet);
   
   // Cut for vertex z-position
