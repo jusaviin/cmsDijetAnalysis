@@ -65,7 +65,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     helperHistogram = ppHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, 0, 0);
     
-    deltaEtaArray[nCentralityBins][0][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, ppHistograms->GetTrackPtBinBorder(0), ppHistograms->GetTrackPtBinBorder(1), true)->Clone(Form("deltaEtaArray%d%d%d", nCentralityBins, iAsymmetry, 0));
+    deltaEtaArray[nCentralityBins][0][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, ppHistograms->GetTrackPtBinBorder(0), ppHistograms->GetTrackPtBinBorder(1), true, true)->Clone(Form("deltaEtaArray%d%d%d", nCentralityBins, iAsymmetry, 0));
     
     sumHistogramPp[iAsymmetry] = (TH1D*) deltaEtaArray[nCentralityBins][0][iAsymmetry]->Clone(Form("sumPp%d",iAsymmetry));
     
@@ -88,7 +88,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       
       helperHistogram = ppHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kBackgroundSubtracted, iAsymmetry, 0, iTrackPt);
       
-      deltaEtaArray[nCentralityBins][iTrackPt][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, ppHistograms->GetTrackPtBinBorder(iTrackPt), ppHistograms->GetTrackPtBinBorder(iTrackPt+1), true)->Clone(Form("deltaEtaArray%d%d%d", nCentralityBins, iAsymmetry, iTrackPt));
+      deltaEtaArray[nCentralityBins][iTrackPt][iAsymmetry] = (TH1D*) projector->ProjectAnalysisYieldDeltaEta(helperHistogram, ppHistograms->GetTrackPtBinBorder(iTrackPt), ppHistograms->GetTrackPtBinBorder(iTrackPt+1), true, true)->Clone(Form("deltaEtaArray%d%d%d", nCentralityBins, iAsymmetry, iTrackPt));
       
       sumHistogramPp[iAsymmetry]->Add(deltaEtaArray[nCentralityBins][iTrackPt][iAsymmetry]);
       
@@ -98,7 +98,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   // Read the inclusive histograms to make a comparison to the published results
   int inclusiveCentralityBins[] = {0,10,30,50,100};
   int inclusiveTrackPtBins[] = {0,1,2,3,4,8,12};
-  int firstSumBin, lastSumBin, firstUncertaintyBin;
+  int firstSumBin, lastSumBin, uncertaintyBin;
+  double binCenter;
   
   // Find the uncertainties for the deltaEta histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
@@ -144,21 +145,23 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     // Set the errors for the summed uncertainty histograms from the extracted and summed error from the file
     firstSumBin = sumUncertainty[nCentralityBins][iAsymmetry]->FindBin(-1.4);
-    firstUncertaintyBin = uncertaintyHistogramPp[iAsymmetry]->FindBin(-1.4);
     lastSumBin = sumUncertainty[nCentralityBins][iAsymmetry]->FindBin(1.4);
     
     for(int iBin = firstSumBin; iBin <= lastSumBin; iBin++){
-      sumUncertainty[nCentralityBins][iAsymmetry]->SetBinError(iBin,uncertaintyHistogramPp[iAsymmetry]->GetBinContent(firstUncertaintyBin + (iBin - firstSumBin)));
+      binCenter = sumUncertainty[nCentralityBins][iAsymmetry]->GetBinCenter(iBin);
+      uncertaintyBin = uncertaintyHistogramPp[iAsymmetry]->FindBin(binCenter);
+      sumUncertainty[nCentralityBins][iAsymmetry]->SetBinError(iBin,uncertaintyHistogramPp[iAsymmetry]->GetBinContent(uncertaintyBin));
     }
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       firstSumBin = sumUncertainty[iCentrality][iAsymmetry]->FindBin(-1.4);
-      firstUncertaintyBin = uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->FindBin(-1.4);
       lastSumBin = sumUncertainty[iCentrality][iAsymmetry]->FindBin(1.4);
       
       for(int iBin = firstSumBin; iBin <= lastSumBin; iBin++){
-        sumUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(firstUncertaintyBin + (iBin - firstSumBin)));
+        binCenter = sumUncertainty[iCentrality][iAsymmetry]->GetBinCenter(iBin);
+        uncertaintyBin = uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->FindBin(binCenter);
+        sumUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(uncertaintyBin));
       }
     }
   }
@@ -170,7 +173,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   double ppUncertainty, pbpbUncertainty, subtractionUncertaintyValue;
   
   // Subtract pp from PbPb in each bin and find the uncertainty for the total subtraction
-  for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+  /*for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
       // Subtract pp from PbPb in each track pT bin
@@ -190,7 +193,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
         subtractionUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin,subtractionUncertaintyValue);
       } // Bin loop
     } // Centrality loop
-  } // Asymmetry loop
+  } // Asymmetry loop*/
   
   TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
   stackHist *deltaEtaStack[nCentralityBins+1][nAsymmetryBins+1];
@@ -208,7 +211,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       sumUncertainty[iCentrality][iAsymmetry]->SetLineColor(kBlack);
       
       deltaEtaStack[iCentrality][iAsymmetry] = new stackHist(Form("st_%d",iCentrality));
-      deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5, 1.5, "x");
+      //deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5, 1.5, "x"); // Changing the x-axis range
+      deltaEtaStack[iCentrality][iAsymmetry]->setRange(0, 1.5, "x");
       deltaEtaStack[iCentrality][iAsymmetry]->setRange(-3-iJetTrack/3, deltaEtaZoom[iJetTrack/3], "y");
       for(int iTrackPt = nTrackPtBins-2; iTrackPt >= 0; iTrackPt--){
         deltaEtaStack[iCentrality][iAsymmetry]->addHist((TH1*) deltaEtaArray[iCentrality][iTrackPt][iAsymmetry]);
@@ -218,7 +222,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   } // Centrality loop
   
   // Stack the subtracted (PbPb - pp) deltaEta histograms
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  /*for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
       
       subtractedStack[iCentrality][iAsymmetry] = new stackHist(Form("st_%d",iCentrality));
@@ -235,7 +239,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       subtractionUncertainty[iCentrality][iAsymmetry]->SetMarkerStyle(21);
       subtractionUncertainty[iCentrality][iAsymmetry]->SetLineColor(kBlack);
     }
-  }
+  }*/
   
   // ==============================
   // **  Draw the distributions  **
@@ -318,14 +322,18 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
           mainTitle->SetTextSize(0.08);
         else
           mainTitle->SetTextSize(0.11);
-        mainTitle->DrawLatex(-1.15,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);
-        mainTitle->DrawLatex(-0.5,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]);
+        //mainTitle->DrawLatex(-1.15,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
+        //mainTitle->DrawLatex(-0.5,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]); // Change x-axis range
+        mainTitle->DrawLatex(0.1,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
+        mainTitle->DrawLatex(0.6,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]); // Change x-axis range
       }
       else {
         mainTitle->SetTextFont(22);
         mainTitle->SetTextSize(0.11);
-        mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel);
-        mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]);
+        //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel); // Change x-axis range
+        //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]); // Change x-axis range
+        mainTitle->DrawLatex(0.4, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel); // Change x-axis range
+        mainTitle->DrawLatex(0.4, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]); // Change x-axis range
       }
     } // Centrality loop
   } // Asymmetry loop for drawing distributions to the really big canvas
@@ -434,7 +442,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
    mainTitle->DrawLatex(0.982, 0.0285, "1");*/
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_adjustedZoom.pdf", deltaEtaSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_adjustedZoomLulz.pdf", deltaEtaSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("deltaEta_normal_v3.png");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -444,7 +452,6 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
  * Macro for configuring the DijetDrawer and defining which histograms are drawn
  */
 void finalBigAsymmetryDeltaEtaPlotter_v1(){
-  TString dir = "../data";
   
   // ==================================================================
   // ========================= Configuration ==========================
@@ -456,7 +463,11 @@ void finalBigAsymmetryDeltaEtaPlotter_v1(){
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root");
+  TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_splitZero_onlyFinalResults_processed_2020-02-17.root");
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_splitZero_onlyFinalResults_processed_2020-02-17.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrectionsExceptSpillover_wtaAxis_onlyFinalResults_processed_2020-02-06.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allButJFF_onlyFinalResults_processed_2020-02-14.root
   
   TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root");
   TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root");
