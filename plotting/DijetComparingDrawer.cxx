@@ -264,10 +264,19 @@ void DijetComparingDrawer::DrawSingleJetHistograms(){
         fMainHistogram = rebinner->RebinAsymmetric(fMainHistogram,nJetPtRebin,jetPtRebinBorders);
         for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
           fComparisonHistogram[iAdditional] = rebinner->RebinAsymmetric(fComparisonHistogram[iAdditional],nJetPtRebin,jetPtRebinBorders);
-          fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(Form("thisRatio%d",iAdditional));
-          fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);
+          /*fRatioHistogram[iAdditional] = (TH1D*)fMainHistogram->Clone(Form("thisRatio%d",iAdditional));
+          fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]);*/
+          fRatioHistogram[iAdditional] = (TH1D*)fComparisonHistogram[iAdditional]->Clone(Form("thisRatio%d",iAdditional));
+          fRatioHistogram[iAdditional]->Divide(fMainHistogram);
         }
       }
+      
+      // Zoom to a region of x-axis
+      /*fMainHistogram->GetXaxis()->SetRangeUser(40,160);
+      for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+        fComparisonHistogram[iAdditional]->GetXaxis()->SetRangeUser(40,160);
+        fRatioHistogram[iAdditional]->GetXaxis()->SetRangeUser(40,160);
+      }*/
       
       // Draw the jet pT distributions to the upper panel of a split canvas plot
       sprintf(namerX,"%s p_{T}  (GeV)",fBaseHistograms->GetSingleJetAxisName(iJetCategory));
@@ -979,7 +988,7 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
           
         } else {
         
-          legendX1 = 0.5; legendY1 = 0.71; legendX2 = 0.84; legendY2 = 0.98;
+          legendX1 = 0.5; legendY1 = 0.61; legendX2 = 0.84; legendY2 = 0.98; // Y1 = 0.71
           legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
           
           // Automatic legend TODO: Comment in
@@ -1419,6 +1428,9 @@ void DijetComparingDrawer::DrawToLowerPad(const char* xTitle, const char* yTitle
     fRatioHistogram[iAdditional]->SetLineColor(fColors[iAdditional]);
     fRatioHistogram[iAdditional]->Draw("same");
   }
+  /*TLine *oneLine = new TLine(40,1,160,1);
+  oneLine->SetLineStyle(2);
+  oneLine->Draw();*/
 }
 
 /*

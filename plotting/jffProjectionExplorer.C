@@ -8,18 +8,19 @@
 void jffProjectionExplorer(){
   
   // Open the files for the JFF corrections
-  const int nFiles = 1;
-  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_eschemeAxis_centShift5_symmetrizedAndBackgroundSubtracted_cutInRange_2019-10-13.root");
+  const int nFiles = 3;
+  TFile *standardFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-02-17.root");
+  // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-02-17.root
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_cutInRange_2019-10-09.root
-  TFile *rebinFile = TFile::Open("newPbPbTest.root");
-  TFile *fitFile = TFile::Open("newPbPbTestSameEvent2.root");
+  TFile *rebinFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrized_2020-05-08.root");
+  TFile *fitFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_2020-05-11.root");
   TFile *files[] = {standardFile,rebinFile,fitFile};
   TFile *inclusiveAnalysisJffPbPb = TFile::Open("corrections/JffResidual_nominal_Pb_HIN_16_020.root");
   
   // Styling option for different files
   int fileColors[] = {kRed, kBlue, kGreen+3, kMagenta, kCyan};
-  const char* fileLegend[] = {"PF 2018","PF jets","sameEvent2","Other method","Another method"};
+  const char* fileLegend[] = {"Nominal","Trigger weight","Weight and mix","Other method","Another method"};
   
   // Figure saving options
   bool saveFigures = false;         // Flag to determine whather or not save the figures
@@ -39,8 +40,8 @@ void jffProjectionExplorer(){
   bool drawLeading = false;
   bool drawLeadingPtWeighted = false;
   bool drawSubleading = false;
-  bool drawSubleadingPtWeighted = false;
-  bool drawInclusive = true;
+  bool drawSubleadingPtWeighted = true;
+  bool drawInclusive = false;
   bool drawInclusivePtWeighted = false;
   
   // Draw old inclusive

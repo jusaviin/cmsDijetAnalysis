@@ -12,7 +12,7 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root"; // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_xjBins_sube0_trigEffWeight_5eventsMixed_noCorrections_processed_2020-05-01.root"; // File from which the RecoGen histograms are read for the correction
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluon_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluonCombine_25pMoreQuark_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_onlyGluon_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
@@ -28,7 +28,7 @@ void produceJffCorrection(){
   // data/ppMC2017_RecoGen_Pythia8_pfJets_eschemeAxis_noUncorr_20EventsMixed_JECv4_onlySeagull_processed_2019-10-02.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
 
-  TString genGenFileName = "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root";   // File from which the GenGen histograms are read for the correction
+  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root";   // File from which the GenGen histograms are read for the correction
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_matchJet_quarkGluon_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_matchJet_quarkGluonCombine_25pMoreQuark_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_matchJet_onlyGluon_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
@@ -43,7 +43,7 @@ void produceJffCorrection(){
   // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
 
-  TString outputFileName = "corrections/jffCorrection_ppMC2017_akPfJet_noUncOrInc_improvisedMixing_JECv4_wtaAxis_fluctuationReduce_symmetrized_2020-03-02.root";   // File name for the output file
+  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_noErrors_2020-05-11.root";   // File name for the output file
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigationOrRCut_2019-11-26.root
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eventsMixed_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
   // corrections/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
@@ -64,6 +64,8 @@ void produceJffCorrection(){
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   bool useAsymmetryBins = true; // true = Do correction in asymmetry bins, false = do only asymmetry inclusive corrections
+  
+  bool removeErrors = true;   // Remove errors from the JFF distributions
   
   // Open the input files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
@@ -166,6 +168,8 @@ void produceJffCorrection(){
       if(iJetTrack >= DijetHistogramManager::kTrackInclusiveJet && iAsymmetry != nAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          
+          cout << "iJetTrack: " << iJetTrack << " iAsymmetry: " << iAsymmetry << " iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << endl;
           
           // Get the histograms for RecoGen
           jffRatioJetShape[iJetTrack][iAsymmetry][iCentrality][iTrackPt] = (TH1D*)recoGenHistograms->GetHistogramJetShape(DijetHistogramManager::kJetShape,iJetTrack,iAsymmetry,iCentrality,iTrackPt)->Clone(Form("jffRatio%d%d%d%d",iJetTrack,iAsymmetry,iCentrality,iTrackPt));
@@ -300,7 +304,7 @@ void produceJffCorrection(){
               if(binError > TMath::Abs(binContent)){
                 jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(iDeltaPhi, iDeltaEta, 0);
               }
-              //jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi, iDeltaEta, 0);
+              if(removeErrors) jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi, iDeltaEta, 0);
             }
           }
           

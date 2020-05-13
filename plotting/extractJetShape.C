@@ -77,7 +77,10 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   }
   
   // Smoothed spillover fluctuations from the final jet shape distributions
-  bool manualSpilloverFluctuationSmoothing = true;
+  bool manualSpilloverFluctuationSmoothing = false;
+  
+  // Split the zero bin in deltaEta histograms into two bins
+  bool splitZeroDeltaEta = false;
   
   // Binning for jet shape
   
@@ -149,7 +152,7 @@ void extractJetShape(TString inputFileName = "data/dijet_pp_highForest_2018-07-2
   // Load the histograms, get jet shape and deltaEta histograms and write them to file together with jet distributions
   histograms->LoadProcessedHistograms();
   histograms->CalculateJetShape();
-  histograms->ProjectFinalDeltaEta();
+  histograms->ProjectFinalDeltaEta(splitZeroDeltaEta);
   histograms->WriteSkim(outputFileName,fileWriteMode);
   
 }
