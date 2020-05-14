@@ -3,7 +3,6 @@
 // Root includes
 #include <TFile.h>
 #include <TMath.h>
-#include <TRandom3.h>
 
 // Own includes
 #include "DijetAnalyzer.h"
@@ -35,6 +34,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
+  fRng(0),
   fDataType(-1),
   fForestType(0),
   fReadMode(0),
@@ -301,6 +301,10 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     assert(0);
   }
   
+  // Initialize the random number generator with a random seed
+  fRng = new TRandom3();
+  fRng->SetSeed(0);
+  
 }
 
 /*
@@ -318,6 +322,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fPtWeightFunction(in.fPtWeightFunction),
   fDijetWeightFunction(in.fDijetWeightFunction),
   fSmearingFunction(in.fSmearingFunction),
+  fRng(in.fRng),
   fDataType(in.fDataType),
   fForestType(in.fForestType),
   fReadMode(in.fReadMode),
@@ -399,6 +404,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fPtWeightFunction = in.fPtWeightFunction;
   fDijetWeightFunction = in.fDijetWeightFunction;
   fSmearingFunction = in.fSmearingFunction;
+  fRng = in.fRng;
   fDataType = in.fDataType;
   fForestType = in.fForestType;
   fReadMode = in.fReadMode;
@@ -473,6 +479,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
   if(fSmearingFunction) delete fSmearingFunction;
+  if(fRng) delete fRng;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
   if(fTrackReader[DijetHistograms::kMixedEvent]) delete fTrackReader[DijetHistograms::kMixedEvent];
@@ -889,10 +896,6 @@ void DijetAnalyzer::RunAnalysis(){
   //       Main analysis loop over all files
   //************************************************
   
-  // Randomizer for smearing TODO: Remove SMEAR
-  TRandom3 *rng = new TRandom3();
-  rng->SetSeed(0);
-  
   // Loop over files
   Int_t nFiles = fFileNames.size();
   for(Int_t iFile = 0; iFile < nFiles; iFile++) {
@@ -1127,7 +1130,7 @@ void DijetAnalyzer::RunAnalysis(){
 //        // Extra code for smearing study
 //
 //        // Add random smearing of 20 % to the jet pT
-//        jetPtSmeared = jetPtCorrected*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+//        jetPtSmeared = jetPtCorrected*fRng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
 //
 //        // For the uncertainties, calculate the relative uncertainty
 //        jetPtErrorUp = fJetUncertainty2018->GetUncertainty().second;
@@ -1143,10 +1146,10 @@ void DijetAnalyzer::RunAnalysis(){
           if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
           if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
           
-          // If we are using smearing scenatio, modify the jet pT using gaussian smearing
+          // If we are using smearing scenario, modify the jet pT using gaussian smearing
           if(fJetUncertaintyMode == 3){
             smearingFactor = GetSmearingFactor(jetPt, centrality);
-            jetPt = jetPt * rng->Gaus(1,smearingFactor);
+            jetPt = jetPt * fRng->Gaus(1,smearingFactor);
           }
           
         }
@@ -1494,7 +1497,7 @@ void DijetAnalyzer::RunAnalysis(){
           triggerEfficiencyWeight = GetTriggerEfficiencyWeight(leadingJetPt, centrality);
           
 //          // For smearing study, smear the jet pT and find uncertainties for jet pT
-//          jetPtSmeared = leadingJetPt*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+//          jetPtSmeared = leadingJetPt*fRng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
 //          fJetUncertainty2018->SetJetPT(leadingJetPt);
 //          fJetUncertainty2018->SetJetEta(leadingJetEta);
 //          fJetUncertainty2018->SetJetPhi(leadingJetPhi);
@@ -1517,7 +1520,7 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhLeadingDijet->Fill(fillerLeadingJet,fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);    // Fill the data point to leading jet histogram
                
 //          // For smearing study, smear the jet pT and find uncertainties for jet pT
-//          jetPtSmeared = subleadingJetPt*rng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
+//          jetPtSmeared = subleadingJetPt*fRng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
 //          fJetUncertainty2018->SetJetPT(subleadingJetPt);
 //          fJetUncertainty2018->SetJetEta(subleadingJetEta);
 //          fJetUncertainty2018->SetJetPhi(subleadingJetPhi);
@@ -1792,6 +1795,9 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
     jetPhi = swapper;
   }
   
+  // Helper variable for smearing study
+  Double_t smearingFactor;
+  
   // For 2018 data, we need to correct the reconstructed pT with jet energy correction
   fJetCorrector2018->SetJetPT(recoPt);
   fJetCorrector2018->SetJetEta(jetEta);
@@ -1799,6 +1805,13 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   
   if(fReadMode > 2000){
     recoPt = fJetCorrector2018->GetCorrectedPT();
+    
+    // If we are using smearing scenario, modify the reconstructed jet pT using gaussian smearing
+    if(fJetUncertaintyMode == 3){
+      smearingFactor = GetSmearingFactor(recoPt, centrality);
+      recoPt = recoPt * fRng->Gaus(1,smearingFactor);
+    }
+    
   }
   
   // Apply JFF correction for jet pT only if we are using calorimeter jets in 2015 data

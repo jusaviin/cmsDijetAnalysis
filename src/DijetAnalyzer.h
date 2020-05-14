@@ -13,6 +13,7 @@
 
 // Root includes
 #include <TString.h>
+#include <TRandom3.h>
 
 // Own includes
 #include "ConfigurationCard.h"
@@ -102,6 +103,7 @@ private:
   TrackingEfficiencyInterface *fTrackEfficiencyCorrector2018;  // Tracking efficiency corrector for 2018 PbPb and 2017 pp data.
   JetCorrector *fJetCorrector2018;     // Class for making jet energy correction for 2018 data
   JetUncertainty *fJetUncertainty2018; // Class for finding uncertainty for jet pT for 2018 data
+  TRandom3 *fRng;                      // Random number generator
   
   // Analyzed data and forest types
   Int_t fDataType;                   // Analyzed data type
