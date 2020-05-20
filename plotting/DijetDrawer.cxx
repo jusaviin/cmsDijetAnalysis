@@ -454,15 +454,17 @@ void DijetDrawer::DrawDijetHistograms(){
       if(fWideXjMatrixBins){
         int nXjBins = 3;
         double xjBinBorders[4] = {0, 0.6, 0.8, 1};
+        gStyle->SetPaintTextFormat("0.2f");
         drawnHistogram2D = normalizer->RebinHistogram(drawnHistogram2D, nXjBins, xjBinBorders, nXjBins, xjBinBorders, true, false);
         fDrawer->SetLogZ(false);
+        drawnHistogram2D->SetMarkerSize(3);
       }
       
       if(fNormalizeXjMatrix) normalizer->NormalizeColumns(drawnHistogram2D,1);
       fDrawer->DrawHistogram(drawnHistogram2D,"Reconstructed x_{j}","Generator level x_{j}",centralityString,fStyle2D);
       
       
-      diagonalLine->Draw();
+      if(!fWideXjMatrixBins) diagonalLine->Draw();
       //oneLine->Draw();
       
       if(fWideXjMatrixBins){
