@@ -90,21 +90,21 @@ void SeagullConfiguration::InitializeArrays(){
   trackLeadingJetPbPb[0][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV  // Nominal: 1 Smearing: 6
   trackLeadingJetPbPb[0][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
   trackLeadingJetPbPb[0][0][3] = 4;   // C = 0-10,    3 < pT < 4 GeV
-  trackLeadingJetPbPb[0][0][4] = 1;   // C = 0-10,    4 < pT < 8 GeV
+  trackLeadingJetPbPb[0][0][4] = 6;   // C = 0-10,    4 < pT < 8 GeV // lul
   
   trackLeadingJetPbPb[0][1][0] = 1;   // C = 10-30, 0.7 < pT < 1 GeV
   trackLeadingJetPbPb[0][1][1] = 1;   // C = 10-30,   1 < pT < 2 GeV
   trackLeadingJetPbPb[0][1][2] = 1;   // C = 10-30,   2 < pT < 3 GeV
   trackLeadingJetPbPb[0][1][3] = 1;   // C = 10-30,   3 < pT < 4 GeV
-  trackLeadingJetPbPb[0][1][4] = 1;   // C = 10-30,   4 < pT < 8 GeV
+  trackLeadingJetPbPb[0][1][4] = 6;   // C = 10-30,   4 < pT < 8 GeV // lul
   
   trackLeadingJetPbPb[0][2][0] = 6;   // C = 30-50, 0.7 < pT < 1 GeV  // Work: Added this
   trackLeadingJetPbPb[0][2][1] = 6;   // C = 30-50,   1 < pT < 2 GeV  // Work: 1 -> 6
     
   // 0.6 < xj < 0.8
-  trackLeadingJetPbPb[1][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV
+  trackLeadingJetPbPb[1][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV // Nominal = 1. Smear = 6
   trackLeadingJetPbPb[1][0][1] = 6;   // C = 0-10,    1 < pT < 2 GeV
-  trackLeadingJetPbPb[1][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
+  trackLeadingJetPbPb[1][0][2] = 6;   // C = 0-10,    2 < pT < 3 GeV // Nominal = 1. Smear = 6
   trackLeadingJetPbPb[1][0][3] = 1;   // C = 0-10,    3 < pT < 4 GeV
   
   trackLeadingJetPbPb[1][1][0] = 1;   // C = 10-30, 0.7 < pT < 1 GeV
@@ -143,6 +143,9 @@ void SeagullConfiguration::InitializeArrays(){
   
   // 0 < xj < 0.6
   trackSubleadingJetPbPb[0][0][1] = 6;   // C = 0-10,    1 < pT < 2 GeV
+  //trackSubleadingJetPbPb[0][0][2] = 6;   // C = 0-10,    2 < pT < 3 GeV  // Only for smear
+  //trackSubleadingJetPbPb[0][0][3] = 6;   // C = 0-10,    3 < pT < 4 GeV  // Only for smear
+  //trackSubleadingJetPbPb[0][0][4] = 6;   // C = 0-10,    4 < pT < 8 GeV  // Only for smear
   
   // 0.6 < xj < 0.8
   trackSubleadingJetPbPb[1][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV
@@ -157,6 +160,10 @@ void SeagullConfiguration::InitializeArrays(){
   trackSubleadingJetPbPb[2][0][1] = 5;   // C = 0-10,    1 < pT < 2 GeV
   
   trackSubleadingJetPbPb[2][1][1] = 6;   // C = 10-30,   1 < pT < 2 GeV
+  
+  trackSubleadingJetPbPb[2][2][0] = 5;   // C = 0-10,  0.7 < pT < 1 GeV  // Only smearing
+  
+  trackSubleadingJetPbPb[2][3][0] = 6;   // C = 0-10,  0.7 < pT < 1 GeV  // Only smearing
   
   
   // ======================================================
@@ -306,7 +313,8 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackLeadingJetPbPb[3][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[3][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
   
-  //vetoTrackLeadingJetPbPb[3][2][0] = 1;   // C = 30-50,  0.7 < pT < 1 GeV // Smearing
+  //vetoTrackLeadingJetPbPb[3][2][2] = 2;   // C = 30-50,   8 < pT < 12 GeV  // Smearing
+  //vetoTrackLeadingJetPbPb[3][2][4] = 1;   // C = 30-50,   4 < pT < 8 GeV // Smearing
   vetoTrackLeadingJetPbPb[3][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[3][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
   
@@ -314,7 +322,7 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackLeadingJetPbPb[3][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
   
   // 0 < xj < 0.6
-  //vetoTrackLeadingJetPbPb[0][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV // Smearing
+//  vetoTrackLeadingJetPbPb[0][0][4] = 1;   // C = 0-10,  0.7 < pT < 1 GeV // Smearing
   vetoTrackLeadingJetPbPb[0][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[0][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
   
@@ -327,7 +335,7 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackLeadingJetPbPb[0][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[0][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
   
-  vetoTrackLeadingJetPbPb[0][3][0] = 2;   // C = 50-90, 0.7 < pT < 1 GeV
+  vetoTrackLeadingJetPbPb[0][3][0] = 2;   // C = 50-90, 0.7 < pT < 1 GeV  // Nominal = 2. Smearing = 1.
   vetoTrackLeadingJetPbPb[0][3][1] = 2;   // C = 50-90,   1 < pT < 2 GeV
   vetoTrackLeadingJetPbPb[0][3][2] = 2;   // C = 50-90,   2 < pT < 3 GeV
   vetoTrackLeadingJetPbPb[0][3][3] = 1;   // C = 50-90,   3 < pT < 4 GeV
@@ -348,6 +356,7 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackLeadingJetPbPb[1][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[1][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
   
+//  vetoTrackLeadingJetPbPb[1][3][3] = 2;   // C = 50-90,   3 < pT < 4 GeV   // Only for smearing!
   vetoTrackLeadingJetPbPb[1][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[1][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
   
@@ -355,6 +364,7 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackLeadingJetPbPb[2][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[2][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
   
+//  vetoTrackLeadingJetPbPb[2][1][0] = 2;   // C = 10-30, 0.7 < pT < 1 GeV  // Only for smearing
   vetoTrackLeadingJetPbPb[2][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
   vetoTrackLeadingJetPbPb[2][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
   
@@ -395,6 +405,9 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackSubleadingJetPbPb[3][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
   
   // 0 < xj < 0.6
+  //vetoTrackSubleadingJetPbPb[0][0][2] = 1;   // C = 0-10,    8 < pT < 12 GeV   // Only for smear
+  //vetoTrackSubleadingJetPbPb[0][0][3] = 1;   // C = 0-10,   12 < pT < 300 GeV  // Only for smear
+  //vetoTrackSubleadingJetPbPb[0][0][4] = 1;   // C = 0-10,    8 < pT < 12 GeV   // Only for smear
   vetoTrackSubleadingJetPbPb[0][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[0][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
   
@@ -406,14 +419,15 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackSubleadingJetPbPb[0][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[0][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
   
-  vetoTrackSubleadingJetPbPb[0][3][1] = 2;   // C = 50-90,   1 < pT < 2 GeV
+  vetoTrackSubleadingJetPbPb[0][3][1] = 2;   // C = 50-90,   1 < pT < 2 GeV   // Nominal = 2, Smear = 1.
   vetoTrackSubleadingJetPbPb[0][3][2] = 1;   // C = 50-90,   2 < pT < 3 GeV
   vetoTrackSubleadingJetPbPb[0][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[0][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
   
   // 0.6 < xj < 0.8
+  vetoTrackSubleadingJetPbPb[1][0][0] = 2;   // C = 0-10,  0.7 < pT < 1 GeV  // Only for smearing!
   vetoTrackSubleadingJetPbPb[1][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV
-  vetoTrackSubleadingJetPbPb[1][0][2] = 1;   // C = 0-10,    2 < pT < 3 GeV
+  vetoTrackSubleadingJetPbPb[1][0][2] = 2;   // C = 0-10,    2 < pT < 3 GeV  // Nominal = 1, smear = 2
   vetoTrackSubleadingJetPbPb[1][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[1][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
   
@@ -432,6 +446,7 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackSubleadingJetPbPb[1][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV
   
   // 0.8 < xj < 1.0
+//  vetoTrackSubleadingJetPbPb[2][0][1] = 1;   // C = 0-10,    1 < pT < 2 GeV   // Only for smear!
   vetoTrackSubleadingJetPbPb[2][0][5] = 2;   // C = 0-10,    8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[2][0][6] = 2;   // C = 0-10,   12 < pT < 300 GeV
   
@@ -441,13 +456,13 @@ void SeagullConfiguration::InitializeArrays(){
   vetoTrackSubleadingJetPbPb[2][1][5] = 2;   // C = 10-30,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[2][1][6] = 2;   // C = 10-30,  12 < pT < 300 GeV
   
-  vetoTrackSubleadingJetPbPb[2][2][0] = 2;   // C = 30-50, 0.7 < pT < 1 GeV
+  vetoTrackSubleadingJetPbPb[2][2][0] = 2;   // C = 30-50, 0.7 < pT < 1 GeV  // Nominal = 2. Smear = 1.
   vetoTrackSubleadingJetPbPb[2][2][3] = 1;   // C = 30-50,   3 < pT < 4 GeV
   vetoTrackSubleadingJetPbPb[2][2][4] = 2;   // C = 30-50,   4 < pT < 8 GeV
   vetoTrackSubleadingJetPbPb[2][2][5] = 2;   // C = 30-50,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[2][2][6] = 2;   // C = 30-50,  12 < pT < 300 GeV
   
-  vetoTrackSubleadingJetPbPb[2][3][0] = 2;   // C = 50-90, 0.7 < pT < 1 GeV
+  vetoTrackSubleadingJetPbPb[2][3][0] = 2;   // C = 50-90, 0.7 < pT < 1 GeV   // Nominal = 2. Smear = 1.
   vetoTrackSubleadingJetPbPb[2][3][4] = 2;   // C = 50-90,   4 < pT < 8 GeV
   vetoTrackSubleadingJetPbPb[2][3][5] = 2;   // C = 50-90,   8 < pT < 12 GeV
   vetoTrackSubleadingJetPbPb[2][3][6] = 2;   // C = 50-90,  12 < pT < 300 GeV

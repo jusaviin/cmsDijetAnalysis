@@ -11,15 +11,16 @@ void printRelativeUncertainty(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString dataFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17.root"; // Compare also with uncorrected data
+  TString dataFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root"; // Compare also with uncorrected data
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
-  TString ppFileName = "data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root";
+  TString ppFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
   TString uncertaintyFileName[2];
   TString ppUncertaintyFileName[2];
-  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root";
+  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root";
   ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root";
   uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root";
   ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_newSpilloverWithSmoothedBackground_newJES_tunedSeagull_smoothedPairBackground_2020-01-23.root
@@ -38,7 +39,7 @@ void printRelativeUncertainty(){
   TString inclusiveFileName = "uncertainties/inclusiveAnalysis/js_AllSource_syst_err.root";
   
   bool printSlides = true;  // Print slides showing the R-integrated uncertainty in each pT bin
-  bool combineTracking = true; // Combine all tracking related uncertainty to one when printing the table
+  bool combineTracking = false; // Combine all tracking related uncertainty to one when printing the table
   bool drawUncertaintySourceComparison = false; // Draw all uncertainty sources as a function of R in each pT bin
   bool drawUncertaintySystemComparison = false; // Draw single uncertainty source for all systems as a function of R in each pT bin
   bool drawComparisonToInclusive = false;        // Draw comparison to systematic uncertainty histograms from inclusive analysis
@@ -100,7 +101,7 @@ void printRelativeUncertainty(){
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins;
   
-  int firstDrawnAsymmetryBin = 0;
+  int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
     
   // Select which uncertainty sources to draw
@@ -126,7 +127,7 @@ void printRelativeUncertainty(){
   // If we are drawing system comparison or printing slides, we must use all centrality bins
   if(drawUncertaintySystemComparison || printSlides){
     firstDrawnCentralityBin = 0;
-    lastDrawnCentralityBin = nCentralityBins;
+    lastDrawnCentralityBin = nCentralityBins-1;
   }
   
   // Define arrays for the jet shapes
@@ -236,7 +237,6 @@ void printRelativeUncertainty(){
   
   // Print a slide with uncertainties for each source and each centrality
   if(printSlides){
-
     for(int iJetType = 0; iJetType < 2; iJetType++){
       for(int iTrackPt = firstDrawnTrackPtBin; iTrackPt <= lastDrawnTrackPtBin; iTrackPt++){
         
@@ -250,9 +250,10 @@ void printRelativeUncertainty(){
         cout << "\\begin{frame}" << endl;
         cout << namer << endl;
         cout << "\\begin{center}" << endl;
-        cout << "  \\begin{tabular}{cccccc}" << endl;
+        cout << "  \\begin{tabular}{ccccc}" << endl;
         cout << "    \\toprule" << endl;
-        cout << "    Source & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 & pp \\\\" << endl;
+        //cout << "    Source & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 & pp \\\\" << endl;
+        cout << "    Source & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 \\\\" << endl;
         cout << "    \\midrule" << endl;
         
         // Set the correct precision for printing floating point numbers
@@ -260,7 +261,7 @@ void printRelativeUncertainty(){
         
         // Combine the tracking uncertainties kTrackingEfficiency, kResidualTracking, kTrackingDeltaR
         if(combineTracking){
-          for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+          for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
             uncertaintyYield[0][iJetType][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt] = TMath::Sqrt(TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt],2) + TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kResidualTracking][nAsymmetryBins][iCentrality][iTrackPt],2) + TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kTrackingDeltaR][nAsymmetryBins][iCentrality][iTrackPt],2));
           }
         }
