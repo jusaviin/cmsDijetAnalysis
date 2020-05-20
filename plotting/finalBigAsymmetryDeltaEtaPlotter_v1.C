@@ -287,7 +287,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(1.2);
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("Y = #frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitle("#Delta#eta");
+      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitle("#||{#Delta#eta}");
       if(iCentrality == nCentralityBins && iAsymmetry == 2){
         //most left-bottom conner
         deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.1);
@@ -422,27 +422,27 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   //
   
-  /*box = new TBox();
-   box->SetFillColor(kWhite);
-   bigCanvas->cd(0);
-   box->DrawBox(0.24,0.017, 0.253, 0.039);
-   mainTitle->SetTextSize(0.02);
-   mainTitle->DrawLatex(0.242, 0.0285, "0");
-   box->DrawBox(0.42,0.017, 0.437, 0.039);
-   box->DrawBox(0.605,0.017, 0.63, 0.039);
-   box->DrawBox(0.78,0.017, 0.81, 0.039);
-   box->DrawBox(0.98,0.017, 0.99, 0.039);
-   
-   box->DrawBox(0.23,0.3067, 0.243, 0.315);
-   box->DrawBox(0.23,0.5735, 0.243, 0.58);
-   
-   mainTitle->DrawLatex(0.428, 0.0285, "0");
-   mainTitle->DrawLatex(0.614, 0.0285, "0");
-   mainTitle->DrawLatex(0.801, 0.0285, "0");
-   mainTitle->DrawLatex(0.982, 0.0285, "1");*/
+  box = new TBox();
+  box->SetFillColor(kWhite);
+  bigCanvas->cd(0);
+  box->DrawBox(0.245,0.04, 0.27, 0.07);
+  mainTitle->SetTextSize(0.021);
+  mainTitle->DrawLatex(0.256, 0.0552, "0");
+  box->DrawBox(0.42,0.04, 0.46, 0.07);
+  box->DrawBox(0.605,0.04, 0.64, 0.07);
+  box->DrawBox(0.78,0.04, 0.82, 0.07);
+  box->DrawBox(0.98,0.04, 0.99, 0.07);
+  
+  box->DrawBox(0.23,0.3067, 0.243, 0.315);
+  box->DrawBox(0.23,0.5735, 0.243, 0.58);
+  
+  mainTitle->DrawLatex(0.437, 0.0552, "0");
+  mainTitle->DrawLatex(0.62, 0.0552, "0");
+  mainTitle->DrawLatex(0.803, 0.0552, "0");
+  mainTitle->DrawLatex(0.972, 0.0552, "1.5");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_adjustedZoomLulz.pdf", deltaEtaSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_addSourcesSplitZero.pdf", deltaEtaSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("deltaEta_normal_v3.png");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -470,7 +470,7 @@ void finalBigAsymmetryDeltaEtaPlotter_v1(){
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allButJFF_onlyFinalResults_processed_2020-02-14.root
   
   TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root");
-  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_includeTrackDeltaR_2020-01-27.root");
+  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root");
   // uncertainties/systematicUncertaintyForPbPb_15percentSpill5Jff_2019-10-14.root
   // uncertainties/systematicUncertaintyForPbPb_15percentSpill20Jff_2019-10-01.root
   
