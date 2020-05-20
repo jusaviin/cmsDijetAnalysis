@@ -22,7 +22,7 @@ class JffCorrector {
 
 public:
   
-  enum enumUncertaintySources{kBackgroundFluctuation, kFragmentationBias, kJetEnergyScale, kTriggerEfficiency, kTrackingEfficiency, kResidualTracking, kTrackingDeltaR, kPairAcceptance, kBackgroundSubtraction, kTotal, knUncertaintySources};
+  enum enumUncertaintySources{kBackgroundFluctuation, kFragmentationBias, kJetEnergyScale, kJetResolution, kTriggerEfficiency, kTrackingEfficiency, kResidualTracking, kTrackingDeltaR, kPairAcceptance, kBackgroundSubtraction, kTotal, knUncertaintySources};
   enum enumLongRangeUncertaintySources{kBackgroundGlue, kEtaSide, kEtaRegion, kSameMixed, kVzVariation, kTotalLongRange, knLongRangeUncertaintySources};
 
   
@@ -77,7 +77,7 @@ public:
 private:
   
   // Names for different uncertainties
-  TString uncertaintyName[knUncertaintySources] = {"backgroundFluctuation", "fragmentationBias", "jetEnergyScale", "triggerEfficiency", "trackingEfficiency", "residualTracking", "trackingDeltaR", "pairAcceptance", "backgroundSubtraction", "total"};
+  TString uncertaintyName[knUncertaintySources] = {"backgroundFluctuation", "fragmentationBias", "jetEnergyScale", "jetResolution", "triggerEfficiency", "trackingEfficiency", "residualTracking", "trackingDeltaR", "pairAcceptance", "backgroundSubtraction", "total"};
   
   TString longRangeUncertaintyName[knLongRangeUncertaintySources] = {"backgroundShift", "etaSide", "etaRegion", "sameVsMixed", "vzSelection", "total"};
   
