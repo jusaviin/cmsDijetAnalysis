@@ -83,9 +83,9 @@ public:
   void SetDrawJetTrackDeltaEta(const bool drawOrNot);                 // Setter for drawing jet-track deltaEta correlations
   void SetDrawJetTrackDeltaEtaDeltaPhi(const bool drawOrNot);         // Setter for drawing jet-track deltaEta-deltaPhi correlations
   void SetDrawJetTrackDeltas(const bool deltaPhi, const bool deltaEta, const bool deltaEtaDeltaPhi); // Setter for drawing all the jet-track deltaEta/Phi correlations
-  void SetDrawJetShape(const bool drawOrNot);                         // Setter for drawing jet shapes
-  void SetDrawJetShapeCounts(const bool drawOrNot);                   // Setter for drawing jet shape counts
-  void SetDrawAllJetShapes(const bool jetShape, const bool counts);   // Setter for drawing all different jet shape histograms
+  void SetDrawJetShape(const bool drawOrNot, const bool normalizeJetShape);                        // Setter for drawing jet shapes
+  void SetDrawJetShapeCounts(const bool drawOrNot, const bool normalizeJetShape);                  // Setter for drawing jet shape MC comparison
+  void SetDrawAllJetShapes(const bool jetShape, const bool counts, const bool normalizeJetShape);  // Setter for drawing all different jet shape histograms
   void SetDrawJetShapeBinMap(const bool drawOrNot);                   // Setter for drawing bin mapping between Rbins and deltaEta-deltaPhi bins
   
   // Setters for drawing different correlation types (same event, mixed event, corrected)
@@ -187,6 +187,9 @@ private:
   bool fLogPt;          // pT distributions
   bool fLogCorrelation; // track-jet deltaPhi-deltaEta distributions
   bool fLogJetShape;    // Jet shape distributions
+  
+  // Normalization for jet shape
+  bool fNormalizeJetShape;  // True: draw lower case rho. False: draw upper case rho
   
   // Zooming for ratio plots
   bool fUseDifferenceInsteadOfRatio;  // Instead of ratio, draw the difference of the two distributions

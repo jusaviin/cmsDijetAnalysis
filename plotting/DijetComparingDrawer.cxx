@@ -33,6 +33,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fLogPt(true),
   fLogCorrelation(true),
   fLogJetShape(true),
+  fNormalizeJetShape(false),
   fUseDifferenceInsteadOfRatio(false),
   fRatioZoomMin(0.6),
   fRatioZoomMax(1.4),
@@ -930,6 +931,14 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
       centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
       
+      // Normalize capital rho to lower case rho
+      if(fNormalizeJetShape){
+        fScalingFactors[0] = 1.0 / fBaseHistograms->GetJetShapeNormalizationFactor(iJetTrack, iCentrality, fAsymmetryBin);
+        for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+          fScalingFactors[1+iAdditional] = 1.0 / fAddedHistograms[iAdditional]->GetJetShapeNormalizationFactor(iJetTrack, iCentrality, fAsymmetryBin);
+        }
+      }
+      
       // Loop over track pT bins
       for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
         
@@ -943,8 +952,9 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
           compactTrackPtString = "_pTsummed";
         }
         
-        sprintf(namerX,"#DeltaR");
-        sprintf(namerY,"%s",fBaseHistograms->GetJetShapeAxisName(DijetHistogramManager::kJetShape));
+        sprintf(namerX,"#Deltar");
+        sprintf(namerY,"P(#Deltar)");
+        if(fNormalizeJetShape) sprintf(namerY,"#rho(#Deltar)");
         
         // Prepare the histograms and draw then to the upper pad
         PrepareRatio("JetShape", 1, DijetHistogramManager::kJetShape, iJetTrack, fAsymmetryBin, iCentrality, iTrackPt);
@@ -1000,7 +1010,9 @@ void DijetComparingDrawer::DrawJetShapeHistograms(){
         // Draw the ratios to the lower portion of the split canvas
         fDrawer->SetGridY(true);
         fRatioHistogram[0]->GetXaxis()->SetRangeUser(0,1);
+        //fRatioHistogram[0]->Fit("pol0","0","",0,1); // Option to fit the ratio
         DrawToLowerPad(namerX,fRatioLabel.Data(),fRatioZoomMin,fRatioZoomMax);
+        //fRatioHistogram[0]->GetFunction("pol0")->Draw("same"); // Option fo fit the ratio
         fDrawer->SetGridY(false);
         
         // Save the figure to a file
@@ -1300,6 +1312,7 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
   //{0.995893,0.989926,0.995106,1.01464,1.03584,1,1},
   //{0.998125,0.984743,0.991936,1.0034,1.05607,1,1},
   //  {0.997222,0.989378,0.98667,1.00944,1.02626,1,1}};
+  // double currentError;
   
   // Custom rebin for deltaEta
   const int nDeltaEtaBinsRebin = 21;
@@ -1347,6 +1360,12 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     } else {
       fRatioHistogram[iAdditional]->Divide(fComparisonHistogram[iAdditional]); // TODO: Check if something clever can be done here
       //fRatioHistogram[iAdditional]->Divide(fRatioHistogram[iAdditional],fComparisonHistogram[iAdditional],1,1,"B"); // Binomial errors
+    }*/
+    
+    // Temporary evil things: just divide errors by 2 for partly correlated datasets
+    /*for(int iBin = 1; iBin <= fRatioHistogram[iAdditional]->GetNbinsX(); iBin++){
+      currentError = fRatioHistogram[iAdditional]->GetBinError(iBin);
+      fRatioHistogram[iAdditional]->SetBinError(iBin,currentError/2);
     }*/
   }
   delete rebinner;
@@ -1754,19 +1773,21 @@ void DijetComparingDrawer::SetDrawJetTrackDeltas(const bool deltaPhi, const bool
 
 
 // Setter for drawing jet shapes
-void DijetComparingDrawer::SetDrawJetShape(const bool drawOrNot){
+void DijetComparingDrawer::SetDrawJetShape(const bool drawOrNot, const bool normalizeJetShape){
   fDrawJetShape[DijetHistogramManager::kJetShape] = drawOrNot;
+  fNormalizeJetShape = normalizeJetShape;
 }
 
 // Setter for drawing jet shape counts
-void DijetComparingDrawer::SetDrawJetShapeCounts(const bool drawOrNot){
+void DijetComparingDrawer::SetDrawJetShapeCounts(const bool drawOrNot, const bool normalizeJetShape){
   fDrawJetShape[DijetHistogramManager::kJetShapeBinCount] = drawOrNot;
+  fNormalizeJetShape = normalizeJetShape;
 }
 
 // Setter for drawing all different jet shape histograms
-void DijetComparingDrawer::SetDrawAllJetShapes(const bool jetShape, const bool counts){
-  SetDrawJetShape(jetShape);
-  SetDrawJetShapeCounts(counts);
+void DijetComparingDrawer::SetDrawAllJetShapes(const bool jetShape, const bool counts, const bool normalizeJetShape){
+  SetDrawJetShape(jetShape,normalizeJetShape);
+  SetDrawJetShapeCounts(counts,normalizeJetShape);
 }
 
 // Setter for drawing bin mapping between Rbins and deltaEta-deltaPhi bins
