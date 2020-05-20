@@ -1306,6 +1306,43 @@ void DijetHistogramManager::ApplyJffCorrection(JffCorrector *jffCorrectionFinder
 }
 
 /*
+ *  Get the normalization factor to go from capital rho to lower case rho
+ *
+ *  Arguments:
+ *   const int iJetTrack = Index of jet-track correlation type
+ *   const int iCentrality = Index for the centrality bin
+ *   int iAsymmetry = Index for the dijet momentum dalance bin
+ *
+ *  return: Jet shape normalization factor for the given bin
+ *  
+ */
+double DijetHistogramManager::GetJetShapeNormalizationFactor(const int iJetTrack, const int iCentrality, int iAsymmetry) const{
+  
+  // Helper variables for doing the normalization
+  TH1D *jetShapeSum;
+  double jetShapeIntegral;
+  
+  if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) return 1; // No asymmetry bins for inclusive jet-track
+  
+  // If the asymmetry index is out of range, get the factor for xj integrated distribution
+  if(iAsymmetry < 0 || iAsymmetry > fnAsymmetryBins) iAsymmetry = fnAsymmetryBins;
+  
+  jetShapeSum = (TH1D*) fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentrality][fFirstLoadedTrackPtBin]->Clone(Form("jetShapeSum%d%d%d", iJetTrack, iAsymmetry, iCentrality));
+  
+  // First, sum all pT bins together
+  for(int iTrackPt = fFirstLoadedTrackPtBin+1; iTrackPt <= fLastLoadedTrackPtBin; iTrackPt++){
+    jetShapeSum->Add(fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]);
+  } // Track pT loop
+  
+  // Then calculate the integral for deltaR < 1
+  jetShapeIntegral = jetShapeSum->Integral(1,jetShapeSum->FindBin(0.99),"width");
+  
+  // Return one over the jet shape integral as this is the scaling factor
+  return 1.0/jetShapeIntegral;
+  
+}
+
+/*
  * Normalize the jet shape histograms such that the pT integrated result is unity in the range deltaR < 1
  */
 void DijetHistogramManager::NormalizeJetShape(){
@@ -1320,7 +1357,7 @@ void DijetHistogramManager::NormalizeJetShape(){
       if(iJetTrack >= kTrackInclusiveJet && iAsymmetry != fnAsymmetryBins) continue; // No asymmetry bins for inclusive jet-track
       
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
-        jetShapeSum = (TH1D*)fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentralityBin][fFirstLoadedTrackPtBin]->Clone(Form("jetShapeSum%d%d%d",iJetTrack,iAsymmetry,iCentralityBin));
+        jetShapeSum = (TH1D*)fhJetShape[kJetShape][iJetTrack][iAsymmetry][iCentralityBin][fFirstLoadedTrackPtBin]->Clone(Form("jetShapeSum%d%d%d", iJetTrack, iAsymmetry, iCentralityBin));
         
         // First, sum all pT bins together
         for(int iTrackPtBin = fFirstLoadedTrackPtBin+1; iTrackPtBin <= fLastLoadedTrackPtBin; iTrackPtBin++){
@@ -3513,7 +3550,7 @@ void DijetHistogramManager::SetPreprocess(const int preprocess){
 }
 
 // Sanity check for set bins
-void DijetHistogramManager::BinSanityCheck(const int nBins, int first, int last) const{
+void DijetHistogramManager::BinSanityCheck(const int nBins, int& first, int& last){
   if(first < 0) first = 0;
   if(last < first) last = first;
   if(last > nBins-1) last = nBins-1;

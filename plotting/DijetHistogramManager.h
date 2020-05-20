@@ -79,7 +79,7 @@ private:
   
   // Naming for jet shape histograms
   const char* fJetShapeHistogramName[knJetShapeTypes] = {"JetShape","JetShapeCounts"};
-  const char* fJetShapeYAxisNames[knJetShapeTypes] = {"P(#DeltaR)","counts"};
+  const char* fJetShapeYAxisNames[knJetShapeTypes] = {"P(#Deltar)","counts"};
   
   // Naming for deltaEta bins
   const char* fDeltaEtaString[knDeltaEtaBins] = {"","Signal #Delta#eta","Background #Delta#eta"};
@@ -264,6 +264,7 @@ public:
   double GetPtIntegral(const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const; // Getter for integral over leading jet pT in a given centrality and dijet asymmetry bin
   double GetAnyLeadingJetPtIntegral(int iCentrality) const; // Getter for integral over all leading jets with pT > 120 GeV in a given centrality bin
   double GetInclusiveJetPtIntegral(int iCentrality, const double minPt = 120) const; // Getter for integral over inclusive jet pT above minPt in a given centrality bin
+  double GetJetShapeNormalizationFactor(const int iJetTrack, const int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;       // Factor for normalizing capital rho to lower case rho
   
   // Setter for avoiding possible peaks in mixed event distribution
   void SetAvoidMixingPeak(const bool avoid);     // Avoid peak region in mixed event distribution
@@ -439,7 +440,7 @@ private:
   void LoadJetPtClosureHistograms(); // Loader for jet pT closure histograms
   
   // Methods for binning
-  void BinSanityCheck(const int nBins, int first, int last) const; // Sanity check for given binning
+  void BinSanityCheck(const int nBins, int& first, int& last); // Sanity check for given binning
   int BinIndexCheck(const int nBins, const int binIndex) const; // Check that given index is in defined range
   
   // Mixed event correction, background subtraction, different corrections and projections
