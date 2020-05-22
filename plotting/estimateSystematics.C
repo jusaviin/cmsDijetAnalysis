@@ -3,6 +3,7 @@
 #include "DijetCard.h"
 #include "DijetHistogramManager.h"
 #include "JffCorrector.h"
+#include "manualSystematicErrorSmoothing.h"
 
 /*
  * Macro estimating the systematic uncertainties from different sources
@@ -26,7 +27,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root";
+  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_smoothedPairBackground_2020-05-22.root";
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root
   // uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
@@ -341,6 +342,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   int spilloverShiftThreshold[] = {2,3,3,1};                // Last pT bin for low pt centrality shift uncertainty
   double uncertaintyFactor;
   double spilloverShift;
+  double manualTuningFactor;
   int pairBackgroundCentralityBin;
   int trackPtForDeltaR;
   
@@ -535,9 +537,8 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             currentUncertainty = TMath::Abs(comparisonHistogram->GetBinContent(iBin));
             
             // Fix some badly oscillating bins:
-            //if(iJetTrack == 2 && (iBin == 12)) currentUncertainty /= 2;
-            //if(iJetTrack == 2 && (iBin == 13 || iBin == 14)) currentUncertainty /= 2;
-            //if(iJetTrack == 5 && (iBin > 8 || iBin == 6)) currentUncertainty /= 2;
+            manualTuningFactor = getSmoothingJetResolution(iJetTrack, iAsymmetry, iCentrality, iTrackPt, iBin);
+            currentUncertainty /= manualTuningFactor;
             
             // For MC running mode, do not assign uncertainty. TODO: Add resolution file for pp
             if(mcMode || ppData) currentUncertainty = 0;
