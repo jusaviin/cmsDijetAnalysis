@@ -877,6 +877,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt);
               drawnHistogram2D->Rebin2D(5,5);
               drawnHistogram2D->Scale(1.0/(5.0*5.0));
+              //drawnHistogram2D->Scale(1.0/fHistograms->GetPtIntegral(iCentrality)); // Normalization needed only for same event, others already done in file
               drawnHistogram2D->SetZTitle("#frac{1}{N_{jets}} #frac{d^{2}N}{d#Delta#varphi d#Delta#eta}");
               
               // Change the left margin better suited for 2D-drawing
@@ -898,7 +899,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               // Possibility to zoom around the peak
               //drawnHistogram2D->GetXaxis()->SetRangeUser(-0.8,0.8);
-              //drawnHistogram2D->GetYaxis()->SetRangeUser(-0.8,0.8);
+              drawnHistogram2D->GetYaxis()->SetRangeUser(-3,3);
+              //drawnHistogram2D->GetZaxis()->SetRangeUser(44,59);
               
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               sprintf(namerY,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));

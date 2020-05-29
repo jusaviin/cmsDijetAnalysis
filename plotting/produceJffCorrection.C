@@ -43,7 +43,7 @@ void produceJffCorrection(){
   // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
 
-  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_noErrors_2020-05-11.root";   // File name for the output file
+  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_noErrors_2020-05-21.root";   // File name for the output file
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigationOrRCut_2019-11-26.root
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eventsMixed_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
   // corrections/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
@@ -94,12 +94,12 @@ void produceJffCorrection(){
                                     {1.5,1.5,1.5,1.5,0.6,0.3,0.3}}; // 50-100 % centrality
   
   // Disable the cut for testing purposes
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
+  /*for(int iCentrality = 0; iCentrality < 4; iCentrality++){
     for(int iTrackPt = 0; iTrackPt < 7; iTrackPt++){
       jffRcut[iCentrality][iTrackPt] = 1.5;
       jffRcutSubleading[iCentrality][iTrackPt] = 1.5;
     }
-  }
+  }*/
   
   double currentJffCut;
   

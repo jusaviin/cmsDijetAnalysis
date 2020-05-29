@@ -18,10 +18,10 @@ SPILLOVERCORRECTION=$4 # Flag for JFF correction
 PREPROCESS=$5          # Flag for preprocessing
 
 # Event information histograms have no centrality or pT binning
-root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",1,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Event information
+#root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",1,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Event information
 
 # Single jet and track histograms
-root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",2,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Single jet and dijet histograms
+#root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",2,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Single jet and dijet histograms
 #root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",3,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Track histograms
 
 # Jet-track correlations have centrality and track pT binning
@@ -35,4 +35,4 @@ root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",2,'$JFFCORRECTION
 #done
 
 # Jet pT closure histograms
-#root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Jet pT closure histograms
+root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Jet pT closure histograms

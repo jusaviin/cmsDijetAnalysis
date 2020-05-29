@@ -13,8 +13,9 @@ void jffProjectionExplorer(){
   // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_2020-02-17.root
   // corrections/jffCorrection_ppMC_pfJets_noUncorr_xjBins_20EventsMixed_wtaAxis_JECv4_symmetrizedAndBackgroundSubtracted_noErrors_2019-09-28.root
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncorr_improvisedMixing_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_cutInRange_2019-10-09.root
+  // jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
   TFile *rebinFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrized_2020-05-08.root");
-  TFile *fitFile = TFile::Open("corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_2020-05-11.root");
+  TFile *fitFile = TFile::Open("corrections/jffCorrection_PbPbMC_akFlowPuCsPfJets_noUncorr_improvisedMixing_xjBins_JECv4_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root");
   TFile *files[] = {standardFile,rebinFile,fitFile};
   TFile *inclusiveAnalysisJffPbPb = TFile::Open("corrections/JffResidual_nominal_Pb_HIN_16_020.root");
   

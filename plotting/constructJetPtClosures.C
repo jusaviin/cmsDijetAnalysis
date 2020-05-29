@@ -142,7 +142,7 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_smearCheck_jetPtClosure_processed_2020-05-14.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_20pSmear_jetPtClosure_JECv4_processed_2020-05-20.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_smearCheck_jetPtClosure_processed_2020-05-14.root
   // data/PbPbMC2018_RecoReco_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
@@ -152,6 +152,8 @@ void constructJetPtClosures(){
   // data/PbPbMC_GenGen_skims_pfJets_noCorrelations_jetPtClosure_processed_2019-02-07.root
   // "data/PbPbMC_GenGen_pfJets_noCorrelations_jetPtClosure_processed_2019-06-25.root"
   // "data/PbPbMC_GenGen_pfCsJets_noCorrelations_jetPtClosure_eta1v3_2019-06-26_processed.root"
+  // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_jetPtClosure_JECv4_processed_2020-05-20.root
+  // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_20pSmear_jetPtClosure_JECv4_processed_2020-05-20.root
   
   bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
   bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
@@ -319,7 +321,7 @@ void constructJetPtClosures(){
   char centralitySaveName[100];
   
   // Create the output file
-  //TFile *outputFile = new TFile("closureWithSmear.root","UPDATE");
+  TFile *outputFile = new TFile("closureWithSmearPp.root","UPDATE");
   
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
@@ -330,7 +332,7 @@ void constructJetPtClosures(){
           
           drawClosureHistogram(hJetPtClosureSigma[iClosureType][iCentrality][iAsymmetry], "Gen p_{T} (GeV)", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 1, "PtResolution", saveFigures);
           
-          //hJetPtClosureSigma[iClosureType][iCentrality][iAsymmetry][2]->Write();
+          hJetPtClosureSigma[iClosureType][iCentrality][iAsymmetry][2]->Write();
         }
         
         if(drawEtaClosure){
@@ -344,6 +346,6 @@ void constructJetPtClosures(){
     } // Centrality loop
   } // Closure type loop (leading/subleading/inclusive)
   
-  //outputFile->Close();
+  outputFile->Close();
   
 }
