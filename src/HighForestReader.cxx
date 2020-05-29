@@ -307,10 +307,19 @@ void HighForestReader::Initialize(){
     
     // Trigger branch naming is different for 2018 and 2015 forests
     if(fReadMode > 2000){
+      
+      // Calo jet 80 trigger
+      //fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet80Eta5p1_v1",1); // 2018 syntax
+      //fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet80Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+      
+      // Calo jet 100 trigger
       fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1); // 2018 syntax
       fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+      
+      // PF jet 80 trigger
       //fHltTree->SetBranchStatus("HLT_HICsAK4PFJet80Eta1p5_v1",1); // 2018 syntax
       //fHltTree->SetBranchAddress("HLT_HICsAK4PFJet80Eta1p5_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+      
     } else {
       fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1); // 2015 syntax
       fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2015 syntax
