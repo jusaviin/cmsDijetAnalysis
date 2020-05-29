@@ -2153,17 +2153,26 @@ Double_t DijetAnalyzer::GetSmearingFactor(Double_t jetPt, const Double_t central
   if(centrality > fCard->Get("CentralityBinEdges",3)) centralityBin++;
   if(centrality > fCard->Get("CentralityBinEdges",4)) centralityBin++;
   
-  // Parameters for the smearing function
-  Double_t resolutionFit[4][5] = {
-    {0.451855, -0.00331992, 1.25897e-05, -2.26434e-08, 1.55081e-11},
-    {0.366326, -0.00266997, 1.04733e-05, -1.95302e-08, 1.38409e-11},
-    {0.268453, -0.00184878, 7.45201e-06, -1.43486e-08, 1.04726e-11},
-    {0.202255, -0.00114677, 4.2566e-06, -7.69286e-09, 5.32617e-12}
-  };
-  
-  // Set the parameters to the smearing function
-  for(int iParameter = 0; iParameter < 5; iParameter++){
-    fSmearingFunction->SetParameter(iParameter, resolutionFit[centralityBin][iParameter]);
+  // Set the parameters to the smearing function. pp and PbPb have different smearing function parameters
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
+    // Settings for pp
+    fSmearingFunction->SetParameters(0.174881, -0.00091979, 3.50064e-06, -6.52541e-09, 4.64199e-12);
+    
+  } else {
+    
+    // Parameters for the smearing function
+    Double_t resolutionFit[4][5] = {
+      {0.451855, -0.00331992, 1.25897e-05, -2.26434e-08, 1.55081e-11},
+      {0.366326, -0.00266997, 1.04733e-05, -1.95302e-08, 1.38409e-11},
+      {0.268453, -0.00184878, 7.45201e-06, -1.43486e-08, 1.04726e-11},
+      {0.202255, -0.00114677, 4.2566e-06, -7.69286e-09, 5.32617e-12}
+    };
+    
+    for(int iParameter = 0; iParameter < 5; iParameter++){
+      // Settings for PbPb
+      
+      fSmearingFunction->SetParameter(iParameter, resolutionFit[centralityBin][iParameter]);
+    }
   }
   
   // After the smearing function is set, read the value to return
