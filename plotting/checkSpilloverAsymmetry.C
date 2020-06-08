@@ -15,7 +15,7 @@ void checkSpilloverAsymmetry(){
   // ==================================================================
   
   TString spilloverFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-05.root";
-  TString spilloverComparisonFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-05.root";
+  TString spilloverComparisonFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_symmetrized_tightSubleadingCut_centShift5_jet80trigger_wtaAxis_JECv6_2020-06-02.root";
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-05.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_looseCut_tightForSubleading_centShift5_eschemeAxis_JECv6_2019-11-14.root
@@ -37,7 +37,7 @@ void checkSpilloverAsymmetry(){
   
   bool drawAsymmetryComparison = false;
   bool drawSpilloverAndError = false;
-  bool drawFileComparison = false;
+  bool drawFileComparison = true;
   bool draw2Dsample = false;   // Draw sample 2D distributions
   bool drawIntegral = false;
   bool drawExample = false;     // Draw example r-dependent spillover distributions

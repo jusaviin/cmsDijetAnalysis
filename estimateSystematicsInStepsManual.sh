@@ -12,11 +12,11 @@
 #fi
 
 # Estimate the systematic uncertainty in all possible bins
-for i in `seq 3 3`; # Centrality
+for i in `seq 0 3`; # Centrality
 do
-  for j in `seq 1 3`; # Track pT
+  for j in `seq 6 6`; # Track pT
   do  
-    for k in `seq 3 3`; # xj
+    for k in `seq 0 3`; # xj
     do
       root -l -b -q 'plotting/estimateSystematics.C('$i','$j','$k')'
     done

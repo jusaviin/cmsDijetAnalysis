@@ -6,8 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInStepsAsymmetry.sh "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_improvisedMixing_xjBins_sube0_noTrigger_preprocessed_2020-05-28.root" "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_improvisedMixing_xjBins_sube0_noTrigger_noCorrections_processed_2020-05-28.root" false false -1 "data/"
-./processHistogramsInStepsAsymmetry.sh "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_improvisedMixing_xjBins_5pCentShift_sube0_jet80trigger_preprocessed_2020-05-28.root" "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_improvisedMixing_xjBins_5pCentShift_sube0_jet80trigger_noCorrections_processed_2020-05-28.root" false false -1 "data/"
+./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_jet80trig_xjBins_wtaAxis_preprocessed_2020-05-28_allButCombine1Job36.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_jet80trig_xjBins_wtaAxis_allCorrections_jffAndSpillWithJet80_processed_2020-05-28_allButCombine1Job36.root" true true -1 "data/"
 
 #./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_preprocessed_2020-05-13.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_allCorrectionsUnsmeared_processed_2020-05-13.root" true true -1 "data/"
 

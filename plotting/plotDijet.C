@@ -47,7 +47,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = false;
+  bool drawDijetHistograms = true;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
@@ -56,7 +56,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = true;
+  bool drawTrackLeadingJetCorrelations = false;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -90,12 +90,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Normalization for the xj matrix
   bool normalizeXjMatrix = false;  // True = show probability to see gen xj given reco xj. False = show counts
-  bool wideXjMatrixBins = true; // False = fine bins for xj matrix. True = 3x3 xj matrix with analysis binning
+  bool wideXjMatrixBins = false; // False = fine bins for xj matrix. True = 3x3 xj matrix with analysis binning
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
   bool drawJetTrackDeltaEta = false;
-  bool drawJetTrackDeltaEtaDeltaPhi = true;
+  bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Select which deltaPhi regions of the deltaEta projection are drawn
   bool drawDeltaEtaWholePhi = false;
@@ -144,7 +144,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const char* style3D = "surf1";
   
   // File for JFF correction (automatically changed for pp)
-  TString jffCorrectionFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_noErrors_2020-02-17.root";
+  TString jffCorrectionFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_jet80trigger_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_noErrors_2020-06-02.root";
   // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_noErrors_2020-05-11.root
   // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_trigEffWeight_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrized_noErrors_2020-05-08.root <--- File for trigger efficiency check
   // corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixing_JECv6_wtaAxis_fluctuationReduce_symmetrizedAndBackgroundSubtracted_noErrors_2020-02-17.root <--- Updated JFF file
@@ -162,7 +162,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // File for spillover correction
   bool manualSpilloverFluctuationSmoothing = false;  // In certain bins, manually smooth spillover fluctuations
-  TString spilloverCorrectionFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-10.root";
+  TString spilloverCorrectionFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_symmetrized_tightSubleadingCut_centShift5_jet80trigger_wtaAxis_JECv6_2020-06-02.root";
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-10.root  <--- In new files
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_centShift5_wtaAxis_JECv6_2020-01-30.root
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncorr_improvisedMixing_symmetrized_looseCut_xjBins_wtaAxis_centShift5_JECv6_2019-10-15.root <-- This has been used for default results
@@ -181,7 +181,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
 
   
   // File for residual tracking correction. File name changed for pp automagically
-  bool applyTrackDeltaRCorrection = false;
+  bool applyTrackDeltaRCorrection = true;
   bool applyTrackDeltaRResidualScale = false;
   TString trackDeltaRCorrectionFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_onlyLowPt_centShift5_xjBins_genJets_smoothed_2020-01-29.root";
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_onlyLowPt_centShift5_xjBins_genJets_smoothed_2020-01-29.root <--- In new files
@@ -206,15 +206,15 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5.root
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = false;
+  bool applySeagullCorrection = true;
   if(preprocess >= 0 && preprocess <= 2) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
   const int nCentralityBins = 4;
   const int nTrackPtBins = 7;
   const int nAsymmetryBins = 3;
-  //double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
-  double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
+  double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
+  //double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.5}; // Low bin borders for deltaPhi (2017 pp set for 1.5, wide peak)
@@ -228,8 +228,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
   }
   
-  int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  int firstDrawnCentralityBin = 1;
+  int lastDrawnCentralityBin = 1;
   
   int firstDrawnTrackPtBin = 1;
   int lastDrawnTrackPtBin = 1;
@@ -260,7 +260,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction

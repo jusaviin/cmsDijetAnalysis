@@ -1004,8 +1004,8 @@ void DijetHistogramManager::DoSpilloverCorrection(){
             if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
               // Only apply the correction in low and central bins in subleading
               if(iCentralityBin > 1) continue;
-              if(iCentralityBin == 1 && iTrackPtBin > 4) continue; // TODO: Debug, changed 3 to 4 here
-              if(iCentralityBin == 0 && iTrackPtBin > 4) continue;
+              if(iCentralityBin == 1 && iTrackPtBin > 2) continue; // TODO: Debug, changed 3 to 4 here
+              if(iCentralityBin == 0 && iTrackPtBin > 2) continue;
             }
             
             if(iJetTrack < kTrackSubleadingJet){
@@ -2639,6 +2639,13 @@ void DijetHistogramManager::WriteJetShapeHistograms(){
                 cleaner->CleanSpilloverFluctuationDeltaR(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt], iJetTrack,  iAsymmetry, iCentrality, iTrackPt);
                 cleaner->CleanSubleadingJffFluctuationDeltaR(fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt], iJetTrack,  iAsymmetry, iCentrality, iTrackPt);
               }
+              
+              // Manual reduction of jet80 fluctuations in a couple of bins
+              //if(iJetTrack == 2){
+              //  for(int iBin = 1; iBin < 15; iBin++)
+              //  fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(iBin, fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinContent(iBin)*0.97);
+              //}
+              
               fhJetShape[iJetShape][iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Write(histogramNamer, TObject::kOverwrite);
             }
             

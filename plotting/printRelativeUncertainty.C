@@ -16,10 +16,11 @@ void printRelativeUncertainty(){
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
   TString uncertaintyFileName[2];
   TString ppUncertaintyFileName[2];
-  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_smoothedPairBackground_2020-05-22.root";
+  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root";
   ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root";
   uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root";
   ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_smoothedPairBackground_2020-05-22.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root
@@ -39,9 +40,9 @@ void printRelativeUncertainty(){
   
   TString inclusiveFileName = "uncertainties/inclusiveAnalysis/js_AllSource_syst_err.root";
   
-  bool printSlides = false;  // Print slides showing the R-integrated uncertainty in each pT bin
-  bool combineTracking = false; // Combine all tracking related uncertainty to one when printing the table
-  bool drawUncertaintySourceComparison = true; // Draw all uncertainty sources as a function of R in each pT bin
+  bool printSlides = true;  // Print slides showing the R-integrated uncertainty in each pT bin
+  bool combineTracking = true; // Combine all tracking related uncertainty to one when printing the table
+  bool drawUncertaintySourceComparison = false; // Draw all uncertainty sources as a function of R in each pT bin
   bool drawUncertaintySystemComparison = false; // Draw single uncertainty source for all systems as a function of R in each pT bin
   bool drawComparisonToInclusive = false;        // Draw comparison to systematic uncertainty histograms from inclusive analysis
   bool saveFigures = false;   // Save the drawn figures to file
@@ -100,7 +101,7 @@ void printRelativeUncertainty(){
   int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = nTrackPtBins-1;
+  int lastDrawnTrackPtBin = nTrackPtBins;
   
   int firstDrawnAsymmetryBin = 3;
   int lastDrawnAsymmetryBin = 3;

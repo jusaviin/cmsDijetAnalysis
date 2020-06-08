@@ -615,7 +615,7 @@ TH1D* JffCorrector::GetJetShapeSystematicUncertainty(const int iJetTrackCorrelat
   // If uncertainty bin is outside of the uncertainty bin range, return total systematic uncertainty
   if(iUncertainty < 0 || iUncertainty > kTotal) iUncertainty = kTotal;
   
-  if(iUncertainty != kPairAcceptance && iUncertainty != kBackgroundSubtraction && fSmoothUncertainty){
+  if(iUncertainty != kPairAcceptance && iUncertainty != kBackgroundSubtraction && iUncertainty != kResidualTracking && iUncertainty != kTrackingEfficiency && fSmoothUncertainty){
     fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetXaxis()->SetRangeUser(0.06,1);
     fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->Smooth(1,"R");
     fhJetShapeUncertainty[iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPt][iUncertainty]->GetXaxis()->SetRangeUser(0,1);

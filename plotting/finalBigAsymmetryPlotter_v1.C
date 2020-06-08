@@ -669,8 +669,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     extraLegend->Draw();
   } // Drawing extra ratio for illustration
   
-  bigCanvas->SaveAs(Form("figures/final%s_%s_addSystematicSources.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
-  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioAddSystematicSources.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/final%s_%s_systematicUpdate.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioSystematicUpdate.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
   
   // Save the histograms to a file for HepData submission
   if(saveHistogramsForHepData){
@@ -744,7 +744,7 @@ void finalBigAsymmetryPlotter_v1(){
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17.root
   
   TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root");
-  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root");
+  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root");
   // uncertainties/systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-06.root
   // uncertainties/systematicUncertaintyForPythiaHydjetRecoGen_mcMode_2019-10-05.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
