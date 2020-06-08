@@ -1100,7 +1100,8 @@ void DijetAnalyzer::RunAnalysis(){
         
         // Require also reference parton flavor to be quark [-6,-1] U [1,6] or gluon (21)
         // We need to match gen jets to reco to get the parton flavor, but for reco jets it is always available in the forest
-        if(fMatchJets || fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
+        // Here should implement an option if only quark and gluon tagged jets should be allowed in final results!
+        if(fMatchJets){
           
           if(fMatchJets) matchedCounter++; // For debugging purposes, count the number of matched jets
           jetFlavor = 0;    // Jet flavor. 0 = Quark jet.
