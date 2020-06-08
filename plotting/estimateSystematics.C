@@ -10,13 +10,14 @@
  *
  *  Different sources currently implemented:
  *    - Background fluctuation (variable percentage of the magnitude of spillover correction)
- *    - Jet fragmentation bias (10 % of the correction, based on quark/gluon differences)
+ *    - Jet fragmentation bias (10 % of the correction for leading and 20% for subleading, based on quark/gluon differences)
  *    - Tracking efficiency (3 % for PbPb, 1 % for pp, estimated from tracking closures)
  *    - Residual tracking efficiency (5 % for PbPb, 2.4 % for pp, given by the tracking group)
  *    - Uncertainty from deltaR dependent tracking correction (compare corrections from Reco and Gen jets)
  *    - Pair acceptance correction (difference of eta sideband level)
  *    - Backround subtraction (difference of eta sideband regions from zero after background subtraction)
  *    - Jet energy scale (compare results using uncertainty estimates to jet energy correction to nominal, take the difference)
+ *    - Jet resolution (compare results between nominal jet shapes and ones smeared with Gaussian function)
  *
  */
 void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsymmetryBin = -1){
@@ -27,7 +28,8 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
-  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_smoothedPairBackground_2020-05-22.root";
+  const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root";
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_smoothedPairBackground_2020-05-22.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root
   // uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_oldJES_15percentSpill10Jff_2019-10-17.root
@@ -440,11 +442,31 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             helperHistogramDeltaEta = (TH1D*) methods->ProjectAnalysisYieldDeltaEta(twoDimensionalHelper, dataHistograms[0]->GetTrackPtBinBorder(iTrackPt), dataHistograms[0]->GetTrackPtBinBorder(iTrackPt+1))->Clone(Form("DeltaEtaJff%d%d%d%d", iJetTrack, iAsymmetry ,iCentrality, iTrackPt));
           }
           
+          // Jet shape histogram for manual error assignment in some specific bins
+          jetShapeLowCut = dataHistograms[0]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
           
-          // Assign 5 % of the correction as an uncertainty in each DeltaR bin
+          // Assign 10 % of the correction as an uncertainty in each deltaR bin for leading jet and 20 % for subleading jet
           for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
             
-            currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.1);
+            
+            if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet && iJetTrack <= DijetHistogramManager::kPtWeightedTrackSubleadingJet){
+              currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.2);
+            } else {
+              currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.1);
+            }
+            
+            // For leading jet, the correction in the highest pT bin varies a lot and goes from negative to positive as a function of pT
+            // In the 30-50 bin the correction is essentially zero but it is not reasonable to assign 0 uncertainty. Thus in there is
+            // a manual check to put at least 0.5 % of the whole distribution value as an uncertainty in the center of the peak in any case.
+            if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPt == nTrackPtBins-1 && iBin < 3){
+              highUncertainty = jetShapeLowCut->GetBinContent(iBin)*0.005;
+              if(currentUncertainty < highUncertainty) currentUncertainty = highUncertainty;
+            }
+            
+            // For leading jet, add additional 2 % trigger bias uncertainty to the first deltaR bin
+            if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPt == nTrackPtBins-1 && iBin == 1){
+              currentUncertainty += jetShapeLowCut->GetBinContent(iBin)*0.02;
+            }
             
             // For MC running mode, do not assign uncertainty
             if(mcMode) currentUncertainty = 0;
@@ -452,11 +474,15 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->SetBinContent(iBin, currentUncertainty);
           }
           
-          // Assign 5 % of the correction as an uncertainty in each DeltaEta bin
+          // Assign 10 % of the correction as an uncertainty in each DeltaEta bin for leading jet and 20 for the subleading jet.
           if(iTrackPt < nTrackPtBins){
             for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kFragmentationBias]->GetNbinsX(); iBin++){
               
-              currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.1);
+              if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet && iJetTrack <= DijetHistogramManager::kPtWeightedTrackSubleadingJet){
+                currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.2);
+              } else {
+                currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*0.1);
+              }
               
               // For MC running mode, do not assign uncertainty
               if(mcMode) currentUncertainty = 0;
@@ -572,18 +598,21 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           // Estimate the uncertainty for trigger efficiency //
           // =============================================== //
 
+          // Currently commented out. The comparison between triggers show no significant bias not covered already by other sources.
+          
           // First calculate the ratio trigger efficiency weighted / nominal
-          comparisonHistogram = dataHistograms[3]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
+          /*comparisonHistogram = dataHistograms[3]->GetHistogramJetShape(DijetHistogramManager::kJetShape, iJetTrack, iAsymmetry, iCentrality, iTrackPt);
           comparisonHistogram->Divide(helperHistogram);
           
           // Fit a line to the ratio
           comparisonHistogram->Fit("pol0","0","",0,1);
-          ratio = TMath::Abs(1-comparisonHistogram->GetFunction("pol0")->GetParameter(0));
+          ratio = TMath::Abs(1-comparisonHistogram->GetFunction("pol0")->GetParameter(0));*/
           
           // For the rest of the bins use the linear fit
           for(int iBin = 1; iBin <= jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTriggerEfficiency]->GetNbinsX(); iBin++){
             
-            currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*ratio);
+            //currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*ratio);
+            currentUncertainty = 0;
             
             // For MC running mode or pp, do not assign uncertainty
             if(mcMode || ppData) currentUncertainty = 0;
@@ -594,16 +623,17 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
           // The for deltaEta take directly the difference as uncertainty
           if(iTrackPt < nTrackPtBins){
             
-            comparisonHistogram = dataHistograms[3]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, iTrackPt);
+            /*comparisonHistogram = dataHistograms[3]->GetHistogramJetTrackDeltaEtaFinal(iJetTrack, iAsymmetry, iCentrality, iTrackPt);
             comparisonHistogram->Divide(helperHistogramDeltaEta);
             
             // Fit the ratio near the peak to get uncertainty
             comparisonHistogram->Fit("pol0","0","",-0.5,0.5);
-            ratio = TMath::Abs(1-comparisonHistogram->GetFunction("pol0")->GetParameter(0));
+            ratio = TMath::Abs(1-comparisonHistogram->GetFunction("pol0")->GetParameter(0));*/
             
             for(int iBin = 1; iBin <= deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kTriggerEfficiency]->GetNbinsX(); iBin++){
               
-              currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*ratio);
+              //currentUncertainty = TMath::Abs(helperHistogramDeltaEta->GetBinContent(iBin)*ratio);
+              currentUncertainty = 0;
               
               // For MC running mode or pp, do not assign uncertainty
               if(mcMode || ppData) currentUncertainty = 0;
