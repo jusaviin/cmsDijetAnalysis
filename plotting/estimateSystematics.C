@@ -29,6 +29,7 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   // If we write a file, define the output name and write mode
   const char* fileWriteMode = "UPDATE";
   const char* outputFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root";
+  // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_smoothedPairBackground_2020-05-22.root
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_finalTuning_smoothedPairBackground_2020-03-09.root
   // uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root
@@ -94,7 +95,9 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
   
   // For pp data, use pp files instead of PbPb files
   if(ppData){
-    dataFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-01-31.root";
+    dataFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
+    // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root
+    // sata/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-01-31.root
     // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
     // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_xjBins_noUncorr_20EventsMixed_JECv4_allCorrections_tunedSeagull_processed_2019-09-28.root
         
@@ -109,6 +112,9 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
     // Note: Should use here a skimmed file that has only the final results, not all the intermediate 2D histograms
     highJetCutFileName = "data/ppData2017_highForest_pfJets_20EveMixed_JECv4plus_xjBins_wtaAxis_allCorrections_onlyFinalResults_processed_2020-01-01.root";
     // data/ppData2017_highForest_pfJets_20EveMixed_JECv4plus_xjBins_wtaAxis_allCorrections_processed_2020-01-01.root
+    
+    // Smearing study for pp
+    jetResolutionFileName = "data/ppData2017_highForest_pfJets_20pSmear_20EveMixed_xjBins_wtaAxis_allCorrectionsUnsmeared_onlyFinalResults_processed_2020-05-20.root";
   }
   
   // Data file from which the histograms needed for the systematic uncertainty estimation are read
@@ -458,14 +464,18 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             // For leading jet, the correction in the highest pT bin varies a lot and goes from negative to positive as a function of pT
             // In the 30-50 bin the correction is essentially zero but it is not reasonable to assign 0 uncertainty. Thus in there is
             // a manual check to put at least 0.5 % of the whole distribution value as an uncertainty in the center of the peak in any case.
-            if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPt == nTrackPtBins-1 && iBin < 3){
-              highUncertainty = jetShapeLowCut->GetBinContent(iBin)*0.005;
-              if(currentUncertainty < highUncertainty) currentUncertainty = highUncertainty;
+            if(!ppData){
+              if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPt == nTrackPtBins-1 && iBin < 3){
+                highUncertainty = jetShapeLowCut->GetBinContent(iBin)*0.005;
+                if(currentUncertainty < highUncertainty) currentUncertainty = highUncertainty;
+              }
             }
             
             // For leading jet, add additional 2 % trigger bias uncertainty to the first deltaR bin
-            if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPt == nTrackPtBins-1 && iBin == 1){
-              currentUncertainty += jetShapeLowCut->GetBinContent(iBin)*0.02;
+            if(!ppData){
+              if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet && iTrackPt == nTrackPtBins-1 && iBin == 1){
+                currentUncertainty += jetShapeLowCut->GetBinContent(iBin)*0.02;
+              }
             }
             
             // For MC running mode, do not assign uncertainty
@@ -513,6 +523,14 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             highUncertainty = TMath::Abs(jetShapeHighCut->GetBinContent(iBin));
             currentUncertainty = TMath::Max(lowUncertainty,highUncertainty); // TODO TODO TODO After 2018 estimate comes, use it!
             //currentUncertainty = TMath::Abs(helperHistogram->GetBinContent(iBin)*0.05);
+            
+            // Fix some badly oscillating bins:
+            if(ppData){
+              manualTuningFactor = 1;
+            } else {
+              manualTuningFactor = getSmoothingJetEnergyScale(iJetTrack, iAsymmetry, iCentrality, iTrackPt, iBin);
+            }
+            currentUncertainty /= manualTuningFactor;
             
             // For MC running mode, do not assign uncertainty
             if(mcMode) currentUncertainty = 0;
@@ -563,11 +581,15 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
             currentUncertainty = TMath::Abs(comparisonHistogram->GetBinContent(iBin));
             
             // Fix some badly oscillating bins:
-            manualTuningFactor = getSmoothingJetResolution(iJetTrack, iAsymmetry, iCentrality, iTrackPt, iBin);
+            if(ppData){
+              manualTuningFactor = 1;
+            } else {
+              manualTuningFactor = getSmoothingJetResolution(iJetTrack, iAsymmetry, iCentrality, iTrackPt, iBin);
+            }
             currentUncertainty /= manualTuningFactor;
             
-            // For MC running mode, do not assign uncertainty. TODO: Add resolution file for pp
-            if(mcMode || ppData) currentUncertainty = 0;
+            // For MC running mode, do not assign uncertainty.
+            if(mcMode) currentUncertainty = 0;
             
             jetShapeUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kJetResolution]->SetBinContent(iBin, currentUncertainty);
           }
@@ -585,8 +607,8 @@ void estimateSystematics(int iCentralityBin = -1, int iTrackPtBin = -1, int iAsy
               
               currentUncertainty = TMath::Abs(comparisonHistogram->GetBinContent(iBin));
               
-              // For MC running mode, do not assign uncertainty. TODO: Add resolution for pp
-              if(mcMode || ppData) currentUncertainty = 0;
+              // For MC running mode, do not assign uncertainty.
+              if(mcMode) currentUncertainty = 0;
               
               deltaEtaUncertainty[iJetTrack][iAsymmetry][iCentrality][iTrackPt][JffCorrector::kJetResolution]->SetBinContent(iBin, currentUncertainty);
             }

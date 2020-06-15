@@ -720,7 +720,7 @@ double getSmoothingJetEnergyScale(int iJetTrack, int iAsymmetry, int iCentrality
   const int nTrackPt = 7;
   const int nBin = 15;
 
-  double resolutionTable[nJetTrack][nAsymmetry][nCentrality][nTrackPt][nBin];
+  double scaleTable[nJetTrack][nAsymmetry][nCentrality][nTrackPt][nBin];
 
   // Initialize the resolution table to one
   for(int iJetTrack = 0; iJetTrack < nJetTrack; iJetTrack++){
@@ -728,7 +728,7 @@ double getSmoothingJetEnergyScale(int iJetTrack, int iAsymmetry, int iCentrality
       for(int iCentrality = 0; iCentrality < nCentrality; iCentrality++){
         for(int iTrackPt = 0; iTrackPt < nTrackPt; iTrackPt++){
           for(int iBin = 0; iBin < nBin; iBin++){
-            resolutionTable[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iBin] = 1;
+            scaleTable[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iBin] = 1;
           }
         }
       }
@@ -741,10 +741,407 @@ double getSmoothingJetEnergyScale(int iJetTrack, int iAsymmetry, int iCentrality
   //    Leading jet shape
   // ========================
   
+  // xj integrated | Centrality: 0-10 | 3 < pT < 4 GeV
+  scaleTable[2][3][0][3][11] = 2;
+  scaleTable[2][3][0][3][12] = 2;
+  scaleTable[2][3][0][3][13] = 2;
+  scaleTable[2][3][0][3][14] = 4;
+  
+  // xj integrated | Centrality: 10-30 | 2 < pT < 3 GeV
+  scaleTable[2][3][1][2][13] = 2;
+  scaleTable[2][3][1][2][14] = 3;
+  
+  // xj integrated | Centrality: 10-30 | 3 < pT < 4 GeV
+  scaleTable[2][3][1][3][1] = 1.6;
+  scaleTable[2][3][1][3][2] = 1.6;
+  scaleTable[2][3][1][3][3] = 1.6;
+  scaleTable[2][3][1][3][4] = 1.6;
+  scaleTable[2][3][1][3][5] = 1.3;
+  scaleTable[2][3][1][3][6] = 1.3;
+  scaleTable[2][3][1][3][7] = 1.3;
+  scaleTable[2][3][1][3][8] = 1.3;
+  scaleTable[2][3][1][3][9] = 1.3;
+  scaleTable[2][3][1][3][11] = 2;
+  scaleTable[2][3][1][3][13] = 2;
+  scaleTable[2][3][1][3][14] = 2;
+  
+  // xj integrated | Centrality: 30-50 | 0.7 < pT < 1 GeV
+  scaleTable[2][3][2][0][9] = 2;
+  scaleTable[2][3][2][0][11] = 2;
+  scaleTable[2][3][2][0][12] = 2.5;
+  scaleTable[2][3][2][0][13] = 2.5;
+  scaleTable[2][3][2][0][14] = 2.5;
+  
+  // xj integrated | Centrality: 30-50 | 2 < pT < 3 GeV
+  scaleTable[2][3][2][2][1] = 2;
+  scaleTable[2][3][2][2][2] = 2.4;
+  scaleTable[2][3][2][2][3] = 2.4;
+  scaleTable[2][3][2][2][4] = 2.4;
+  scaleTable[2][3][2][2][5] = 2.1;
+  scaleTable[2][3][2][2][6] = 2;
+  scaleTable[2][3][2][2][7] = 2;
+  scaleTable[2][3][2][2][8] = 2;
+  scaleTable[2][3][2][2][9] = 2;
+  scaleTable[2][3][2][2][10] = 2;
+  scaleTable[2][3][2][2][11] = 2.5;
+  scaleTable[2][3][2][2][12] = 3;
+  scaleTable[2][3][2][2][13] = 5;
+  scaleTable[2][3][2][2][14] = 5;
+  
+  // xj integrated | Centrality: 30-50 | 3 < pT < 4 GeV
+  scaleTable[2][3][2][3][14] = 2;
+  
+  // xj integrated | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[2][3][3][0][13] = 2;
+  scaleTable[2][3][3][0][14] = 2;
+  
+  // xj integrated | Centrality: 50-90 | 1 < pT < 2 GeV
+  scaleTable[2][3][3][1][13] = 2;
+  scaleTable[2][3][3][1][14] = 3;
+  
+  // 0.0 < xj < 0.6 | Centrality: 10-30 | 0.7 < pT < 1 GeV
+  scaleTable[2][0][1][0][10] = 2;
+  scaleTable[2][0][1][0][11] = 2.5;
+  scaleTable[2][0][1][0][12] = 3.5;
+  scaleTable[2][0][1][0][13] = 3.5;
+  scaleTable[2][0][1][0][14] = 3.5;
+  
+  // 0.0 < xj < 0.6 | Centrality: 10-30 | 2 < pT < 3 GeV
+  scaleTable[2][0][1][2][13] = 2;
+  scaleTable[2][0][1][2][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 30-50 | 0.7 < pT < 1 GeV
+  scaleTable[2][0][2][0][10] = 2;
+  scaleTable[2][0][2][0][12] = 3;
+  scaleTable[2][0][2][0][13] = 2;
+  scaleTable[2][0][2][0][14] = 4;
+  
+  // 0.0 < xj < 0.6 | Centrality: 30-50 | 1 < pT < 2 GeV
+  scaleTable[2][0][2][1][14] = 3;
+  
+  // 0.0 < xj < 0.6 | Centrality: 30-50 | 2 < pT < 3 GeV
+  scaleTable[2][0][2][1][13] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[2][0][3][0][10] = 2;
+  scaleTable[2][0][3][0][11] = 3;
+  scaleTable[2][0][3][0][12] = 4;
+  scaleTable[2][0][3][0][13] = 4;
+  scaleTable[2][0][3][0][14] = 10;
+  
+  // 0.0 < xj < 0.6 | Centrality: 50-90 | 1 < pT < 2 GeV
+  scaleTable[2][0][3][1][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 50-90 | 2 < pT < 3 GeV
+  scaleTable[2][0][3][2][9] = 2;
+  scaleTable[2][0][3][2][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 0-10 | 0.7 < pT < 1 GeV
+  scaleTable[2][1][0][0][12] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 0-10 | 1 < pT < 2 GeV
+  scaleTable[2][1][0][1][1] = 2;
+  scaleTable[2][1][0][1][2] = 2;
+  scaleTable[2][1][0][1][3] = 2;
+  scaleTable[2][1][0][1][4] = 2;
+  scaleTable[2][1][0][1][5] = 2;
+  scaleTable[2][1][0][1][6] = 2;
+  scaleTable[2][1][0][1][7] = 2;
+  scaleTable[2][1][0][1][8] = 2;
+  scaleTable[2][1][0][1][9] = 2;
+  scaleTable[2][1][0][1][10] = 2;
+  scaleTable[2][1][0][1][11] = 2;
+  scaleTable[2][1][0][1][12] = 2;
+  scaleTable[2][1][0][1][13] = 3;
+  scaleTable[2][1][0][1][14] = 4;
+  
+  // 0.6 < xj < 0.8 | Centrality: 0-10 | 3 < pT < 4 GeV
+  scaleTable[2][1][0][3][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 10-30 | 2 < pT < 3 GeV
+  scaleTable[2][1][1][2][13] = 2;
+  scaleTable[2][1][1][2][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 10-30 | 3 < pT < 4 GeV
+  scaleTable[2][1][1][3][13] = 3;
+  scaleTable[2][1][1][3][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 30-50 | 0.7 < pT < 1 GeV
+  scaleTable[2][1][2][0][11] = 1.5;
+  scaleTable[2][1][2][0][13] = 2;
+  scaleTable[2][1][2][0][14] = 3;
+  
+  // 0.6 < xj < 0.8 | Centrality: 30-50 | 2 < pT < 3 GeV
+  scaleTable[2][1][2][2][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[2][1][3][0][12] = 2;
+  scaleTable[2][1][3][0][13] = 5;
+  scaleTable[2][1][3][0][14] = 6;
+  
+  // 0.6 < xj < 0.8 | Centrality: 50-90 | 1 < pT < 2 GeV
+  scaleTable[2][1][3][1][13] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 50-90 | 2 < pT < 3 GeV
+  scaleTable[2][1][3][2][13] = 2;
+  
+  // 0.8 < xj < 1.0 | Centrality: 0-10 | 0.7 < pT < 1 GeV
+  scaleTable[2][2][0][0][13] = 2;
+  scaleTable[2][2][0][0][14] = 1.5;
+  
+  // 0.8 < xj < 1.0 | Centrality: 0-10 | 1 < pT < 2 GeV
+  scaleTable[2][2][0][1][13] = 2;
+  
+  // 0.8 < xj < 1.0 | Centrality: 0-10 | 3 < pT < 4 GeV
+  scaleTable[2][2][0][3][13] = 1.5;
+  
+  // 0.8 < xj < 1.0 | Centrality: 10-30 | 0.7 < pT < 1 GeV
+  scaleTable[2][2][1][0][10] = 1.5;
+  scaleTable[2][2][1][0][12] = 1.5;
+  scaleTable[2][2][1][0][13] = 1.5;
+  scaleTable[2][2][1][0][14] = 2;
+  
+  // 0.8 < xj < 1.0 | Centrality: 10-30 | 2 < pT < 3 GeV
+  scaleTable[2][2][1][2][4] = 1.5;
+  scaleTable[2][2][1][2][5] = 1.5;
+  scaleTable[2][2][1][2][6] = 1.5;
+  scaleTable[2][2][1][2][7] = 2;
+  scaleTable[2][2][1][2][8] = 2;
+  scaleTable[2][2][1][2][9] = 2;
+  scaleTable[2][2][1][2][10] = 2;
+  scaleTable[2][2][1][2][11] = 2;
+  scaleTable[2][2][1][2][12] = 2;
+  scaleTable[2][2][1][2][13] = 2;
+  scaleTable[2][2][1][2][14] = 4;
+  
+  // 0.8 < xj < 1.0 | Centrality: 10-30 | 3 < pT < 4 GeV
+  scaleTable[2][2][1][2][3] = 1.5;
+  scaleTable[2][2][1][2][7] = 1.5;
+  scaleTable[2][2][1][2][9] = 1.5;
+  scaleTable[2][2][1][2][10] = 1.5;
+  scaleTable[2][2][1][2][11] = 3;
+  scaleTable[2][2][1][2][12] = 1.5;
+  scaleTable[2][2][1][2][13] = 2.5;
+  scaleTable[2][2][1][2][14] = 3;
+  
+  // 0.8 < xj < 1.0 | Centrality: 30-50 | 1 < pT < 2 GeV
+  scaleTable[2][2][2][1][1] = 2;
+  scaleTable[2][2][2][1][2] = 2;
+  scaleTable[2][2][2][1][3] = 2;
+  scaleTable[2][2][2][1][4] = 2;
+  scaleTable[2][2][2][1][5] = 2;
+  scaleTable[2][2][2][1][6] = 2;
+  scaleTable[2][2][2][1][7] = 2;
+  scaleTable[2][2][2][1][8] = 2;
+  scaleTable[2][2][2][1][9] = 2;
+  scaleTable[2][2][2][1][10] = 2;
+  scaleTable[2][2][2][1][11] = 2;
+  scaleTable[2][2][2][1][12] = 2;
+  scaleTable[2][2][2][1][13] = 3;
+  scaleTable[2][2][2][1][14] = 3.5;
+  
+  // 0.8 < xj < 1.0 | Centrality: 30-50 | 2 < pT < 3 GeV
+  scaleTable[2][2][2][2][13] = 2;
+  
+  // 0.8 < xj < 1.0 | Centrality: 30-50 | 3 < pT < 4 GeV
+  scaleTable[2][2][2][3][14] = 2;
+  
+  // 0.8 < xj < 1.0 | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[2][2][3][0][13] = 1.5;
+  scaleTable[2][2][3][0][14] = 1.5;
+  
+  // 0.8 < xj < 1.0 | Centrality: 50-90 | 1 < pT < 2 GeV
+  scaleTable[2][2][3][1][11] = 2;
+  scaleTable[2][2][3][1][13] = 2;
+  scaleTable[2][2][3][1][14] = 4;
+  
+  // 0.8 < xj < 1.0 | Centrality: 50-90 | 3 < pT < 4 GeV
+  scaleTable[2][2][3][3][14] = 1.5;
+  
   // ========================
   //   Subleading jet shape
   // ========================
   
-  return resolutionTable[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iBin];
+  // xj integrated | Centrality: 0-10 | 0.7 < pT < 1 GeV
+  scaleTable[5][3][0][0][5] = 0.6;
+  scaleTable[5][3][0][0][6] = 0.6;
+  scaleTable[5][3][0][0][12] = 1.5;
+  scaleTable[5][3][0][0][14] = 2;
+  
+  // xj integrated | Centrality: 0-10 | 1 < pT < 2 GeV
+  scaleTable[5][3][0][1][6] = 1.3;
+  scaleTable[5][3][0][1][7] = 1.3;
+  scaleTable[5][3][0][1][10] = 1.5;
+  scaleTable[5][3][0][1][11] = 1.5;
+  scaleTable[5][3][0][1][12] = 2;
+  scaleTable[5][3][0][1][14] = 2;
+  
+  // xj integrated | Centrality: 0-10 | 2 < pT < 3 GeV
+  scaleTable[5][3][0][2][12] = 1.5;
+  scaleTable[5][3][0][2][13] = 2;
+  
+  // xj integrated | Centrality: 10-30 | 0.7 < pT < 1 GeV
+  scaleTable[5][3][1][0][12] = 1.5;
+  scaleTable[5][3][1][0][13] = 2;
+  scaleTable[5][3][1][0][14] = 2.5;
+  
+  // xj integrated | Centrality: 10-30 | 1 < pT < 2 GeV
+  scaleTable[5][3][1][1][13] = 1.5;
+  scaleTable[5][3][1][1][14] = 1.5;
+  
+  // xj integrated | Centrality: 10-30 | 3 < pT < 4 GeV
+  scaleTable[5][3][1][3][14] = 2;
+  
+  // xj integrated | Centrality: 30-50 | 0.7 < pT < 1 GeV
+  scaleTable[5][3][2][0][13] = 1.5;
+  scaleTable[5][3][2][0][14] = 2;
+  
+  // xj integrated | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[5][3][3][0][12] = 1.5;
+  scaleTable[5][3][3][0][13] = 1.5;
+  scaleTable[5][3][3][0][14] = 2;
+  
+  // xj integrated | Centrality: 50-90 | 1 < pT < 2 GeV
+  scaleTable[5][3][3][1][13] = 2;
+  scaleTable[5][3][3][1][14] = 1.5;
+  
+  // xj integrated | Centrality: 50-90 | 3 < pT < 4 GeV
+  scaleTable[5][3][3][3][13] = 1.5;
+  scaleTable[5][3][3][3][14] = 3;
+  
+  // 0.0 < xj < 0.6 | Centrality: 0-10 | 0.7 < pT < 1 GeV
+  scaleTable[5][0][0][0][14] = 3;
+  
+  // 0.0 < xj < 0.6 | Centrality: 0-10 | 1 < pT < 2 GeV
+  scaleTable[5][0][0][1][12] = 3;
+  scaleTable[5][0][0][1][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 0-10 | 2 < pT < 3 GeV
+  scaleTable[5][0][0][2][13] = 3;
+  scaleTable[5][0][0][2][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 10-30 | 2 < pT < 3 GeV
+  scaleTable[5][0][1][2][13] = 1.5;
+  scaleTable[5][0][1][2][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 30-50 | 1 < pT < 2 GeV
+  scaleTable[5][0][2][1][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 30-50 | 2 < pT < 3 GeV
+  scaleTable[5][0][2][2][9] = 2;
+  scaleTable[5][0][2][2][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[5][0][3][0][13] = 2;
+  scaleTable[5][0][3][0][14] = 2;
+  
+  // 0.0 < xj < 0.6 | Centrality: 50-90 | 2 < pT < 3 GeV
+  scaleTable[5][0][3][2][6] = 1.5;
+  scaleTable[5][0][3][2][10] = 1.5;
+  scaleTable[5][0][3][2][13] = 1.5;
+  scaleTable[5][0][3][2][14] = 1.5;
+  
+  // 0.6 < xj < 0.8 | Centrality: 0-10 | 0.7 < pT < 1 GeV
+  scaleTable[5][1][0][0][1] = 2;
+  scaleTable[5][1][0][0][5] = 2;
+  scaleTable[5][1][0][0][7] = 2;
+  scaleTable[5][1][0][0][8] = 2;
+  scaleTable[5][1][0][0][10] = 2;
+  scaleTable[5][1][0][0][11] = 2;
+  scaleTable[5][1][0][0][12] = 2;
+  scaleTable[5][1][0][0][13] = 2;
+  scaleTable[5][1][0][0][14] = 4;
+  
+  // 0.6 < xj < 0.8 | Centrality: 0-10 | 1 < pT < 2 GeV
+  scaleTable[5][1][0][1][3] = 1.5;
+  scaleTable[5][1][0][1][4] = 1.5;
+  scaleTable[5][1][0][1][5] = 1.5;
+  scaleTable[5][1][0][1][6] = 1.5;
+  scaleTable[5][1][0][1][7] = 1.5;
+  scaleTable[5][1][0][1][8] = 1.5;
+  scaleTable[5][1][0][1][9] = 1.5;
+  scaleTable[5][1][0][1][10] = 2;
+  scaleTable[5][1][0][1][11] = 2;
+  scaleTable[5][1][0][1][12] = 2;
+  scaleTable[5][1][0][1][13] = 2;
+  scaleTable[5][1][0][1][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 0-10 | 2 < pT < 3 GeV
+  scaleTable[5][1][0][1][13] = 3;
+  scaleTable[5][1][0][1][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 10-30 | 1 < pT < 2 GeV
+  scaleTable[5][1][1][1][12] = 2;
+  scaleTable[5][1][1][1][13] = 2;
+  scaleTable[5][1][1][1][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 30-50 | 0.7 < pT < 1 GeV
+  scaleTable[5][1][2][0][12] = 1.5;
+  scaleTable[5][1][2][0][13] = 2;
+  scaleTable[5][1][2][0][14] = 1.5;
+  
+  // 0.6 < xj < 0.8 | Centrality: 30-50 | 2 < pT < 3 GeV
+  scaleTable[5][1][2][2][9] = 2;
+  scaleTable[5][1][2][2][12] = 2;
+  scaleTable[5][1][2][2][14] = 3;
+  
+  // 0.6 < xj < 0.8 | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[5][1][3][0][11] = 2;
+  scaleTable[5][1][3][0][12] = 3;
+  scaleTable[5][1][3][0][13] = 3;
+  scaleTable[5][1][3][0][14] = 4;
+  
+  // 0.6 < xj < 0.8 | Centrality: 50-90 | 1 < pT < 2 GeV
+  scaleTable[5][1][3][1][13] = 2;
+  scaleTable[5][1][3][1][14] = 2;
+  
+  // 0.6 < xj < 0.8 | Centrality: 50-90 | 2 < pT < 3 GeV
+  scaleTable[5][1][3][2][12] = 2;
+  scaleTable[5][1][3][2][13] = 2.5;
+  scaleTable[5][1][3][2][14] = 3;
+  
+  // 0.6 < xj < 0.8 | Centrality: 50-90 | 3 < pT < 4 GeV
+  scaleTable[5][1][3][3][14] = 2;
+  
+  // 0.8 < xj < 1.0 | Centrality: 0-10 | 0.7 < pT < 1 GeV
+  scaleTable[5][2][0][0][10] = 1.5;
+  scaleTable[5][2][0][0][13] = 1.5;
+  scaleTable[5][2][0][0][14] = 1.5;
+  
+  // 0.8 < xj < 1.0 | Centrality: 0-10 | 1 < pT < 2 GeV
+  scaleTable[5][2][0][1][2] = 1.5;
+  scaleTable[5][2][0][1][3] = 1.5;
+  scaleTable[5][2][0][1][4] = 1.5;
+  scaleTable[5][2][0][1][5] = 1.5;
+  scaleTable[5][2][0][1][6] = 1.5;
+  scaleTable[5][2][0][1][7] = 1.5;
+  scaleTable[5][2][0][1][8] = 1.5;
+  scaleTable[5][2][0][1][9] = 1.5;
+  scaleTable[5][2][0][1][10] = 1.5;
+  scaleTable[5][2][0][1][11] = 1.5;
+  
+  // 0.8 < xj < 1.0 | Centrality: 0-10 | 3 < pT < 4 GeV
+  scaleTable[5][2][0][3][12] = 1.5;
+  scaleTable[5][2][0][3][14] = 1.5;
+  
+  // 0.8 < xj < 1.0 | Centrality: 10-30 | 0.7 < pT < 1 GeV
+  scaleTable[5][2][1][0][2] = 3;
+  
+  // 0.8 < xj < 1.0 | Centrality: 10-30 | 1 < pT < 2 GeV
+  scaleTable[5][2][1][1][14] = 2;
+  
+  // 0.8 < xj < 1.0 | Centrality: 30-50 | 2 < pT < 3 GeV
+  scaleTable[5][2][2][2][12] = 1.5;
+  scaleTable[5][2][2][2][14] = 3;
+  
+  // 0.8 < xj < 1.0 | Centrality: 50-90 | 0.7 < pT < 1 GeV
+  scaleTable[5][2][3][0][10] = 1.5;
+  scaleTable[5][2][3][0][12] = 2;
+  scaleTable[5][2][3][0][14] = 4;
+  
+  // 0.8 < xj < 1.0 | Centrality: 50-90 | 3 < pT < 4 GeV
+  scaleTable[5][2][3][3][14] = 2;
+  
+  return scaleTable[iJetTrack][iAsymmetry][iCentrality][iTrackPt][iBin];
 
 }
