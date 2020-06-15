@@ -5,7 +5,7 @@
 /*
  *  Systematic uncertainty smoothening for jet resolution
  *
- *  Files used to derive the smoothing factors iwth compareDijetHistograms.C:
+ *  Files used to derive the smoothing factors with compareDijetHistograms.C:
  *   dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root
  *   dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_allCorrectionsUnsmeared_processed_2020-05-13.root
  *
@@ -701,6 +701,11 @@ double getSmoothingJetResolution(int iJetTrack, int iAsymmetry, int iCentrality,
 
 /*
  *  Systematic uncertainty smoothening for jet resolution
+ *
+ *  Files used to derive the smoothing factors with compareDijetHistograms.C:
+ *   dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root
+ *   dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6minus_wtaAxis_allCorrections_finalTuning_onlyFinalResults_processed_2019-12-16.root
+ *   dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_xjBins_100trig_JECv6plus_wtaAxis_allCorrections_finalTuning_onlyFinalResults_processed_2019-12-29.root
  *
  *  Arguments:
  *   int iJetTrack = Index for the jet track correlation
