@@ -17,7 +17,7 @@ void printRelativeUncertainty(){
   TString uncertaintyFileName[2];
   TString ppUncertaintyFileName[2];
   uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root";
-  ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root";
+  ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_jffAndJetResolutionUpdate_2020-06-03.root";
   uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root";
   ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
   // uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root
@@ -98,24 +98,24 @@ void printRelativeUncertainty(){
   
   // Select drawn bins
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int lastDrawnCentralityBin = nCentralityBins;
   
   int firstDrawnTrackPtBin = 0;
   int lastDrawnTrackPtBin = nTrackPtBins;
   
-  int firstDrawnAsymmetryBin = 3;
-  int lastDrawnAsymmetryBin = 3;
+  int firstDrawnAsymmetryBin = nAsymmetryBins;
+  int lastDrawnAsymmetryBin = nAsymmetryBins;
     
   // Select which uncertainty sources to draw
-  bool drawAllUncertainites = true;
+  bool drawAllUncertainites = false;
   bool drawSpilloverUncertainty = false;
   bool drawJffUncertainty = false;
-  bool drawJetEnergyScaleUncertainty = false;
+  bool drawJetEnergyScaleUncertainty = true;
   bool drawTrackingEfficiencyUncertainty = false;
   bool drawResidualTrackinguncertainty = false;
   bool drawTrackingDeltaRUncertainty = false;
   bool drawPairAcceptanceUncertainty = false;
-  bool drawBackgroundSubtractionUncertainty = true;
+  bool drawBackgroundSubtractionUncertainty = false;
   bool drawTotalUncertainty = false;
   
   bool drawUncertainty[JffCorrector::knUncertaintySources] = {drawSpilloverUncertainty, drawJffUncertainty, drawJetEnergyScaleUncertainty, drawTrackingEfficiencyUncertainty, drawResidualTrackinguncertainty, drawTrackingDeltaRUncertainty, drawPairAcceptanceUncertainty, drawBackgroundSubtractionUncertainty, drawTotalUncertainty};
@@ -129,7 +129,7 @@ void printRelativeUncertainty(){
   // If we are drawing system comparison or printing slides, we must use all centrality bins
   if(drawUncertaintySystemComparison || printSlides){
     firstDrawnCentralityBin = 0;
-    lastDrawnCentralityBin = nCentralityBins-1;
+    lastDrawnCentralityBin = nCentralityBins;
   }
   
   // Define arrays for the jet shapes
@@ -252,10 +252,10 @@ void printRelativeUncertainty(){
         cout << "\\begin{frame}" << endl;
         cout << namer << endl;
         cout << "\\begin{center}" << endl;
-        cout << "  \\begin{tabular}{ccccc}" << endl;
+        cout << "  \\begin{tabular}{cccccc}" << endl;
         cout << "    \\toprule" << endl;
-        //cout << "    Source & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 & pp \\\\" << endl;
-        cout << "    Source & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 \\\\" << endl;
+        cout << "    Source & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 & pp \\\\" << endl;
+        //cout << "    Source & C: 0-10 & C: 10-30 & C: 30-50 & C: 50-90 \\\\" << endl;
         cout << "    \\midrule" << endl;
         
         // Set the correct precision for printing floating point numbers
@@ -263,7 +263,7 @@ void printRelativeUncertainty(){
         
         // Combine the tracking uncertainties kTrackingEfficiency, kResidualTracking, kTrackingDeltaR
         if(combineTracking){
-          for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
             uncertaintyYield[0][iJetType][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt] = TMath::Sqrt(TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kTrackingEfficiency][nAsymmetryBins][iCentrality][iTrackPt],2) + TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kResidualTracking][nAsymmetryBins][iCentrality][iTrackPt],2) + TMath::Power(uncertaintyYield[0][iJetType][JffCorrector::kTrackingDeltaR][nAsymmetryBins][iCentrality][iTrackPt],2));
           }
         }

@@ -225,8 +225,8 @@ void finalBigAsymmetryPlotter_noNormalized_v1(){
   TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root");
   TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root");
   
-  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_fixJES_2020-02-03.root");
-  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root");
+  TFile *ppUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_jffAndJetResolutionUpdate_2020-06-03.root");
+  TFile *pbpbUncertaintyFile = TFile::Open("uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root");
   DijetHistogramManager *ppHistograms = new DijetHistogramManager(ppFile);
   DijetHistogramManager *pbpbHistograms = new DijetHistogramManager(pbpbFile);
   JffCorrector *ppUncertaintyProvider = new JffCorrector();
@@ -284,7 +284,7 @@ void finalBigAsymmetryPlotter_noNormalized_v1(){
   pbpbUncertaintyProvider->ReadSystematicFile(pbpbUncertaintyFile);
   
   // Plot the figures using Xiao's plotting macro
-  auto wf = TFile::Open("hin-19-013_jetShapes_errorUpdate.root", "recreate");
+  auto wf = TFile::Open("hin-19-013_jetShapes_systematicUpdate.root", "recreate");
   plotJetShapeBigAsymmetry(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackLeadingJet);
   plotJetShapeBigAsymmetry(ppHistograms, pbpbHistograms, ppUncertaintyProvider, pbpbUncertaintyProvider, DijetHistogramManager::kPtWeightedTrackSubleadingJet);
   wf->Close();

@@ -12,7 +12,7 @@
 #fi
 
 # Estimate the systematic uncertainty in all possible bins
-for j in `seq 0 7`;
+for j in `seq 0 6`;
 do  
   for k in `seq 0 3`;
   do
