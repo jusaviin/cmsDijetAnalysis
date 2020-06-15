@@ -23,7 +23,7 @@ DijetDrawer::DijetDrawer(DijetHistogramManager *inputHistograms) :
   fSaveFigures(false),
   fFigureFormat("pdf"),
   fNormalizeJetShape(false),
-  fNormalizeXjMatrix(false),
+  fNormalizeXjMatrix(0),
   fWideXjMatrixBins(false),
   fLogPt(true),
   fLogCorrelation(true),
@@ -454,13 +454,13 @@ void DijetDrawer::DrawDijetHistograms(){
       if(fWideXjMatrixBins){
         int nXjBins = 3;
         double xjBinBorders[4] = {0, 0.6, 0.8, 1};
-        gStyle->SetPaintTextFormat("0.2f");
+        gStyle->SetPaintTextFormat("0.3f");
         drawnHistogram2D = normalizer->RebinHistogram(drawnHistogram2D, nXjBins, xjBinBorders, nXjBins, xjBinBorders, true, false);
         fDrawer->SetLogZ(false);
         drawnHistogram2D->SetMarkerSize(3);
       }
       
-      if(fNormalizeXjMatrix) normalizer->NormalizeColumns(drawnHistogram2D,1);
+      if(fNormalizeXjMatrix) normalizer->NormalizeMatrix(drawnHistogram2D,1,fNormalizeXjMatrix);
       fDrawer->DrawHistogram(drawnHistogram2D,"Reconstructed x_{j}","Generator level x_{j}",centralityString,fStyle2D);
       
       
@@ -1461,7 +1461,7 @@ void DijetDrawer::SetDrawEventInformation(const bool drawOrNot){
 }
 
 // Setter for drawing dijet histograms
-void DijetDrawer::SetDrawDijetHistograms(const bool drawOrNot, const bool normalizeXjMatrix, const bool wideBins){
+void DijetDrawer::SetDrawDijetHistograms(const bool drawOrNot, const int normalizeXjMatrix, const bool wideBins){
   fDrawDijetHistograms = drawOrNot;
   fNormalizeXjMatrix = normalizeXjMatrix;
   fWideXjMatrixBins = wideBins;

@@ -89,8 +89,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   // Normalization for the xj matrix
-  bool normalizeXjMatrix = false;  // True = show probability to see gen xj given reco xj. False = show counts
-  bool wideXjMatrixBins = false; // False = fine bins for xj matrix. True = 3x3 xj matrix with analysis binning
+  int normalizeXjMatrix = 2;    // 0 = Draw counts. 1 = Draw probability for gen xj given reco xj. 2 = Draw probability for reco xj given gen xj.
+  bool wideXjMatrixBins = true; // False = fine bins for xj matrix. True = 3x3 xj matrix with analysis binning
   
   // Draw different jet-track correlation histograms
   bool drawJetTrackDeltaPhi = false;
@@ -128,7 +128,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Choose if you want to write the figures to pdf file
   bool saveFigures = false;
   const char* figureFormat = "pdf";
-  TString figureNameSuffix = "_linearScale_kRainBow";
+  TString figureNameSuffix = "_reverseNormalizedWide";
   
   // Normalization for jet shape plotting
   bool normalizeJetShapePlot = false;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
@@ -139,7 +139,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool logJetShape = true;    // Jet shapes
   
   // Plotting style for 2D and 3D plots
-  int colorPalette = kRainBow;  // kRainBow kTemperatureMap kLightTemperature
+  int colorPalette = kLightTemperature;  // kRainBow kTemperatureMap kLightTemperature
   const char* style2D = "colz,text";
   const char* style3D = "surf1";
   
@@ -228,8 +228,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
     highDeltaPhiBinBorders[3] = 3*TMath::Pi()/2-0.001;
   }
   
-  int firstDrawnCentralityBin = 1;
-  int lastDrawnCentralityBin = 1;
+  int firstDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = nCentralityBins-1;
   
   int firstDrawnTrackPtBin = 1;
   int lastDrawnTrackPtBin = 1;

@@ -2011,6 +2011,17 @@ bool DijetMethods::CheckBinBoundaries(const int nCheckedBins, const double *chec
 }
 
 // Normalize all the columns of a 2-D histogram to a given value
+void DijetMethods::NormalizeMatrix(TH2D *histogramInNeedOfNormalization, const double value, const int direction){
+  
+  if(direction == 1){
+    NormalizeColumns(histogramInNeedOfNormalization, value);
+  } else {
+    NormalizeRows(histogramInNeedOfNormalization, value);
+  }
+  
+}
+
+// Normalize all the columns of a 2-D histogram to a given value
 void DijetMethods::NormalizeColumns(TH2D *histogramInNeedOfNormalization, const double value){
   
   // Helper variables
@@ -2019,7 +2030,7 @@ void DijetMethods::NormalizeColumns(TH2D *histogramInNeedOfNormalization, const 
   double binSum;
   double normalizationFactor;
   
-  // Loop over all the y-bins for a given x-abin and normalize the content
+  // Loop over all the y-bins for a given x-bin and normalize the content
   for(int iBinX = 1; iBinX <= histogramInNeedOfNormalization->GetNbinsX(); iBinX++){
     
     binSum = 0;
@@ -2037,6 +2048,44 @@ void DijetMethods::NormalizeColumns(TH2D *histogramInNeedOfNormalization, const 
     
     // Normalize the bin content in each bin
     for(int iBinY = 1; iBinY <= histogramInNeedOfNormalization->GetNbinsY(); iBinY++){
+      binContent = histogramInNeedOfNormalization->GetBinContent(iBinX, iBinY);
+      binError = histogramInNeedOfNormalization->GetBinError(iBinX, iBinY);
+      binContent *= normalizationFactor;
+      binError *= normalizationFactor;
+      histogramInNeedOfNormalization->SetBinContent(iBinX, iBinY, binContent);
+      histogramInNeedOfNormalization->SetBinError(iBinX, iBinY, binError);
+    }
+  }
+  
+}
+
+// Normalize all the rows of a 2-D histogram to a given value
+void DijetMethods::NormalizeRows(TH2D *histogramInNeedOfNormalization, const double value){
+  
+  // Helper variables
+  double binContent;
+  double binError;
+  double binSum;
+  double normalizationFactor;
+  
+  // Loop over all the x-bins for a given y-bin and normalize the content
+  for(int iBinY = 1; iBinY <= histogramInNeedOfNormalization->GetNbinsY(); iBinY++){
+    
+    binSum = 0;
+    
+    // First calculate the sum of contents in the y-bins
+    for(int iBinX = 1; iBinX <= histogramInNeedOfNormalization->GetNbinsX(); iBinX++){
+      binSum += histogramInNeedOfNormalization->GetBinContent(iBinX, iBinY);
+    }
+    
+    // If there is no content, no need to normalize
+    if(binSum == 0) continue;
+    
+    // Get the normalization factor
+    normalizationFactor = value / binSum;
+    
+    // Normalize the bin content in each bin
+    for(int iBinX = 1; iBinX <= histogramInNeedOfNormalization->GetNbinsX(); iBinX++){
       binContent = histogramInNeedOfNormalization->GetBinContent(iBinX, iBinY);
       binError = histogramInNeedOfNormalization->GetBinError(iBinX, iBinY);
       binContent *= normalizationFactor;

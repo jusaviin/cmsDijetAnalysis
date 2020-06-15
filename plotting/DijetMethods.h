@@ -48,7 +48,9 @@ public:
   TH1D* ProjectBackgroundDeltaPhi(TH2D* deltaPhiDeltaEtaHistogram); // Project deltaPhi distribution in the background region out of a two-dimensional deltaPhi-deltaEta distribution
   TF1* FourierFit(TH1D* backgroundDeltaPhi, const int maxVn, const bool onlyNearSideFit = false); // Do a Fourier fit for the background deltaPhi distribution
   TH1D* CombineDeltaPhi(const TH2D *leadingHistogramWithBackground, const TH2D *subleadingHistogramWithBackground, const double minDeltaEta, const double maxDeltaEta, const char* newName, const bool oneSide = false);
+  void NormalizeMatrix(TH2D *histogramInNeedOfNormalization, const double value = 1, const int direction = 1);  // Normalize rows or columns of a 2D histogram to a given value
   void NormalizeColumns(TH2D *histogramInNeedOfNormalization, const double value = 1);  // Normalize all the columns of a 2-D histogram to a given value
+  void NormalizeRows(TH2D *histogramInNeedOfNormalization, const double value = 1);  // Normalize all the rows of a 2-D histogram to a given value
   
   // Project a region in one direction from a two-dimensional histogram
   TH1D* ProjectRegionDeltaPhi(const TH2D* deltaPhiDeltaEtaHistogram, const double minDeltaEta, const double maxDeltaEta, const char* newName, const bool oneSide = false);  // Project deltaPhi distribution out of a two-dimensional deltaPhi-deltaEta distribution
