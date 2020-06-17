@@ -23,6 +23,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   const bool drawInclusive = false;
   
+  const bool saveHistogramsForHepData = true;
+  
   // Open a file to include results from inclusive jet analysis HIN-16-020
   //  TFile *inclusiveResultFile = TFile::Open("data/publishedResults/officialHist_py_deta_16_020.root");
   
@@ -213,7 +215,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       deltaEtaStack[iCentrality][iAsymmetry] = new stackHist(Form("st_%d",iCentrality));
       //deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5, 1.5, "x"); // Changing the x-axis range
       deltaEtaStack[iCentrality][iAsymmetry]->setRange(0, 1.5, "x");
-      deltaEtaStack[iCentrality][iAsymmetry]->setRange(-3-iJetTrack/3, deltaEtaZoom[iJetTrack/3], "y");
+      deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5-iJetTrack/3, deltaEtaZoom[iJetTrack/3], "y");  // Linear scale
+      //deltaEtaStack[iCentrality][iAsymmetry]->setRange(0.001, deltaEtaZoom[iJetTrack/3], "y");  // Log scale
       for(int iTrackPt = nTrackPtBins-2; iTrackPt >= 0; iTrackPt--){
         deltaEtaStack[iCentrality][iAsymmetry]->addHist((TH1*) deltaEtaArray[iCentrality][iTrackPt][iAsymmetry]);
       }
@@ -280,6 +283,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
             
       if(iAsymmetry == 3 ) bigCanvas->CD(5-iCentrality);
       else bigCanvas->CD(10+iAsymmetry*5-iCentrality);
+      //gPad->SetLogy();  // Possibility to enable log scale
       
       deltaEtaStack[iCentrality][iAsymmetry]->drawStack("","hist",true);
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetNdivisions(505);
@@ -433,8 +437,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   box->DrawBox(0.78,0.04, 0.82, 0.07);
   box->DrawBox(0.98,0.04, 0.99, 0.07);
   
-  box->DrawBox(0.23,0.3067, 0.243, 0.315);
-  box->DrawBox(0.23,0.5735, 0.243, 0.58);
+  //box->DrawBox(0.23,0.3067, 0.243, 0.315);
+  //box->DrawBox(0.23,0.5735, 0.243, 0.58);
   
   mainTitle->DrawLatex(0.437, 0.0552, "0");
   mainTitle->DrawLatex(0.62, 0.0552, "0");
@@ -442,9 +446,33 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   mainTitle->DrawLatex(0.972, 0.0552, "1.5");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_systematicUpdateSplitZero.pdf", deltaEtaSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_linScale.pdf", deltaEtaSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("deltaEta_normal_v3.png");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
+  
+  // Save the histograms to a file for HepData submission
+  if(saveHistogramsForHepData){
+    TString outputFileName = "hepdata/hepdata_deltaEta_hin-19-013.root";
+    TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
+    TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
+    TString asymmetryString[] = {"0<xj<06","06<xj<08","08<xj<1","allXj"};
+    
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        sumHistogramPbPb[iCentrality][iAsymmetry]->Write(Form("deltaEta_track%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);;
+        sumUncertainty[iCentrality][iAsymmetry]->Write(Form("deltaEtaError_track%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+      } // Centrality loop
+      
+      // No centrality binning for pp
+      
+      sumHistogramPp[iAsymmetry]->Write(Form("deltaEta_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+      sumUncertainty[nCentralityBins][iAsymmetry]->Write(Form("deltaEtaError_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+      
+    } // Asymmetry loop
+    
+    outputFile->Close();
+  }
   
 }
 

@@ -675,9 +675,42 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   // Save the histograms to a file for HepData submission
   if(saveHistogramsForHepData){
     
-    // TODO: Add histograms for distribution, ratio and systemtic uncertainties for both and write them to file
+    TString outputFileName = "hepdata/hepdata_jetShapes_hin-19-013.root";
+    if(!normalizeJetShape) outputFileName = "hepdata/hepdata_jetRadialMomentum_hin-19-013.root";
+    TString shapeName = "Shape";
+    if(!normalizeJetShape) shapeName = "RadialMomentum";
+    TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
+    TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
+    TString asymmetryString[] = {"0<xj<06","06<xj<08","08<xj<1","allXj"};
     
-  }
+    int firstSaveBin = 0;
+    if(!normalizeJetShape) firstSaveBin = nAsymmetryBins;
+    
+    for(int iAsymmetry = firstSaveBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        sumHistogramPbPb[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+        sumHistogramPbPb[iCentrality][iAsymmetry]->Write(Form("jet%s_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);;
+        sumUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+        sumUncertainty[iCentrality][iAsymmetry]->Write(Form("jet%sError_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+        ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+        ratioHistogram[iCentrality][iAsymmetry]->Write(Form("jet%sRatio_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+        ratioUncertainty[iCentrality][iAsymmetry]->Write(Form("jet%sRatioError_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+      } // Centrality loop
+      
+      // No centrality binning for pp
+      
+      sumHistogramPp[iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+      sumHistogramPp[iAsymmetry]->Write(Form("jet%s_%s_pp_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+      sumUncertainty[nCentralityBins][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+      sumUncertainty[nCentralityBins][iAsymmetry]->Write(Form("jet%sError_%s_pp_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+      
+    } // Asymmetry loop
+    
+    outputFile->Close();
+    
+  } // Save HepData
   
   // Print the integrals for different bins to the console
   if(printIntegrals){

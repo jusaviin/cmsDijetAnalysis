@@ -11,6 +11,8 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   const int nAsymmetryBins = pbpbHistograms[0]->GetNAsymmetryBins();
   const int nRelevantUncertainties = 5;
   
+  const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
+  
   const char* jetShapeTitle[] = {"Leading jet shape ratio between x_{j} bins","Subleading jet shape ratio between x_{j} bins","Jet shape ratio between x_{j} bins"};
   const char* jetShapeSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
@@ -513,20 +515,22 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
   // Save the histograms to a file for HepData submission
-  TString outputFileName = "hepdata/hepdata_asymmetryRatio_hin-19-013.root";
-  TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
-  TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
+  if(saveHistogramsForHepData){
+    TString outputFileName = "hepdata/hepdata_asymmetryRatio_hin-19-013.root";
+    TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
+    TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
     
-  for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-    asymmetryRatioHistogram[0][iCentrality][0]->Write(Form("asymmetryRatioImbalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
-    asymmetryRatioUncertainty[0][iCentrality][0]->GetXaxis()->SetRangeUser(0,1);
-    asymmetryRatioUncertainty[0][iCentrality][0]->Write(Form("asymmetryRatioErrorImbalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
-    asymmetryRatioHistogram[0][iCentrality][2]->Write(Form("asymmetryRatioBalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
-    asymmetryRatioUncertainty[0][iCentrality][2]->GetXaxis()->SetRangeUser(0,1);
-    asymmetryRatioUncertainty[0][iCentrality][2]->Write(Form("asymmetryRatioErrorBalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
+    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+      asymmetryRatioHistogram[0][iCentrality][0]->Write(Form("asymmetryRatioImbalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
+      asymmetryRatioUncertainty[0][iCentrality][0]->GetXaxis()->SetRangeUser(0,1);
+      asymmetryRatioUncertainty[0][iCentrality][0]->Write(Form("asymmetryRatioErrorImbalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
+      asymmetryRatioHistogram[0][iCentrality][2]->Write(Form("asymmetryRatioBalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
+      asymmetryRatioUncertainty[0][iCentrality][2]->GetXaxis()->SetRangeUser(0,1);
+      asymmetryRatioUncertainty[0][iCentrality][2]->Write(Form("asymmetryRatioErrorBalanced_%s_%s", jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data()), TObject::kOverwrite);
+    }
+    
+    outputFile->Close();
   }
-  
-  outputFile->Close();
   
 }
 
