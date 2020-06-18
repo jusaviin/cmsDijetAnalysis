@@ -34,7 +34,6 @@ DijetAnalyzer::DijetAnalyzer() :
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
-  fTrackPreCorrector(), // TODO: Remove this after final track corrections are good enough
   fDataType(-1),
   fForestType(0),
   fReadMode(0),
@@ -230,7 +229,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       fVzWeightFunction = new TF1("fvz","pol6",-15,15);  // Weight function for 2017 MC
       fVzWeightFunction->SetParameters(0.973805, 0.00339418, 0.000757544, -1.37331e-06, -2.82953e-07, -3.06778e-10, 3.48615e-09);
     }
-    fTrackPreCorrector = NULL; // TODO: Remove this after 2018 track corrections are decent
     fCentralityWeightFunction = NULL;
     
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
@@ -240,9 +238,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     
     // Track correction for 2018 PbPb data
     fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
-    
-    // Initialize the class for weighting tracks from 2018 data to match 2015
-    fTrackPreCorrector = new TrackPreCorrector("trackCorrectionTables/preCorrection/minimumBiasTrackRatio.root"); // TODO: Remove this after 2018 track corrections are good enough
     
     // Flag for PbPb data
     ppData = false;
@@ -273,7 +268,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     fTrackCorrection = new TrkCorr(""); // Bad data type, no corrections initialized
     fVzWeightFunction = NULL;
     fCentralityWeightFunction = NULL;
-    fTrackPreCorrector = NULL; // TODO: Remove this after 2018 track corrections are decent
   }
   
   // Initialize the class for JFF correction
@@ -469,7 +463,6 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fTrackEfficiencyCorrector2018) delete fTrackEfficiencyCorrector2018;
   if(fJetCorrector2018) delete fJetCorrector2018;
   if(fJetUncertainty2018) delete fJetUncertainty2018;
-  if(fTrackPreCorrector) delete fTrackPreCorrector;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
@@ -1611,14 +1604,13 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   // Calculate the dijet asymmetry. Choose AJ or xJ based on selection from JCard.
   Double_t dijetAsymmetry = (fAsymmetryBinType == 0) ? (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt) : subleadingJetPt/leadingJetPt;
   
-  Double_t triggerLowBorder = fCard->Get("TriggerTrackLow");
-  Double_t triggerHighBorder = fCard->Get("TriggerTrackHigh");
+  Int_t triggerBin, associatedBin;
   
   // Loop over all track in the event
   Int_t nTracksTrigger = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();  // Trigger tracks always from same event
   Int_t nTracksAssociated = fTrackReader[correlationType]->GetNTracks();  // Associated tracks can be also from mixed event
   for(Int_t iTriggerTrack = 0; iTriggerTrack < nTracksTrigger; iTriggerTrack++){
-    
+        
     // Check that all the track cuts are passed for the trigger track
     if(!PassTrackCuts(iTriggerTrack,fHistograms->fhTrackCuts,DijetHistograms::kSameEvent)) continue;
     
@@ -1647,7 +1639,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     }
     
     // Read the trigger bin from the card
-    if(triggerPt < triggerLowBorder || triggerPt > triggerHighBorder) continue;
+    triggerBin = fCard->GetBin("TrackPtBinEdges",triggerPt);
     
     for(Int_t iTrack = 0; iTrack < nTracksAssociated; iTrack++){
       
@@ -1661,6 +1653,12 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
       trackPt = fTrackReader[correlationType]->GetTrackPt(iTrack);
       trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);
       trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
+      
+      // Read the associated bin
+      associatedBin = fCard->GetBin("TrackPtBinEdges",trackPt);
+      
+      // Only fill the histogram for the tracks with the same bin as the trigger
+      if(triggerBin != associatedBin) continue;
       
       // Get the efficiency correction
       trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);
@@ -2384,12 +2382,6 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   } // If for heavy ions
     
   // Find and return the track efficiency correction
-  
-  // Weight the 2018 tracks to match 2015 tracks. TODO: Remove this after 2018 track correction is usable
-  preWeight = 1;
-  if(fTrackPreCorrector && fReadMode > 2000){
-    preWeight = fTrackPreCorrector->GetTrackWeight(trackPt, trackEta, trackPhi, hiBin/2.0);
-  }
   
   double trackEfficiency = 1;
   trackEfficiency = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
