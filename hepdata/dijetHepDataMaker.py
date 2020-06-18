@@ -232,8 +232,8 @@ def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, s
 ######################################################################################
 
 table1 = Table("Figure 1")
-table1.description = "This table tell whatever is shown in the figure 1 of our very best paper."
-table1.location = "Data from Figure 1, located on page NN."
+table1.description = "The distribution of charged particle yields within $|\Delta\varphi| < 1.0$ correlated the leading jets as a function of $\Delta\eta$ in pp and PbPb collisions. Both collision systems are divided in dijet momentum balance bins and in addition the PbPb results are shown for different centrality regions."
+table1.location = "Data from figure 1, located on page 9."
 table1.keywords["observables"] = ["Particle yield correlated to leading jets"]
 #table1.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -253,8 +253,8 @@ submission.add_table(table1)
 ######################################################################################
 
 table2 = Table("Figure 2")
-table2.description = "This table tell whatever is shown in the figure 2 of our very best paper."
-table2.location = "Data from Figure 2, located on page NN."
+table2.description = "The distribution of charged particle yields within $|\Delta\varphi| < 1.0$ correlated the subleading jets as a function of $\Delta\eta$ in pp and PbPb collisions. Both collision systems are divided in dijet momentum balance bins and in addition the PbPb results are shown for different centrality regions."
+table2.location = "Data from figure 2, located on page 10."
 table2.keywords["observables"] = ["Particle yield correlated to subleading jets"]
 #table1.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -274,8 +274,8 @@ submission.add_table(table2)
 ##########################################################################################
 
 table3a = Table("Figure 3a")
-table3a.description = "This table tell whatever is shown in the figure 3a of our very best paper."
-table3a.location = "Data from Figure 3a, located on page NN."
+table3a.description = "The leading jet radial momentum profiles in pp and PbPb collisions and a function of $\Delta r$. The PbPb results are shown for different centrality regions."
+table3a.location = "Data from the top row of figure 3, located on page 11."
 table3a.keywords["observables"] = ["Leading jet radial momentum profile"]
 #table3a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -295,8 +295,8 @@ submission.add_table(table3a)
 ##########################################################################################
 
 table3b = Table("Figure 3b")
-table3b.description = "This table tell whatever is shown in the figure 3b of our very best paper."
-table3b.location = "Data from Figure 3b, located on page NN."
+table3b.description = "The subleading jet radial momentum profiles in pp and PbPb collisions as a function of $\Delta r$. The PbPb results are shown for different centrality regions."
+table3b.location = "Data from the bottom row of figure 3, located on page 11."
 table3b.keywords["observables"] = ["Subleading jet radial momentum profile"]
 #table3b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -316,8 +316,8 @@ submission.add_table(table3b)
 ##########################################################################################
 
 table4a = Table("Figure 4a")
-table4a.description = "This table tell whatever is shown in the figure 4a of our very best paper."
-table4a.location = "Data from Figure 4a, located on page NN."
+table4a.description = "The ratio between leading jet radial momentum profiles in PbPb and pp collisions as a function of $\Delta r$."
+table4a.location = "Data from the top row of figure 4, located on page 11."
 table4a.keywords["observables"] = ["Leading jet radial momentum profile ratio"]
 #table4a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -337,8 +337,8 @@ submission.add_table(table4a)
 ##########################################################################################
 
 table4b = Table("Figure 4b")
-table4b.description = "This table tell whatever is shown in the figure 4b of our very best paper."
-table4b.location = "Data from Figure 4b, located on page NN."
+table4b.description = "The ratio between subleading jet radial momentum profiles in PbPb and pp collisions as a function of $\Delta r$."
+table4b.location = "Data from the bottom row of figure 4, located on page 11."
 table4b.keywords["observables"] = ["Subleading jet radial momentum profile ratio"]
 #table4b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -358,8 +358,8 @@ submission.add_table(table4b)
 ##################################################################################
 
 table5 = Table("Figure 5")
-table5.description = "This table tell whatever is shown in the figure 5 of our very best paper."
-table5.location = "Data from Figure 5, located on page NN."
+table5.description = "Jet shapes for leading jets in pp and PbPb collisions. Both collision systems are divided in dijet momentum balance bins and in addition the PbPb results are shown for different centrality regions."
+table5.location = "Data from figure 5, located on page 13."
 table5.keywords["observables"] = ["Leading jet shape"]
 #table5.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -379,8 +379,8 @@ submission.add_table(table5)
 ##################################################################################
 
 table6 = Table("Figure 6")
-table6.description = "This table tell whatever is shown in the figure 6 of our very best paper."
-table6.location = "Data from Figure 6, located on page NN."
+table6.description = "Ratios of leading jet shapes between PbPb and pp collisions. Different centrality regions for PbPb are compared to pp using several dijet momentum balance selections."
+table6.location = "Data from figure 6, located on page 14."
 table6.keywords["observables"] = ["Leading jet shape ratio"]
 #table6.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -400,8 +400,8 @@ submission.add_table(table6)
 ##################################################################################
 
 table7 = Table("Figure 7")
-table7.description = "This table tell whatever is shown in the figure 7 of our very best paper."
-table7.location = "Data from Figure 7, located on page NN."
+table7.description = "Jet shapes for subleading jets in pp and PbPb collisions. Both collision systems are divided in dijet momentum balance bins and in addition the PbPb results are shown for different centrality regions."
+table7.location = "Data from figure 7, located on page 15."
 table7.keywords["observables"] = ["Subleading jet shape"]
 #table7.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -421,8 +421,8 @@ submission.add_table(table7)
 ##################################################################################
 
 table8 = Table("Figure 8")
-table8.description = "This table tell whatever is shown in the figure 8 of our very best paper."
-table8.location = "Data from Figure 8, located on page NN."
+table8.description = "Ratios of subleading jet shapes between PbPb and pp collisions. Different centrality regions for PbPb are compared to pp using several dijet momentum balance selections."
+table8.location = "Data from figure 8, located on page 16."
 table8.keywords["observables"] = ["Subleading jet shape ratio"]
 #table8.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -442,8 +442,8 @@ submission.add_table(table8)
 ##################################################################################
 
 table9a = Table("Figure 9a")
-table9a.description = "This table tell whatever is shown in the figure 9 of our very best paper."
-table9a.location = "Data from Figure 9a, located on page NN."
+table9a.description = "Ratio between unbalanced selection of leading jet shapes to all leading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
+table9a.location = "Data from the top row of figure 9, located on page 17."
 table9a.keywords["observables"] = ["Leading jet shape unbalanced ratio"]
 #table9.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -470,8 +470,8 @@ submission.add_table(table9a)
 ################################################################################
 
 table9b = Table("Figure 9b")
-table9b.description = "This table tell whatever is shown in the figure 9 of our very best paper."
-table9b.location = "Data from Figure 9b, located on page NN."
+table9b.description = "Ratio between balanced selection of leading jet shapes to all leading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
+table9b.location = "Data from the bottom row of figure 9, located on page 17."
 table9b.keywords["observables"] = ["Leading jet shape balanced ratio"]
 #table9b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -498,8 +498,8 @@ submission.add_table(table9b)
 ######################################################################################
 
 table10a = Table("Figure 10a")
-table10a.description = "This table tell whatever is shown in the figure 10 of our very best paper."
-table10a.location = "Data from Figure 10a, located on page NN."
+table10a.description = "Ratio between unbalanced selection of subleading jet shapes to all subleading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
+table10a.location = "Data from the top row of figure 10, located on page 22."
 table10a.keywords["observables"] = ["Subleading jet shape unbalanced ratio"]
 #table10a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -526,8 +526,8 @@ submission.add_table(table10a)
 ####################################################################################
 
 table10b = Table("Figure 10b")
-table10b.description = "This table tell whatever is shown in the figure 10 of our very best paper."
-table10b.location = "Data from Figure 10b, located on page NN."
+table10b.description = "Ratio between balanced selection of subleading jet shapes to all subleading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
+table10b.location = "Data from the bottom row of figure 10, located on page 22."
 table10b.keywords["observables"] = ["Subleading jet shape balanced ratio"]
 #table10b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
