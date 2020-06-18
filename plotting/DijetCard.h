@@ -107,6 +107,7 @@ private:
   int GetNBins(const int index) const;                            // Get the number of bins for internal index
   double GetLowBinBorder(const int index, const int iBin) const;  // Get the low border of i:th bin from internal index
   double GetHighBinBorder(const int index, const int iBin) const; // Get the high border of i:th bin from internal index
+  int GetBinIndex(const int index, const double value) const;     // Get the bin index in the i:th bin from internal index based on given value
    
 public:
   
@@ -127,6 +128,9 @@ public:
   double GetHighBinBorderCentrality(const int iBin) const; // Get the high border of i:th centrality bin
   double GetHighBinBorderTrackPt(const int iBin) const;    // Get the high border of i:th track pT bin
   double GetHighBinBorderAsymmetry(const int iBin) const;  // Get the high border of i:th asymmetry bin
+  int GetBinIndexCentrality(const double value) const;     // Get the bin index for a given centrality value
+  int GetBinIndexTrackPt(const double value) const;        // Get the bin index for a given track pT value
+  int GetBinIndexAsymmetry(const double value) const;      // Get the bin index for a given asymmetry value
   const char *GetAsymmetryBinType(TString latexIt = "") const; // Get a description of the used asymmetry bin type
   int GetNDeltaPhiBins() const;   // Get the number of deltaPhi bins
   double GetLowBinBorderDeltaPhi(const int iBin) const;  // Get the low border of i:th deltaPhi bin

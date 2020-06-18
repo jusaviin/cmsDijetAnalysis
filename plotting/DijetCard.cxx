@@ -141,6 +141,42 @@ int DijetCard::GetNAsymmetryBins() const{
   return GetNBins(kAsymmetryBinEdges);
 }
 
+/*
+ * Get a bin index based on a given value.
+ * If value is out of bound, return -1
+ */
+int DijetCard::GetBinIndex(const int index, const double value) const{
+  
+  // Find the number of bins in the array
+  int nBins = GetNBins(index);
+  
+  // If the number given is smaller than the first value, it is out of bounds. Return -1 in this case.
+  if(value < (*fCardEntries[index])[1]) return -1;
+  
+  // Find the bin in which the given value is and return it
+  for(int iBin = 2; iBin <= nBins+1; iBin++){
+    if(value < (*fCardEntries[index])[iBin]) return iBin-2;
+  }
+  
+  // If a value was not found, it must be larger than anything in the array. Return -1 in this case.
+  return -1;
+}
+
+// Get the bin index for a given centrality value
+int DijetCard::GetBinIndexCentrality(const double value) const{
+  return GetBinIndex(kCentralityBinEdges,value);
+}
+
+// Get the bin index for a given track pT value
+int DijetCard::GetBinIndexTrackPt(const double value) const{
+  return GetBinIndex(kTrackPtBinEdges,value);
+}
+
+// Get the bin index for a given asymmetry value
+int DijetCard::GetBinIndexAsymmetry(const double value) const{
+  return GetBinIndex(kAsymmetryBinEdges,value);
+}
+
 // Get the low border of i:th bin from internal index
 double DijetCard::GetLowBinBorder(const int index, const int iBin) const{
   
