@@ -160,14 +160,13 @@ def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, s
 
     # Determine how many bins in the histogram is outside of the analysis range of [0.1]
     overRange = 0
+    cutValue = 1.1
     if deltaEtaMode:
-        for (i,j) in xAxis.values:
-            if j > 1.6:
-                overRange = overRange + 1
-    else:
-        for (i,j) in xAxis.values:
-            if j > 1.1:
-                overRange = overRange + 1
+        cutValue = 1.6
+      
+    for (i,j) in xAxis.values:
+        if j > cutValue:
+            overRange = overRange + 1
                 
     # For deltaEta histograms, we want to remove the negative points from the beginning
     underRange = 0
