@@ -385,7 +385,7 @@ table6.keywords["observables"] = ["Leading jet shape ratio"]
 #table6.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(jetShapeRatioLeading, jetShapeRatioErrorLeading, "$\\rho(\Delta r)_{\mathrm{PbPb}}$ / \\rho(\Delta r)_{\mathrm{pp}}$", True, True, False)
+xDeltaR, yDeltaR = findVariables(jetShapeRatioLeading, jetShapeRatioErrorLeading, "$\\rho(\Delta r)_{\mathrm{PbPb}} / \\rho(\Delta r)_{\mathrm{pp}}$", True, True, False)
 
 # Add the variables to the table
 table6.add_variable(xDeltaR)
@@ -427,7 +427,7 @@ table8.keywords["observables"] = ["Subleading jet shape ratio"]
 #table8.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(jetShapeRatioSubleading, jetShapeRatioErrorSubleading, "$\\rho(\Delta r)_{\mathrm{PbPb}}$ / \\rho(\Delta r)_{\mathrm{pp}}$", True, True, False)
+xDeltaR, yDeltaR = findVariables(jetShapeRatioSubleading, jetShapeRatioErrorSubleading, "$\\rho(\Delta r)_{\mathrm{PbPb}} / \\rho(\Delta r)_{\mathrm{pp}}$", True, True, False)
 
 # Add the variables to the table
 table8.add_variable(xDeltaR)
