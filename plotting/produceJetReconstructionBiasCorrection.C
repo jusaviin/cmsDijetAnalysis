@@ -10,14 +10,28 @@ void produceJetReconstructionBiasCorrection(){
 
   // Name for the output file
   const char *outputFileName = "";
+  // corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt
+  // corrections/jetReconstructionBiasCorrectionWithoutShift_forTestingPurposes.txt
+  // corrections/jetReconstructionBiasCorrection_forTestingPurposes.txt
   
   // Draw the graphs showing the size of correction
   bool drawCorrection = true;
-  bool onlyNearSideFit = true;
+  bool drawFits = false;
+  bool onlyNearSideFit = false;
+  
+  // Save the illustration plots to file
+  bool saveFigures = false;
+  TString saveComment = "_recoGenIllustration";
   
   // Define the file names for the MC files used in deriving the correction
-  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_onlySeagull_processed_2019-10-10.root";
+  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root";
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
+  // data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root
+  // data/PbPbMC2018_RecoGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_jet100trigger_noCorrections_processed_2020-06-22.root
   TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root";
+  // data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
+  // data/PbPbMC2018_GenGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
+  // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
   
   // Open the files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
@@ -36,16 +50,23 @@ void produceJetReconstructionBiasCorrection(){
   const char *xjString[] = {"0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "x_{j} inclusive"};
   
   // Define how many v:s is fitted for the correction
-  const int nRefit = 2; // Number of vn:s included in the refit
+  const int nRefit = 4; // Number of vn:s included in the refit
   const int backgroundRebin = 4;  // Rebinning for the background histogram before Fourier fit
+  
+  // Select if you want to use the distributions directly from the same event before mixing correction
+  const bool useSameEvent = false;
   
   // Read the histograms from the input files
   recoGenReader->SetLoadTrackLeadingJetCorrelations(true);
+  if(useSameEvent) recoGenReader->SetLoadTrackSubleadingJetCorrelations(true);
   recoGenReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  recoGenReader->SetLoad2DHistograms(useSameEvent);
   recoGenReader->LoadProcessedHistograms();
   
   genGenReader->SetLoadTrackLeadingJetCorrelations(true);
+  if(useSameEvent) genGenReader->SetLoadTrackSubleadingJetCorrelations(true);
   genGenReader->SetAsymmetryBinRange(0,nAsymmetryBins);
+  genGenReader->SetLoad2DHistograms(useSameEvent);
   genGenReader->LoadProcessedHistograms();
   
   
@@ -55,6 +76,20 @@ void produceJetReconstructionBiasCorrection(){
   
   double genGenFlowTable[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
   double genGenFlowError[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
+  
+  // Extra histogram needed in case we use same events
+  TH2D *sameEventDeltaEtaDeltaPhiLeadingRecoGen[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TH2D *sameEventDeltaEtaDeltaPhiLeadingGenGen[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  
+  TH2D *sameEventDeltaEtaDeltaPhiSubleadingRecoGen[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TH2D *sameEventDeltaEtaDeltaPhiSubleadingGenGen[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  
+  TH2D *sameEventDeltaEtaDeltaPhiLongRangeRecoGen[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TH2D *sameEventDeltaEtaDeltaPhiLongRangeGenGen[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  
+  // Variables needed to calculate long range from same event
+  int nBins;
+  double binError, errorScale;
   
   // Define arrays for the histograms
   TH1D *recoGenLongRange[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
@@ -71,23 +106,96 @@ void produceJetReconstructionBiasCorrection(){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
-        // Regular background histogram
-        recoGenLongRange[iAsymmetry][iCentrality][iTrackPt] = recoGenReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
-        
-        genGenLongRange[iAsymmetry][iCentrality][iTrackPt] = genGenReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
-        
-        // Find the fourier fit function from the histogram
-        recoGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        
-        // Remove possible previous fits and optionally do rebinning
-        recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(recoGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]);
-        recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
-        recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
-        
-        genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]);
-        genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
-        genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+        // If we are doing the same event correction, we need to read the two-dimensional histograms
+        if(useSameEvent){
+          sameEventDeltaEtaDeltaPhiLeadingRecoGen[iAsymmetry][iCentrality][iTrackPt] = recoGenReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+          sameEventDeltaEtaDeltaPhiLeadingRecoGen[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0 / recoGenReader->GetPtIntegral(iCentrality, iAsymmetry));
+          
+          sameEventDeltaEtaDeltaPhiSubleadingRecoGen[iAsymmetry][iCentrality][iTrackPt] = recoGenReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+          sameEventDeltaEtaDeltaPhiSubleadingRecoGen[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0 / recoGenReader->GetPtIntegral(iCentrality, iAsymmetry));
+          
+          sameEventDeltaEtaDeltaPhiLeadingGenGen[iAsymmetry][iCentrality][iTrackPt] = genGenReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+          sameEventDeltaEtaDeltaPhiLeadingGenGen[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0 / genGenReader->GetPtIntegral(iCentrality, iAsymmetry));
+          
+          sameEventDeltaEtaDeltaPhiSubleadingGenGen[iAsymmetry][iCentrality][iTrackPt] = genGenReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+          sameEventDeltaEtaDeltaPhiSubleadingGenGen[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0 / genGenReader->GetPtIntegral(iCentrality, iAsymmetry));
+          
+          
+          // Get the background histograms from the same event RecoGen distributions
+          refitter->SubtractBackground(sameEventDeltaEtaDeltaPhiLeadingRecoGen[iAsymmetry][iCentrality][iTrackPt], sameEventDeltaEtaDeltaPhiSubleadingRecoGen[iAsymmetry][iCentrality][iTrackPt], 4, false);
+          
+          sameEventDeltaEtaDeltaPhiLongRangeRecoGen[iAsymmetry][iCentrality][iTrackPt] = refitter->GetBackground();
+          
+          nBins = sameEventDeltaEtaDeltaPhiLongRangeRecoGen[iAsymmetry][iCentrality][iTrackPt]->GetNbinsY();
+          recoGenLongRange[iAsymmetry][iCentrality][iTrackPt] = sameEventDeltaEtaDeltaPhiLongRangeRecoGen[iAsymmetry][iCentrality][iTrackPt]->ProjectionX(Form("sameLongRecoGen%d%d%d", iAsymmetry, iCentrality, iTrackPt), 1, nBins);  // Exclude underflow and overflow bins by specifying range
+          
+          recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale( sameEventDeltaEtaDeltaPhiLongRangeRecoGen[iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->GetBinWidth(1) );  // For correct normalization, need to divide out deltaEta bin width of the two-dimensional histogram
+          
+          /*
+           * Do error scaling and for the background deltaPhi distribution
+           *
+           * Error scaling is needed because information only from 1.5 < |deltaEta| < 2.5 is used to determine the background.
+           * When doing projection, root by default scaled the histogram with square root of bins projected over
+           * The whole range of the analysis is |deltaEta| < 4, which means that four times the bins used to determine
+           * the background are used in normalixing the error. We can fix this be scaling the error up by sqrt(4) = 2.
+           * This number is provided by the DijetMethods, since if we change the limits described above, the number is
+           * automatically adjusted for the new limits inside DijetMethods.
+           */
+          
+          for(int iBin = 1; iBin < recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+            binError = recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetBinError(iBin);
+            errorScale = refitter->GetBackgroundErrorScalingFactor();
+            recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin, binError*errorScale);
+          }
+          
+          // Get the background histograms from the same event GenGen distributions
+          refitter->SubtractBackground(sameEventDeltaEtaDeltaPhiLeadingGenGen[iAsymmetry][iCentrality][iTrackPt], sameEventDeltaEtaDeltaPhiSubleadingGenGen[iAsymmetry][iCentrality][iTrackPt], 4, false);
+          
+          sameEventDeltaEtaDeltaPhiLongRangeGenGen[iAsymmetry][iCentrality][iTrackPt] = refitter->GetBackground();
+          
+          nBins = sameEventDeltaEtaDeltaPhiLongRangeGenGen[iAsymmetry][iCentrality][iTrackPt]->GetNbinsY();
+          genGenLongRange[iAsymmetry][iCentrality][iTrackPt] = sameEventDeltaEtaDeltaPhiLongRangeGenGen[iAsymmetry][iCentrality][iTrackPt]->ProjectionX(Form("sameLongGenGen%d%d%d", iAsymmetry, iCentrality, iTrackPt), 1, nBins);  // Exclude underflow and overflow bins by specifying range
+          
+          genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale( sameEventDeltaEtaDeltaPhiLongRangeGenGen[iAsymmetry][iCentrality][iTrackPt]->GetYaxis()->GetBinWidth(1) );  // For correct normalization, need to divide out deltaEta bin width of the two-dimensional histogram
+          
+          /*
+           * Do error scaling and for the background deltaPhi distribution
+           *
+           * Error scaling is needed because information only from 1.5 < |deltaEta| < 2.5 is used to determine the background.
+           * When doing projection, root by default scaled the histogram with square root of bins projected over
+           * The whole range of the analysis is |deltaEta| < 4, which means that four times the bins used to determine
+           * the background are used in normalixing the error. We can fix this be scaling the error up by sqrt(4) = 2.
+           * This number is provided by the DijetMethods, since if we change the limits described above, the number is
+           * automatically adjusted for the new limits inside DijetMethods.
+           */
+          
+          for(int iBin = 1; iBin < genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetNbinsX(); iBin++){
+            binError = genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetBinError(iBin);
+            errorScale = refitter->GetBackgroundErrorScalingFactor();
+            genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin, binError*errorScale);
+          }
+          
+        } else {
+          // Read the background distributions directly from the file
+          
+          recoGenLongRange[iAsymmetry][iCentrality][iTrackPt] = recoGenReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          genGenLongRange[iAsymmetry][iCentrality][iTrackPt] = genGenReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          // Find the fourier fit function from the histogram
+          recoGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          
+          // Remove possible previous fits and optionally do rebinning
+          recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(recoGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]);
+          recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
+          recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          
+          genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]);
+          genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
+          genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          
+        }
         
         // Fit the distributions
         refitter->FourierFit(recoGenLongRange[iAsymmetry][iCentrality][iTrackPt], nRefit, onlyNearSideFit);
@@ -142,15 +250,18 @@ void produceJetReconstructionBiasCorrection(){
   JDrawer *drawer = new JDrawer();
   drawer->SetDefaultAppearanceGraph();
   
+  // Legend
+  TLegend *legend;
+  
+  // Naming helper
+  TString compactAsymmetryString;
+  
   if(drawCorrection){
     
     // Define the needed graphs
     TGraphErrors *correctionGraph[nAsymmetryBins+1][nCentralityBins];
     TGraphErrors *recoGenGraph[nAsymmetryBins+1][nCentralityBins];
     TGraphErrors *genGenGraph[nAsymmetryBins+1][nCentralityBins];
-    
-    // Legend
-    TLegend *legend;
     
     // Default values for x-axis
     double defaultXpoints[] = {0.85, 1.5, 2.5, 3.5, 6, 10, 14};
@@ -161,6 +272,15 @@ void produceJetReconstructionBiasCorrection(){
     
     // Construct the graphs and draw them
     for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      
+      // Set the asymmetry string based on the selected asymmetry bin
+      if(iAsymmetry < nAsymmetryBins){
+        compactAsymmetryString = Form("_A=%.1f-%.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
+        compactAsymmetryString.ReplaceAll(".","v");
+      } else {
+        compactAsymmetryString = "";
+      }
+      
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         
         // Collect the y-axis information to arrays
@@ -203,9 +323,51 @@ void produceJetReconstructionBiasCorrection(){
         legend->AddEntry(genGenGraph[iAsymmetry][iCentrality], "GenGen", "p");
         legend->Draw();
         
+        // Save the figures to file
+        if(saveFigures){
+          gPad->GetCanvas()->SaveAs(Form("figures/jetFlowcorrectionIllustration%s_v2_C=%.0f-%.0f%s.pdf", saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], compactAsymmetryString.Data()));
+          
+        }
+        
       } // Centrality loop
     } // Asymmetry loop
     
+    
+  } // Draw corrections
+  
+  // Draw the fits in each bin to see that nothing crazy is happening
+  if(drawFits){
+    
+    drawer->Reset();
+    
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      
+      // Set the asymmetry string based on the selected asymmetry bin
+      if(iAsymmetry < nAsymmetryBins){
+        compactAsymmetryString = Form("_A=%.1f-%.1f", xjBinBorders[iAsymmetry], xjBinBorders[iAsymmetry+1]);
+        compactAsymmetryString.ReplaceAll(".","v");
+      } else {
+        compactAsymmetryString = "";
+      }
+      
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        // Collect the y-axis information to arrays
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          
+          drawer->DrawHistogram(recoGenLongRange[iAsymmetry][iCentrality][iTrackPt], "#Delta#varphi", "#frac{dN}{d#Delta#varphi}", " ");
+          
+          legend = new TLegend(0.2,0.7,0.5,0.9);
+          legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
+          legend->SetHeader("RecoGen");
+          legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f, %s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], xjString[iAsymmetry]), "");
+          legend->AddEntry((TObject*) 0, Form("%.1f < pT < %.1f GeV", trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
+          
+          legend->Draw();
+          
+        } // Track pT loop
+      } // Centrality loop
+    } // Asymmetry loop
     
   }
   
