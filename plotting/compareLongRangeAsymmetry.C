@@ -79,7 +79,7 @@ void compareLongRangeAsymmetry(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString pbpbFileName = "data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root";
+  TString pbpbFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
   //"data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_adjustedBackground_processed_2019-07-05.root";
@@ -87,7 +87,7 @@ void compareLongRangeAsymmetry(){
   //"data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_adjustedBackground_wtaAxis_processed_2019-07-13.root";
   
   // For systematic uncertainty estimation, need files in which the background is not adjusted between leading and subleading side
-  TString pbpbUnadjustedFileName = "data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root";
+  TString pbpbUnadjustedFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_onlySeagull_processed_2019-10-10.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
@@ -98,6 +98,12 @@ void compareLongRangeAsymmetry(){
   
   // Name for the file from which systematic uncertainties are read
   const char *uncertaintyFile = "data/vnUncertaintyPreliminary2018.txt";
+  const char *jetReconstructionBiasFile = "corrections/jetReconstructionBiasCorrection_fitUpToV4_forTestingPurposes.txt";
+  const char *jetReconstructionBiasComparisonFile = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt";
+  // corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt
+  // corrections/jetReconstructionBiasCorrection_fitUpToV4_forTestingPurposes.txt
+  // corrections/jetReconstructionBiasCorrection_forTestingPurposes.txt
+  // corrections/jetReconstructionBiasCorrectionWithoutShift_forTestingPurposes.txt
   const bool disableSystematicUncertainty = true;
   
   // Open the PbPb input file and read bin numbers from it
@@ -118,16 +124,18 @@ void compareLongRangeAsymmetry(){
   const bool drawGraphVnComparison = true;            // Draw selected flow components to the same graph
   const bool drawFourierGraph = drawGraphAsymmetryComparison || drawGraphVnComparison;
   
-  const int firstGraphFlowComponent = 2;    // First drawn flow component to comparison graphs
-  const int lastGraphFlowComponent = 3;     // Last drawn flow component to the comparison graphs
+  const int firstGraphFlowComponent = 4;    // First drawn flow component to comparison graphs
+  const int lastGraphFlowComponent = 4;     // Last drawn flow component to the comparison graphs
   
   const bool printChi2 = false;
   const bool printBackgroundAdjustmentUncertainty = false;
   
   const bool removeFit = false;  // Remove fit function from plots with distribution
   
-  const bool saveFigures = true;
-  TString saveComment = "_dihadronFit";
+  const bool applyReconstructionBiasCorrection = true;  // Correct for the bias in reconstructing jets more likely in events with high v2
+  
+  const bool saveFigures = false;
+  TString saveComment = "_jetV2";
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -145,6 +153,30 @@ void compareLongRangeAsymmetry(){
   int backgroundRebin = 4; // Rebin applied to the background distributions
   
   if(refitBackground && fourierV == 0) vHeader = Form("V_{1} - V_{%d}",nRefit);
+  
+  // For plotting jet v2, can use these numbers to get it out for now.
+  double roughHadronicFlow[4][4][6] = {
+   // pT 0.7-1,  1-2    2-3    3-4    4-8    8-300 GeV
+   //              Centrality 0-10 %
+  {{       1,     1,     1,     1,     1,     1    },   // v1
+   {     0.045, 0.065, 0.08,  0.09,  0.08,  0.04   },   // v2
+   {       1,     1,     1,     1,     1,     1    },   // v3
+   {       1,     1,     1,     1,     1,     1    }},  // v4
+   //              Centrality 10-30 %
+  {{       1,     1,     1,     1,     1,     1    },   // v1
+   {      0.1,  0.14,  0.17,  0.19,  0.155, 0.075  },   // v2
+   {       1,     1,     1,     1,     1,     1    },   // v3
+   {       1,     1,     1,     1,     1,     1    }},  // v4
+   //              Centrality 30-50 %
+  {{       1,     1,     1,     1,     1,     1    },   // v1
+   {     0.14,  0.175, 0.21,  0.225, 0.18,   0.1   },   // v2
+   {       1,     1,     1,     1,     1,     1    },   // v3
+   {       1,     1,     1,     1,     1,     1    }},  // v4
+   //              Centrality 50-100 %
+  {{       1,     1,     1,     1,     1,     1    },   // v1
+   {     0.125, 0.15,  0.19,  0.18,  0.16,  0.15   },   // v2
+   {       1,     1,     1,     1,     1,     1    },   // v3
+   {       1,     1,     1,     1,     1,     1    }}}; // v4
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -165,6 +197,10 @@ void compareLongRangeAsymmetry(){
   // Read the uncertainties from the uncertainty file
   JffCorrector *uncertaintyProvider = new JffCorrector();
   uncertaintyProvider->ReadLongRangeSystematicFile(uncertaintyFile);
+  uncertaintyProvider->ReadJetReconstructionBiasFile(jetReconstructionBiasFile);
+  
+  JffCorrector *correctionThrower = new JffCorrector();
+  correctionThrower->ReadJetReconstructionBiasFile(jetReconstructionBiasComparisonFile);
   
   // Define a fitter to test fitting the background distribution with different amount of vn:s
   DijetMethods *refitter = new DijetMethods();
@@ -223,12 +259,14 @@ void compareLongRangeAsymmetry(){
   // Read the histograms from the input files
   pbpbReader->SetLoadTracks(true);
   pbpbReader->SetLoadTrackLeadingJetCorrelations(true);
+  if(drawSameEvent) pbpbReader->SetLoadTrackSubleadingJetCorrelations(true);
   pbpbReader->SetAsymmetryBinRange(0,nAsymmetryBins);
   pbpbReader->SetLoad2DHistograms(drawSameEvent);
   pbpbReader->LoadProcessedHistograms();
   
   ppReader->SetLoadTracks(true);
   ppReader->SetLoadTrackLeadingJetCorrelations(true);
+  if(drawSameEvent) ppReader->SetLoadTrackSubleadingJetCorrelations(true);
   ppReader->SetAsymmetryBinRange(0,nAsymmetryBins);
   ppReader->SetLoad2DHistograms(drawSameEvent);
   ppReader->LoadProcessedHistograms();
@@ -426,6 +464,16 @@ void compareLongRangeAsymmetry(){
             sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
             sameEventFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
           }
+          
+//          // Apply the jet reconstruction bias correction to extracted flow parameters:
+//          if(applyReconstructionBiasCorrection){
+//            masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] -= uncertaintyProvider->GetJetReconstructionBiasCorrection(iFlow, iCentrality, iTrackPt, iAsymmetry);
+//            unadjustedFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] -= uncertaintyProvider->GetJetReconstructionBiasCorrection(iFlow, iCentrality, iTrackPt, iAsymmetry);
+//
+//            if(drawSameEvent){
+//              sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] -= uncertaintyProvider->GetJetReconstructionBiasCorrection(iFlow, iCentrality, iTrackPt, iAsymmetry);
+//            }
+//          }
         } // flow components
       } // Asymmetry loop
     } // track pT
@@ -611,11 +659,16 @@ void compareLongRangeAsymmetry(){
     double graphSystematicsX[nTrackPtBins-2]; // Width of the systematic band in x axis
     double graphPointsYSameEvent[nTrackPtBins-2];      // Vn values from same event
     double graphErrorsYSameEvent[nTrackPtBins-2];      // Statistical errors for Vn from same event
+    double graphPointsYCorrected[nTrackPtBins-2];      // Vn values from same event
+    double graphErrorsYCorrected[nTrackPtBins-2];      // Statistical errors for Vn from same event
+    double graphPointsYCorrectedComparison[nTrackPtBins-2];      // Vn values from same event
+    double graphErrorsYCorrectedComparison[nTrackPtBins-2];      // Statistical errors for Vn from same event
     
     // Helper variables for finding track pT information
     int lowPtBin, highPtBin;
-    double yZoomForFlowLow[] = {-0.2,-0.005,-0.005,-0.005};
-    double yZoomForFlowHigh[] = {0.06,0.12,0.05,0.02};
+    // double yZoomForFlowLow[] = {-0.2,-0.005,-0.005,-0.005};
+    double yZoomForFlowLow[] = {-0.2,-0.02,-0.005,-0.005};
+    double yZoomForFlowHigh[] = {0.06,0.4,0.05,0.02};
     double legendY1, legendY2;
     double defaultXpoints[] = {0.85, 1.5, 2.5, 3.5, 6, 10, 14};
     
@@ -623,6 +676,8 @@ void compareLongRangeAsymmetry(){
     zeroLine->SetLineStyle(2);
     
     TGraphErrors *flowGraphPt[nAsymmetryBins+1][nCentralityBins+1][nRefit];
+    TGraphErrors *flowGraphPtCorrected[nAsymmetryBins+1][nCentralityBins+1][nRefit];
+    TGraphErrors *flowGraphPtCorrectedComparison[nAsymmetryBins+1][nCentralityBins+1][nRefit];
     TGraphErrors *flowGraphPtSameEvent[nAsymmetryBins+1][nCentralityBins+1][nRefit];
     TGraphErrors *flowUncertaintyPt[nAsymmetryBins+1][nCentralityBins+1][nRefit];
     
@@ -657,6 +712,12 @@ void compareLongRangeAsymmetry(){
             graphErrorsY[iTrackPt] = masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow];
             graphSystematicsY[iTrackPt] = disableSystematicUncertainty ? 0 : uncertaintyProvider->GetLongRangeSystematicUncertainty(iFlow, iCentrality, iTrackPt, iAsymmetry);
             
+            graphPointsYCorrected[iTrackPt] = masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - uncertaintyProvider->GetJetReconstructionBiasCorrection(iFlow, iCentrality, iTrackPt, iAsymmetry);
+            graphErrorsYCorrected[iTrackPt] = masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow];
+            
+            graphPointsYCorrectedComparison[iTrackPt] = masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - correctionThrower->GetJetReconstructionBiasCorrection(iFlow, iCentrality, iTrackPt, iAsymmetry);
+            graphErrorsYCorrectedComparison[iTrackPt] = masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow];
+            
             if(drawSameEvent){
               graphPointsYSameEvent[iTrackPt] = sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
               graphErrorsYSameEvent[iTrackPt] = sameEventFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow];
@@ -676,6 +737,14 @@ void compareLongRangeAsymmetry(){
             flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(colors[iAsymmetry]);
             flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(markers[iAsymmetry]);
           }
+          
+          flowGraphPtCorrected[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYCorrected, graphErrorsX, graphErrorsYCorrected);
+          flowGraphPtCorrected[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(colors[iAsymmetry]);
+          flowGraphPtCorrected[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(markers[iAsymmetry]);
+          
+          flowGraphPtCorrectedComparison[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYCorrectedComparison, graphErrorsX, graphErrorsYCorrectedComparison);
+          flowGraphPtCorrectedComparison[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(colors[iAsymmetry]);
+          flowGraphPtCorrectedComparison[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(markers[iAsymmetry]);
           
           // Remove two last points from the peripheral bin
           /*if(iCentrality == 3){
@@ -801,6 +870,18 @@ void compareLongRangeAsymmetry(){
               flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow]->Draw("psame");
               legend->AddEntry(flowGraphPtSameEvent[iAsymmetry][iCentrality][iFlow],"From same event","p");
             }
+            
+            if(applyReconstructionBiasCorrection){
+              flowGraphPtCorrected[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kBlue);
+              flowGraphPtCorrected[iAsymmetry][iCentrality][iFlow]->Draw("psame");
+              legend->AddEntry(flowGraphPtCorrected[iAsymmetry][iCentrality][iFlow],Form("jet v_{%d} corrected 5%% shift",iFlow+1),"p");
+              
+              flowGraphPtCorrectedComparison[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kRed);
+              flowGraphPtCorrectedComparison[iAsymmetry][iCentrality][iFlow]->Draw("psame");
+              legend->AddEntry(flowGraphPtCorrectedComparison[iAsymmetry][iCentrality][iFlow],Form("jet v_{%d} corrected no shift",iFlow+1),"p");
+            }
+            
+            zeroLine->Draw();
           }
           
           legend->Draw();
