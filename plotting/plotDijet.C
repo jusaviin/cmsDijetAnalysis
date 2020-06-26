@@ -258,8 +258,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
-  double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
-  double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
+  double minBackgroundDeltaEta = 2;  // Minimum deltaEta value for background region in subtraction method
+  double maxBackgroundDeltaEta = 3.5;  // Maximum deltaEta value for background region in subtraction method
   bool oneBackgroundRegion = false;    // Choose to use symmetric region on positive/negative eta or only one side
   bool adjustBackground = false;       // Adjust background level based on differences on leading an subleading sides
   int backgroundOverlapBins = 3;       // Number of bins around deltaPhi = Pi/2 used to calculate background adjustment
