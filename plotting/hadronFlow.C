@@ -27,7 +27,8 @@ void hadronFlow(){
   /////////////////
   
   // Open files containing the background histograms with the fit
-  TString backgroundFileName = "data/dihadronPbPb2018_trigger3-4_processed_2020-03-23.root";
+  TString backgroundFileName = "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root";
+  // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root
   // data/dihadronPbPb2018_sameTriggerAssoc_xjBins_improvisedMixing_preprocessed_2020-06-18.root
   // data/dihadronPbPb2018_trigger2-3_processed_2020-03-23.root
   // data/dihadronPbPb2018_trigger3-4_processed_2020-03-23.root
@@ -47,7 +48,7 @@ void hadronFlow(){
   const int nCentralityBins = 3;
   const int nTrackPtBins = 4;//dummyManager->GetNTrackPtBins();
   const int nFlowComponents = dummyManager->knFittedFlowComponents;
-  const int triggerBin = 3;   // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
+  const int triggerBin = -1;   // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
   const bool useSameEvent = false;  // true = Use same event long range, false = Use mixed event corrected long range
   
