@@ -6,7 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_preprocessed_combine0.root" "data/dihadronPbPb2018_trigger3-4_10EveMix_2020-03-23_processed_combine0.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_2020-06-18_smallStats_preprocessed.root" "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_trigger3-4_preprocessed_2020-03-23.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_trigger3-4_processed_2020-03-23.root" false false -1 "data/"
 
