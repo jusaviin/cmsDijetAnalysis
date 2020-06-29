@@ -69,21 +69,21 @@ void SeagullConfiguration::InitializeArrays(){
   // ===========================================
   
   // xj integrated
-  trackLeadingJetPbPb[3][0][0] = 6;   // C = 0-10,  0.7 < pT < 1 GeV
+  trackLeadingJetPbPb[3][0][0] = 0;   // C = 0-10,  0.7 < pT < 1 GeV
   trackLeadingJetPbPb[3][0][1] = 6;   // C = 0-10,    1 < pT < 2 GeV
-  trackLeadingJetPbPb[3][0][2] = 5;   // C = 0-10,    2 < pT < 3 GeV
-  trackLeadingJetPbPb[3][0][3] = 1;   // C = 0-10,    3 < pT < 4 GeV
-  trackLeadingJetPbPb[3][0][4] = 1;   // C = 0-10,    4 < pT < 8 GeV
+  trackLeadingJetPbPb[3][0][2] = 6;   // C = 0-10,    2 < pT < 3 GeV
+  trackLeadingJetPbPb[3][0][3] = 0;   // C = 0-10,    3 < pT < 4 GeV
+  trackLeadingJetPbPb[3][0][4] = 0;   // C = 0-10,    4 < pT < 8 GeV
   
-  trackLeadingJetPbPb[3][1][0] = 6;   // C = 10-30, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPb[3][1][0] = 0;   // C = 10-30, 0.7 < pT < 1 GeV
   trackLeadingJetPbPb[3][1][1] = 6;   // C = 10-30,   1 < pT < 2 GeV
-  trackLeadingJetPbPb[3][1][2] = 5;   // C = 10-30,   2 < pT < 3 GeV
-  trackLeadingJetPbPb[3][1][3] = 1;   // C = 10-30,   3 < pT < 4 GeV
-  trackLeadingJetPbPb[3][1][4] = 1;   // C = 10-30,   4 < pT < 8 GeV
+  trackLeadingJetPbPb[3][1][2] = 6;   // C = 10-30,   2 < pT < 3 GeV
+  trackLeadingJetPbPb[3][1][3] = 0;   // C = 10-30,   3 < pT < 4 GeV
+  trackLeadingJetPbPb[3][1][4] = 0;   // C = 10-30,   4 < pT < 8 GeV
   
-  trackLeadingJetPbPb[3][2][0] = 1;   // C = 30-50, 0.7 < pT < 1 GeV
-  trackLeadingJetPbPb[3][2][1] = 1;   // C = 30-50,   1 < pT < 2 GeV
-  trackLeadingJetPbPb[3][2][2] = 1;   // C = 30-50,   2 < pT < 3 GeV
+  trackLeadingJetPbPb[3][2][0] = 0;   // C = 30-50, 0.7 < pT < 1 GeV
+  trackLeadingJetPbPb[3][2][1] = 6;   // C = 30-50,   1 < pT < 2 GeV
+  trackLeadingJetPbPb[3][2][2] = 6;   // C = 30-50,   2 < pT < 3 GeV
 
   // 0 < xj < 0.6
   trackLeadingJetPbPb[0][0][0] = 1;   // C = 0-10,  0.7 < pT < 1 GeV
