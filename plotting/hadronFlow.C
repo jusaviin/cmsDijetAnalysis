@@ -12,7 +12,8 @@ void hadronFlow(){
   // Configuration //
   ///////////////////
   
-  const bool saveFigures = false;     // Save the figures to a file
+  const bool saveFigures = true;     // Save the figures to a file
+  TString saveComment = "";          // Comment given to save name file
   
   const bool inclusiveDihadron = false;  // Dihadron correlations from all events
   const bool dijetDihadron = true;       // Dihadron correlations from dijet events
@@ -20,14 +21,15 @@ void hadronFlow(){
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {dijetDihadron,false,false,false,false,false,inclusiveDihadron,false};
   const char *titleAddition[DijetHistogramManager::knJetTrackCorrelations] = {"",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", $p_{\\mathrm{T}}$ weighted"};
   
-  const bool drawFits = true;
+  const bool drawFits = false;
   
   /////////////////
   // Config done //
   /////////////////
   
   // Open files containing the background histograms with the fit
-  TString backgroundFileName = "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_farDeltaEta_processed_2020-06-18_smallStats.root";
+  TString backgroundFileName = "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root";
+  // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
   // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_farDeltaEta_processed_2020-06-18_smallStats.root
   // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root
   // data/dihadronPbPb2018_sameTriggerAssoc_xjBins_improvisedMixing_preprocessed_2020-06-18.root
@@ -296,6 +298,11 @@ void hadronFlow(){
         sprintf(namer,"CMS 1201.3158 v_{%d}^{track}",iFlow+1);
         legend->AddEntry(crudeGraph[iCentrality][iFlow],namer,"p");
         legend->Draw();
+        
+        // Save the figures to file
+        if(saveFigures){
+            gPad->GetCanvas()->SaveAs(Form("figures/hadronFlowV%d%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+        } // Saving figures
         
       } // flow components
     } // centrality
