@@ -33,10 +33,12 @@ void longRangeGraphPlotter(){
 
   const bool drawGraphAsymmetryComparison = true;    // Draw all selected asymmetry bins to the same graph
   const bool drawGraphVnComparison = false;           // Draw selected flow components to the same graph
-  const bool drawGraphStages = false;                 // Draw
+  const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   
-  const bool saveFigures = true;
-  TString saveComment = "_initialCheck";
+  const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
+  
+  const bool saveFigures = false;                     // Save the figures in a file
+  TString saveComment = "_initialCheck";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -46,12 +48,18 @@ void longRangeGraphPlotter(){
   
   double maxTrackPt = 4.5;
   
-  // Load the graphs from the file
-  TGraphErrors *flowGraphDijet[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
-  TGraphErrors *flowGraphDijetCorrected[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  // Load the graphs from the input file
+  TGraphErrors *flowGraphJetHadron[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  TGraphErrors *flowGraphJetHadronCorrected[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   TGraphErrors *flowGraphDihadron[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   TGraphErrors *flowGraphHadron[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   TGraphErrors *flowGraphJet[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  
+  TGraphErrors *flowSystematicsJetHadron[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  TGraphErrors *flowSystematicsJetHadronCorrected[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  TGraphErrors *flowSystematicsDihadron[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  TGraphErrors *flowSystematicsHadron[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  TGraphErrors *flowSystematicsJet[nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   
   char histogramNamer[150];
   int nPoints;
@@ -61,32 +69,53 @@ void longRangeGraphPlotter(){
     for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
       for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
         
-        sprintf(histogramNamer,"dijetVn/dijetV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
-        flowGraphDijet[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
+        sprintf(histogramNamer,"jetHadronVn/jetHadronV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
+        flowGraphJetHadron[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
         
-        sprintf(histogramNamer,"dijetVnCorrected/dijetV%dCorrected_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
-        flowGraphDijetCorrected[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
+        sprintf(histogramNamer,"jetHadronVn/jetHadronV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
+        flowSystematicsJetHadron[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
+        
+        sprintf(histogramNamer,"jetHadronVnCorrected/jetHadronV%dCorrected_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
+        flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
+        
+        sprintf(histogramNamer,"jetHadronVnCorrected/jetHadronV%dCorrectedSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
+        flowSystematicsJetHadronCorrected[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
         
         sprintf(histogramNamer,"dihadronVn/dihadronV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
         flowGraphDihadron[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
         
+        sprintf(histogramNamer,"dihadronVn/dihadronV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
+        flowSystematicsDihadron[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
+        
         sprintf(histogramNamer,"hadronVn/hadronV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
         flowGraphHadron[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
+        
+        sprintf(histogramNamer,"hadronVn/hadronV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
+        flowSystematicsHadron[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
         
         sprintf(histogramNamer,"jetVn/jetV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
         flowGraphJet[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
         
+        sprintf(histogramNamer,"jetVn/jetV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality);
+        flowSystematicsJet[iAsymmetry][iCentrality][iFlow] = (TGraphErrors*) graphFile->Get(histogramNamer);
+        
         
         // Remove the points that are above the maximum pT limit from the graphs
-        xAxisPoints = flowGraphDijet[iAsymmetry][iCentrality][iFlow]->GetX();
-        nPoints = flowGraphDijet[iAsymmetry][iCentrality][iFlow]->GetN();
+        xAxisPoints = flowGraphJetHadron[iAsymmetry][iCentrality][iFlow]->GetX();
+        nPoints = flowGraphJetHadron[iAsymmetry][iCentrality][iFlow]->GetN();
         for(int iX = nPoints-1; iX >= 0; iX--){
           if(xAxisPoints[iX] > maxTrackPt){
-            flowGraphDijet[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
-            flowGraphDijetCorrected[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
+            flowGraphJetHadron[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
+            flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
             flowGraphDihadron[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
             flowGraphHadron[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
             flowGraphJet[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
+            
+            flowSystematicsJetHadron[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
+            flowSystematicsJetHadronCorrected[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
+            flowSystematicsDihadron[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
+            flowSystematicsHadron[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
+            flowSystematicsJet[iAsymmetry][iCentrality][iFlow]->RemovePoint(iX);
           } else {
             break;
           }
@@ -135,13 +164,13 @@ void longRangeGraphPlotter(){
         for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
           
           sprintf(namerY,"V_{%d}",iFlow+1);
-          flowGraphDijet[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(kFullCircle);
-          flowGraphDijet[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kBlack);
-          drawer->DrawGraph(flowGraphDijet[iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.35, "Track p_{T} (GeV)", namerY, " ", "p");
+          flowGraphJetHadron[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(kFullCircle);
+          flowGraphJetHadron[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kBlack);
+          drawer->DrawGraph(flowGraphJetHadron[iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.35, "Track p_{T} (GeV)", namerY, " ", "p");
           
-          flowGraphDijetCorrected[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(kFullSquare);
-          flowGraphDijetCorrected[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kGreen+3);
-          flowGraphDijetCorrected[iAsymmetry][iCentrality][iFlow]->Draw("p,same");
+          flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(kFullSquare);
+          flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kGreen+3);
+          flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow]->Draw("p,same");
           
           flowGraphDihadron[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(kFullCross);
           flowGraphDihadron[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kRed);
@@ -166,8 +195,8 @@ void longRangeGraphPlotter(){
           legend = new TLegend(0.2,0.55,0.5,0.9);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
-          legend->AddEntry(flowGraphDijet[iAsymmetry][iCentrality][iFlow], Form("Jet-track V_{%d}", iFlow+1), "p");
-          legend->AddEntry(flowGraphDijetCorrected[iAsymmetry][iCentrality][iFlow], Form("Jet-track V_{%d}, corrected", iFlow+1), "p");
+          legend->AddEntry(flowGraphJetHadron[iAsymmetry][iCentrality][iFlow], Form("Jet-track V_{%d}", iFlow+1), "p");
+          legend->AddEntry(flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow], Form("Jet-track V_{%d}, corrected", iFlow+1), "p");
           legend->AddEntry(flowGraphDihadron[iAsymmetry][iCentrality][iFlow], Form("Dihadron V_{%d}", iFlow+1), "p");
           legend->AddEntry(flowGraphHadron[iAsymmetry][iCentrality][iFlow], Form("Hadron v_{%d}", iFlow+1), "p");
           legend->AddEntry(flowGraphJet[iAsymmetry][iCentrality][iFlow], Form("Jet v_{%d}", iFlow+1), "p");
@@ -201,11 +230,22 @@ void longRangeGraphPlotter(){
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         legend->SetHeader(Form("PbPb C: %.0f-%.0f %%", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
         
+        // First, draw the systematic uncertainty bands to the canvas
+        if(drawSystematicUncertainties){
+          flowSystematicsJet[firstDrawnAsymmetryBin][iCentrality][iFlow]->SetFillColorAlpha(colors[firstDrawnAsymmetryBin],0.25);
+          drawer->DrawGraph(flowSystematicsJet[firstDrawnAsymmetryBin][iCentrality][iFlow], 0, maxTrackPt, -0.05, 0.35, "Track p_{T} (GeV)", Form("Jet v_{%d}", iFlow+1), " ", "2,same");
+          
+          for(int iAsymmetry = firstDrawnAsymmetryBin+1; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+            flowSystematicsJet[iAsymmetry][iCentrality][iFlow]->SetFillColorAlpha(colors[iAsymmetry],0.25);
+            flowSystematicsJet[iAsymmetry][iCentrality][iFlow]->Draw("2,same");
+          }
+        }
+        
         // After systematic uncertainties are drawn, draw the points on top of the bands
         for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
           flowGraphJet[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(colors[iAsymmetry]);
           flowGraphJet[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iAsymmetry]);
-          if(iAsymmetry == firstDrawnAsymmetryBin){
+          if(iAsymmetry == firstDrawnAsymmetryBin && !drawSystematicUncertainties){
             drawer->DrawGraph(flowGraphJet[iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, -0.05, 0.35, "Track p_{T} (GeV)", Form("Jet v_{%d}", iFlow+1), " ", "p");
           } else {
             flowGraphJet[iAsymmetry][iCentrality][iFlow]->Draw("psame");
@@ -239,21 +279,23 @@ void longRangeGraphPlotter(){
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         legend->SetHeader(Form("PbPb C: %.0f-%.0f %%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
         
-        //          // First, draw the systematic uncertainty bands to the canvas
-        //          flowUncertaintyPt[iAsymmetry][iCentrality][firstGraphFlowComponent-1]->SetFillColorAlpha(flowColors[firstGraphFlowComponent-1],0.25);
-        //          drawer->DrawGraph(flowUncertaintyPt[iAsymmetry][iCentrality][firstGraphFlowComponent-1], 0, 8, yZoomForFlowLow[firstGraphFlowComponent-1], yZoomForFlowHigh[firstGraphFlowComponent-1], "Track p_{T} (GeV)", "V_{n}", " ", "2,same"); // TODO: Check zooms
-        //
-        //          for(int iFlow = firstGraphFlowComponent; iFlow <= lastGraphFlowComponent-1; iFlow++){
-        //            flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->SetFillColorAlpha(flowColors[iFlow],0.25);
-        //            flowUncertaintyPt[iAsymmetry][iCentrality][iFlow]->Draw("2,same");
-        //          }
+        // First, draw the systematic uncertainty bands to the canvas
+        if(drawSystematicUncertainties){
+          flowSystematicsJet[iAsymmetry][iCentrality][firstDrawnVn-1]->SetFillColorAlpha(flowColors[firstDrawnVn-1],0.25);
+          drawer->DrawGraph(flowSystematicsJet[iAsymmetry][iCentrality][firstDrawnVn-1], 0, maxTrackPt, -0.05, 0.35, "Track p_{T} (GeV)", "v_{n}", " ", "2,same");
+          
+          for(int iFlow = firstDrawnVn; iFlow <= lastDrawnVn-1; iFlow++){
+            flowSystematicsJet[iAsymmetry][iCentrality][iFlow]->SetFillColorAlpha(flowColors[iFlow],0.25);
+            flowSystematicsJet[iAsymmetry][iCentrality][iFlow]->Draw("2,same");
+          }
+        }
         
         // After systematic uncertainties are drawn, draw the points on top of the bands
         for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
           flowGraphJet[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(flowColors[iFlow]);
           flowGraphJet[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iFlow]);
-          if(iFlow == firstDrawnVn-1){
-            drawer->DrawGraph(flowGraphJet[iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, -0.05, 0.35, "Track p_{T} (GeV)", "V_{n}", " ", "p");
+          if(iFlow == firstDrawnVn-1 && !drawSystematicUncertainties){
+            drawer->DrawGraph(flowGraphJet[iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, -0.05, 0.35, "Track p_{T} (GeV)", "v_{n}", " ", "p");
           } else {
             flowGraphJet[iAsymmetry][iCentrality][iFlow]->Draw("psame");
           }
