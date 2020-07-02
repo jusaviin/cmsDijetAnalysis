@@ -1381,9 +1381,11 @@ void DijetAnalyzer::RunAnalysis(){
       if(thirdJetPt > subleadingJetPt/2 && dijetFound) {
         highThirdJet++;
         
-        // Mark the events with high pT third jet with 1. 0 means there is no such jet
-        //leadingJetFlavor = 1;     // TODO: Quark/gluon separation used instead of third jet
-        //subleadingJetFlavor = 1;
+        // For data, mark the events with high pT third jet with 1. 0 means there is no such jet
+        if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp){
+          leadingJetFlavor = 1;
+          subleadingJetFlavor = 1;
+        }
       }
       
       //************************************************
