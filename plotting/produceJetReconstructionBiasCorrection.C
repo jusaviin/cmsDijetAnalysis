@@ -16,7 +16,9 @@ void produceJetReconstructionBiasCorrection(){
   
   // Draw the graphs showing the size of correction
   bool drawCorrection = true;
-  bool drawFits = false;
+  bool drawRecoGenFits = false;
+  bool drawGenGenFits = true;
+  bool drawFits = drawRecoGenFits || drawGenGenFits;
   bool onlyNearSideFit = false;
   
   // Save the illustration plots to file
@@ -28,7 +30,7 @@ void produceJetReconstructionBiasCorrection(){
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   // data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root
   // data/PbPbMC2018_RecoGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_jet100trigger_noCorrections_processed_2020-06-22.root
-  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root";
+  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_xjBins_improvisedMixing_noCorrections_sube0_processed_2020-06-30.root";
   // data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
   // data/PbPbMC2018_GenGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
@@ -355,15 +357,29 @@ void produceJetReconstructionBiasCorrection(){
         // Collect the y-axis information to arrays
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
-          drawer->DrawHistogram(recoGenLongRange[iAsymmetry][iCentrality][iTrackPt], "#Delta#varphi", "#frac{dN}{d#Delta#varphi}", " ");
+          if(drawRecoGenFits){
+            drawer->DrawHistogram(recoGenLongRange[iAsymmetry][iCentrality][iTrackPt], "#Delta#varphi", "#frac{dN}{d#Delta#varphi}", " ");
+            
+            legend = new TLegend(0.2,0.7,0.5,0.9);
+            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
+            legend->SetHeader("RecoGen");
+            legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f, %s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], xjString[iAsymmetry]), "");
+            legend->AddEntry((TObject*) 0, Form("%.1f < pT < %.1f GeV", trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
+            
+            legend->Draw();
+          }
           
-          legend = new TLegend(0.2,0.7,0.5,0.9);
-          legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
-          legend->SetHeader("RecoGen");
-          legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f, %s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], xjString[iAsymmetry]), "");
-          legend->AddEntry((TObject*) 0, Form("%.1f < pT < %.1f GeV", trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
-          
-          legend->Draw();
+          if(drawGenGenFits){
+            drawer->DrawHistogram(genGenLongRange[iAsymmetry][iCentrality][iTrackPt], "#Delta#varphi", "#frac{dN}{d#Delta#varphi}", " ");
+            
+            legend = new TLegend(0.2,0.7,0.5,0.9);
+            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
+            legend->SetHeader("GenGen");
+            legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f, %s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], xjString[iAsymmetry]), "");
+            legend->AddEntry((TObject*) 0, Form("%.1f < pT < %.1f GeV", trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
+            
+            legend->Draw();
+          }
           
         } // Track pT loop
       } // Centrality loop

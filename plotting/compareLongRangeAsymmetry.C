@@ -118,27 +118,27 @@ void compareLongRangeAsymmetry(){
   
   const bool drawSameEvent = false;
   
-  const bool drawFourierFit = false;
+  const bool drawFourierFit = true;
   
   const bool drawGraphAsymmetryComparison = false;    // Draw all selected asymmetry bins to the same graph
   const bool drawGraphVnComparison = true;            // Draw selected flow components to the same graph
   const bool drawFourierGraph = drawGraphAsymmetryComparison || drawGraphVnComparison;
   
-  const int firstGraphFlowComponent = 4;    // First drawn flow component to comparison graphs
-  const int lastGraphFlowComponent = 4;     // Last drawn flow component to the comparison graphs
+  const int firstGraphFlowComponent = 2;    // First drawn flow component to comparison graphs
+  const int lastGraphFlowComponent = 2;     // Last drawn flow component to the comparison graphs
   
   const bool printChi2 = false;
   const bool printBackgroundAdjustmentUncertainty = false;
   
   const bool removeFit = false;  // Remove fit function from plots with distribution
   
-  const bool applyReconstructionBiasCorrection = true;  // Correct for the bias in reconstructing jets more likely in events with high v2
+  const bool applyReconstructionBiasCorrection = false;  // Correct for the bias in reconstructing jets more likely in events with high v2
   
   const bool saveFigures = false;
   TString saveComment = "_jetV2";
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
-  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  int firstDrawnAsymmetryBin = 2;
+  int lastDrawnAsymmetryBin = 2;
   
   const int fourierV = 0;  // Select which vn component to draw. 0 = All, 1...4 = v1...v4
   TString vString = "";
@@ -463,6 +463,11 @@ void compareLongRangeAsymmetry(){
           if(drawSameEvent){
             sameEventFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
             sameEventFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = sameEventFourierFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          }
+          
+          if(iCentrality == 0 && iTrackPt == 0 && iFlow == 0){
+            cout << "Value is: " << masterFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] << endl;
+            cout << "Error is: " << masterFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] << endl;
           }
           
 //          // Apply the jet reconstruction bias correction to extracted flow parameters:

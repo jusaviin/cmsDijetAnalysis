@@ -20,7 +20,7 @@ void longRangeGraphPlotter(){
   // ==================================================================
   
   // Main files from which the long range asymmetries are obtained
-  TString graphFileName = "finalGraphTestNew.root";
+  TString graphFileName = "finalGraphTestWithXj.root";
   TFile *graphFile = TFile::Open(graphFileName);
   
   const int nCentralityBins = 4;
@@ -31,20 +31,20 @@ void longRangeGraphPlotter(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
 
-  const bool drawGraphAsymmetryComparison = true;    // Draw all selected asymmetry bins to the same graph
+  const bool drawGraphAsymmetryComparison = false;    // Draw all selected asymmetry bins to the same graph
   const bool drawGraphVnComparison = false;           // Draw selected flow components to the same graph
-  const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
+  const bool drawGraphStages = true;                 // Draw all intermediate steps leading to jet vn
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
   const bool saveFigures = false;                     // Save the figures in a file
   TString saveComment = "_initialCheck";              // String to be added to saved file names
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
-  int lastDrawnAsymmetryBin = nAsymmetryBins;
+  int firstDrawnAsymmetryBin = 2;
+  int lastDrawnAsymmetryBin = 2;
   
   int firstDrawnVn = 2;
-  int lastDrawnVn = 4;
+  int lastDrawnVn = 2;
   
   double maxTrackPt = 4.5;
   

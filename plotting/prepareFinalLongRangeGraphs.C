@@ -56,7 +56,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "finalGraphTestNew.root";
+  TString outputFileName = "finalGraphTestWithXj.root";
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -142,7 +142,7 @@ void prepareFinalLongRangeGraphs(){
     tracksForGraph[iCentrality] = jetHadronReader->GetHistogramTrackPt(DijetHistogramManager::kTrack, DijetHistogramManager::kSameEvent, iCentrality);
     
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
         // Regular long range histogram
         longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = jetHadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
@@ -203,10 +203,10 @@ void prepareFinalLongRangeGraphs(){
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-      for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){ // TODO: Add asymmetry binning
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
         // Regular long range histogram
-        longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] = dihadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+        longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) dihadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, nAsymmetryBins, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta)->Clone(Form("dihadronLongRng%d%d%d",iCentrality,iAsymmetry,iTrackPt)); // TODO: Add asymmetry binning
         
         // Remove earlier fit from the histogram
         longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt] = longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
@@ -214,13 +214,10 @@ void prepareFinalLongRangeGraphs(){
         
         // Read the two dimensional distribution from the same event
         if(useSameEventDihadron){
-          helperHistogramLeading = dihadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramLeading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, iAsymmetry));
+          helperHistogramLeading = dihadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, nAsymmetryBins, iCentrality, iTrackPt); // TODO: Add asymmetry binning
+          helperHistogramLeading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, nAsymmetryBins));
           
-          helperHistogramSubleading = dihadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramSubleading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, iAsymmetry));
-          
-          refitter->SubtractBackground(helperHistogramLeading, helperHistogramSubleading, 4, false);
+          refitter->SubtractBackground(helperHistogramLeading, helperHistogramLeading, 4, true);
                     
           helperHistogram = refitter->GetBackground();
           nBins = helperHistogram->GetNbinsY();
@@ -264,7 +261,7 @@ void prepareFinalLongRangeGraphs(){
   
   // Extract the vn parameters from the fits
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-    for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
       for(int iFlow = 0; iFlow < nRefit; iFlow++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
           
@@ -329,7 +326,7 @@ void prepareFinalLongRangeGraphs(){
   if(drawFourierFitJetHadron){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-        for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){   // TODO: Add astmmetry binning
+        for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
           drawer->DrawHistogram(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{D#Delta#phi}", " ");
           
@@ -361,7 +358,7 @@ void prepareFinalLongRangeGraphs(){
   if(drawFourierFitDihadron){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
-        for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+        for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
           drawer->DrawHistogram(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{D#Delta#phi}", " ");
           
@@ -458,7 +455,7 @@ void prepareFinalLongRangeGraphs(){
     } // Track pT loop for x-axis array
 
     // Create an array for the y-axis and make a graph out of vn values
-    for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
       for(int iFlow = 0; iFlow < nRefit; iFlow++){
         for(int iTrackPt = 0; iTrackPt < nTrackPtBins-2; iTrackPt++){
           
@@ -525,7 +522,7 @@ void prepareFinalLongRangeGraphs(){
     gDirectory->cd(histogramNamer);
     
     for(int iFlow = 0; iFlow < nRefit; iFlow++){
-      for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           flowGraphJetHadron[iAsymmetry][iCentrality][iFlow]->Write(Form("jetHadronV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
           flowSystematicsJetHadron[iAsymmetry][iCentrality][iFlow]->Write(Form("jetHadronV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
@@ -542,7 +539,7 @@ void prepareFinalLongRangeGraphs(){
     gDirectory->cd(histogramNamer);
     
     for(int iFlow = 0; iFlow < nRefit; iFlow++){
-      for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow]->Write(Form("jetHadronV%dCorrected_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
           flowSystematicsJetHadronCorrected[iAsymmetry][iCentrality][iFlow]->Write(Form("jetHadronV%dCorrectedSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
@@ -559,7 +556,7 @@ void prepareFinalLongRangeGraphs(){
     gDirectory->cd(histogramNamer);
     
     for(int iFlow = 0; iFlow < nRefit; iFlow++){
-      for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           flowGraphDihadron[iAsymmetry][iCentrality][iFlow]->Write(Form("dihadronV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
           flowSystematicsDihadron[iAsymmetry][iCentrality][iFlow]->Write(Form("dihadronV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
@@ -576,7 +573,7 @@ void prepareFinalLongRangeGraphs(){
     gDirectory->cd(histogramNamer);
     
     for(int iFlow = 0; iFlow < nRefit; iFlow++){
-      for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           flowGraphHadron[iAsymmetry][iCentrality][iFlow]->Write(Form("hadronV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
           flowSystematicsHadron[iAsymmetry][iCentrality][iFlow]->Write(Form("hadronV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
@@ -593,7 +590,7 @@ void prepareFinalLongRangeGraphs(){
     gDirectory->cd(histogramNamer);
     
     for(int iFlow = 0; iFlow < nRefit; iFlow++){
-      for(int iAsymmetry = nAsymmetryBins; iAsymmetry <= nAsymmetryBins; iAsymmetry++){  // TODO: Add asymmetry binning
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           flowGraphJet[iAsymmetry][iCentrality][iFlow]->Write(Form("jetV%d_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);
           flowSystematicsJet[iAsymmetry][iCentrality][iFlow]->Write(Form("jetV%dSystematics_A%dC%d", iFlow+1, iAsymmetry, iCentrality), TObject::kOverwrite);

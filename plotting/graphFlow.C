@@ -11,17 +11,17 @@ void graphFlow(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = true;          // Save the figures to a file
+  bool saveFigures = false;          // Save the figures to a file
   
-  bool regularJetTrack = true;       // Produce the correction for reguler jet-track correlations
+  bool regularJetTrack = false;       // Produce the correction for reguler jet-track correlations
   bool uncorrectedJetTrack = false;  // Produce the correction for uncorrected jet-track correlations
   bool ptWeightedJetTrack = false;   // Produce the correction for pT weighted jet-track correlations
-  bool inclusiveJetTrack = false;    // Produce the correction for inclusive jet-track correlations
+  bool inclusiveJetTrack = true;    // Produce the correction for inclusive jet-track correlations
   bool drawSubleading = false;       // Draw the subleading side also
   
-  bool drawHydjet = true;
+  bool drawHydjet = false;
   
-  bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,(regularJetTrack&&drawSubleading),(uncorrectedJetTrack&&drawSubleading),(ptWeightedJetTrack&&drawSubleading),inclusiveJetTrack,inclusiveJetTrack};
+  bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,(regularJetTrack&&drawSubleading),(uncorrectedJetTrack&&drawSubleading),(ptWeightedJetTrack&&drawSubleading),inclusiveJetTrack,false};
   const char *titleAddition[DijetHistogramManager::knJetTrackCorrelations] = {"",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", uncorrected",", $p_{\\mathrm{T}}$ weighted","",", $p_{\\mathrm{T}}$ weighted"};
   
   /////////////////
@@ -29,9 +29,9 @@ void graphFlow(){
   /////////////////
   
   // Open files containing the background histograms with the fit
-  TFile *backgroundFile = TFile::Open("data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_5eveMix_xjBins_wtaAxis_JECv4_modifiedSeagull_noErrorJff_averagePeakMixing_processed_2019-08-13_fiveJobsMissing.root");
+  TFile *backgroundFile = TFile::Open("data/dijetPbPb2018_highForest_minBias_improvisedMixing_dihadron_processed_2019-08-23.root");
   
-  TFile *hydjetFile = TFile::Open("data/PbPbMC_RecoGen_akFlowPuCsPfJets_noUncorr_xjBins_improvisedMixing_subeNon0_JECv4_noCorrections_processed_2019-08-09.root");
+  TFile *hydjetFile = TFile::Open("data/dijetPbPb2018_highForest_minBias_improvisedMixing_dihadron_processed_2019-08-23.root");
   
   // Read the number of bins from histogram manager
   DijetHistogramManager *dummyManager = new DijetHistogramManager(backgroundFile);
@@ -43,7 +43,7 @@ void graphFlow(){
   const int nFlowComponents = dummyManager->knFittedFlowComponents;
   
   // Todo: Read also bin borders from the Card
-  double centralityBinBorders[] = {0,10,30,50,100};  // Bin borders for centrality
+  double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,300};  // Bin borders for track pT
   double graphPoints[] = {0.85,1.5,2.5,3.5,6,10};    // x-axis points in flow graphs
   double graphErrors[] = {0,0,0,0,0,0};              // No errors for x-axis
@@ -100,7 +100,7 @@ void graphFlow(){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         
-        sprintf(histogramNamer,"%s/%sDeltaPhi_Background_C%dT%d",dummyManager->GetJetTrackHistogramName(iJetTrack),dummyManager->GetJetTrackHistogramName(iJetTrack),iCentrality,iTrackPt);
+        sprintf(histogramNamer,"%s/%sDeltaPhi_Background_C%dT%d", dummyManager->GetJetTrackHistogramName(iJetTrack), dummyManager->GetJetTrackHistogramName(iJetTrack), iCentrality, iTrackPt);
         backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt] = (TH1D*) backgroundFile->Get(histogramNamer);
         
         fourierFit = backgroundDeltaPhi[iJetTrack][iCentrality][iTrackPt]->GetFunction("fourier");
@@ -153,14 +153,14 @@ void graphFlow(){
   for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
     if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      for(int iFlow = 1; iFlow < 2; iFlow++){
+      for(int iFlow = 0; iFlow < 1; iFlow++){
         flowGraph[iJetTrack][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins,meanPt[iCentrality],masterFlowTable[iJetTrack][iCentrality][iFlow],graphErrors,masterFlowError[iJetTrack][iCentrality][iFlow]);
         flowGraph[iJetTrack][iCentrality][iFlow]->SetMarkerStyle(21);
         flowGraph[iJetTrack][iCentrality][iFlow]->SetMarkerColor(kBlue);
         
         sprintf(namerY,"v_{%d}",iFlow+1);
         sprintf(namer,"Centrality: %.0f-%.0f%%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
-        drawer->CreateCanvas(0,7,0,0.1,"p_{T} (GeV)",namerY,namer);
+        drawer->CreateCanvas(0,7,-0.01,0.01,"p_{T} (GeV)",namerY,namer);
         flowGraph[iJetTrack][iCentrality][iFlow]->Draw("psame");
         
         hydjetGraph[iJetTrack][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins,meanPt[iCentrality],hydjetFlowTable[iJetTrack][iCentrality][iFlow],graphErrors,hydjetFlowError[iJetTrack][iCentrality][iFlow]);
