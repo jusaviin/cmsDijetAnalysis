@@ -25,6 +25,7 @@ void prepareFinalLongRangeGraphs(){
 
   // Reconstruction bias correction
   const char *jetReconstructionBiasFile = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt";
+  const char *jetReconstructionBiasFileForJetVn = "corrections/jetReconstructionBiasCorrection_jetVn_noShiftFitUpToV4_forTestingPurposes.txt";
   
   // Systematic uncertainty configuration
   const char *uncertaintyFile = "uncertainties/vnUncertaintyPreliminary2018.txt";
@@ -45,6 +46,8 @@ void prepareFinalLongRangeGraphs(){
   
   const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
   const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
+  
+  const bool correctAtJetLevel = true;  // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
     
   const bool saveFigures = false;
   TString saveComment = "_jetV2";
@@ -56,7 +59,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "finalGraphTestWithXj.root";
+  TString outputFileName = "finalGraphTestJetLevel.root";
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -70,6 +73,7 @@ void prepareFinalLongRangeGraphs(){
   JffCorrector *uncertaintyProvider = new JffCorrector();
   uncertaintyProvider->ReadLongRangeSystematicFile(uncertaintyFile);
   uncertaintyProvider->ReadJetReconstructionBiasFile(jetReconstructionBiasFile);
+  uncertaintyProvider->ReadJetReconstructionBiasFileForJetVn(jetReconstructionBiasFileForJetVn);
   
   // Define a fitter to test fitting the background distribution with different amount of vn:s
   DijetMethods *refitter = new DijetMethods();
@@ -284,12 +288,17 @@ void prepareFinalLongRangeGraphs(){
           hadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1) / hadronFlowNormalizer;
           
           // The jet-hadron vn needs first be corrected for jet reconstruction bias effects
-          jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] = longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1) - uncertaintyProvider->GetJetReconstructionBiasCorrection(iFlow, iCentrality, iTrackPt, iAsymmetry);;
+          jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] = longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1) - uncertaintyProvider->GetJetReconstructionBiasCorrection(iFlow, iCentrality, iTrackPt, iAsymmetry);
           jetHadronFlowErrorCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] = longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
           
           // To get the final jet vn, we need to divide out the hadron vn from corrected jet-hadron vn
-          jetFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
-          jetFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(jetHadronFlowErrorCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] *  hadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] / TMath::Power(hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow], 2),2));
+          if(correctAtJetLevel){
+            jetFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - uncertaintyProvider->GetJetReconstructionBiasCorrectionForJetVn(iFlow, iCentrality, iTrackPt, iAsymmetry);
+            jetFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(jetHadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] *  hadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] / TMath::Power(hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow], 2),2));
+          } else {
+            jetFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
+            jetFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(jetHadronFlowErrorCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] *  hadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] / TMath::Power(hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow], 2),2));
+          }
           
           // TODO: The systematic uncertainty calculations need to be done properly!
           
@@ -304,7 +313,11 @@ void prepareFinalLongRangeGraphs(){
           hadronFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] = 0;
           
           // Calculate the systematic uncertainty for jet v2 from the uncertainties of other sources
-          jetFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(jetHadronFlowSystematicUncertaintyCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] *  hadronFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] / TMath::Power(hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow], 2),2));
+          if(correctAtJetLevel){
+             jetFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(jetHadronFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] *  hadronFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] / TMath::Power(hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow], 2),2));
+          } else {
+            jetFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(jetHadronFlowSystematicUncertaintyCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(jetHadronFlowTableCorrected[iAsymmetry][iCentrality][iTrackPt][iFlow] *  hadronFlowSystematicUncertainty[iAsymmetry][iCentrality][iTrackPt][iFlow] / TMath::Power(hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow], 2),2));
+          }
           
         } // track pT
       } // flow components

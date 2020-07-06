@@ -39,7 +39,8 @@ public:
   void ReadSpilloverDeltaRFile(TFile *spilloverFile); // Read the spillover correction histograms as a function of DeltaR
   void ReadTrackDeltaRFile(TFile *trackFile);         // Read the histograms related to residual R-dependent tracking correction
   void ReadSystematicFile(TFile *systematicFile);     // Read the histograms related to systematic uncertainties
-  void ReadJetReconstructionBiasFile(const char *fileName);     // Read the correction to v2 due to jet reconstruction bias
+  void ReadJetReconstructionBiasFile(const char *fileName);          // Read the correction to jet-hadron Vn due to jet reconstruction bias
+  void ReadJetReconstructionBiasFileForJetVn(const char *fileName);  // Read the correction to jet vn due to jet reconstruction bias
   void ReadLongRangeSystematicFile(const char *systematicFile); // Read the histograms related to systematic uncertainties of long range correlations
   
   // Getters for correction histograms
@@ -53,7 +54,8 @@ public:
   double GetTrackDeltaRResidualScale(const int iJetTrackCorrelation, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // DeltaEta-DeltaPhi residual tracking correction histograms
   
   // Getters for corrections for long range correlations
-  double GetJetReconstructionBiasCorrection(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // Jet reconstruction bias correction
+  double GetJetReconstructionBiasCorrection(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // Jet reconstruction bias correction for jet-track Vn
+  double GetJetReconstructionBiasCorrectionForJetVn(const int iFlow, const int iCentrality, const int iTrackPt, int iAsymmetry = DijetHistogramManager::kMaxAsymmetryBins) const; // Jet reconstruction bias correction for jet vn
   
   // Getters related to systematic uncertainties
   TString GetUncertaintyName(const int iUncertainty) const;
@@ -118,6 +120,7 @@ private:
   
   // Corrections to Fourier components from jet reconstruction bias
   double fJetReconstructionBiasCorrection[DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][4] = {{{{0}}}}; // Last bin = Different flow components
+  double fJetReconstructionBiasCorrectionForJetVn[DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][4] = {{{{0}}}}; // Last bin = Different flow components
   
   // Systematic uncertainty for long range correlations
   double fLongRangeUncertaintyTable[DijetHistogramManager::kMaxAsymmetryBins+1][DijetHistogramManager::kMaxCentralityBins][DijetHistogramManager::kMaxTrackPtBins][4] = {{{{0}}}}; // Last bin = Different flow components

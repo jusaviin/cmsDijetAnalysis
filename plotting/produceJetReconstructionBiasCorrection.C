@@ -14,11 +14,15 @@ void produceJetReconstructionBiasCorrection(){
   // corrections/jetReconstructionBiasCorrectionWithoutShift_forTestingPurposes.txt
   // corrections/jetReconstructionBiasCorrection_forTestingPurposes.txt
   
+  const char *jetVnOutputFileName = "";
+  // corrections/jetReconstructionBiasCorrection_jetVn_noShiftFitUpToV4_forTestingPurposes.txt
+  
   // Draw the graphs showing the size of correction
   bool drawCorrection = true;
   bool drawRecoGenFits = false;
-  bool drawGenGenFits = true;
-  bool drawFits = drawRecoGenFits || drawGenGenFits;
+  bool drawGenGenFits = false;
+  bool drawDihadronFits = true;
+  bool drawFits = drawRecoGenFits || drawGenGenFits || drawDihadronFits;
   bool onlyNearSideFit = false;
   
   // Save the illustration plots to file
@@ -30,18 +34,23 @@ void produceJetReconstructionBiasCorrection(){
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   // data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root
   // data/PbPbMC2018_RecoGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_jet100trigger_noCorrections_processed_2020-06-22.root
-  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_xjBins_improvisedMixing_noCorrections_sube0_processed_2020-06-30.root";
+  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root";
   // data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
   // data/PbPbMC2018_GenGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
+  // data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_xjBins_improvisedMixing_noCorrections_sube0_processed_2020-06-30.root
   
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_noCorrections_sameTriggerAssoc_processed_2020-06-30_part0.root";
+
   // Open the files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
   TFile *genGenFile = TFile::Open(genGenFileName);
+  TFile *dihadronFile = TFile::Open(dihadronFileName);
   
   // Create readers for the histograms and define binning
   DijetHistogramManager *recoGenReader = new DijetHistogramManager(recoGenFile);
   DijetHistogramManager *genGenReader = new DijetHistogramManager(genGenFile);
+  DijetHistogramManager *dihadronReader = new DijetHistogramManager(dihadronFile);
   
   const int nCentralityBins = recoGenReader->GetNCentralityBins();
   const int nTrackPtBins = recoGenReader->GetNTrackPtBins();
@@ -71,6 +80,11 @@ void produceJetReconstructionBiasCorrection(){
   genGenReader->SetLoad2DHistograms(useSameEvent);
   genGenReader->LoadProcessedHistograms();
   
+  dihadronReader->SetLoadTrackLeadingJetCorrelations(true);
+  dihadronReader->SetAsymmetryBinRange(nAsymmetryBins,nAsymmetryBins);
+  dihadronReader->SetLoad2DHistograms(useSameEvent);
+  dihadronReader->LoadProcessedHistograms();
+  
   
   // Define arrays for extracted vn numbers
   double recoGenFlowTable[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
@@ -78,6 +92,12 @@ void produceJetReconstructionBiasCorrection(){
   
   double genGenFlowTable[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
   double genGenFlowError[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
+  
+  double dihadronFlowTable[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
+  double dihadronFlowError[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
+  
+  double recoJetFlowTable[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
+  double recoJetFlowError[nAsymmetryBins+1][nCentralityBins][nTrackPtBins][nRefit];
   
   // Extra histogram needed in case we use same events
   TH2D *sameEventDeltaEtaDeltaPhiLeadingRecoGen[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
@@ -99,6 +119,9 @@ void produceJetReconstructionBiasCorrection(){
   
   TH1D *genGenLongRange[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   TF1 *genGenLongRangeFit[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  
+  TH1D *dihadronLongRange[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
+  TF1 *dihadronLongRangeFit[nAsymmetryBins+1][nCentralityBins][nTrackPtBins];
   
   // Get the background histograms from the files and do the Fourier fit
   
@@ -178,15 +201,19 @@ void produceJetReconstructionBiasCorrection(){
           }
           
         } else {
-          // Read the background distributions directly from the file
+          
+          // Read the long range distributions directly from the file
           
           recoGenLongRange[iAsymmetry][iCentrality][iTrackPt] = recoGenReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
           
           genGenLongRange[iAsymmetry][iCentrality][iTrackPt] = genGenReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
           
+          dihadronLongRange[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) dihadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, nAsymmetryBins, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta)->Clone(Form("dihadronLongRange%d%d%d", iAsymmetry, iCentrality, iTrackPt));  // TODO: Check if asymmetry binning needed
+          
           // Find the fourier fit function from the histogram
           recoGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
           genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          dihadronLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = dihadronLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
           
           // Remove possible previous fits and optionally do rebinning
           recoGenLongRange[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(recoGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]);
@@ -197,6 +224,10 @@ void produceJetReconstructionBiasCorrection(){
           genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
           genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
           
+          dihadronLongRange[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(dihadronLongRangeFit[iAsymmetry][iCentrality][iTrackPt]);
+          dihadronLongRange[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
+          dihadronLongRange[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+          
         }
         
         // Fit the distributions
@@ -205,6 +236,9 @@ void produceJetReconstructionBiasCorrection(){
         
         refitter->FourierFit(genGenLongRange[iAsymmetry][iCentrality][iTrackPt], nRefit, onlyNearSideFit);
         genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = genGenLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+        
+        refitter->FourierFit(dihadronLongRange[iAsymmetry][iCentrality][iTrackPt], nRefit, onlyNearSideFit);
+        dihadronLongRangeFit[iAsymmetry][iCentrality][iTrackPt] = dihadronLongRange[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
         
       } // asymmetry loop
     } // track pT loop
@@ -219,13 +253,20 @@ void produceJetReconstructionBiasCorrection(){
           recoGenFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = recoGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
           genGenFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
           genGenFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = genGenLongRangeFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          dihadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = dihadronLongRangeFit[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
+          dihadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = dihadronLongRangeFit[iAsymmetry][iCentrality][iTrackPt]->GetParError(iFlow+1);
+          
+          // Calculate the jet vn in the Monte Carlo
+          recoJetFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = (recoGenFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - genGenFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]) / TMath::Sqrt(dihadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]);
+          recoJetFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(TMath::Sqrt(TMath::Power(recoGenFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(genGenFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow],2)) / TMath::Sqrt(dihadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]),2) + TMath::Power((recoGenFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] - genGenFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]) *  TMath::Sqrt(dihadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow]) / TMath::Power(TMath::Sqrt(dihadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow]), 2),2));
+          
         } // flow components
       } // Asymmetry loop
     } // track pT
   } // centrality
   
   
-  // If an output file name is given, put the total uncertainties to an output file
+  // If an output file name is given, put the correction for jet-track vns to an output file
   if(strcmp(outputFileName, "") != 0){
     std::ofstream outputFile;
     outputFile.open(outputFileName);
@@ -246,6 +287,29 @@ void produceJetReconstructionBiasCorrection(){
     } // Centrality loop
     
     outputFile.close();
+  }
+  
+  // If an output file name for jet vn is given, put the correction to an output file
+  if(strcmp(jetVnOutputFileName, "") != 0){
+    std::ofstream jetVnOutputFile;
+    jetVnOutputFile.open(jetVnOutputFileName);
+    
+    // Print first the information about number of bins
+    jetVnOutputFile << nCentralityBins << " " << nRefit << " " << nAsymmetryBins << " " << nTrackPtBins << endl;
+    
+    // Next, print all the uncertainties in a specific order
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      for(int iFlow = 0; iFlow < nRefit; iFlow++){
+        for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+          for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+            jetVnOutputFile << recoJetFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] << " ";
+          } // Track pT loop
+          jetVnOutputFile << endl;
+        } // Asymmetry loop
+      } // Flow component loop
+    } // Centrality loop
+    
+    jetVnOutputFile.close();
   }
   
   // Draw the correction to check it looks nice
@@ -375,6 +439,18 @@ void produceJetReconstructionBiasCorrection(){
             legend = new TLegend(0.2,0.7,0.5,0.9);
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
             legend->SetHeader("GenGen");
+            legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f, %s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], xjString[iAsymmetry]), "");
+            legend->AddEntry((TObject*) 0, Form("%.1f < pT < %.1f GeV", trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
+            
+            legend->Draw();
+          }
+          
+          if(drawDihadronFits){
+            drawer->DrawHistogram(dihadronLongRange[iAsymmetry][iCentrality][iTrackPt], "#Delta#varphi", "#frac{dN}{d#Delta#varphi}", " ");
+            
+            legend = new TLegend(0.2,0.7,0.5,0.9);
+            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.04);legend->SetTextFont(62);
+            legend->SetHeader("Dihadron");
             legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f, %s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], xjString[iAsymmetry]), "");
             legend->AddEntry((TObject*) 0, Form("%.1f < pT < %.1f GeV", trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
             
