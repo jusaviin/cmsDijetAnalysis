@@ -28,7 +28,8 @@ void hadronFlow(){
   /////////////////
   
   // Open files containing the background histograms with the fit
-  TString backgroundFileName = "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root";
+  TString backgroundFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_noCorrections_sameTriggerAssoc_processed_2020-06-30_part0.root";
+  // PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_noCorrections_sameTriggerAssoc_processed_2020-06-30_part0.root
   // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
   // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_farDeltaEta_processed_2020-06-18_smallStats.root
   // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root
