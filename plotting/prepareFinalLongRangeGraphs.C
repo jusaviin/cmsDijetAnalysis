@@ -16,15 +16,18 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // File for Vn from jet-hadron correlations
-  TString jetHadronFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_noHighThirdJet_onlySeagull_wtaAxis_processed_2020-07-02_combine0_someStats.root";
+  TString jetHadronFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root";
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_noHighThirdJet_onlySeagull_wtaAxis_processed_2020-07-02_combine0_someStats.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
+  // data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root
+  // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   
   // File for Vn from dihadron correlations
-  TString dihadronFileName = "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root";
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-06-30.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root
-  // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_noCorrections_sameTriggerAssoc_processed_2020-06-30_part0.root
+  // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-06-30.root
+  // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-07-07.root
 
   // Reconstruction bias correction
   const char *jetReconstructionBiasFile = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt";
@@ -52,7 +55,7 @@ void prepareFinalLongRangeGraphs(){
   const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
   const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
   
-  const bool applyJetReconstructionBiasCorrection = true;  // Choose whether to apply the jet reconstruction bias or not
+  const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
   const bool correctAtJetLevel = true;  // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
     
   const bool saveFigures = false;
@@ -65,7 +68,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_RecoGen_noCentShift.root";
   // flowGraphs/exampleDihadronFromMC.root
   
   // ==================================================================
@@ -448,15 +451,22 @@ void prepareFinalLongRangeGraphs(){
   
   int lowPtBin, highPtBin;
   
+  double defaultXpoints[] = {0.85, 1.5, 2.5, 3.5, 6, 10, 14};
+  
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
 
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins - 2; iTrackPt++){
 
       // Find a good place to put the track pT points for the graphs
-      lowPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt]);
-      highPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt+1]);
-      tracksForGraph[iCentrality]->GetXaxis()->SetRange(lowPtBin,highPtBin);
-      graphPointsX[iTrackPt] = tracksForGraph[iCentrality]->GetMean();
+      if(tracksForGraph[iCentrality]){
+        lowPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt]);
+        highPtBin = tracksForGraph[iCentrality]->FindBin(trackPtBinBorders[iTrackPt+1]);
+        tracksForGraph[iCentrality]->GetXaxis()->SetRange(lowPtBin,highPtBin);
+        graphPointsX[iTrackPt] = tracksForGraph[iCentrality]->GetMean();
+      } else {
+        cout << "WARNING! No tracks in input file!!!! Using default x-values!!" << endl;
+        graphPointsX[iTrackPt] = defaultXpoints[iTrackPt];
+      }
 
       // Give the systematic uncertainties some width along x-axis
       graphSystematicsX[iTrackPt] = 0.1;

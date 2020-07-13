@@ -47,7 +47,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   
   // Choose which figure sets to draw
   bool drawEventInformation = false;
-  bool drawDijetHistograms = true;
+  bool drawDijetHistograms = false;
   bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
@@ -56,7 +56,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
   bool drawUncorrectedInclusiveTracks = false;
-  bool drawTrackLeadingJetCorrelations = false;
+  bool drawTrackLeadingJetCorrelations = true;
   bool drawUncorrectedTrackLeadingJetCorrelations = false;
   bool drawPtWeightedTrackLeadingJetCorrelations = false;
   bool drawTrackSubleadingJetCorrelations = false;
@@ -93,13 +93,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool wideXjMatrixBins = true; // False = fine bins for xj matrix. True = 3x3 xj matrix with analysis binning
   
   // Draw different jet-track correlation histograms
-  bool drawJetTrackDeltaPhi = false;
+  bool drawJetTrackDeltaPhi = true;
   bool drawJetTrackDeltaEta = false;
   bool drawJetTrackDeltaEtaDeltaPhi = false;
   
   // Select which deltaPhi regions of the deltaEta projection are drawn
   bool drawDeltaEtaWholePhi = false;
-  bool drawDeltaEtaNearSide = true;
+  bool drawDeltaEtaNearSide = false;
   bool drawDeltaEtaAwaySide = false;
   bool drawDeltaEtaBetweenPeaks = false;
   
@@ -111,13 +111,13 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Draw mixed event histograms for selected jet-track corraletion histograms
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
-  bool drawNormalizedMixedEvent = true;
+  bool drawNormalizedMixedEvent = false;
   bool drawCorrected = false;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = false;
+  bool drawBackground = true;
   int backgroundStyle = 4; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -231,8 +231,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   int firstDrawnCentralityBin = 0;
   int lastDrawnCentralityBin = nCentralityBins-1;
   
-  int firstDrawnTrackPtBin = 1;
-  int lastDrawnTrackPtBin = 1;
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = 3;
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
