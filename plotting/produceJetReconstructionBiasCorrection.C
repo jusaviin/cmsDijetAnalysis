@@ -20,8 +20,8 @@ void produceJetReconstructionBiasCorrection(){
   // Draw the graphs showing the size of correction
   bool drawCorrection = true;
   bool drawRecoGenFits = false;
-  bool drawGenGenFits = false;
-  bool drawDihadronFits = true;
+  bool drawGenGenFits = true;
+  bool drawDihadronFits = false;
   bool drawFits = drawRecoGenFits || drawGenGenFits || drawDihadronFits;
   bool onlyNearSideFit = false;
   

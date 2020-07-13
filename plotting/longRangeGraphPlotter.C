@@ -23,19 +23,20 @@ void longRangeGraphPlotter(){
   
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
-  TString graphFileName = "finalGraphTestJetLevel.root";
+  TString directoryName = "flowGraphs/";
+  TString graphFileName = "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root";
   TFile *graphFile[maxFiles];
-  graphFile[0] = TFile::Open(graphFileName);
+  graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 1;
-  TString comparisonFileName[] = {"finalGraphTestNew.root", "", "", "", ""};
+  TString comparisonFileName[] = {"finalJetFlowGraphsNoRebin.root", "exampleDihadronFromMC.root", "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
-    graphFile[iFile+1] = TFile::Open(comparisonFileName[iFile]);
+    graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"Nominal", "First file", "Second file", "Third file", "Fourth file", "Fifth file"};
+  TString fileLegend[] = {"Nominal", "No rebin", "Third jet cut", "Fourth file", "Fifth file"};
   
   const int nCentralityBins = 4;
   const int nTrackPtBins = 7;
@@ -60,7 +61,7 @@ void longRangeGraphPlotter(){
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
   const bool saveFigures = false;                     // Save the figures in a file
-  TString saveComment = "_initialCheck";              // String to be added to saved file names
+  TString saveComment = "_mcComparison";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -180,6 +181,8 @@ void longRangeGraphPlotter(){
   
   TLine *zeroLine = new TLine(0,0,maxTrackPt,0);
   zeroLine->SetLineStyle(2);
+  
+  double minZoom, maxZoom;
   
   // Draw graph with all the stages leading to final jet vn visible
   if(drawGraphStages){
@@ -358,6 +361,7 @@ void longRangeGraphPlotter(){
             for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
               flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iFile]);
               flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerColor(fileColors[iFile]);
+              flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerSize(1.3);
               if(iFile == 0){
                  drawer->DrawGraph(flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.08, "Track p_{T} (GeV)", namerY, " ", "p");
               } else {
@@ -387,6 +391,7 @@ void longRangeGraphPlotter(){
             for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
               flowGraphDihadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iFile]);
               flowGraphDihadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerColor(fileColors[iFile]);
+              flowGraphDihadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerSize(1.3);
               if(iFile == 0){
                  drawer->DrawGraph(flowGraphDihadron[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.08, "Track p_{T} (GeV)", namerY, " ", "p");
               } else {
@@ -416,6 +421,7 @@ void longRangeGraphPlotter(){
             for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
               flowGraphHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iFile]);
               flowGraphHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerColor(fileColors[iFile]);
+              flowGraphHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerSize(1.3);
               if(iFile == 0){
                  drawer->DrawGraph(flowGraphHadron[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.3, "Track p_{T} (GeV)", namerY, " ", "p");
               } else {
@@ -442,11 +448,20 @@ void longRangeGraphPlotter(){
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
+            minZoom = 0;
+            maxZoom = 0.25;
+            
+            if(iCentrality == 0){
+              minZoom = -0.05;
+              maxZoom = 0.2;
+            }
+            
             for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
               flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iFile]);
               flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerColor(fileColors[iFile]);
+              flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerSize(1.3);
               if(iFile == 0){
-                 drawer->DrawGraph(flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.15, "Track p_{T} (GeV)", namerY, " ", "p");
+                 drawer->DrawGraph(flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, minZoom, maxZoom, "Track p_{T} (GeV)", namerY, " ", "p");
               } else {
                 flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->Draw("p,same");
               }
