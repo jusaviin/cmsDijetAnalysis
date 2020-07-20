@@ -24,19 +24,19 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root";
+  TString graphFileName = "flowGraphs_PbPbMC2018_RecoGen_5pCentShift.root";
   TFile *graphFile[maxFiles];
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 1;
-  TString comparisonFileName[] = {"finalJetFlowGraphsNoRebin.root", "exampleDihadronFromMC.root", "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root", "finalGraphTestNew.root", ""};
+  TString comparisonFileName[] = {"flowGraphs_PbPbMC2018_RecoGen_noCentShift.root", "exampleDihadronFromMC.root", "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"Nominal", "No rebin", "Third jet cut", "Fourth file", "Fifth file"};
+  TString fileLegend[] = {"Shifted", "Unshifted", "Third jet cut", "Fourth file", "Fifth file"};
   
   const int nCentralityBins = 4;
   const int nTrackPtBins = 7;
@@ -52,10 +52,10 @@ void longRangeGraphPlotter(){
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   
   // Plots to be compared between files
-  const bool drawJetHadronVnFileComparison = true;
-  const bool drawDihadronVnFileComparison = true;
+  const bool drawJetHadronVnFileComparison = false;
+  const bool drawDihadronVnFileComparison = false;
   const bool drawHadronVnFileComparison = true;
-  const bool drawJetVnFileComparison = true;
+  const bool drawJetVnFileComparison = false;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison;
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots

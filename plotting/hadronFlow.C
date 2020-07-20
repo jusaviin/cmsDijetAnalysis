@@ -12,7 +12,7 @@ void hadronFlow(){
   // Configuration //
   ///////////////////
   
-  const bool saveFigures = true;     // Save the figures to a file
+  const bool saveFigures = false;     // Save the figures to a file
   TString saveComment = "";          // Comment given to save name file
   
   const bool inclusiveDihadron = false;  // Dihadron correlations from all events
@@ -28,7 +28,7 @@ void hadronFlow(){
   /////////////////
   
   // Open files containing the background histograms with the fit
-  TString backgroundFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_noCorrections_sameTriggerAssoc_processed_2020-06-30_part0.root";
+  TString backgroundFileName = "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_processed_2020-06-25.root";
   // PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_noCorrections_sameTriggerAssoc_processed_2020-06-30_part0.root
   // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
   // dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_farDeltaEta_processed_2020-06-18_smallStats.root
