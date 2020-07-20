@@ -11,6 +11,6 @@ void finalRadialMomentumPlotter(){
   auto ld_sum = loadHistPair_cent_asym("leadingJet_sum_hist", "leadingJet_sum_systUncert", f);
   
   TString format = ".pdf";
-  paperFig1Plotter("figures/radialMomentum_leadingAndSubleadingCombined_systematicUpdate"+format, ld_js, ld_sum, sub_js, sub_sum, vlabel);
-  paperFig2Plotter("figures/radialMomentumRatio_leadingAndSubleadingCombined_systematicUpdate"+format, ld_sum, sub_sum);
+  paperFig1Plotter("figures/radialMomentum_leadingAndSubleadingCombined_enlargedTextSize"+format, ld_js, ld_sum, sub_js, sub_sum, vlabel);
+  paperFig2Plotter("figures/radialMomentumRatio_leadingAndSubleadingCombined_enlargedTextSize"+format, ld_sum, sub_sum);
 }

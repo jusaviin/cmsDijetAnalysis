@@ -29,8 +29,8 @@ void drawRatio(TH1D** ratio, TH1D** err, int i, Color_t color,  bool isconner = 
   if(isconner){
     syst->GetXaxis()->SetTitleSize(0.11);
     syst->GetXaxis()->SetTitleOffset(0.78);
-    syst->GetYaxis()->SetTitleSize(0.08);
-    syst->GetYaxis()->SetTitleOffset(1);
+    syst->GetYaxis()->SetTitleSize(0.105);
+    syst->GetYaxis()->SetTitleOffset(0.7);
     syst->GetYaxis()->SetLabelSize(0.08);
     syst->GetXaxis()->SetLabelSize(0.08);
     syst->GetYaxis()->SetLabelOffset(0.012);
@@ -39,9 +39,8 @@ void drawRatio(TH1D** ratio, TH1D** err, int i, Color_t color,  bool isconner = 
   }else {
     syst->GetXaxis()->SetTitleSize(0.13);
     syst->GetXaxis()->SetTitleOffset(0.65);
-    syst->GetYaxis()->SetTitleSize(0.08);
-    syst->GetYaxis()->SetTitleSize(0.1);
-    syst->GetYaxis()->SetTitleOffset(0.8);
+    syst->GetYaxis()->SetTitleSize(0.13);
+    syst->GetYaxis()->SetTitleOffset(0.56);
     syst->GetYaxis()->SetLabelSize(0.1);
     syst->GetXaxis()->SetLabelSize(0.1);
     syst->GetYaxis()->SetLabelOffset(0.01);
@@ -136,14 +135,14 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
   
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.06);
-  mainTitle->DrawLatexNDC(.01,  .93, "CMS");
+  mainTitle->DrawLatexNDC(0.005, 0.93, "CMS");
   mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.045);
-  mainTitle->DrawLatexNDC(.086, 0.93, "Particle transverse momentum distribution ratios");
-  mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(0.64, 0.96, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
-  mainTitle->SetTextSize(0.027);
-  mainTitle->DrawLatexNDC(0.58, 0.92, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->SetTextSize(0.0385);
+  mainTitle->DrawLatexNDC(0.081, 0.935, "Particle transverse momentum distribution ratios");
+  mainTitle->SetTextSize(0.036);
+  mainTitle->DrawLatexNDC(0.6, 0.965, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+  mainTitle->SetTextSize(0.033);
+  mainTitle->DrawLatexNDC(0.505, 0.925, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
   
   
   

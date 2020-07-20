@@ -311,8 +311,8 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
       asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetNdivisions(505);
       asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetLabelOffset(0.02);
       asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetLabelSize(0.09);
-      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleOffset(1.0);
-      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleSize(0.1);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleOffset(0.9);
+      asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitleSize(0.12);
       asymmetryRatioHistogram[0][iCentrality][0]->GetYaxis()->SetTitle("#rho(#Deltar)_{x_{j} < 0.6 }/#rho(#Deltar)_{All}");
       mainTitle->SetTextSize(0.073);
     }
@@ -337,15 +337,15 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
     
     if(iCentrality == 4){
       mainTitle->SetTextFont(22);
-      mainTitle->SetTextSize(.085);
-      mainTitle->DrawLatexNDC(.35, 0.9, "pp reference");
+      mainTitle->SetTextSize(0.095);
+      mainTitle->DrawLatexNDC(0.35, 0.9, "pp reference");
       //mainTitle->DrawLatexNDC(.35, 0.9, "pp reference");
     }
     else {
       mainTitle->SetTextFont(22);
-      mainTitle->SetTextSize(.09);
-      mainTitle->DrawLatexNDC(.19, 0.9, "PbPb");
-      mainTitle->DrawLatexNDC(.19, .82, cent_lab[iCentrality]);
+      mainTitle->SetTextSize(0.1);
+      mainTitle->DrawLatexNDC(0.17, 0.9, "PbPb");
+      mainTitle->DrawLatexNDC(0.17, 0.82, cent_lab[iCentrality]);
     }
     
     bigCanvas->CD(10-iCentrality);
@@ -357,23 +357,23 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
     asymmetryRatioHistogram[0][iCentrality][2]->SetAxisRange(0, 0.99, "X");
     if( iCentrality<4 )  {
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(0.65);
-      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleSize(0.115);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleSize(0.13);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetNdivisions(505);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelOffset(0.00001);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelSize(0.092);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetNdivisions(505);
     }
     if(iCentrality==4 ){
-      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(0.92);
-      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleSize(0.086);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleOffset(0.86);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleSize(0.098);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetNdivisions(505);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelOffset(0.016);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelSize(0.071);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetNdivisions(505);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetLabelOffset(0.02);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetLabelSize(0.07);
-      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleOffset(1.2);
-      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleSize(0.08);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleOffset(1.1);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitleSize(0.1);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetTitle("#rho(#Deltar)_{x_{j} > 0.8 }/#rho(#Deltar)_{All}");
       mainTitle->SetTextSize(0.073);
     }
@@ -468,14 +468,13 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   //bigCanvas->CD(4);
   //lt3->Draw();
   
-  double cmsPosition[] = {0.42,0.4,0.42};
-  double jetShapeTitlePosition[] = {0.18,0.16,0.18};
+  double jetShapeTitlePosition[] = {0.13,0.11,0.13};
   double xjPosition[] = {0.76,0.77,0.76};
   
   bigCanvas->cd(0);
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.065);
-  mainTitle->DrawLatexNDC(0.07, 0.9, "CMS");
+  mainTitle->DrawLatexNDC(0.02, 0.9, "CMS");
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.045);
@@ -485,10 +484,10 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   //mainTitle->SetTextSize(0.035);
   //mainTitle->DrawLatexNDC(xjPosition[iJetTrack/3], 0.94, xjString[iAsymmetry]);
   
-  mainTitle->SetTextSize(0.03);
-  mainTitle->DrawLatexNDC(0.61, 0.94, "pp 320 pb^{-1} (5.02 TeV)  PbPb 1.7 nb^{-1} (5.02 TeV)");
-  mainTitle->SetTextSize(0.028);
-  mainTitle->DrawLatexNDC(0.57, 0.89, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->SetTextSize(0.037);
+  mainTitle->DrawLatexNDC(0.565, 0.94, "pp 320 pb^{-1} (5.02 TeV)  PbPb 1.7 nb^{-1} (5.02 TeV)");
+  mainTitle->SetTextSize(0.034);
+  mainTitle->DrawLatexNDC(0.52, 0.885, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   
   box = new TBox();
@@ -510,7 +509,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_systematicUpdate.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_enlargedTextSize.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
