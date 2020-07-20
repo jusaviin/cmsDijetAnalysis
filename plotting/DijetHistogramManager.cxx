@@ -1492,11 +1492,12 @@ void DijetHistogramManager::LoadSingleJetHistograms(){
     for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
       
       // Select the bin indices
-      if(iCentralityBin == fnCentralityBins-1) {
+      // When using wide centrality bins, duplicate remover is needed also in the most peripheral bins
+      /*if(iCentralityBin == fnCentralityBins-1) {
         duplicateRemoverCentrality = 0;
       } else {
         duplicateRemoverCentrality = -1;
-      }
+      }*/
       lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
       higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
       
@@ -1580,7 +1581,8 @@ void DijetHistogramManager::LoadDijetHistograms(){
   for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
     
     // Select the centrality bin indices
-    if(iCentralityBin == fnCentralityBins-1) duplicateRemoverCentrality = 0;
+    
+    //if(iCentralityBin == fnCentralityBins-1) duplicateRemoverCentrality = 0; // When using wide centrality bins, duplicate remover is needed also in the most peripheral bins
     lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
     higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
     
@@ -1678,11 +1680,12 @@ void DijetHistogramManager::LoadTrackHistograms(){
       for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
         
         // Select the bin indices
-        if(iCentralityBin == fnCentralityBins-1) {
+        // When using wide centrality bins, duplicate remover is needed also in the most peripheral bins
+        /*if(iCentralityBin == fnCentralityBins-1) {
           duplicateRemoverCentrality = 0;
         } else {
           duplicateRemoverCentrality = -1;
-        }
+        }*/
         lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
         higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
         
@@ -1762,11 +1765,12 @@ void DijetHistogramManager::LoadJetTrackCorrelationHistograms(){
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
           
           // Select the bin indices
-          if(iCentralityBin == fnCentralityBins-1) {
+          // When using wide centrality bins, duplicate remover is needed also in the most peripheral bins
+          /*if(iCentralityBin == fnCentralityBins-1) {
             duplicateRemoverCentrality = 0;
           } else {
             duplicateRemoverCentrality = -1;
-          }
+          }*/
           lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
           higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
           
@@ -1884,11 +1888,14 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
         for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
           
           // Select the bin indices
+          // When using wide centrality bins, duplicate remover is needed also in the most peripheral bins
+          /*
           if(iCentralityBin == fnCentralityBins-1) {
             duplicateRemoverCentrality = 0;
           } else {
             duplicateRemoverCentrality = -1;
           }
+          */
           lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
           higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
           
