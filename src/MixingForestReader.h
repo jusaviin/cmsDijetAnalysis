@@ -23,7 +23,7 @@ public:
   
   // Constructors and destructors
   MixingForestReader();                                              // Default constructor
-  MixingForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets); // Custom constructor
+  MixingForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane); // Custom constructor
   MixingForestReader(const MixingForestReader& in);                    // Copy constructor
   virtual ~MixingForestReader();                                     // Destructor
   MixingForestReader& operator=(const MixingForestReader& obj);        // Equal sign operator

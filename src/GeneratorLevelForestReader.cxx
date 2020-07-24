@@ -35,9 +35,10 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
+ *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
  */
-GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets) :
-  ForestReader(dataType,readMode,jetType,jetAxis,matchJets),
+GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
+  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -157,6 +158,14 @@ void GeneratorLevelForestReader::Initialize(){
     fEventWeight = 1;
   }
   
+  // In later files there are branches for event plane angles
+  fHeavyIonTree->SetBranchStatus("hiNevtPlane",1);
+  fHeavyIonTree->SetBranchAddress("hiNevtPlane",&fnEventPlane,&fnEventPlaneBranch);
+  fHeavyIonTree->SetBranchStatus("hiEvtPlanes",1);
+  fHeavyIonTree->SetBranchAddress("hiEvtPlanes",&fEventPlaneAngle,&fEventPlaneAngleBranch);
+  fHeavyIonTree->SetBranchStatus("hiEvtPlaneQ",1);
+  fHeavyIonTree->SetBranchAddress("hiEvtPlaneQ",&fEventPlaneQ,&fEventPlaneQBranch);
+  
   // Connect the branches to the jet tree
   const char *jetAxis[3] = {"jt","jt","WTA"};
   const char *genJetAxis[3] = {"","","WTA"};
@@ -216,16 +225,11 @@ void GeneratorLevelForestReader::Initialize(){
     fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else if (fDataType == kPpMC){
     fCaloJetFilterBit = 1; // No filtering for Monte Carlo
-  } else if (fDataType == kPbPb){ // PbPb
-    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1);
-    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPbPbMC){
-    
-    fCaloJetFilterBit = 1; // No filtering for Monte carlo
-    //fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v2",1); // Old filter
-    //fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v2",&fCaloJetFilterBit,&fCaloJetFilterBranch); // Old filter
-  } else { // Local test
-    fCaloJetFilterBit = 1;  // No filter for local test
+  } else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb or MC is specifically required
+    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1);
+    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  } else {
+    fCaloJetFilterBit = 1;  // No filter for local test of MC if not specifically required
   }
   fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   

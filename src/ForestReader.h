@@ -27,6 +27,43 @@ class ForestReader{
   
 protected:
   static const Int_t fnMaxParticleFlowCandidates = 10000;        // Maximum number of particle flow candidates
+  static const Int_t fMaxEventPlanes = 30;                       // Maximum number of event planes
+  
+  /*
+   * Key for event planes
+   *
+  Index     Name   Detector Order hmin1 hmax1 hmin2 hmax2 minpt maxpt nsub mcw    rmate1    rmate2
+      0      HFm1        HF     1 -5.00 -3.00  0.00  0.00  0.01 30.00 3sub  no      HFp1   trackp1
+      1      HFp1        HF     1  3.00  5.00  0.00  0.00  0.01 30.00 3sub  no      HFm1   trackm1
+      2       HF1        HF     1 -5.00 -3.00  3.00  5.00  0.01 30.00 3sub  no   trackm1   trackp1
+      3   trackm1   Tracker     1 -2.00 -1.00  0.00  0.00  0.30  3.00 3sub  no      HFm1      HFp1
+      4   trackp1   Tracker     1  1.00  2.00  0.00  0.00  0.30  3.00 3sub  no      HFm1      HFp1
+      5   Castor1    Castor     1 -6.55 -5.10  0.00  0.00  0.01 50.00 3sub  no      HFp1   trackp1
+      6      HFm2        HF     2 -5.00 -3.00  0.00  0.00  0.01 30.00 3sub  no      HFp2 trackmid2
+      7      HFp2        HF     2  3.00  5.00  0.00  0.00  0.01 30.00 3sub  no      HFm2 trackmid2
+      8       HF2        HF     2 -5.00 -3.00  3.00  5.00  0.01 30.00 3sub  no   trackm2   trackp2
+      9 trackmid2   Tracker     2 -0.75  0.75  0.00  0.00  0.30  3.00 3sub  no      HFm2      HFp2
+     10   trackm2   Tracker     2 -2.00 -1.00  0.00  0.00  0.30  3.00 3sub  no      HFm2      HFp2
+     11   trackp2   Tracker     2  1.00  2.00  0.00  0.00  0.30  3.00 3sub  no      HFm2      HFp2
+     12   Castor2    Castor     2 -6.55 -5.10  0.00  0.00  0.01 50.00 3sub  no trackmid2      HFp2
+     13      HFm3        HF     3 -5.00 -3.00  0.00  0.00  0.01 30.00 3sub  no      HFp3 trackmid3
+     14      HFp3        HF     3  3.00  5.00  0.00  0.00  0.01 30.00 3sub  no      HFm3 trackmid3
+     15       HF3        HF     3 -5.00 -3.00  3.00  5.00  0.01 30.00 3sub  no   trackm3   trackp3
+     16 trackmid3   Tracker     3 -0.75  0.75  0.00  0.00  0.30  3.00 3sub  no      HFm3      HFp3
+     17   trackm3   Tracker     3 -2.00 -1.00  0.00  0.00  0.30  3.00 3sub  no      HFm3      HFp3
+     18   trackp3   Tracker     3  1.00  2.00  0.00  0.00  0.30  3.00 3sub  no      HFm3      HFp3
+     19      HFm4        HF     4 -5.00 -3.00  0.00  0.00  0.01 30.00 3sub  no      HFp4 trackmid4
+     20      HFp4        HF     4  3.00  5.00  0.00  0.00  0.01 30.00 3sub  no      HFm4 trackmid4
+     21       HF4        HF     4 -5.00 -3.00  3.00  5.00  0.01 30.00 3sub  no   trackm4   trackp4
+     22 trackmid4   Tracker     4 -0.75  0.75  0.00  0.00  0.30  3.00 3sub  no      HFm4      HFp4
+     23   trackm4   Tracker     4 -2.00 -1.00  0.00  0.00  0.30  3.00 3sub  no      HFm4      HFp4
+     24   trackp4   Tracker     4  1.00  2.00  0.00  0.00  0.30  3.00 3sub  no      HFm4      HFp4
+     25    HFm1mc        HF     1 -5.00 -3.00  0.00  0.00  0.01 30.00 3sub yes    HFp1mc trackp1mc
+     26    HFp1mc        HF     1  3.00  5.00  0.00  0.00  0.01 30.00 3sub yes    HFm1mc trackm1mc
+     27 trackm1mc   Tracker     1 -2.20 -1.40  0.00  0.00  0.30  3.00 3sub yes    HFm1mc    HFp1mc
+     28 trackp1mc   Tracker     1  1.40  2.20  0.00  0.00  0.30  3.00 3sub yes    HFm1mc    HFp1mc
+     29 Castor1mc    Castor     1 -6.55 -5.10  0.00  0.00  0.01 50.00 3sub yes    HFp1mc trackp1mc
+  */
   
 public:
   
@@ -35,7 +72,7 @@ public:
   
   // Constructors and destructors
   ForestReader();                                          // Default constructor
-  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets); // Custom constructor
+  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane); // Custom constructor
   ForestReader(const ForestReader& in);                    // Copy constructor
   virtual ~ForestReader();                                 // Destructor
   ForestReader& operator=(const ForestReader& obj);        // Equal sign operator
@@ -53,6 +90,9 @@ public:
   Int_t GetHiBin() const;             // Getter for CMS hiBin
   Float_t GetPtHat() const;           // Getter for pT hat
   Float_t GetEventWeight() const;     // Getter for jet weight in 2018 MC
+  Int_t GenNEventPlane() const;       // Getter for the number of event planes
+  Float_t GetEventPlaneAngle(Int_t iEventPlane) const;  // Getter for the event plane angle for the i:th event plane
+  Float_t GetEventPlaneQ(Int_t iEventPlane) const;      // Getter for the magnitude of the q-vector for the i:th event plane
   
   // Getters for leaves in jet tree
   virtual Float_t GetJetPt(Int_t iJet) const = 0;         // Getter for jet pT
@@ -121,16 +161,20 @@ protected:
   // Methods
   virtual void Initialize() = 0;  // Connect the branches to the tree
   
-  Int_t fDataType;    // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
-  Int_t fReadMode;    // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
-  Int_t fJetType;     // Choose the type of jets usedfor analysis. 0 = Calo jets, 1 = PF jets
-  Int_t fJetAxis;     // Jet axis used for the jets. 0 = Anti-kT, 1 = Leading particle flow candidate, 2 = WTA
-  Bool_t fMatchJets;  // Match generator and reconstructed level jets
+  Int_t fDataType;     // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
+  Int_t fReadMode;     // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
+  Int_t fJetType;      // Choose the type of jets usedfor analysis. 0 = Calo jets, 1 = PF jets
+  Int_t fJetAxis;      // Jet axis used for the jets. 0 = Anti-kT, 1 = Leading particle flow candidate, 2 = WTA
+  Bool_t fMatchJets;   // Match generator and reconstructed level jets
+  Bool_t fDoEventPlane; // Include event plane branches in the tree
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;            // Branch for vertex z-position
   TBranch *fHiBinBranch;           // Branch for centrality
   TBranch *fPtHatBranch;           // Branch for pT hat
+  TBranch *fnEventPlaneBranch;     // Branch for the number of event planes
+  TBranch *fEventPlaneAngleBranch; // Branch for the event plane angles
+  TBranch *fEventPlaneQBranch;     // Branch for the event plane Q-vector magnitude
   
   // Branches for jet tree
   TBranch *fJetPtBranch;         // Branch for jet pT
@@ -185,6 +229,9 @@ protected:
   Float_t fVertexZ;    // Vertex z-position
   Int_t fHiBin;        // HiBin = Centrality percentile * 2
   Float_t fPtHat;      // pT hat
+  Int_t fnEventPlane;  // Number of event planes
+  Float_t fEventPlaneAngle[fMaxEventPlanes] = {0};  // Event plane angles
+  Float_t fEventPlaneQ[fMaxEventPlanes] = {0};      // Event plane q-vector magnitudes
   
   // Leaves for jet tree
   Int_t fnJets;          // number of jets in an event
@@ -219,25 +266,3 @@ protected:
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

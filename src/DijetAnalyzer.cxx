@@ -43,6 +43,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fMatchLeadingJet(false),
   fDebugLevel(0),
   fLocalRun(0),
+  fDoEventPlane(false),
   fVzWeight(1),
   fCentralityWeight(1),
   fPtHatWeight(1),
@@ -169,6 +170,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Flog for local running or CRAB running
   fLocalRun = runLocal ? 1 : 0;
+  
+  // Reading event plane variables from the forest
+  fDoEventPlane = (fCard->Get("IncludeEventPlane") == 1);
   
   // Jet axis type
   fJetAxis = fCard->Get("JetAxis");
@@ -322,6 +326,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fMatchLeadingJet(in.fMatchLeadingJet),
   fDebugLevel(in.fDebugLevel),
   fLocalRun(in.fLocalRun),
+  fDoEventPlane(in.fDoEventPlane),
   fVzWeight(in.fVzWeight),
   fCentralityWeight(in.fCentralityWeight),
   fPtHatWeight(in.fPtHatWeight),
@@ -402,6 +407,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fMatchLeadingJet = in.fMatchLeadingJet;
   fDebugLevel = in.fDebugLevel;
   fLocalRun = in.fLocalRun;
+  fDoEventPlane = in.fDoEventPlane;
   fVzWeight = in.fVzWeight;
   fCentralityWeight = in.fCentralityWeight;
   fPtHatWeight = in.fPtHatWeight;
@@ -751,27 +757,27 @@ void DijetAnalyzer::RunAnalysis(){
   
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
-      fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
     } else {
-      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
     }
   } else {
     if(fForestType == kSkimForest) {
-      fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
     } else {
-      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
     }
   }
   
   // Select the reader for tracks based on forest and MC correlation type
   if(fMcCorrelationType == kRecoGen && fForestType == kSkimForest){
-    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
   } else if(fMcCorrelationType == kRecoGen){
-    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
   } else if (fMcCorrelationType == kGenReco && fForestType == kSkimForest){
-    fTrackReader[DijetHistograms::kSameEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
   } else if (fMcCorrelationType == kGenReco){
-    fTrackReader[DijetHistograms::kSameEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+    fTrackReader[DijetHistograms::kSameEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
   } else {
     fTrackReader[DijetHistograms::kSameEvent] = fJetReader;
   }
@@ -780,36 +786,36 @@ void DijetAnalyzer::RunAnalysis(){
   if(mixEvents){
     if(fDataType == ForestReader::kPbPb){
       if(fReadMode > 2000){
-        fTrackReader[DijetHistograms::kMixedEvent] = new MixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2018 mixing files
+        fTrackReader[DijetHistograms::kMixedEvent] = new MixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane); // Reader for 2018 mixing files
       } else {
-        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2015 mixing files
+        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane); // Reader for 2015 mixing files
       }
     } else if(fDataType == ForestReader::kPbPbMC){
       if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
         if(fReadMode > 2000){
-          fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelMixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2018 syntax
+          fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelMixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane); // Reader for 2018 syntax
         } else {
-          fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2015 syntax
+          fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane); // Reader for 2015 syntax
         }
         
       } else {
         if(fReadMode > 2000){
-          fTrackReader[DijetHistograms::kMixedEvent] = new MixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2018 syntax
+          fTrackReader[DijetHistograms::kMixedEvent] = new MixingForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane); // Reader for 2018 syntax
         } else {
-          fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets); // Reader for 2015 syntax
+          fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane); // Reader for 2015 syntax
         }
       }
     } else if (fMcCorrelationType == kRecoGen || fMcCorrelationType == kGenGen) { // Mixed event reader for generator tracks
       if(fForestType == kSkimForest) {
-        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
       } else {
-        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
       }
     } else {
       if(fForestType == kSkimForest) {
-        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
       } else {
-        fTrackReader[DijetHistograms::kMixedEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets);
+        fTrackReader[DijetHistograms::kMixedEvent] = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,fDoEventPlane);
       }
     }
     
@@ -1600,6 +1606,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   Double_t subleadingJetPhi = subleadingJetInfo[1];
   Double_t subleadingJetEta = subleadingJetInfo[2];
   Double_t subleadingJetFlavor = subleadingJetInfo[3];
+  
+  // Variables for event plane
+  Double_t eventPlaneQ = 0;           // Magnitude of the event plane Q-vector
   
   // Calculate the dijet asymmetry. Choose AJ or xJ based on selection from JCard.
   Double_t dijetAsymmetry = (fAsymmetryBinType == 0) ? (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt) : subleadingJetPt/leadingJetPt;

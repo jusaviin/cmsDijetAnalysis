@@ -24,7 +24,7 @@ public:
   
   // Constructors and destructors
   HighForestReader();                                              // Default constructor
-  HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets); // Custom constructor
+  HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane); // Custom constructor
   HighForestReader(const HighForestReader& in);                    // Copy constructor
   virtual ~HighForestReader();                                     // Destructor
   HighForestReader& operator=(const HighForestReader& obj);        // Equal sign operator

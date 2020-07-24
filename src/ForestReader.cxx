@@ -12,9 +12,13 @@ ForestReader::ForestReader() :
   fJetType(0),
   fJetAxis(0),
   fMatchJets(false),
+  fDoEventPlane(false),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fPtHatBranch(0),
+  fnEventPlaneBranch(0),
+  fEventPlaneAngleBranch(0),
+  fEventPlaneQBranch(0),
   fJetPtBranch(0),
   fJetPhiBranch(0),
   fJetEtaBranch(0),
@@ -56,6 +60,9 @@ ForestReader::ForestReader() :
   fVertexZ(-100),
   fHiBin(-1),
   fPtHat(0),
+  fnEventPlane(0),
+  fEventPlaneAngle(),
+  fEventPlaneQ(),
   fnJets(0),
   fnMatchedJets(0),
   fEventWeight(1),
@@ -91,16 +98,21 @@ ForestReader::ForestReader() :
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
+ *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
  */
-ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets) :
+ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
   fDataType(0),
   fReadMode(readMode),
   fJetType(jetType),
   fJetAxis(jetAxis),
   fMatchJets(matchJets),
+  fDoEventPlane(doEventPlane),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fPtHatBranch(0),
+  fnEventPlaneBranch(0),
+  fEventPlaneAngleBranch(0),
+  fEventPlaneQBranch(0),
   fJetPtBranch(0),
   fJetPhiBranch(0),
   fJetEtaBranch(0),
@@ -142,6 +154,9 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t 
   fVertexZ(-100),
   fHiBin(-1),
   fPtHat(0),
+  fnEventPlane(0),
+  fEventPlaneAngle(),
+  fEventPlaneQ(),
   fnJets(0),
   fnMatchedJets(0),
   fEventWeight(1),
@@ -179,9 +194,13 @@ ForestReader::ForestReader(const ForestReader& in) :
   fJetType(in.fJetType),
   fJetAxis(in.fJetAxis),
   fMatchJets(in.fMatchJets),
+  fDoEventPlane(in.fDoEventPlane),
   fHiVzBranch(in.fHiVzBranch),
   fHiBinBranch(in.fHiBinBranch),
   fPtHatBranch(in.fPtHatBranch),
+  fnEventPlaneBranch(in.fnEventPlaneBranch),
+  fEventPlaneAngleBranch(in.fEventPlaneAngleBranch),
+  fEventPlaneQBranch(in.fEventPlaneQBranch),
   fJetPtBranch(in.fJetPtBranch),
   fJetPhiBranch(in.fJetPhiBranch),
   fJetEtaBranch(in.fJetEtaBranch),
@@ -223,6 +242,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fVertexZ(in.fVertexZ),
   fHiBin(in.fHiBin),
   fPtHat(in.fPtHat),
+  fnEventPlane(in.fnEventPlane),
   fnJets(in.fnJets),
   fnMatchedJets(in.fnMatchedJets),
   fEventWeight(in.fEventWeight),
@@ -249,6 +269,11 @@ ForestReader::ForestReader(const ForestReader& in) :
     fParticleFlowCandidateEtaArray[iParticleFlowCandidate] = in.fParticleFlowCandidateEtaArray[iParticleFlowCandidate];
   }
   
+  for(Int_t iEventPlane = 0; iEventPlane < fMaxEventPlanes; iEventPlane++){
+    fEventPlaneAngle[iEventPlane] = in.fEventPlaneAngle[iEventPlane];
+    fEventPlaneQ[iEventPlane] = in.fEventPlaneQ[iEventPlane];
+  }
+  
 }
 
 /*
@@ -264,9 +289,13 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fJetType = in.fJetType;
   fJetAxis = in.fJetAxis;
   fMatchJets = in.fMatchJets;
+  fDoEventPlane = in.fDoEventPlane;
   fHiVzBranch = in.fHiVzBranch;
   fHiBinBranch = in.fHiBinBranch;
   fPtHatBranch = in.fPtHatBranch;
+  fnEventPlaneBranch = in.fnEventPlaneBranch;
+  fEventPlaneAngleBranch = in.fEventPlaneAngleBranch;
+  fEventPlaneQBranch = in.fEventPlaneQBranch;
   fJetPtBranch = in.fJetPtBranch;
   fJetPhiBranch = in.fJetPhiBranch;
   fJetEtaBranch = in.fJetEtaBranch;
@@ -308,6 +337,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fVertexZ = in.fVertexZ;
   fHiBin = in.fHiBin;
   fPtHat = in.fPtHat;
+  fnEventPlane = in.fnEventPlane;
   fnJets = in.fnJets;
   fnMatchedJets = in.fnMatchedJets;
   fEventWeight = in.fEventWeight;
@@ -331,6 +361,11 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
     fParticleFlowCandidatePtArray[iParticleFlowCandidate] = in.fParticleFlowCandidatePtArray[iParticleFlowCandidate];
     fParticleFlowCandidatePhiArray[iParticleFlowCandidate] = in.fParticleFlowCandidatePhiArray[iParticleFlowCandidate];
     fParticleFlowCandidateEtaArray[iParticleFlowCandidate] = in.fParticleFlowCandidateEtaArray[iParticleFlowCandidate];
+  }
+  
+  for(Int_t iEventPlane = 0; iEventPlane < fMaxEventPlanes; iEventPlane++){
+    fEventPlaneAngle[iEventPlane] = in.fEventPlaneAngle[iEventPlane];
+    fEventPlaneQ[iEventPlane] = in.fEventPlaneQ[iEventPlane];
   }
   
   return *this;
@@ -395,6 +430,21 @@ Float_t ForestReader::GetPtHat() const{
 // Getter for pT hat
 Float_t ForestReader::GetEventWeight() const{
   return fEventWeight;
+}
+
+// Getter for the number of event planes
+Int_t ForestReader::GenNEventPlane() const{
+  return fnEventPlane;
+}
+
+// Getter for the event plane angle for the i:th event plane
+Float_t ForestReader::GetEventPlaneAngle(Int_t iEventPlane) const{
+  return fEventPlaneAngle[iEventPlane];
+}
+
+// Getter for the magnitude of the q-vector for the i:th event plane
+Float_t ForestReader::GetEventPlaneQ(Int_t iEventPlane) const{
+  return fEventPlaneQ[iEventPlane];
 }
 
 // Getter for calorimeter jet filter bit. Always 1 for MC (set in the initializer).

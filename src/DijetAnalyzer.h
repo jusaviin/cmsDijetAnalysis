@@ -110,6 +110,7 @@ private:
   Bool_t fMatchLeadingJet;           // Match reco and gen leading jets (in both cases the leading jet fulfills the requirements)
   Int_t fDebugLevel;                 // Amount of debug messages printed to console
   Int_t fLocalRun;                   // Flag for running locally or on crab
+  Bool_t fDoEventPlane;              // Flog for reading event plane variables from the forest
   
   // Weights for filling the MC histograms
   Double_t fVzWeight;                // Weight for vz in MC
