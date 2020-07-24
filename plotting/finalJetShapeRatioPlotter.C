@@ -14,11 +14,14 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
   
   const char* jetShapeTitle[] = {"Leading jet shape ratio between x_{j} bins","Subleading jet shape ratio between x_{j} bins","Jet shape ratio between x_{j} bins"};
+  const char* jetType[] = {"Leading", "Subleading", "Inclusive"};
   const char* jetShapeSaveName[] = {"trackLeadingJet","trackSubleadingJet","trackInclusiveJet"};
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
   
   const char* systemLegendString[] = {"WTA", "E-scheme", "Third jet", "", ""};
+  
+  const bool addPreliminaryTag = true; // Option to add a preliminary tag to the figures
   
   // Number of events in each xj bin. Provided as a table so these do not have to be in the data file
   double xjJetCount[5][4] = {
@@ -468,17 +471,46 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   //bigCanvas->CD(4);
   //lt3->Draw();
   
+  double cmsPositionX = 0.02;
+  double cmsPositionY = 0.9;
   double jetShapeTitlePosition[] = {0.13,0.11,0.13};
   double xjPosition[] = {0.76,0.77,0.76};
   
+  if(addPreliminaryTag){
+    cmsPositionX = 0.05;
+    cmsPositionY = 0.93;
+    jetShapeTitlePosition[0] = 0.225;
+    jetShapeTitlePosition[1] = 0.21;
+    jetShapeTitlePosition[2] = 0.225;
+  }
+  
   bigCanvas->cd(0);
+  
+  
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.065);
-  mainTitle->DrawLatexNDC(0.02, 0.9, "CMS");
+  mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
   
-  mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.045);
-  mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.905, jetShapeTitle[iJetTrack/3]);
+  if(addPreliminaryTag){
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.055);
+    mainTitle->DrawLatexNDC(0.022, 0.88, "Preliminary");
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.045);
+    mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.935, Form("%s jet shape ratio", jetType[iJetTrack/3]));
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.045);
+    mainTitle->DrawLatexNDC(0.26, 0.885, "between x_{j} bins");
+    
+  } else {
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.045);
+    mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.905, jetShapeTitle[iJetTrack/3]);
+    
+  }
   
   //mainTitle->SetTextFont(42);
   //mainTitle->SetTextSize(0.035);
@@ -509,7 +541,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_enlargedTextSize.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_preliminaryTag.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   

@@ -26,6 +26,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const bool drawExtraRatio = false;           // Draw illustration of third jet effects to the ratio
   const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
   
+  const bool addPreliminaryTag = true;
+  
   // Change the titles if the jet shape is not normalized to one
   if(!normalizeJetShape){
     jetShapeTitle[0] = "Leading jet radial momentum distribution";
@@ -403,17 +405,25 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   //line[0]->SetLineStyle(1);
   //line[0]->DrawLineNDC(0, 0, 0, 1);
   
-  double cmsPosition[] = {0.22,0.2,0.22};
+  double cmsPositionX = 0.28;
   double cmsPositionY = 0.97;
-  double jetShapeTitlePosition[] = {0.56,0.54,0.56};
+  double jetShapeTitlePosition[] = {0.4,0.4,0.4};
   double xjPosition[] = {0.76,0.77,0.76};
   double systemPosition = 0.26;
   double selectionPosition = 0.205;
   double cmsSize = 0.035;
   
+  if(addPreliminaryTag){
+    cmsPositionX = 0.065;
+    cmsPositionY = 0.96;
+    jetShapeTitlePosition[0] = 0.36;
+    jetShapeTitlePosition[1] = 0.34;
+    jetShapeTitlePosition[2] = 0.36;
+  }
+  
   // If we draw radial momentum distribution instead of jet shape, need to change and reposition the labels
   if(!normalizeJetShape){
-    cmsPosition[iJetTrack/3] = 0.33;
+    cmsPositionX = 0.33;
     jetShapeTitlePosition[iJetTrack/3] -= 0.17;
     xjPosition[iJetTrack/3] += 0.08;
     cmsPositionY = 0.88;
@@ -447,11 +457,17 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.04);
-  mainTitle->DrawLatexNDC(0.28, cmsPositionY, "CMS");
+  mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
+  
+  if(addPreliminaryTag){
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.035);
+    mainTitle->DrawLatexNDC(0.03, 0.93, "Preliminary");
+  }
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(0.4, 0.97, jetShapeTitle[iJetTrack/3]);
+  mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.97, jetShapeTitle[iJetTrack/3]);
   
   //mainTitle->SetTextFont(42);
   //mainTitle->SetTextSize(0.035);
@@ -596,13 +612,33 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   }
   //canvas2caption
   ratioCanvas->cd(0);
+  
+  double cmsPositionXratio = 0.05;
+  double cmsPositionYratio = 0.95;
+  double jetShapeRatioTitlePosition[] = {0.14, 0.14, 0.14};
+  
+  if(addPreliminaryTag){
+    cmsPositionXratio = 0.04;
+    cmsPositionYratio = 0.97;
+    jetShapeRatioTitlePosition[0] = 0.18;
+    jetShapeRatioTitlePosition[1] = 0.158;
+    jetShapeRatioTitlePosition[2] = 0.18;
+  }
+  
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.04);
-  mainTitle->DrawLatexNDC(0.05, 0.95, "CMS");
+  mainTitle->DrawLatexNDC(cmsPositionXratio, cmsPositionYratio, "CMS");
+  
+  if(addPreliminaryTag){
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.035);
+    mainTitle->DrawLatexNDC(0.01, 0.94, "Preliminary");
+  }
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(0.14, 0.95, Form("%s ratios",jetShapeTitle[iJetTrack/3]));
+  mainTitle->DrawLatexNDC(jetShapeRatioTitlePosition[iJetTrack/3], 0.95, Form("%s ratios",jetShapeTitle[iJetTrack/3]));
+  
   mainTitle->SetTextSize(0.024);
   if(monteCarloLabels){
     mainTitle->DrawLatexNDC(0.58, 0.975, "5.02 TeV   Pythia8   Pythia+Hydjet");
@@ -669,8 +705,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     extraLegend->Draw();
   } // Drawing extra ratio for illustration
   
-  bigCanvas->SaveAs(Form("figures/final%s_%s_systematicUpdate.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
-  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioSystematicUpdate.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/final%s_%s_preliminaryTag.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioPreliminaryTag.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
   
   // Save the histograms to a file for HepData submission
   if(saveHistogramsForHepData){

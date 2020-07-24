@@ -51,6 +51,10 @@ void drawRatio(TH1D** ratio, TH1D** err, int i, Color_t color,  bool isconner = 
 }
 
 void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std::pair<TH1D***,TH1D***>*sub_sum){
+  
+  // Option to add a preliminary tag to the figures
+  const bool addPreliminaryTag = true;
+  
   // txt[0] will be the title of the figure
   TH1D *ld_ratio[ncent];
   TH1D *ld_ratio_err[ncent];
@@ -133,12 +137,40 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
   x= 0.978,box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "1");
   
   
+  double cmsPositionX = 0.005;
+  double cmsPositionY = 0.93;
+  
+  if(addPreliminaryTag){
+    cmsPositionX = 0.06;
+    cmsPositionY = 0.957;
+  }
+  
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.06);
-  mainTitle->DrawLatexNDC(0.005, 0.93, "CMS");
-  mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.0385);
-  mainTitle->DrawLatexNDC(0.081, 0.935, "Particle transverse momentum distribution ratios");
+  mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
+  
+  if(addPreliminaryTag){
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.05);
+    mainTitle->DrawLatexNDC(0.03, 0.913, "Preliminary");
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.0385);
+    mainTitle->DrawLatexNDC(0.2, 0.96, "Particle transverse momentum");
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.0385);
+    mainTitle->DrawLatexNDC(0.252, 0.915, "distribution ratios");
+    
+  } else {
+  
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.0385);
+    mainTitle->DrawLatexNDC(0.081, 0.935, "Particle transverse momentum distribution ratios");
+    
+  }
+  
   mainTitle->SetTextSize(0.036);
   mainTitle->DrawLatexNDC(0.6, 0.965, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
   mainTitle->SetTextSize(0.033);

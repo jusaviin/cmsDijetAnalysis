@@ -22,8 +22,9 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   double subtractionZoom[] = {23,23,15};
   
   const bool drawInclusive = false;
+  const bool addPreliminaryTag = true;
   
-  const bool saveHistogramsForHepData = true;
+  const bool saveHistogramsForHepData = false;
   
   // Open a file to include results from inclusive jet analysis HIN-16-020
   //  TFile *inclusiveResultFile = TFile::Open("data/publishedResults/officialHist_py_deta_16_020.root");
@@ -375,15 +376,18 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   //ptLegend4->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
   ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{trk}< 12 GeV","lpfe");
-  
-  
-  double cmsPosition[] = {0.12,0.1,0.12};
+    
+  double cmsPositionX = 0.13;
   double cmsPositionY = 0.97;
   double jetShapeTitlePosition[] = {0.46,0.44,0.46};
   double xjPosition[] = {0.76,0.77,0.76};
   double systemPosition = 0.26;
   double selectionPosition = 0.205;
   double cmsSize = 0.035;
+  
+  if(addPreliminaryTag){
+    cmsPositionX = 0.07;
+  }
   
   // Draw the labels for different xj bins
   /*
@@ -409,7 +413,13 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.04);
-  mainTitle->DrawLatexNDC(.13, cmsPositionY, "CMS");
+  mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
+  
+  if(addPreliminaryTag){
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.035);
+    mainTitle->DrawLatexNDC(0.03, 0.935, "Preliminary");
+  }
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.035);
@@ -446,7 +456,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   mainTitle->DrawLatex(0.972, 0.0552, "1.5");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_linScale.pdf", deltaEtaSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_preliminaryTag.pdf", deltaEtaSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("deltaEta_normal_v3.png");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   

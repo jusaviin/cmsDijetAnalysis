@@ -110,6 +110,10 @@ void drawHist(TH1D* hist, TH1D* syst, int isconner = 0){
 }
 
 void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D***>* ld_sum, TH1D**** sub_js, std::pair<TH1D***,TH1D***>*sub_sum, std::vector<TString>& txt){
+  
+  // Preliminary tag to figures
+  const bool addPreliminaryTag = true;
+  
   // txt[0] will be the title of the figure
   stackHist **jstk_ld  = makeStack("st_ld", ld_js , nasym-1);
   stackHist **jstk_sub = makeStack("st_ld", sub_js, nasym-1);
@@ -170,12 +174,28 @@ void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D**
     }
   }
   bigCanvas->cd(0);
+  
+  double cmsPositionX = 0.12;
+  double cmsPositionY = 0.958;
+  
+  if(addPreliminaryTag){
+    cmsPositionX = 0.07;
+  }
+  
   mainTitle->SetTextFont(62);
   mainTitle->SetTextSize(0.06);
-  mainTitle->DrawLatexNDC(.12,  .958, "CMS");
+  mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
+  
+  if(addPreliminaryTag){
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.055);
+    mainTitle->DrawLatexNDC(0.03, 0.91, "Preliminary");
+  }
+  
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.055);
-  mainTitle->DrawLatexNDC(.21, 0.958, "Particle transverse momentum distributions in jets");
+  mainTitle->DrawLatexNDC(0.21, 0.958, "Particle transverse momentum distributions in jets");
+  
   mainTitle->SetTextSize(0.05);
   mainTitle->DrawLatexNDC(0.26, 0.91, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
   mainTitle->SetTextSize(0.042);
