@@ -44,9 +44,10 @@ MixingForestReader::MixingForestReader() :
  *   Int_t jetType: 0 = Calo jets, 1 = PF jets
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
+ *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
  */
-MixingForestReader::MixingForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets) :
-  ForestReader(dataType,readMode,jetType,jetAxis,matchJets),
+MixingForestReader::MixingForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
+  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane),
   fHeavyIonTree(0),
   fSkimTree(0),
   fTrackTree(0),
