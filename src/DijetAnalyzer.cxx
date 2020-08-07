@@ -1609,6 +1609,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   
   // Variables for event plane
   Double_t eventPlaneQ = 0;           // Magnitude of the event plane Q-vector
+  if(fDoEventPlane){
+    eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
+  }
   
   // Calculate the dijet asymmetry. Choose AJ or xJ based on selection from JCard.
   Double_t dijetAsymmetry = (fAsymmetryBinType == 0) ? (leadingJetPt - subleadingJetPt)/(leadingJetPt + subleadingJetPt) : subleadingJetPt/leadingJetPt;
@@ -1710,6 +1713,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
         fillerJetTrackInclusive[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
         fillerJetTrackInclusive[5] = leadingJetFlavor;           // Axis 5: Jet flavor (quark of gluon)
         
+        if(fDoEventPlane) fillerJetTrackInclusive[5] = eventPlaneQ;  // Axis 5: Magnitude of event plane q-vector
+        
         if(fFillInclusiveJetTrackCorrelation){
           fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
           // fHistograms->fhTrackJetInclusivePtWeighted->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram Do not fill pT weighted histograms for dihadron
@@ -1726,6 +1731,9 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
         fillerJetTrack[4] = centrality;                 // Axis 4: Centrality
         fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
         fillerJetTrack[6] = leadingJetFlavor;           // Axis 6: Leading jet flavor (quark or gluon)
+        
+        if(fDoEventPlane) fillerJetTrack[6] = eventPlaneQ;  // Axis 6: Magnitude of event plane q-vector
+        
         if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-leading jet correlation histogram
         if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-leading jet correlation histogram
         if(fFillPtWeightedJetTrackCorrelation) fHistograms->fhTrackLeadingJetPtWeighted->Fill(fillerJetTrack,trackEfficiencyCorrection*trackPt*fTotalEventWeight*jetPtWeight); // Fill the pT weighted track-leading jet correlation histogram

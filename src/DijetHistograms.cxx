@@ -301,6 +301,13 @@ void DijetHistograms::CreateHistograms(){
   const Double_t maxClosureRatio = 2;    // Maximum ratio for the closure plots
   const Int_t nClosureRatioBins = 40;    // Number of closure ratio bins
   
+  // Magnitude for event plane q-vector
+  const Double_t minQVector = 0;    // Minimum value for the magnitude of q-vector
+  const Double_t maxQVector = 330;  // Maximum value for the magnitude of q-vector
+  const Int_t nQVectorBins = 11;   // Number of q-vector magnitude bins
+  
+  Bool_t doEventPlane = (fCard->Get("IncludeEventPlane") == 1);
+  
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
   Double_t wideCentralityBins[nWideCentralityBins+1];
@@ -556,10 +563,21 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder7D[5] = minCorrelationType;   // low bin border for correlation types
   highBinBorder7D[5] = maxCorrelationType;  // high bin border for correlation types
   
-  // Axis 6 for the track-jet correlation histogram: jet flavor (quark/gluon)
-  nBins7D[6] = nClosureParticleTypeBins;        // nBins for jet flavors
-  lowBinBorder7D[6] = minClosureParticleType;   // low bin border for jet flavor
-  highBinBorder7D[6] = maxClosureParticleType;  // high bin border for jet flavor
+  if(doEventPlane){
+    
+    // Axis 6 for the track-jet correlation histogram: magnitude of event plane q-vector
+    nBins7D[6] = nQVectorBins;        // nBins for event plane q-vector magnitude
+    lowBinBorder7D[6] = minQVector;   // low bin border for event plane q-vector magnitude
+    highBinBorder7D[6] = maxQVector;  // high bin border for event plane q-vector magnitude
+    
+  } else {
+  
+    // Axis 6 for the track-jet correlation histogram: jet flavor (quark/gluon)
+    nBins7D[6] = nClosureParticleTypeBins;        // nBins for jet flavors
+    lowBinBorder7D[6] = minClosureParticleType;   // low bin border for jet flavor
+    highBinBorder7D[6] = maxClosureParticleType;  // high bin border for jet flavor
+    
+  }
   
   // Create histograms for track-jet correlations
   fhTrackLeadingJet = new THnSparseF("trackLeadingJet","trackLeadingJet",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackLeadingJet->Sumw2();
@@ -624,10 +642,21 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder6D[4] = minCorrelationType;   // low bin border for correlation types
   highBinBorder6D[4] = maxCorrelationType;  // high bin border for correlation types
   
-  // Axis 6 for the track-inclusive jet correlation histogram: jet flavor (quark/gluon)
-  nBins6D[5] = nClosureParticleTypeBins;        // nBins for jet flavors
-  lowBinBorder6D[5] = minClosureParticleType;   // low bin border for jet flavor
-  highBinBorder6D[5] = maxClosureParticleType;  // high bin border for jet flavor
+  if(doEventPlane){
+    
+    // Axis 5 for the track-inclusive jet correlation histogram: magnitude of event plane q-vector
+    nBins6D[5] = nQVectorBins;        // nBins for event plane q-vector magnitude
+    lowBinBorder6D[5] = minQVector;   // low bin border for event plane q-vector magnitude
+    highBinBorder6D[5] = maxQVector;  // high bin border for event plane q-vector magnitude
+    
+  } else {
+  
+    // Axis 5 for the track-inclusive jet correlation histogram: jet flavor (quark/gluon)
+    nBins6D[5] = nClosureParticleTypeBins;        // nBins for jet flavors
+    lowBinBorder6D[5] = minClosureParticleType;   // low bin border for jet flavor
+    highBinBorder6D[5] = maxClosureParticleType;  // high bin border for jet flavor
+    
+  }
   
   // Create histograms for track-inclusive jet correlations
   fhTrackJetInclusive = new THnSparseF("trackJetInclusive","trackJetInclusive",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhTrackJetInclusive->Sumw2();
