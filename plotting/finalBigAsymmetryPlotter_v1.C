@@ -208,7 +208,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     ppLabel = "Pythia8";
   }
   
-  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "all dijets"};
+  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "All dijets"};
   
   for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
@@ -394,7 +394,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   }
 
   mainTitle->SetTextSize(0.022);
-  mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   
   box = new TBox();
@@ -536,7 +536,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   }
   
   mainTitle->SetTextSize(0.02);
-  mainTitle->DrawLatexNDC(0.505, 0.945, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(0.505, 0.945, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.03);
@@ -571,8 +571,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   ltc2->Draw();
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/final%s_%s_lul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
-  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioLul.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/final%s_%s_finalForm.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioFinalForm.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
   
   // Print the integrals for different bins to the console
   if(printIntegrals){
