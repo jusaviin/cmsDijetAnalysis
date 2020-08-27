@@ -16,7 +16,7 @@ void printRelativeUncertainty(){
   TString ppFileName = "data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root";
   TString uncertaintyFileName[2];
   TString ppUncertaintyFileName[2];
-  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_addTriggerBias_jffUpdate_2020-06-03.root";
+  uncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root";
   ppUncertaintyFileName[0] = "uncertainties/systematicUncertaintyForPp_20eveMix_xjBins_jffAndJetResolutionUpdate_2020-06-03.root";
   uncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_addNewSources_smoothedPairBackground_2020-05-18.root";
   ppUncertaintyFileName[1] = "uncertainties/systematicUncertaintyForPp_20eveMix_newJESestimate_2020-01-13.root";
