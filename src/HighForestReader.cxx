@@ -231,12 +231,14 @@ void HighForestReader::Initialize(){
   }
   
   // In later files there are branches for event plane angles
-  fHeavyIonTree->SetBranchStatus("hiNevtPlane",1);
-  fHeavyIonTree->SetBranchAddress("hiNevtPlane",&fnEventPlane,&fnEventPlaneBranch);
-  fHeavyIonTree->SetBranchStatus("hiEvtPlanes",1);
-  fHeavyIonTree->SetBranchAddress("hiEvtPlanes",&fEventPlaneAngle,&fEventPlaneAngleBranch);
-  fHeavyIonTree->SetBranchStatus("hiEvtPlaneQ",1);
-  fHeavyIonTree->SetBranchAddress("hiEvtPlaneQ",&fEventPlaneQ,&fEventPlaneQBranch);
+  if(fDoEventPlane){
+    fHeavyIonTree->SetBranchStatus("hiNevtPlane",1);
+    fHeavyIonTree->SetBranchAddress("hiNevtPlane",&fnEventPlane,&fnEventPlaneBranch);
+    fHeavyIonTree->SetBranchStatus("hiEvtPlanes",1);
+    fHeavyIonTree->SetBranchAddress("hiEvtPlanes",&fEventPlaneAngle,&fEventPlaneAngleBranch);
+    fHeavyIonTree->SetBranchStatus("hiEvtPlaneQ",1);
+    fHeavyIonTree->SetBranchAddress("hiEvtPlaneQ",&fEventPlaneQ,&fEventPlaneQBranch);
+  }
   
   // Connect the branches to the jet tree
   const char *jetAxis[3] = {"jt","jt","WTA"};

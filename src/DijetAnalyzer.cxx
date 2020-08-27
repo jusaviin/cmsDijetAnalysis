@@ -198,7 +198,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // pT weight function for Pythia to match 2017 MC and data pT spectra
   fPtWeightFunction = new TF1("fPtWeightFunction","pol3",0,500);
-  fPtWeightFunction->SetParameters(0.68323,0.00481626,-1.17975e-05,1.13663e-08);
+  fPtWeightFunction->SetParameters(0.699073,0.00287672,-6.35568e-06,5.02292e-09);
   
   // Weight function derived for leading jet
   fDijetWeightFunction = new TF1("fDijetWeightFunction","pol3",0,500);
@@ -2080,11 +2080,11 @@ Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
  *   return: Multiplicative correction factor for the jet pT
  */
 Double_t DijetAnalyzer::GetJetPtWeight(const Double_t jetPt) const{
-  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1;  // No weight for data
+  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1.0;  // No weight for data
   
   // Only weight 2017 and 2018 MC
   if(fReadMode < 2000){
-    return 1;  // No weighting for the most peripheral centrality bins 2015
+    return 1.0;  // No weighting for the most peripheral centrality bins 2015
   } else {
     return fPtWeightFunction->Eval(jetPt);  // No weighting for the most peripheral centrality bins 2018
   }
@@ -2193,12 +2193,12 @@ Double_t DijetAnalyzer::GetSmearingFactor(Double_t jetPt, const Double_t central
  *   return: Multiplicative correction factor for the leading jet pT
  */
 Double_t DijetAnalyzer::GetDijetWeight(const Double_t jetPt) const{
-  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1;  // No weight for data
-  return 1; // TODO: Current dijet weight is disabled
+  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1.0;  // No weight for data
+  return 1.0; // TODO: Current dijet weight is disabled
   
   // Only weight 2017 and 2018 MC
   if(fReadMode < 2000){
-    return 1;  // No weighting for the most peripheral centrality bins 2015
+    return 1.0;  // No weighting for the most peripheral centrality bins 2015
   } else {
     return fDijetWeightFunction->Eval(jetPt);  // No weighting for the most peripheral centrality bins 2018
   }
