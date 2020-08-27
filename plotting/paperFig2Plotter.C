@@ -53,7 +53,7 @@ void drawRatio(TH1D** ratio, TH1D** err, int i, Color_t color,  bool isconner = 
 void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std::pair<TH1D***,TH1D***>*sub_sum){
   
   // Option to add a preliminary tag to the figures
-  const bool addPreliminaryTag = true;
+  const bool addPreliminaryTag = false;
   
   // txt[0] will be the title of the figure
   TH1D *ld_ratio[ncent];
@@ -174,7 +174,7 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
   mainTitle->SetTextSize(0.036);
   mainTitle->DrawLatexNDC(0.6, 0.965, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
   mainTitle->SetTextSize(0.033);
-  mainTitle->DrawLatexNDC(0.505, 0.925, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(0.505, 0.925, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   
   
   

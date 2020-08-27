@@ -22,7 +22,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   double subtractionZoom[] = {23,23,15};
   
   const bool drawInclusive = false;
-  const bool addPreliminaryTag = true;
+  const bool addPreliminaryTag = false;
   
   const bool saveHistogramsForHepData = false;
   
@@ -272,7 +272,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   TBox *box = new TBox();
   TLatex *mainTitle = new TLatex();
-  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "all dijets"};
+  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "All dijets"};
   
   TLine *line[nAsymmetryBins];
   const char *pbpbLabel = "PbPb";
@@ -291,7 +291,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.11);
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(1.2);
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("Y = #frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
+      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("#frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
       deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitle("#||{#Delta#eta}");
       if(iCentrality == nCentralityBins && iAsymmetry == 2){
         //most left-bottom conner
@@ -365,17 +365,17 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   lt4->SetLineColor(kWhite);
   lt4->SetFillColor(kWhite);
   
-  ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(5), "0.7 < p_{T}^{trk}< 1 GeV","f");
-  ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(4), "1 < p_{T}^{trk}< 2 GeV","f");
+  ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(5), "0.7 < p_{T}^{ch}< 1 GeV","f");
+  ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(4), "1 < p_{T}^{ch}< 2 GeV","f");
   
-  ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(3), "2 < p_{T}^{trk}< 3 GeV","f");
-  ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(2), "3 < p_{T}^{trk}< 4 GeV","f");
+  ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(3), "2 < p_{T}^{ch}< 3 GeV","f");
+  ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(2), "3 < p_{T}^{ch}< 4 GeV","f");
   
-  ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(1), "4 < p_{T}^{trk}< 8 GeV","f");
-  ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(0), "8 < p_{T}^{trk}< 12 GeV","f");
+  ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(1), "4 < p_{T}^{ch}< 8 GeV","f");
+  ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(0), "8 < p_{T}^{ch}< 12 GeV","f");
   
   //ptLegend4->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
-  ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{trk}< 12 GeV","lpfe");
+  ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{ch}< 12 GeV","lpfe");
     
   double cmsPositionX = 0.13;
   double cmsPositionY = 0.97;
@@ -432,7 +432,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   mainTitle->SetTextSize(0.03);
   mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
   mainTitle->SetTextSize(0.022);
-  mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   //
   

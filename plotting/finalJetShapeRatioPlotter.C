@@ -21,7 +21,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   const char* systemLegendString[] = {"WTA", "E-scheme", "Third jet", "", ""};
   
-  const bool addPreliminaryTag = true; // Option to add a preliminary tag to the figures
+  const bool addPreliminaryTag = false; // Option to add a preliminary tag to the figures
   
   // Number of events in each xj bin. Provided as a table so these do not have to be in the data file
   double xjJetCount[5][4] = {
@@ -519,7 +519,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   mainTitle->SetTextSize(0.037);
   mainTitle->DrawLatexNDC(0.565, 0.94, "pp 320 pb^{-1} (5.02 TeV)  PbPb 1.7 nb^{-1} (5.02 TeV)");
   mainTitle->SetTextSize(0.034);
-  mainTitle->DrawLatexNDC(0.52, 0.885, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(0.52, 0.885, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   
   box = new TBox();

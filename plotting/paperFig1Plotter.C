@@ -59,7 +59,7 @@ void drawStack(stackHist *jstk, bool isconner = 0){
   jstk->hst->GetYaxis()->SetTitleSize(0.1);
   jstk->hst->GetYaxis()->SetTitleOffset(0.8);
   jstk->hst->GetYaxis()->SetTitleSize(0.14);
-  jstk->hst->GetYaxis()->SetTitle("P(#Deltar)");
+  jstk->hst->GetYaxis()->SetTitle("P(#Deltar) (GeV)");
   
   jstk->hst->GetXaxis()->SetTitle("#Deltar");
   jstk->hst->GetXaxis()->SetTitleOffset(0.6);
@@ -112,7 +112,7 @@ void drawHist(TH1D* hist, TH1D* syst, int isconner = 0){
 void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D***>* ld_sum, TH1D**** sub_js, std::pair<TH1D***,TH1D***>*sub_sum, std::vector<TString>& txt){
   
   // Preliminary tag to figures
-  const bool addPreliminaryTag = true;
+  const bool addPreliminaryTag = false;
   
   // txt[0] will be the title of the figure
   stackHist **jstk_ld  = makeStack("st_ld", ld_js , nasym-1);
@@ -199,7 +199,7 @@ void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D**
   mainTitle->SetTextSize(0.05);
   mainTitle->DrawLatexNDC(0.26, 0.91, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
   mainTitle->SetTextSize(0.042);
-  mainTitle->DrawLatexNDC(0.15, 0.86, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(0.15, 0.86, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   TLegend* ptLegend1 = new TLegend(0.04, 0.72, 0.27, 0.82);
   TLegend* ptLegend2 = new TLegend(0.28, 0.72, 0.51, 0.82);
   TLegend* ptLegend3 = new TLegend(0.53 ,0.72, 0.76, 0.82);
@@ -237,17 +237,17 @@ void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D**
   ptLegend2->SetTextSize(0.03);
   ptLegend3->SetTextSize(0.03);
   ptLegend4->SetTextSize(0.03);
-  ptLegend1->AddEntry(jstk_ld[0]->hist_trunk.at(0), "0.7 < p_{T}^{trk}< 1 GeV","f");
-  ptLegend1->AddEntry(jstk_ld[0]->hist_trunk.at(1), "1 < p_{T}^{trk}< 2 GeV","f");
+  ptLegend1->AddEntry(jstk_ld[0]->hist_trunk.at(0), "0.7 < p_{T}^{ch}< 1 GeV","f");
+  ptLegend1->AddEntry(jstk_ld[0]->hist_trunk.at(1), "1 < p_{T}^{ch}< 2 GeV","f");
   
-  ptLegend2->AddEntry(jstk_ld[0]->hist_trunk.at(2), "2 < p_{T}^{trk}< 3 GeV","f");
-  ptLegend2->AddEntry(jstk_ld[0]->hist_trunk.at(3), "3 < p_{T}^{trk}< 4 GeV","f");
+  ptLegend2->AddEntry(jstk_ld[0]->hist_trunk.at(2), "2 < p_{T}^{ch}< 3 GeV","f");
+  ptLegend2->AddEntry(jstk_ld[0]->hist_trunk.at(3), "3 < p_{T}^{ch}< 4 GeV","f");
   
-  ptLegend3->AddEntry(jstk_ld[0]->hist_trunk.at(4), "4 < p_{T}^{trk}< 8 GeV","f");
-  ptLegend3->AddEntry(jstk_ld[0]->hist_trunk.at(5), "8 < p_{T}^{trk}< 12 GeV","f");
+  ptLegend3->AddEntry(jstk_ld[0]->hist_trunk.at(4), "4 < p_{T}^{ch}< 8 GeV","f");
+  ptLegend3->AddEntry(jstk_ld[0]->hist_trunk.at(5), "8 < p_{T}^{ch}< 12 GeV","f");
   
-  ptLegend4->AddEntry(jstk_ld[0]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
-  ptLegend4->AddEntry((ld_sum->second)[4][3], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
+  ptLegend4->AddEntry(jstk_ld[0]->hist_trunk.at(6), "12 < p_{T}^{ch}< 300 GeV","f");
+  ptLegend4->AddEntry((ld_sum->second)[4][3], "0.7 < p_{T}^{ch}< 300 GeV","lpfe");
   
   ptLegend1->Draw();
   ptLegend2->Draw();

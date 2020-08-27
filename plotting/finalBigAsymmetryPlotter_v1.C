@@ -26,7 +26,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const bool drawExtraRatio = false;           // Draw illustration of third jet effects to the ratio
   const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
   
-  const bool addPreliminaryTag = true;
+  const bool addPreliminaryTag = false;
   
   // Change the titles if the jet shape is not normalized to one
   if(!normalizeJetShape){
@@ -280,7 +280,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     ppLabel = "Pythia8";
   }
   
-  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "all dijets"};
+  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "All dijets"};
   
   for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
     for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
@@ -362,19 +362,19 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   lt4->SetFillColor(kWhite);
   
   // Original
-  ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(0), "0.7 < p_{T}^{trk}< 1 GeV","f");
-  ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(1), "1 < p_{T}^{trk}< 2 GeV","f");
+  ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(0), "0.7 < p_{T}^{ch}< 1 GeV","f");
+  ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(1), "1 < p_{T}^{ch}< 2 GeV","f");
   
-  ptLegend2->AddEntry(jetShapeStack[4][0]->hist_trunk.at(2), "2 < p_{T}^{trk}< 3 GeV","f");
-  ptLegend2->AddEntry(jetShapeStack[4][0]->hist_trunk.at(3), "3 < p_{T}^{trk}< 4 GeV","f");
+  ptLegend2->AddEntry(jetShapeStack[4][0]->hist_trunk.at(2), "2 < p_{T}^{ch}< 3 GeV","f");
+  ptLegend2->AddEntry(jetShapeStack[4][0]->hist_trunk.at(3), "3 < p_{T}^{ch}< 4 GeV","f");
   
-  ptLegend3->AddEntry(jetShapeStack[4][0]->hist_trunk.at(4), "4 < p_{T}^{trk}< 8 GeV","f");
-  ptLegend3->AddEntry(jetShapeStack[4][0]->hist_trunk.at(5), "8 < p_{T}^{trk}< 12 GeV","f");
+  ptLegend3->AddEntry(jetShapeStack[4][0]->hist_trunk.at(4), "4 < p_{T}^{ch}< 8 GeV","f");
+  ptLegend3->AddEntry(jetShapeStack[4][0]->hist_trunk.at(5), "8 < p_{T}^{ch}< 12 GeV","f");
   
-  ptLegend4->AddEntry(jetShapeStack[4][0]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
-  ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
+  ptLegend4->AddEntry(jetShapeStack[4][0]->hist_trunk.at(6), "12 < p_{T}^{ch}< 300 GeV","f");
+  ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{ch}< 300 GeV","lpfe");
   
-  lt4->AddEntry(ratioUncertainty[0][0], "0.7 < p_{T}^{trk}< 300 GeV","lpfe");
+  lt4->AddEntry(ratioUncertainty[0][0], "0.7 < p_{T}^{ch}< 300 GeV","lpfe");
   
   // No low pT
   /*ptLegend1->AddEntry(jetShapeStack[4][0]->hist_trunk.at(0), "1 < p_{T}^{trk}< 2 GeV","f");
@@ -481,7 +481,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   }
 
   mainTitle->SetTextSize(0.022);
-  mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   
   box = new TBox();
@@ -647,7 +647,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   }
   
   mainTitle->SetTextSize(0.02);
-  mainTitle->DrawLatexNDC(0.505, 0.945, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#phi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(0.505, 0.945, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.03);
