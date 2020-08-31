@@ -1608,9 +1608,12 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   Double_t subleadingJetFlavor = subleadingJetInfo[3];
   
   // Variables for event plane
-  Double_t eventPlaneQ = 0;           // Magnitude of the event plane Q-vector
+  Double_t eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
+  Double_t eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
   if(fDoEventPlane){
     eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
+    eventPlaneMultiplicity = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneMultiplicity(8);
+    eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
   }
   
   // Calculate the dijet asymmetry. Choose AJ or xJ based on selection from JCard.
