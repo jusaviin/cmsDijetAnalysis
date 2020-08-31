@@ -91,8 +91,9 @@ public:
   Float_t GetPtHat() const;           // Getter for pT hat
   Float_t GetEventWeight() const;     // Getter for jet weight in 2018 MC
   Int_t GenNEventPlane() const;       // Getter for the number of event planes
-  Float_t GetEventPlaneAngle(Int_t iEventPlane) const;  // Getter for the event plane angle for the i:th event plane
-  Float_t GetEventPlaneQ(Int_t iEventPlane) const;      // Getter for the magnitude of the q-vector for the i:th event plane
+  Float_t GetEventPlaneAngle(Int_t iEventPlane) const;        // Getter for the event plane angle for the i:th event plane
+  Float_t GetEventPlaneQ(Int_t iEventPlane) const;            // Getter for the magnitude of the q-vector for the i:th event plane
+  Float_t GetEventPlaneMultiplicity(Int_t iEventPlane) const; // Getter for the particle multiplicity in the i:th event plane
   
   // Getters for leaves in jet tree
   virtual Float_t GetJetPt(Int_t iJet) const = 0;         // Getter for jet pT
@@ -169,12 +170,13 @@ protected:
   Bool_t fDoEventPlane; // Include event plane branches in the tree
   
   // Branches for heavy ion tree
-  TBranch *fHiVzBranch;            // Branch for vertex z-position
-  TBranch *fHiBinBranch;           // Branch for centrality
-  TBranch *fPtHatBranch;           // Branch for pT hat
-  TBranch *fnEventPlaneBranch;     // Branch for the number of event planes
-  TBranch *fEventPlaneAngleBranch; // Branch for the event plane angles
-  TBranch *fEventPlaneQBranch;     // Branch for the event plane Q-vector magnitude
+  TBranch *fHiVzBranch;                   // Branch for vertex z-position
+  TBranch *fHiBinBranch;                  // Branch for centrality
+  TBranch *fPtHatBranch;                  // Branch for pT hat
+  TBranch *fnEventPlaneBranch;            // Branch for the number of event planes
+  TBranch *fEventPlaneAngleBranch;        // Branch for the event plane angles
+  TBranch *fEventPlaneQBranch;            // Branch for the event plane Q-vector magnitude
+  TBranch *fEventPlaneMultiplicityBranch; // Branch for the particle multiplicity in the event plane
   
   // Branches for jet tree
   TBranch *fJetPtBranch;         // Branch for jet pT
@@ -230,8 +232,9 @@ protected:
   Int_t fHiBin;        // HiBin = Centrality percentile * 2
   Float_t fPtHat;      // pT hat
   Int_t fnEventPlane;  // Number of event planes
-  Float_t fEventPlaneAngle[fMaxEventPlanes] = {0};  // Event plane angles
-  Float_t fEventPlaneQ[fMaxEventPlanes] = {0};      // Event plane q-vector magnitudes
+  Float_t fEventPlaneAngle[fMaxEventPlanes] = {0};          // Event plane angles
+  Float_t fEventPlaneQ[fMaxEventPlanes] = {0};              // Event plane q-vector magnitudes
+  Float_t fEventPlaneMultiplicity[fMaxEventPlanes] = {0};   // Multiplicity of particles in the event plane
   
   // Leaves for jet tree
   Int_t fnJets;          // number of jets in an event

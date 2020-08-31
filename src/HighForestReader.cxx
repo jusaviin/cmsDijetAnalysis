@@ -238,6 +238,8 @@ void HighForestReader::Initialize(){
     fHeavyIonTree->SetBranchAddress("hiEvtPlanes",&fEventPlaneAngle,&fEventPlaneAngleBranch);
     fHeavyIonTree->SetBranchStatus("hiEvtPlaneQ",1);
     fHeavyIonTree->SetBranchAddress("hiEvtPlaneQ",&fEventPlaneQ,&fEventPlaneQBranch);
+    fHeavyIonTree->SetBranchStatus("hiEvtPlaneMult",1);
+    fHeavyIonTree->SetBranchAddress("hiEvtPlaneMult",&fEventPlaneMultiplicity,&fEventPlaneMultiplicityBranch);
   }
   
   // Connect the branches to the jet tree
