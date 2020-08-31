@@ -23,7 +23,7 @@ void prepareFinalLongRangeGraphs(){
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   
   // File for Vn from dihadron correlations
-  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-06-30.root";
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_highQ_sameTrigAss_preprocessed_2020-07-26.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_processed_2020-06-25.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root
@@ -51,10 +51,10 @@ void prepareFinalLongRangeGraphs(){
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
   const bool useSameEventJetHadron = false;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
-  const bool useSameEventDihadron = false;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
+  const bool useSameEventDihadron = true;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
   
-  const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
-  const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
+  const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
+  const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
   
   const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
   const bool correctAtJetLevel = true;  // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
@@ -69,7 +69,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "";
+  TString outputFileName = "flowGraphs/testDihadron_sameEvent_newQselection_highQ.root";
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
   // flowGraphs/exampleDihadronFromMC.root
   
@@ -160,13 +160,6 @@ void prepareFinalLongRangeGraphs(){
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
-        // Regular long range histogram
-        longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = jetHadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
-        
-        // Remove earlier fit from the histogram
-        longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt] = longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]);
-        
         // Read the two dimensional distribution from the same event
         if(useSameEventJetHadron){
           helperHistogramLeading = jetHadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
@@ -200,6 +193,15 @@ void prepareFinalLongRangeGraphs(){
             errorScale = refitter->GetBackgroundErrorScalingFactor();
             longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin, binError*errorScale);
           }
+        } else {
+          
+          // Regular long range histogram
+          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = jetHadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+          
+          // Remove earlier fit from the histogram
+          longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt] = longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]);
+          
         }
         
         // Fit the background with Fourier fit
@@ -220,13 +222,6 @@ void prepareFinalLongRangeGraphs(){
     
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-        
-        // Regular long range histogram
-        longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) dihadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, nAsymmetryBins, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta)->Clone(Form("dihadronLongRng%d%d%d",iCentrality,iAsymmetry,iTrackPt)); // TODO: Add asymmetry binning
-        
-        // Remove earlier fit from the histogram
-        longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt] = longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
-        if(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] != NULL) longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt]);
         
         // Read the two dimensional distribution from the same event
         if(useSameEventDihadron){
@@ -258,6 +253,14 @@ void prepareFinalLongRangeGraphs(){
             errorScale = refitter->GetBackgroundErrorScalingFactor();
             longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->SetBinError(iBin, binError*errorScale);
           }
+        } else {
+          
+          // Regular long range histogram
+          longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) dihadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, nAsymmetryBins, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta)->Clone(Form("dihadronLongRng%d%d%d",iCentrality,iAsymmetry,iTrackPt)); // TODO: Add asymmetry binning
+          
+          // Remove earlier fit from the histogram
+          longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt] = longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
+          if(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] != NULL) longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->RecursiveRemove(longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt]);
         }
         
         // Fit the background with Fourier fit
@@ -360,7 +363,7 @@ void prepareFinalLongRangeGraphs(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
-          drawer->DrawHistogram(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{D#Delta#phi}", " ");
+          drawer->DrawHistogram(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{d#Delta#phi}", " ");
           
           // Ass a legend to the figure
           legend = new TLegend(0.3,0.6,0.7,0.9);
@@ -392,7 +395,7 @@ void prepareFinalLongRangeGraphs(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
-          drawer->DrawHistogram(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{D#Delta#phi}", " ");
+          drawer->DrawHistogram(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{d#Delta#phi}", " ");
           
           // Ass a legend to the figure
           legend = new TLegend(0.3,0.6,0.7,0.9);
