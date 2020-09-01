@@ -521,24 +521,24 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       ratioCanvas->cd(4+iAsymmetry*4-iCentrality);
       if(iCentrality==3) {
-        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitleOffset(0.7);
-        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitleSize(0.125);
-        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetLabelOffset(0.01);
-        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetLabelSize(0.08);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitleOffset(0.73);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitleSize(0.109);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetLabelOffset(0.011);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetLabelSize(0.0818);
       }else {
         ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitleOffset(0.58);
-        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitleSize(0.15);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetTitleSize(0.14);
         ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetLabelOffset(-0.003);
         ratioUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetLabelSize(0.1);
       }
       if(iAsymmetry==2) {
-        if(iCentrality == 3)
-          ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetTitleOffset(1);
-        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetTitleSize(0.08);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetTitleOffset(0.9);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetTitleSize(0.1);
         ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetLabelOffset(0.02);
         ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetLabelSize(0.08);
       }else {
-        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetTitleSize(0.1);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetTitleOffset(0.75);
+        ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetTitleSize(0.12);
         ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetLabelOffset(0.015);
         ratioUncertainty[iCentrality][iAsymmetry]->GetYaxis()->SetLabelSize(0.1);
       }
@@ -615,7 +615,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   double cmsPositionXratio = 0.05;
   double cmsPositionYratio = 0.95;
-  double jetShapeRatioTitlePosition[] = {0.14, 0.14, 0.14};
+  double jetShapeRatioTitlePosition[] = {0.165, 0.14, 0.165};
   
   if(addPreliminaryTag){
     cmsPositionXratio = 0.04;
@@ -650,15 +650,14 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   mainTitle->DrawLatexNDC(0.505, 0.945, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   
   mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.03);
+  mainTitle->SetTextSize(0.027);
   box->SetFillColor(kWhite);
   float boxwidth = 0.02, boxhight = 0.03;
-  float x= 0.28, y=0.058, offsetx = 0.005, offsety = 0.005;
+  float x= 0.281, y=0.0584, offsetx = 0.005, offsety = 0.005;
   box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
-  //		box->SetFillColor(kAzure+6);
-  x= 0.51, y=0.058; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
-  x= 0.746,y=0.058; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
-  x= 0.973, y=0.058; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "1");
+  x= 0.5135, y=0.0584; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
+  x= 0.746,y=0.0584; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
+  x= 0.974, y=0.0584; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "1");
   
   TLegend *ltc2 = new TLegend(0.27, 0.6, 0.72, 0.8);
   ltc2->SetLineColor(0);
@@ -705,8 +704,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     extraLegend->Draw();
   } // Drawing extra ratio for illustration
   
-  bigCanvas->SaveAs(Form("figures/final%s_%s_preliminaryTag.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
-  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratioPreliminaryTag.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/final%s_%s_finalStyleUpdates.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+  ratioCanvas->SaveAs(Form("figures/final%s_%s_ratio_finalStyleUpdates.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
   
   // Save the histograms to a file for HepData submission
   if(saveHistogramsForHepData){
