@@ -65,15 +65,15 @@ void drawStack(stackHist *jstk, bool isconner = 0){
   jstk->hst->GetXaxis()->SetTitleOffset(0.6);
   jstk->hst->GetXaxis()->SetTitleSize(0.14);
   jstk->hst->GetXaxis()->SetLabelSize(0.11);
-  jstk->hst->GetXaxis()->SetLabelOffset(-0.01);
+  jstk->hst->GetXaxis()->SetLabelOffset(-0.009);
   if(isconner){
     jstk->hst->GetYaxis()->SetTitleSize(0.12);
     jstk->hst->GetYaxis()->SetTitleOffset(0.94);
     jstk->hst->GetYaxis()->SetLabelSize(0.08);
     jstk->hst->GetXaxis()->SetTitleOffset(0.79);
-    jstk->hst->GetXaxis()->SetTitleSize(0.105);
-    jstk->hst->GetXaxis()->SetLabelSize(0.085);
-    jstk->hst->GetXaxis()->SetLabelOffset(0.014);
+    jstk->hst->GetXaxis()->SetTitleSize(0.108);
+    jstk->hst->GetXaxis()->SetLabelSize(0.087);
+    jstk->hst->GetXaxis()->SetLabelOffset(0.01);
   }
   jstk->hst->Draw();
 }
@@ -175,8 +175,8 @@ void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D**
   }
   bigCanvas->cd(0);
   
-  double cmsPositionX = 0.12;
-  double cmsPositionY = 0.958;
+  double cmsPositionX = 0.01; // 0.12
+  double cmsPositionY = 0.88; // 0.958
   
   if(addPreliminaryTag){
     cmsPositionX = 0.07;
@@ -194,12 +194,14 @@ void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D**
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.055);
-  mainTitle->DrawLatexNDC(0.21, 0.958, "Particle transverse momentum distributions in jets");
+  //mainTitle->DrawLatexNDC(0.21, 0.958, "Particle transverse momentum distributions in jets");
+  mainTitle->DrawLatexNDC(0.095, 0.92, "Particle transverse momentum");
+  mainTitle->DrawLatexNDC(0.17, 0.86, "distributions in jets");
   
-  mainTitle->SetTextSize(0.05);
-  mainTitle->DrawLatexNDC(0.26, 0.91, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
-  mainTitle->SetTextSize(0.042);
-  mainTitle->DrawLatexNDC(0.15, 0.86, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->SetTextSize(0.04);
+  mainTitle->DrawLatexNDC(0.56, 0.91, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+  mainTitle->SetTextSize(0.031);
+  mainTitle->DrawLatexNDC(0.475, 0.86, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   TLegend* ptLegend1 = new TLegend(0.04, 0.72, 0.27, 0.82);
   TLegend* ptLegend2 = new TLegend(0.28, 0.72, 0.51, 0.82);
   TLegend* ptLegend3 = new TLegend(0.53 ,0.72, 0.76, 0.82);
@@ -222,10 +224,10 @@ void paperFig1Plotter(TString saveName, TH1D**** ld_js, std::pair<TH1D***,TH1D**
   
   bigCanvas->cd(0);
   mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.038);
+  mainTitle->SetTextSize(0.034);
   box->SetFillColor(kWhite);
   float boxwidth = 0.02, boxhight = 0.034;
-  float x= 0.236, y=0.0427, offsetx = 0.005, offsety = 0.005;
+  float x= 0.236, y=0.0427, offsetx = 0.005, offsety = 0.0065;
   box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
   //      box->SetFillColor(kAzure+6);
   x= 0.423, box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");

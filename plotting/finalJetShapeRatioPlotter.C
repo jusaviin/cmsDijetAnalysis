@@ -363,7 +363,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetTitleSize(0.13);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetNdivisions(505);
       asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelOffset(0.00001);
-      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelSize(0.092);
+      asymmetryRatioHistogram[0][iCentrality][2]->GetXaxis()->SetLabelSize(0.093);
       asymmetryRatioHistogram[0][iCentrality][2]->GetYaxis()->SetNdivisions(505);
     }
     if(iCentrality==4 ){
@@ -525,7 +525,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   box = new TBox();
   box->SetFillColor(kWhite);
   bigCanvas->cd(0);
-  box->DrawBox(0.24,0.047, 0.28, 0.09);
+  box->DrawBox(0.24,0.047, 0.275, 0.09);
   mainTitle->SetTextSize(0.034);
   mainTitle->DrawLatex(0.252, 0.065, "0");
   box->DrawBox(0.42,0.047, 0.45, 0.09);
@@ -541,7 +541,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_preliminaryTag.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_finalStyleUpdates.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   

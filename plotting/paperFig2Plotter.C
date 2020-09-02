@@ -42,9 +42,9 @@ void drawRatio(TH1D** ratio, TH1D** err, int i, Color_t color,  bool isconner = 
     syst->GetYaxis()->SetTitleSize(0.13);
     syst->GetYaxis()->SetTitleOffset(0.56);
     syst->GetYaxis()->SetLabelSize(0.1);
-    syst->GetXaxis()->SetLabelSize(0.1);
+    syst->GetXaxis()->SetLabelSize(0.0935);
     syst->GetYaxis()->SetLabelOffset(0.01);
-    syst->GetXaxis()->SetLabelOffset(-0.009);
+    syst->GetXaxis()->SetLabelOffset(-0.0045);
   }
   syst->Draw("same e2");
   hist->Draw("same");
@@ -127,13 +127,13 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
   
   bigCanvas->cd(0);
   mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.045);
+  mainTitle->SetTextSize(0.0405);
   box->SetFillColor(kWhite);
   float boxwidth = 0.02, boxhight = 0.034;
-  float offsetx = 0.005, offsety = 0.005; 
-  float x= 0.28, y=0.06; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
+  float offsetx = 0.005, offsety = 0.0045;
+  float x= 0.282, y=0.06; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
   x= 0.515, box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
-  x= 0.747, box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
+  x= 0.748, box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
   x= 0.978,box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "1");
   
   

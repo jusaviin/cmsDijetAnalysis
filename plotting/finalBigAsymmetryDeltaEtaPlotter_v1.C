@@ -13,8 +13,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const int nAsymmetryBins = pbpbHistograms->GetNAsymmetryBins();
   
   // Define labels and plotting layout
-  const char* deltaEtaTitle[] = {"Particle yields associated with leading jets","Particle yields associated with subleading jets","Particle yield wrt. inclusive jet"};
-  //const char* deltaEtaTitle[] = {"Particle yield w.r.t. the leading jet","Particle yield w.r.t. the subleading jet","Particle yield wrt. inclusive jet"};
+  //const char* deltaEtaTitle[] = {"Particle yields associated with leading jets","Particle yields associated with subleading jets","Particle yield wrt. inclusive jet"};
+  const char* deltaEtaTitle[] = {"with leading jets","with subleading jets","with inclusive jets"};
   const char* deltaEtaSaveName[] = {"LeadingJet","SubleadingJet","InclusiveJet"};
   const char* xjString[] = {"0.0 < x_{j} < 0.6","0.6 < x_{j} < 0.8","0.8 < x_{j} < 1.0","x_{j} inclusive"};
   const char* asymmetrySaveName[] = {"_A=0v0-0v6","_A=0v6-0v8","_A=0v8-1v0",""};
@@ -306,8 +306,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
         deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.15);
         deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.14);
         deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(0.71);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.11);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.011);
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.114);
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.0018);
       }
       auxi_hist[iCentrality][iAsymmetry]->SetLineColor(kBlack);
       auxi_hist[iCentrality][iAsymmetry]->SetFillColorAlpha(kWhite, 0);
@@ -377,13 +377,13 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   //ptLegend4->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
   ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{ch}< 12 GeV","lpfe");
     
-  double cmsPositionX = 0.13;
-  double cmsPositionY = 0.97;
-  double jetShapeTitlePosition[] = {0.46,0.44,0.46};
+  double cmsPositionX = 0.01;  // 0.13
+  double cmsPositionY = 0.925;  // 0.97
+  double jetShapeTitlePosition[] = {0.17,0.148,0.17};
   double xjPosition[] = {0.76,0.77,0.76};
-  double systemPosition = 0.26;
-  double selectionPosition = 0.205;
-  double cmsSize = 0.035;
+  double systemPosition = 0.52;  // 0.26
+  double selectionPosition = 0.465; // 0.205
+  double cmsSize = 0.04;
   
   if(addPreliminaryTag){
     cmsPositionX = 0.07;
@@ -412,7 +412,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   ptLegend4->Draw();
   
   mainTitle->SetTextFont(62);
-  mainTitle->SetTextSize(0.04);
+  mainTitle->SetTextSize(cmsSize);
   mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
   
   if(addPreliminaryTag){
@@ -423,15 +423,17 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   mainTitle->SetTextFont(42);
   mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(0.24, 0.97, deltaEtaTitle[iJetTrack/3]);
+  //mainTitle->DrawLatexNDC(0.24, 0.97, deltaEtaTitle[iJetTrack/3]);
+  mainTitle->DrawLatexNDC(0.11, 0.95, "Particle yields associated");
+  mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.91, deltaEtaTitle[iJetTrack/3]);
   
   //mainTitle->SetTextFont(42);
   //mainTitle->SetTextSize(0.035);
   //mainTitle->DrawLatexNDC(xjPosition[iJetTrack/3], 0.94, xjString[iAsymmetry]);
   
-  mainTitle->SetTextSize(0.03);
-  mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
-  mainTitle->SetTextSize(0.022);
+  mainTitle->SetTextSize(0.025);
+  mainTitle->DrawLatexNDC(systemPosition, 0.945, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+  mainTitle->SetTextSize(0.019);
   mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   //
@@ -441,7 +443,9 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   bigCanvas->cd(0);
   box->DrawBox(0.245,0.04, 0.27, 0.07);
   mainTitle->SetTextSize(0.021);
-  mainTitle->DrawLatex(0.256, 0.0552, "0");
+  
+  double yHeight = 0.0555;
+  mainTitle->DrawLatex(0.256, yHeight, "0");
   box->DrawBox(0.42,0.04, 0.46, 0.07);
   box->DrawBox(0.605,0.04, 0.64, 0.07);
   box->DrawBox(0.78,0.04, 0.82, 0.07);
@@ -450,10 +454,10 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   //box->DrawBox(0.23,0.3067, 0.243, 0.315);
   //box->DrawBox(0.23,0.5735, 0.243, 0.58);
   
-  mainTitle->DrawLatex(0.437, 0.0552, "0");
-  mainTitle->DrawLatex(0.62, 0.0552, "0");
-  mainTitle->DrawLatex(0.803, 0.0552, "0");
-  mainTitle->DrawLatex(0.972, 0.0552, "1.5");
+  mainTitle->DrawLatex(0.437, yHeight, "0");
+  mainTitle->DrawLatex(0.62, yHeight, "0");
+  mainTitle->DrawLatex(0.803, yHeight, "0");
+  mainTitle->DrawLatex(0.972, yHeight, "1.5");
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_finalStyleUpdates.pdf", deltaEtaSaveName[iJetTrack/3]));

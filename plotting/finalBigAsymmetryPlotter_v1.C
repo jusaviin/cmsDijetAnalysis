@@ -298,9 +298,9 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitle("#Deltar");
       if(iCentrality == nCentralityBins && iAsymmetry == 2){
         //most left-bottom conner
-        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.11);
-        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(0.83);
-        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.08);
+        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.106);
+        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(0.9);
+        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.084);
         jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.03);
         jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.08);
         jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelOffset(0.01);
@@ -310,7 +310,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
         jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.14);
         jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(0.71);
         jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.11);
-        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.011);
+        jetShapeStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.009);
       }
       if(normalizeJetShape){
         jetShapeStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("#rho(#Deltar)");
@@ -405,12 +405,12 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   //line[0]->SetLineStyle(1);
   //line[0]->DrawLineNDC(0, 0, 0, 1);
   
-  double cmsPositionX = 0.28;
-  double cmsPositionY = 0.97;
-  double jetShapeTitlePosition[] = {0.4,0.4,0.4};
+  double cmsPositionX = 0.02; // 0.28
+  double cmsPositionY = 0.93; // 0.97
+  double jetShapeTitlePosition[] = {0.147, 0.122, 0.147};  // {0.4,0.4,0.4}
   double xjPosition[] = {0.76,0.77,0.76};
-  double systemPosition = 0.26;
-  double selectionPosition = 0.205;
+  double systemPosition = 0.52; // 0.26
+  double selectionPosition = 0.465; // 0.205
   double cmsSize = 0.035;
   
   if(addPreliminaryTag){
@@ -466,43 +466,44 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   }
   
   mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.035);
-  mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.97, jetShapeTitle[iJetTrack/3]);
+  mainTitle->SetTextSize(0.038);
+  mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], cmsPositionY+0.0002, jetShapeTitle[iJetTrack/3]);
   
   //mainTitle->SetTextFont(42);
   //mainTitle->SetTextSize(0.035);
   //mainTitle->DrawLatexNDC(xjPosition[iJetTrack/3], 0.94, xjString[iAsymmetry]);
   
-  mainTitle->SetTextSize(0.03);
+  mainTitle->SetTextSize(0.025);
   if(monteCarloLabels){
-    mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   Pythia8   Pythia+Hydjet");
+    mainTitle->DrawLatexNDC(systemPosition, 0.945, "5.02 TeV   Pythia8   Pythia+Hydjet");
   } else {
-    mainTitle->DrawLatexNDC(systemPosition, 0.94, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+    mainTitle->DrawLatexNDC(systemPosition, 0.945, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
   }
 
-  mainTitle->SetTextSize(0.022);
+  mainTitle->SetTextSize(0.019);
   mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
   
   box = new TBox();
   box->SetFillColor(kWhite);
   bigCanvas->cd(0);
-  mainTitle->SetTextSize(0.02);
-  box->DrawBox(0.24,0.017, 0.253, 0.068);
-  box->DrawBox(0.42,0.017, 0.45, 0.068);
-  box->DrawBox(0.605,0.017,0.63, 0.068);
-  box->DrawBox(0.78,0.017, 0.81, 0.068);
-  box->DrawBox(0.98,0.017, 0.99, 0.068);
+  mainTitle->SetTextSize(0.021);
+  box->DrawBox(0.24,0.017, 0.253, 0.069);
+  box->DrawBox(0.42,0.017, 0.45, 0.069);
+  box->DrawBox(0.605,0.017,0.63, 0.069);
+  box->DrawBox(0.78,0.017, 0.81, 0.069);
+  box->DrawBox(0.98,0.017, 0.99, 0.069);
   
   //box->DrawBox(0.23,0.3067, 0.243, 0.315);
   //box->DrawBox(0.23,0.5735, 0.243, 0.58);
   
   //zeroMark
-  mainTitle->DrawLatex(0.242, 0.0545, "0");
-  mainTitle->DrawLatex(0.428, 0.0545, "0");
-  mainTitle->DrawLatex(0.614, 0.0545, "0");
-  mainTitle->DrawLatex(0.801, 0.0545, "0");
-  mainTitle->DrawLatex(0.982, 0.0545, "1");
+  double yHeight = 0.055;
+  mainTitle->DrawLatex(0.242, yHeight, "0");
+  mainTitle->DrawLatex(0.428, yHeight, "0");
+  mainTitle->DrawLatex(0.614, yHeight, "0");
+  mainTitle->DrawLatex(0.801, yHeight, "0");
+  mainTitle->DrawLatex(0.982, yHeight, "1");
   
   //=======================
   // canvas2
