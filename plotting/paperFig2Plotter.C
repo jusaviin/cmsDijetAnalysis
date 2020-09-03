@@ -78,8 +78,8 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
   TString pbpbLabel = "PbPb";
   TString ppLabel = "pp";
   TString cent_lab[4] = {"0-10%", "10-30%", "30-50%", "50-90%"};
-  auxi_canvas *bigCanvas = new auxi_canvas("fig2", "", 2000, 1100);
-  bigCanvas->SetMargin(0.06, 0.01, 0.1, 0.1); // Margin order: Left, Right, Bottom, Top
+  auxi_canvas *bigCanvas = new auxi_canvas("fig2", "", 2000, 1150);
+  bigCanvas->SetMargin(0.06, 0.01, 0.1, 0.139); // Margin order: Left, Right, Bottom, Top
   bigCanvas->divide(2,4);
   
   for(int i= 0; i< ncent-1; i++){
@@ -127,18 +127,18 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
   
   bigCanvas->cd(0);
   mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.0405);
+  mainTitle->SetTextSize(0.0395);
   box->SetFillColor(kWhite);
   float boxwidth = 0.02, boxhight = 0.034;
-  float offsetx = 0.005, offsety = 0.0045;
+  float offsetx = 0.005, offsety = 0.006;
   float x= 0.282, y=0.06; box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
   x= 0.515, box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
   x= 0.748, box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "0");
   x= 0.978,box->DrawBox(x, y, x+boxwidth, y+boxhight); mainTitle->DrawLatex(x+offsetx, y+offsety, "1");
   
   
-  double cmsPositionX = 0.005;
-  double cmsPositionY = 0.93;
+  double cmsPositionX = 0.015;
+  double cmsPositionY = 0.915;
   
   if(addPreliminaryTag){
     cmsPositionX = 0.06;
@@ -155,26 +155,30 @@ void paperFig2Plotter(TString saveName, std::pair<TH1D***,TH1D***>* ld_sum, std:
     mainTitle->SetTextSize(0.05);
     mainTitle->DrawLatexNDC(0.03, 0.913, "Preliminary");
     
-    mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.0385);
     mainTitle->DrawLatexNDC(0.2, 0.96, "Particle transverse momentum");
     
-    mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.0385);
     mainTitle->DrawLatexNDC(0.252, 0.915, "distribution ratios");
     
   } else {
   
+    //mainTitle->SetTextFont(42);
+    //mainTitle->SetTextSize(0.0385);
+    //mainTitle->DrawLatexNDC(0.081, 0.935, "Particle transverse momentum distribution ratios");
     mainTitle->SetTextFont(42);
-    mainTitle->SetTextSize(0.0385);
-    mainTitle->DrawLatexNDC(0.081, 0.935, "Particle transverse momentum distribution ratios");
+    mainTitle->SetTextSize(0.055);
+    mainTitle->DrawLatexNDC(0.1, 0.95, "Particle transverse momentum");
+    
+    mainTitle->SetTextSize(0.055);
+    mainTitle->DrawLatexNDC(0.18, 0.89, "distribution ratios");
     
   }
   
-  mainTitle->SetTextSize(0.036);
-  mainTitle->DrawLatexNDC(0.6, 0.965, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+  mainTitle->SetTextSize(0.04);
+  mainTitle->DrawLatexNDC(0.57, 0.94, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
   mainTitle->SetTextSize(0.033);
-  mainTitle->DrawLatexNDC(0.505, 0.925, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
+  mainTitle->DrawLatexNDC(0.475, 0.89, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
   
   
   
