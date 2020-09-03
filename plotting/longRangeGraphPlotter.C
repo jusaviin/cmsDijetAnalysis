@@ -24,13 +24,13 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "testDihadron_sameEvent_allQ.root";
+  TString graphFileName = "testDihadron_sameEvent_allNormQ.root";
   TFile *graphFile[maxFiles];
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 2;
-  TString comparisonFileName[] = {"testDihadron_sameEvent_newQselection_lowQ.root", "testDihadron_sameEvent_newQselection_highQ.root", "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root", "finalGraphTestNew.root", ""};
+  TString comparisonFileName[] = {"testDihadron_sameEvent_lowNormQ_largeGap.root", "testDihadron_sameEvent_highNormQ_largeGap.root", "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
@@ -61,7 +61,7 @@ void longRangeGraphPlotter(){
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
   const bool saveFigures = true;                     // Save the figures in a file
-  TString saveComment = "_qvectorComparison";              // String to be added to saved file names
+  TString saveComment = "_normalizedQvectorComparisonLargeGap";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
