@@ -303,8 +303,8 @@ void DijetHistograms::CreateHistograms(){
   
   // Magnitude for event plane q-vector
   const Double_t minQVector = 0;    // Minimum value for the magnitude of q-vector
-  const Double_t maxQVector = 11;  // Maximum value for the magnitude of q-vector
-  const Int_t nQVectorBins = 11;   // Number of q-vector magnitude bins
+  const Double_t maxQVector = 5;  // Maximum value for the magnitude of q-vector
+  const Int_t nQVectorBins = 9;   // Number of q-vector magnitude bins
   
   Bool_t doEventPlane = (fCard->Get("IncludeEventPlane") == 1);
   

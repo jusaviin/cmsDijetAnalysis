@@ -1611,8 +1611,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   Double_t eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
   Double_t eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
   if(fDoEventPlane){
-    eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
-    eventPlaneMultiplicity = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneMultiplicity(8);
+    eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(9);  // 8 is second order event plane from both sides of HF
+    eventPlaneMultiplicity = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneMultiplicity(9);
     eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
   }
   
@@ -1631,7 +1631,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     
     // Get the most important track information to variables
     triggerPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTriggerTrack);
-    
+        
     // Read the track information to leading jet variables so they will be correctly filled to leading jet histograms
     leadingJetPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTriggerTrack);
     leadingJetEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTriggerTrack);
