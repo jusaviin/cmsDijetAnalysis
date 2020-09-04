@@ -48,6 +48,12 @@ public:
   TH1F *fhCentralityDijet;       // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
   TH1F *fhPtHat;                 // pT hat for MC events (only meaningful for MC)
   TH1F *fhPtHatWeighted;         // Weighted pT hat distribution
+  TH1F *fhQvector[4];            // Q-vector magnitude
+  TH1F *fhQvectorNorm[4];        // Q-vector divided by event plane multiplicity
+  TH1F *fhEventPlaneMult[4];     // Event plane multiplicity
+  TH1F *fhQvectorDijet[4];       // Q-vector magnitude in dijet events
+  TH1F *fhQvectorNormDijet[4];   // Q-vector divided by event plane multiplicity in dijet events
+  TH1F *fhEventPlaneMultDijet[4];// Event plane multiplicity in dijet events
   THnSparseF *fhLeadingJet;      // Leading jet without dijet requirement [l-pT][l-phi][l-eta][Ajj][cent]
   THnSparseF *fhLeadingDijet;    // Leading jet in dijet events [l-pT][l-phi][l-eta][Ajj][cent]
   THnSparseF *fhSubleadingDijet; // Subleading jet in dijet events [s-pT][s-phi][s-eta][Ajj][cent]

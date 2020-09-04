@@ -714,6 +714,12 @@ void DijetAnalyzer::RunAnalysis(){
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
   
+  // Variables for event plane
+  Double_t eventPlaneQ;
+  Double_t eventPlaneMultiplicity;
+  Int_t centralityBin;
+  Int_t iEventPlane = 8; // 8 = forwards rapidity. 9 = midrapidity;
+  
   // File name helper variables
   TString currentFile;
   TString currentMixedEventFile;
@@ -1022,6 +1028,32 @@ void DijetAnalyzer::RunAnalysis(){
         fHistograms->fhCentralityWeighted->Fill(centrality,fCentralityWeight); // Centrality weighted with the centrality weighting function
         fHistograms->fhPtHat->Fill(ptHat);                           // pT hat histogram
         fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight);      // pT het histogram weighted with corresponding cross section and event number
+        
+        // Variables for event plane
+        eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
+        eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
+        if(fDoEventPlane){
+          
+          centralityBin = 0;
+          if(centrality < 10){
+            centralityBin = 0;
+          } else if(centrality < 30) {
+            centralityBin = 1;
+          } else if(centrality < 50){
+            centralityBin = 2;
+          } else {
+            centralityBin = 3;
+          }
+          
+          eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
+          fHistograms->fhQvector[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
+          
+          eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
+          fHistograms->fhEventPlaneMult[centralityBin]->Fill(eventPlaneMultiplicity,fTotalEventWeight);
+          
+          eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
+          fHistograms->fhQvectorNorm[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
+        }
       }
       
       // ======================================
@@ -1461,6 +1493,32 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhEvents->Fill(DijetHistograms::kDijet);
           fHistograms->fhVertexZDijet->Fill(vz,fTotalEventWeight); // TODO: Total weight here instead of vz
           fHistograms->fhCentralityDijet->Fill(centrality,fTotalEventWeight); // TODO: Total weight here instead of centrality
+          
+          // Variables for event plane
+          eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
+          eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
+          if(fDoEventPlane){
+            
+            centralityBin = 0;
+            if(centrality < 10){
+              centralityBin = 0;
+            } else if(centrality < 30) {
+              centralityBin = 1;
+            } else if(centrality < 50){
+              centralityBin = 2;
+            } else {
+              centralityBin = 3;
+            }
+            
+            eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
+            fHistograms->fhQvectorDijet[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
+            
+            eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
+            fHistograms->fhEventPlaneMultDijet[centralityBin]->Fill(eventPlaneMultiplicity,fTotalEventWeight);
+            
+            eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
+            fHistograms->fhQvectorNormDijet[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
+          }
         }
         
         // Single jet and dijet histograms in dijet events
@@ -1611,8 +1669,8 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   Double_t eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
   Double_t eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
   if(fDoEventPlane){
-    eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(9);  // 8 is second order event plane from both sides of HF
-    eventPlaneMultiplicity = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneMultiplicity(9);
+    eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
+    eventPlaneMultiplicity = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneMultiplicity(8);
     eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
   }
   

@@ -46,6 +46,14 @@ DijetHistograms::DijetHistograms() :
   fCard(0)
 {
   // Default constructor
+  for(int i = 0; i < 4; i++){
+    fhQvector[i] = NULL;
+    fhQvectorNorm[i] = NULL;
+    fhEventPlaneMult[i] = NULL;
+    fhQvectorDijet[i] = NULL;
+    fhQvectorNormDijet[i] = NULL;
+    fhEventPlaneMultDijet[i] = NULL;
+  }
 }
 
 /*
@@ -84,6 +92,14 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fCard(newCard)
 {
   // Custom constructor
+  for(int i = 0; i < 4; i++){
+    fhQvector[i] = NULL;
+    fhQvectorNorm[i] = NULL;
+    fhEventPlaneMult[i] = NULL;
+    fhQvectorDijet[i] = NULL;
+    fhQvectorNormDijet[i] = NULL;
+    fhEventPlaneMultDijet[i] = NULL;
+  }
 }
 
 /*
@@ -122,6 +138,14 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fCard(in.fCard)
 {
   // Copy constructor
+  for(int i = 0; i < 4; i++){
+    fhQvector[i] = in.fhQvector[i];
+    fhQvectorNorm[i] = in.fhQvectorNorm[i];
+    fhEventPlaneMult[i] = in.fhEventPlaneMult[i];
+    fhQvectorDijet[i] = in.fhQvectorDijet[i];
+    fhQvectorNormDijet[i] = in.fhQvectorNormDijet[i];
+    fhEventPlaneMultDijet[i] = in.fhEventPlaneMultDijet[i];
+  }
 }
 
 /*
@@ -163,6 +187,15 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhJetPtClosure = in.fhJetPtClosure;
   fCard = in.fCard;
   
+  for(int i = 0; i < 4; i++){
+    fhQvector[i] = in.fhQvector[i];
+    fhQvectorNorm[i] = in.fhQvectorNorm[i];
+    fhEventPlaneMult[i] = in.fhEventPlaneMult[i];
+    fhQvectorDijet[i] = in.fhQvectorDijet[i];
+    fhQvectorNormDijet[i] = in.fhQvectorNormDijet[i];
+    fhEventPlaneMultDijet[i] = in.fhEventPlaneMultDijet[i];
+  }
+  
   return *this;
 }
 
@@ -200,6 +233,16 @@ DijetHistograms::~DijetHistograms(){
   delete fhTrackJetInclusive;
   delete fhTrackJetInclusivePtWeighted;
   delete fhJetPtClosure;
+  
+  for(int i = 0; i < 4; i++){
+    delete fhQvector[i];
+    delete fhQvectorNorm[i];
+    delete fhEventPlaneMult[i];
+    delete fhQvectorDijet[i];
+    delete fhQvectorNormDijet[i];
+    delete fhEventPlaneMultDijet[i];
+  }
+
 }
 
 /*
@@ -360,6 +403,16 @@ void DijetHistograms::CreateHistograms(){
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
+  
+  for(int i = 0; i < 4; i++){
+    fhQvector[i] = new TH1F(Form("qVector%d",i),Form("qVector%d",i),100,0,320); fhQvector[i]->Sumw2();
+    fhQvectorNorm[i] = new TH1F(Form("qVectorNorm%d",i),Form("qVectorNorm%d",i),100,0,11); fhQvectorNorm[i]->Sumw2();
+    fhEventPlaneMult[i] = new TH1F(Form("eventPlaneMult%d",i),Form("eventPlaneMult%d",i),100,0,1800); fhEventPlaneMult[i]->Sumw2();
+    fhQvectorDijet[i] = new TH1F(Form("qVectorDijet%d",i),Form("qVectorDijet%d",i),100,0,320); fhQvectorDijet[i]->Sumw2();
+    fhQvectorNormDijet[i] = new TH1F(Form("qVectorNormDijet%d",i),Form("qVectorNormDijet%d",i),100,0,11); fhQvectorNormDijet[i]->Sumw2();
+    fhEventPlaneMultDijet[i] = new TH1F(Form("eventPlaneMultDijet%d",i),Form("eventPlaneMultDijet%d",i),100,0,1800); fhEventPlaneMultDijet[i]->Sumw2();
+  }
+  
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -747,6 +800,15 @@ void DijetHistograms::Write() const{
   fhTrackJetInclusive->Write();
   fhTrackJetInclusivePtWeighted->Write();
   fhJetPtClosure->Write();
+  
+  for(int i = 0; i < 4; i++){
+    fhQvector[i]->Write();
+    fhQvectorNorm[i]->Write();
+    fhEventPlaneMult[i]->Write();
+    fhQvectorDijet[i]->Write();
+    fhQvectorNormDijet[i]->Write();
+    fhEventPlaneMultDijet[i]->Write();
+  }
   
 }
 
