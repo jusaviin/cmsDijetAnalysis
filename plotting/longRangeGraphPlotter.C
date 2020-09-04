@@ -29,14 +29,14 @@ void longRangeGraphPlotter(){
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 2;
-  TString comparisonFileName[] = {"testDihadron_sameEvent_lowNormQ_largeGap.root", "testDihadron_sameEvent_highNormQ_largeGap.root", "finalGraphTest_noThirdJet_jetLevel_noAsymmetry.root", "finalGraphTestNew.root", ""};
+  int nComparisonFiles = 3;
+  TString comparisonFileName[] = {"testDihadron_sameEvent_lowNormQ_largeGap.root", "testDihadron_sameEvent_highNormQ_largeGap.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"All Q", "Low Q", "High Q", "Fourth file", "Fifth file"};
+  TString fileLegend[] = {"All Q", "Low Q", "High Q", "Data", "Fifth file"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -60,7 +60,7 @@ void longRangeGraphPlotter(){
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool saveFigures = true;                     // Save the figures in a file
+  const bool saveFigures = false;                     // Save the figures in a file
   TString saveComment = "_normalizedQvectorComparisonLargeGap";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
