@@ -718,7 +718,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t eventPlaneQ;
   Double_t eventPlaneMultiplicity;
   Int_t centralityBin;
-  Int_t iEventPlane = 8; // 8 = forwards rapidity. 9 = midrapidity;
+  Int_t iEventPlane = 9; // 8 = forward rapidity. 9 = midrapidity;
   
   // File name helper variables
   TString currentFile;

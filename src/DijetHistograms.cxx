@@ -405,11 +405,11 @@ void DijetHistograms::CreateHistograms(){
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
   
   for(int i = 0; i < 4; i++){
-    fhQvector[i] = new TH1F(Form("qVector%d",i),Form("qVector%d",i),100,0,320); fhQvector[i]->Sumw2();
-    fhQvectorNorm[i] = new TH1F(Form("qVectorNorm%d",i),Form("qVectorNorm%d",i),100,0,11); fhQvectorNorm[i]->Sumw2();
+    fhQvector[i] = new TH1F(Form("qVector%d",i),Form("qVector%d",i),100,0,180); fhQvector[i]->Sumw2();
+    fhQvectorNorm[i] = new TH1F(Form("qVectorNorm%d",i),Form("qVectorNorm%d",i),100,0,5); fhQvectorNorm[i]->Sumw2();
     fhEventPlaneMult[i] = new TH1F(Form("eventPlaneMult%d",i),Form("eventPlaneMult%d",i),100,0,1800); fhEventPlaneMult[i]->Sumw2();
-    fhQvectorDijet[i] = new TH1F(Form("qVectorDijet%d",i),Form("qVectorDijet%d",i),100,0,320); fhQvectorDijet[i]->Sumw2();
-    fhQvectorNormDijet[i] = new TH1F(Form("qVectorNormDijet%d",i),Form("qVectorNormDijet%d",i),100,0,11); fhQvectorNormDijet[i]->Sumw2();
+    fhQvectorDijet[i] = new TH1F(Form("qVectorDijet%d",i),Form("qVectorDijet%d",i),100,0,180); fhQvectorDijet[i]->Sumw2();
+    fhQvectorNormDijet[i] = new TH1F(Form("qVectorNormDijet%d",i),Form("qVectorNormDijet%d",i),100,0,5); fhQvectorNormDijet[i]->Sumw2();
     fhEventPlaneMultDijet[i] = new TH1F(Form("eventPlaneMultDijet%d",i),Form("eventPlaneMultDijet%d",i),100,0,1800); fhEventPlaneMultDijet[i]->Sumw2();
   }
   
