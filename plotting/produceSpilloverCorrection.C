@@ -14,7 +14,8 @@ void produceSpilloverCorrection(){
   
   bool yieldQA = false;     // Print out relative yields between uncorrected data and spillover distribution
   
-  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_improvisedMixing_xjBins_subeNon0_jet80trigger_noCorrections_processed_2020-06-01.root";  // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_improvisedMixing_xjBins_subeNon0_jet80trigger_noCorrections_processed_2020-06-01.root
   // data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_subeNon0_trigEffWeight_improvisedMixing_noCorrections_processed_2020-05-01.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_seagullTuning_processed_2019-12-13.root <-- Default file
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_onlySeagull_processed_2019-12-13.root
@@ -25,7 +26,7 @@ void produceSpilloverCorrection(){
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_subeNon0_noCorrections_centShift5_processed_2019-10-04.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_subeNon0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
 
-  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_symmetrized_tightSubleadingCut_centShift5_jet80trigger_wtaAxis_JECv6_2020-06-02.root"; // File name for the output file
+  TString outputFileName = "corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_improvisedMixing_symmetrized_looseCut_centShift5_jet100trigger_wtaAxis_JECv6_2020-09-15.root"; // File name for the output file
   // corrections/spilloverCorrection_akFlowPuCs4PFJet_noUncOrInc_5eveMix_xjBins_symmetrized_tightSubleadingCut_seagullTuning_centShift5_wtaAxis_JECv6_2020-02-10.root
   // corrections/spilloverCorrection_PbPbMC_pfCsJets_xjBins_noUncOrInc_improvisedMixing_wtaAxis_2019-07-15.root
   // corrections/spilloverCorrection_PbPbMC_skims_pfJets_noUncorr_5eveImprovedMix_subeNon0_smoothedMixing_refitParameters_2019-03-18.root
@@ -64,16 +65,16 @@ void produceSpilloverCorrection(){
                                 {0.5,0.5,0.5,0.5,0.5,0.4,0.4}}; // 50-100 % centrality*/
   
   // For spillover correction in 2018 data. To be studied more carefully after JECs are finalized
-  double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,0.8,0.6,0.6},  // 0-10 % centrality
+  /*double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,0.8,0.6,0.6},  // 0-10 % centrality
                                 {1.5,1.5,1.5,1.0,0.7,0.6,0.6},  // 10-30 % centrality
                                 {1.0,1.0,1.0,1.0,0.7,0.6,0.6},  // 30-50 % centrality
-                                {0.5,0.5,0.5,0.5,0.5,0.5,0.5}}; // 50-100 % centrality
+                                {0.5,0.5,0.5,0.5,0.5,0.5,0.5}}; // 50-100 % centrality*/
   
   // For spillover correction with loose cut in 2018 data.
-  /*double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 0-10 % centrality
+  double spilloverRcut[4][7] = {{1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 0-10 % centrality
                                 {1.5,1.5,1.5,1.0,1.0,1.0,1.0},  // 10-30 % centrality
                                 {1.0,1.0,1.0,1.0,1.0,1.0,1.0},  // 30-50 % centrality
-                                {1.0,1.0,1.0,1.0,1.0,1.0,1.0}}; // 50-100 % centrality*/
+                                {1.0,1.0,1.0,1.0,1.0,1.0,1.0}}; // 50-100 % centrality
   
   
   // Open the input files
@@ -260,7 +261,7 @@ void produceSpilloverCorrection(){
         spilloverPhiFitRange = 1.5;
         
         spilloverCut = spilloverRcut[iCentrality][iTrackPt];
-        if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet && iJetTrack <= DijetHistogramManager::kPtWeightedTrackSubleadingJet) spilloverCut = 0.5;
+        //if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet && iJetTrack <= DijetHistogramManager::kPtWeightedTrackSubleadingJet) spilloverCut = 0.5;
         
         for(int iDataType = 0; iDataType < 2; iDataType++){ // 0 = RecoGen, 1 = Uncorrected PbPb (for QA purposes)
           

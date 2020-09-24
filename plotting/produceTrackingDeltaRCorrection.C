@@ -12,7 +12,7 @@ void produceTrackingDeltaRCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
 
-  TString genRecoFileName = "data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root";  // File from which the GenReco histograms are read for the correction
+  TString genRecoFileName = "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root";  // File from which the GenReco histograms are read for the correction
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root <-- Sys
   // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_onlySeagull_processed_2019-10-07.root
   // data/PbPbMC2018_GenReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root
@@ -21,7 +21,7 @@ void produceTrackingDeltaRCorrection(){
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_tunedSeagull_processed_2019-10-22.root
   // data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString gengenFileName = "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_processed_2019-10-12.root"; // File from which the GenGen histograms are read for the correction
+  TString gengenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_improvisedMixingFromSubeNon0_jet100Trigger_noCorrections_processed_2019-10-21.root"; // File from which the GenGen histograms are read for the correction
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_mixingFromSubeNon0_newTry_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_xjBins_improvisedMixing_wtaAxis_JECv6_noCorrections_processed_2019-09-26.root <-- Sys
   // data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_wtaAxis_JECv6_processed_2019-09-26.root
@@ -31,7 +31,7 @@ void produceTrackingDeltaRCorrection(){
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
   
-  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_onlyLowPt_centShift5_xjBins_genJets_smoothed_2020-01-29.root"; // File name for the output file
+  TString outputFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_centShift5_xjBins_recoJets_uberLooseCut_tuning_2020-09-21.root"; // File name for the output file
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_until8GeV_noSymmetry_2019-10-18.root
   
   bool regularJetTrack = true;       // Produce the correction for regular jet-track correlations
@@ -41,9 +41,9 @@ void produceTrackingDeltaRCorrection(){
   
   bool processAsymmetryBins = true; // Select if you want to make the correction in asymmetry bins
   
-  int ptCutBin = 3;
+  int ptCutBin = 7; // 3 is original
   
-  bool smoothHistograms = true;  // Smoothen the histograms to reduce statistical fluctuations from the MC sample
+  bool smoothHistograms = false;  // Smoothen the histograms to reduce statistical fluctuations from the MC sample
   
   bool correlationSelector[DijetHistogramManager::knJetTrackCorrelations] = {regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,regularJetTrack,uncorrectedJetTrack,ptWeightedJetTrack,inclusiveJetTrack,inclusiveJetTrack};
   
@@ -151,12 +151,16 @@ void produceTrackingDeltaRCorrection(){
               if(iTrackPt == 5) maxDeltaR = 0.2;   // 0.6 is decent
               if(iTrackPt == 6) maxDeltaR = 0.2;  // 0.2 best thus far
             } else {
-              maxDeltaR = 0.2;
+              maxDeltaR = 2.5; // 0.2
             }
             scalingFactor = 1;
           } else {
-            maxDeltaR = 0.4;
+            maxDeltaR = 1.5; // 0.4
           }
+          
+          //if((iCentrality == 0 && iTrackPt < 2)) maxDeltaR = 2.5;
+          //if(iJetTrack >= DijetHistogramManager::kTrackSubleadingJet && iTrackPt == 4) maxDeltaR = 2.5;
+          maxDeltaR = 2.5;
           
           // Fill the residual scaling factor to the scale histogram
           residualScale[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(1,scalingFactor);

@@ -12,7 +12,7 @@ void produceJffCorrection(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_improvisedMixing_xjBins_sube0_jet80trigger_noCorrections_processed_2020-06-01.root"; // File from which the RecoGen histograms are read for the correction
+  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixingFromSubeNon0_xjBins_wtaAxis_sube0_centShift5_noCorrections_processed_2019-10-12.root"; // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_5pCentShift_improvisedMixing_xjBins_sube0_jet80trigger_noCorrections_processed_2020-06-01.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluon_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20eveMix_quarkGluonCombine_25pMoreQuark_dijetWeight_JECv4_onlySeagull_processed_2020-01-10.root
@@ -44,7 +44,7 @@ void produceJffCorrection(){
   // data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_sube0_wtaAxis_jet100trigger_JECv6_processed_2019-09-26.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-09-28.root
 
-  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_jet80trigger_5eveMixed_JECv6_wtaAxis_fluctuationReduce_symmetrized_2020-06-02.root";   // File name for the output file
+  TString outputFileName = "corrections/jffCorrection_PbPbMC2018_akFlowJet_noUncOrInc_improvisedMixingFromSubeNon0_xjBins_JECv6_wtaAxis_noErrorMitigation_symmetrized_2020-09-15.root";   // File name for the output file
   // corrections/jffCorrection_PbPbMC2018_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0_JECv6_wtaAxis_symmetrizedAndBackgroundSubtracted_noErrorMitigationOrRCut_2019-11-26.root
   // corrections/jffCorrection_ppMC2017_pfJets_noUncorr_20eventsMixed_JECv4_eschemeAxis_symmetrizedAndBackgroundSubtracted_noErrors_2019-10-08.root
   // corrections/jffCorrection_ppMC_akPfJets_noUncorr_improvisedMixing_xjBins_JECv2_wtaAxis_symmetrizedAndBackgroundSubtracted_2019-08-16.root
@@ -302,9 +302,9 @@ void produceJffCorrection(){
               binError = jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetBinError(iDeltaPhi,iDeltaEta);
               
               // TODO TODO: Check if this is proper way to deal with this
-              if(binError > TMath::Abs(binContent)){
-                jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(iDeltaPhi, iDeltaEta, 0);
-              }
+              //if(binError > TMath::Abs(binContent)){
+                //jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinContent(iDeltaPhi, iDeltaEta, 0);
+              //}
               if(removeErrors) jffCorrectionDeltaEtaDeltaPhi[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->SetBinError(iDeltaPhi, iDeltaEta, 0);
             }
           }

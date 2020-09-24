@@ -6,8 +6,8 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInStepsManual.sh "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_JECv4_2020-08-21.root" "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_JECv4_processed_2020-08-21.root" false false -1 "data/"
-./processHistogramsInStepsManual.sh "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_jet80trigger_JECv4_2020-08-21.root" "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_jet80trigger_JECv4_processed_2020-08-21.root" false false -1 "data/"
+#./processHistogramsInStepsManual.sh "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root" "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_allCorrectionsForClosure_processed_2020-09-15.root" true true -1 "data/"
+./processHistogramsInStepsManual.sh "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root" "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_allCorrectionsForClosure_tuning_processed_2020-09-21.root" true true -1 "data/"
 
 #./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_preprocessed_2020-05-13.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_allCorrectionsUnsmeared_processed_2020-05-13.root" true true -1 "data/"
 

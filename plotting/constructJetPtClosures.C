@@ -73,6 +73,7 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
   int lineColors[2] = {kBlue,kRed};
   const char* particleNames[2] = {"Quark","Gluon"};
   const char* closureTypeName[3] = {"Leading","Subleading","Inclusive"};
+  const char* asymmetrySaveName[4] = {"_A0","_A1","_A2",""};
   
   // Zooming and legend position options
   double yZoomLow = 0.9;
@@ -127,7 +128,7 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
   
   // Save the figures if selected to do so
   if(saveFigures){
-    sprintf(namer,"figures/jet%s%sJet%s.pdf",saveComment,closureTypeName[iClosureType],centralitySaveName);
+    sprintf(namer,"figures/jet%s%sJet%s%s.pdf",saveComment,closureTypeName[iClosureType],centralitySaveName,asymmetrySaveName[iAsymmetry]);
     gPad->GetCanvas()->SaveAs(namer);
   }
   
@@ -142,7 +143,7 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_20pSmear_jetPtClosure_JECv4_processed_2020-05-20.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_smearCheck_jetPtClosure_processed_2020-05-14.root
   // data/PbPbMC2018_RecoReco_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
@@ -166,7 +167,7 @@ void constructJetPtClosures(){
   
   bool fitResolution = false;  // Fit the jet pT resolution histograms
   
-  bool saveFigures = false ;  // Save the figures to file
+  bool saveFigures = true ;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================
@@ -194,7 +195,7 @@ void constructJetPtClosures(){
   double centralityBinBorders[5] = {0,10,30,50,90};  // Bin borders for centrality
   
   // Choose which xj bins to draw
-  int firstDrawnAsymmetryBin = 3;
+  int firstDrawnAsymmetryBin = 0;
   int lastDrawAsymmetryBin = 3;
   
   // Initialize reco/gen ratio and closure histograms
@@ -321,14 +322,14 @@ void constructJetPtClosures(){
   char centralitySaveName[100];
   
   // Create the output file
-  TFile *outputFile = new TFile("closureWithSmearPp.root","UPDATE");
+  TFile *outputFile = new TFile("closureLul.root","UPDATE");
   
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawAsymmetryBin; iAsymmetry++){
         if(drawPtClosure){
-          drawClosureHistogram(hJetPtClosure[iClosureType][iCentrality][iAsymmetry], "Gen p_{T} (GeV)", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 0, "PtClosure", saveFigures);
+          drawClosureHistogram(hJetPtClosure[iClosureType][iCentrality][iAsymmetry], "Gen p_{T} (GeV)", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 0, "PtClosureGenDijet", saveFigures);
           
           drawClosureHistogram(hJetPtClosureSigma[iClosureType][iCentrality][iAsymmetry], "Gen p_{T} (GeV)", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 1, "PtResolution", saveFigures);
           
