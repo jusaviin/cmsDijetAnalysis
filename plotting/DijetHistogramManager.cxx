@@ -1004,6 +1004,7 @@ void DijetHistogramManager::DoSpilloverCorrection(){
             if(iJetTrack >= kTrackSubleadingJet && iJetTrack <= kPtWeightedTrackSubleadingJet){
               // Only apply the correction in low and central bins in subleading
               if(iCentralityBin > 1) continue;
+              //if(iCentralityBin == 2 && iTrackPtBin > 2) continue; // TODO: Debug, only for closures!!!
               if(iCentralityBin == 1 && iTrackPtBin > 2) continue; // TODO: Debug, changed 3 to 4 here
               if(iCentralityBin == 0 && iTrackPtBin > 2) continue;
             }
@@ -3947,8 +3948,54 @@ TH1D* DijetHistogramManager::GetHistogramJetShape(const int iJetShapeType, const
   
   // If number of pT bins is given as an argument, return a sum of all pT bins
   if(iTrackPt == fnTrackPtBins){
+    
+    /*double epsilon[] = {0.1,0.1,0.1,0.1,0.1,0.01,0.01};
+    
+    // TODO TODO TODO: Temporary fix. Remove negative bins before adding the histograms
+    for(int iBin = 1; iBin <= fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][0]->GetNbinsX(); iBin++){
+      if(fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][0]->GetBinContent(iBin) < 0){
+        fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][0]->SetBinContent(iBin,epsilon[0]);
+      }
+    }*/
+    
     TH1D *ptSumHistogram = (TH1D*) fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][0]->Clone(Form("%s_ptSum", fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][0]->GetName()));
     for(int iTrackPtLoop = 1; iTrackPtLoop < fnTrackPtBins; iTrackPtLoop++){
+      // TODO TODO TODO: Temporary fix. Remove negative bins before adding the histograms
+      /*for(int iBin = 1; iBin <= fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->GetNbinsX(); iBin++){
+        if(fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->GetBinContent(iBin) < 0){
+          fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinContent(iBin, epsilon[iTrackPtLoop]);
+        }
+        if(iTrackPtLoop == 6 && fAvoidMixingPeak){
+          if(iAsymmetry == 0 && iBin > 4){
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinContent(iBin, 0.01);
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, 0.3);
+          } else if (iAsymmetry == 0 && iBin > 1){
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->GetBinContent(iBin));
+            
+          } else if (iAsymmetry == 0){
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->GetBinContent(iBin)/3);
+            
+          } else if (iAsymmetry == 2 && iBin > 12){
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinContent(iBin, 0.01);
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, 0.3);
+          } else if ((iAsymmetry == 2 || iAsymmetry == 1) && iBin > 2){
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, 0.3);
+          }
+          //if(iBin > 10){
+          //  fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinContent(iBin, 0.01);
+          //  fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, 0.01);
+          //}
+        }
+        if(iTrackPtLoop == 5){
+          if(iAsymmetry == 0 && iBin > 7){
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinContent(iBin, 0.01);
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, 0.01);
+          } else if(iAsymmetry == 0 && iBin > 2 && fAvoidMixingPeak){
+            fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->SetBinError(iBin, fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]->GetBinContent(iBin));
+          }
+        }
+      }*/
+      
       ptSumHistogram->Add(fhJetShape[iJetShapeType][iJetTrackCorrelation][iAsymmetry][iCentrality][iTrackPtLoop]);
     }
     return ptSumHistogram;
