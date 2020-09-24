@@ -1079,7 +1079,7 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   
   // Checking if values are zero within errors
   double binContent, binError;
-  double zeroIndex;
+  int zeroIndex;
   TH1D *hZeroWithinErrors;
   TH1D *uncertaintyHistogram = NULL;
   
@@ -1135,11 +1135,11 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
             }
           }
           
-          zeroIndex = 100;
+          //zeroIndex = 100;
           
           // Leading jet closure fix
-          if(iJetTrack == DijetHistogramManager::kTrackLeadingJet){
-            
+          if(iJetTrack == DijetHistogramManager::kTrackLeadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet){
+            /*
             // Low pT bins for 0-10 centrality
             if(iCentrality == 0) zeroIndex = 14;
             
@@ -1147,12 +1147,38 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
             if(iTrackPt == 5) zeroIndex = 14;
             
             // Track pT bin 12 < pT < 300 GeV
-            if(iTrackPt == 6) zeroIndex = 12;
+            if(iTrackPt == 6) zeroIndex = 12;*/
+            
+            double chooseMyIndex[4][4][7] =
+            // 0.0 < xj < 0.6
+            // 0.7-1 1-2 2-3 3-4 4-8 8-12 12-300
+            {{{  14, 13, 13, 12, 12,  12,  11},     // 0-10 %
+              {  14, 14, 13, 13, 13,  13,  11},     // 10-30 %
+              {  14, 14, 14, 13, 13,  13,  11},     // 30-50 %
+              {  14, 14, 14, 13, 12,  12,  11}},    // 50-90 %
+            // 0.6 < xj < 0.8
+             {{  14, 14, 13, 12, 12,  12,  11},     // 0-10 %
+              {  14, 14, 14, 13, 13,  12,  11},     // 10-30 %
+              {  -1, -1, -1, 14, 13,  13,  11},     // 30-50 %
+              {  -1, -1, -1, 14, 14,  13,  11}},    // 50-90 %
+            // 0.8 < xj < 1.0
+             {{  14, 14, 13, 13, 12,  12,  11},     // 0-10 %
+              {  14, 14, 14, 14, 14,  12,  11},     // 10-30 %
+              {  -1, -1, -1, 14, 14,  12,  11},     // 30-50 %
+              {  -1, -1, -1, -1, 14,  14,  11}},    // 50-90 %
+            // xj integrated
+             {{  14, 14, 14, 14, 14,  14,  12},     // 0-10 %
+              {  -1, -1, -1, -1, -1,  14,  12},     // 10-30 %
+              {  -1, -1, -1, -1, -1,  14,  12},     // 30-50 %
+              {  -1, -1, -1, -1, -1,  14,  12}}};   // 50-90 %
+            
+            if(chooseMyIndex[fAsymmetryBin][iCentrality][iTrackPt] > 0) zeroIndex = chooseMyIndex[fAsymmetryBin][iCentrality][iTrackPt];
+            
           }
           
           // Subleading jet closure fix
-          if(iJetTrack == DijetHistogramManager::kTrackSubleadingJet){
-            
+          if(iJetTrack == DijetHistogramManager::kTrackSubleadingJet || iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet){
+            /*
             // Low pT bins for 0-10 centrality
             if(iCentrality == 0) zeroIndex = 14;
             
@@ -1169,8 +1195,36 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
                 zeroIndex = 12;
               }
             }
+            */
+            
+            double chooseMyIndex[4][4][7] =
+            // 0.0 < xj < 0.6
+            // 0.7-1 1-2 2-3 3-4 4-8 8-12 12-300
+            {{{  12, 12, 12, 12, 12,   6,   6},     // 0-10 %
+              {  12, 12, 12, 12, 12,   6,   6},     // 10-30 %
+              {  12, 12, 12, 12, 12,   6,   6},     // 30-50 %
+              {  14, 14, 14, 13, 12,   6,   4}},    // 50-90 %
+            // 0.6 < xj < 0.8
+             {{  14, 14, 14, 14, 12,   7,   7},     // 0-10 %
+              {  -1, -1, -1, 14, 12,   7,   7},     // 10-30 %
+              {  -1, -1, -1, 14, 12,   7,   7},     // 30-50 %
+              {  -1, -1, -1, -1, 12,   7,   4}},    // 50-90 %
+            // 0.8 < xj < 1.0
+             {{  14, 14, 14, 13, 13,  13,  11},     // 0-10 %
+              {  -1, -1, -1, 13, 13,  13,  11},     // 10-30 %
+              {  -1, -1, -1, 14, 14,  14,   9},     // 30-50 %
+              {  -1, -1, -1, -1, -1,  14,   7}},    // 50-90 %
+            // xj integrated
+             {{  14, 14, 14, 14, 14,  13,  12},     // 0-10 %
+              {  -1, -1, -1, -1, -1,  13,  12},     // 10-30 %
+              {  -1, -1, -1, -1, -1,  13,  12},     // 30-50 %
+              {  -1, -1, -1, -1, -1,  13,  11}}};   // 50-90 %
+            
+            if(chooseMyIndex[fAsymmetryBin][iCentrality][iTrackPt] > 0) zeroIndex = chooseMyIndex[fAsymmetryBin][iCentrality][iTrackPt];
             
           }
+          
+          zeroIndex = 15;
           
           if(iBin < zeroIndex){
             hZeroWithinErrors->SetBinContent(iBin,0);
