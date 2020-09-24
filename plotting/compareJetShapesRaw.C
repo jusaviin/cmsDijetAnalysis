@@ -12,10 +12,13 @@ void compareJetShapesRaw(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = { "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_jet80trig_xjBins_wtaAxis_allCorrections_jffAndSpillWithJet80_processed_2020-05-28_allButCombine1Job36.root" };
+  TString fileNames[] = { "data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_allCorrectionsForClosure_tuning_processed_2020-09-21.root", "data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_sube0_centShift5_noCorrections_onlyFinalResults_processed_2019-10-12.root" };
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_allCorrectionsForClosure_tuning_processed_2020-09-15.root
+  // data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_allCorrectionsForClosure_tuning_processed_2020-09-21.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_xjBins_20eveMix_trigWeight_allCorrectionsNonWeighted_wtaAxis_processed_2020-04-30.root
   // data/dijetPbPb2018_akFlowJet_improvisedMixing_jet80trigger_preprocessed_2020-05-26.root
+  // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_preprocessed_2020-05-13.root
 
   
   TString uncertaintyFileName = "uncertainties/systematicUncertaintyForPbPb_25eveMix_xjBins_manualFluctuationReduction_noTriggerBias_jffUpdate_2020-06-03.root";
@@ -37,7 +40,7 @@ void compareJetShapesRaw(){
   }
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
+  bool saveFigures = false;
   
   // Get the number of asymmetry bins
   const int nAsymmetryBins = histograms[0]->GetNAsymmetryBins();
@@ -48,13 +51,13 @@ void compareJetShapesRaw(){
   double asymmetryBinBorders[] = {0,0.6,0.8,1};
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};
   
-  int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = nCentralityBins-1;
+  int firstDrawnCentralityBin = 3;
+  int lastDrawnCentralityBin = 3;
   
-  int firstDrawnAsymmetryBin = nAsymmetryBins;
+  int firstDrawnAsymmetryBin = 0;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
-  int iJetTrack = DijetHistogramManager::kPtWeightedTrackLeadingJet; // kPtWeightedTrackLeadingJet kPtWeightedTrackSubleadingJet
+  int iJetTrack = DijetHistogramManager::kTrackSubleadingJet; // kTrackLeadingJet kTrackSubleadingJet kPtWeightedTrackLeadingJet kPtWeightedTrackSubleadingJet
   bool doSameEvent = false;   // true = Same event. False = Final corrected distribution
   
   bool normalizeJetShape = false;
@@ -65,10 +68,13 @@ void compareJetShapesRaw(){
   
   // Load leading and subleading correlation histograms from the files
   for(int iFile = 0; iFile < nFilesToCompare; iFile++){
-    histograms[iFile]->SetLoadTrackLeadingJetCorrelationsPtWeighted(true);
-    histograms[iFile]->SetLoadTrackSubleadingJetCorrelationsPtWeighted(true);
-    histograms[iFile]->SetLoad2DHistograms(true);
+    histograms[iFile]->SetLoadTrackLeadingJetCorrelations(iJetTrack == DijetHistogramManager::kTrackLeadingJet);
+    histograms[iFile]->SetLoadTrackSubleadingJetCorrelations(iJetTrack == DijetHistogramManager::kTrackSubleadingJet);
+    histograms[iFile]->SetLoadTrackLeadingJetCorrelationsPtWeighted(iJetTrack == DijetHistogramManager::kPtWeightedTrackLeadingJet);
+    histograms[iFile]->SetLoadTrackSubleadingJetCorrelationsPtWeighted(iJetTrack == DijetHistogramManager::kPtWeightedTrackSubleadingJet);
+    histograms[iFile]->SetLoad2DHistograms(doSameEvent);
     histograms[iFile]->SetAsymmetryBinRange(0,nAsymmetryBins);
+    if(iFile == 0) histograms[iFile]->SetAvoidMixingPeak(true);
     histograms[iFile]->LoadProcessedHistograms();
   }
 
@@ -117,7 +123,6 @@ void compareJetShapesRaw(){
       
       // Read the jet shape histograms from the file and normalize them to one
       for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
-        
         for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
           if(doSameEvent){
             helperHistogram = histograms[iFile]->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
@@ -137,14 +142,14 @@ void compareJetShapesRaw(){
       } // Track pT loop
     } // Asymmetry loop
   } // File loop
-  
+    
   // Read the systematic uncertainty histograms and calculate uncertainty for the ratio
   double uncertaintyValue;
   double numerator;
   double denominator;
   double ratioUncertaintyValue;
   
-  for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+  /*for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
     for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
       for(int iTrackPt = 0; iTrackPt <= nTrackPtBins; iTrackPt++){
         jetShapeUncertainty[0][iAsymmetry][iCentrality][iTrackPt] = uncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, iTrackPt, iAsymmetry, JffCorrector::kFragmentationBias);
@@ -198,7 +203,7 @@ void compareJetShapesRaw(){
         }
       }
     }
-  }
+  }*/
   
   JDrawer *drawer = new JDrawer();
   drawer->SetDefaultAppearanceSplitCanvas();
@@ -276,8 +281,8 @@ void compareJetShapesRaw(){
           legend->AddEntry(jetShapePbPb[0][iAsymmetry][iCentrality][iTrackPt],"Jet100","l");
           legend->AddEntry(jetShapePbPb[1][iAsymmetry][iCentrality][iTrackPt],"Jet80","l");
         } else {
-          legend->AddEntry(jetShapePbPb[0][iAsymmetry][iCentrality][iTrackPt],"Jet100","l");
-          legend->AddEntry(jetShapePbPb[1][iAsymmetry][iCentrality][iTrackPt],"Jet80","l");
+          legend->AddEntry(jetShapePbPb[0][iAsymmetry][iCentrality][iTrackPt],"Nominal","l");
+          legend->AddEntry(jetShapePbPb[1][iAsymmetry][iCentrality][iTrackPt],"Smeared","l");
         }
         legend->Draw();
         
@@ -292,7 +297,7 @@ void compareJetShapesRaw(){
         if(mcLabel){
           drawer->DrawHistogramToLowerPad(jetShapeRatio[iAsymmetry][iCentrality][iTrackPt],"#Deltar","Hydjet / Pythia", " ");
         } else {
-          drawer->DrawHistogramToLowerPad(jetShapeRatio[iAsymmetry][iCentrality][iTrackPt],"#Deltar","Jet100 / Jet80", " ");
+          drawer->DrawHistogramToLowerPad(jetShapeRatio[iAsymmetry][iCentrality][iTrackPt],"#Deltar","Nominal / Smear", " ");
         }
         oneLine->Draw();
         
@@ -303,13 +308,13 @@ void compareJetShapesRaw(){
         
         //jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt]->SetBarWidth(0.3);
         //jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt]->SetBarOffset(0.35);
-        jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt]->SetFillColorAlpha(kBlue,0.3);
-        jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt]->Draw("same,E2");
+        //jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt]->SetFillColorAlpha(kBlue,0.3);
+        //jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt]->Draw("same,E2");
         
         //jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt]->SetBarWidth(0.3);
         //jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt]->SetBarOffset(0.65);
-        jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt]->SetFillColorAlpha(kGreen+4,0.3);
-        jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt]->Draw("same,E2");
+        //jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt]->SetFillColorAlpha(kGreen+4,0.3);
+        //jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt]->Draw("same,E2");
         
         //ratioLegend = new TLegend(0.25,0.85,0.45,0.95);  // Leading
         //ratioLegend = new TLegend(0.35,0.85,0.55,0.95);  // Subleading
@@ -318,24 +323,156 @@ void compareJetShapesRaw(){
         //ratioLegend->Draw();
         
         //ratioLegend2 = new TLegend(0.55,0.85,0.85,0.95);
-        ratioLegend2 = new TLegend(0.25,0.85,0.55,0.95); // Centered
-        ratioLegend2->SetFillStyle(0);ratioLegend2->SetBorderSize(0);ratioLegend2->SetTextSize(0.05);ratioLegend2->SetTextFont(62);
-        ratioLegend2->AddEntry(jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt], "Relevant uncertainties", "F");
-        ratioLegend2->Draw();
+        //ratioLegend2 = new TLegend(0.25,0.85,0.55,0.95); // Centered
+        //ratioLegend2->SetFillStyle(0);ratioLegend2->SetBorderSize(0);ratioLegend2->SetTextSize(0.05);ratioLegend2->SetTextFont(62);
+        //ratioLegend2->AddEntry(jetShapeRatioUncertaintyRelevant[iAsymmetry][iCentrality][iTrackPt], "Relevant uncertainties", "F");
+        //ratioLegend2->Draw();
         
-        ratioLegend3 = new TLegend(0.65,0.85,0.95,0.95);
-        ratioLegend3->SetFillStyle(0);ratioLegend3->SetBorderSize(0);ratioLegend3->SetTextSize(0.05);ratioLegend3->SetTextFont(62);
-        ratioLegend3->AddEntry(jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt], "Add trigger bias", "F");
-        ratioLegend3->Draw();
+        //ratioLegend3 = new TLegend(0.65,0.85,0.95,0.95);
+        //ratioLegend3->SetFillStyle(0);ratioLegend3->SetBorderSize(0);ratioLegend3->SetTextSize(0.05);ratioLegend3->SetTextFont(62);
+        //ratioLegend3->AddEntry(jetShapeRatioUncertaintyRelevantPlus2[iAsymmetry][iCentrality][iTrackPt], "Add trigger bias", "F");
+        //ratioLegend3->Draw();
         
         // Save the figures into a file
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/jetShapeComparisonErrorSets%s%s%s%s.png", labels[iJetTrack], compactAsymmetryString.Data(), compactCentralityString.Data(), compactTrackString.Data()));
-          gPad->GetCanvas()->SaveAs(Form("figures/jetShapeComparisonErrorSets%s%s%s%s.pdf", labels[iJetTrack], compactAsymmetryString.Data(), compactCentralityString.Data(), compactTrackString.Data()));
+          gPad->GetCanvas()->SaveAs(Form("figures/jetShapeComparisonSmearing%s%s%s%s.png", labels[iJetTrack], compactAsymmetryString.Data(), compactCentralityString.Data(), compactTrackString.Data()));
+          //gPad->GetCanvas()->SaveAs(Form("figures/jetShapeComparisonErrorSets%s%s%s%s.pdf", labels[iJetTrack], compactAsymmetryString.Data(), compactCentralityString.Data(), compactTrackString.Data()));
         }
         
       } // Track pT loop
     } // Centrality loop
   } // Asymmetry loop
+  
+  int ratioColors[] = {kBlack, kBlue, kRed, kGreen+2};
+  TH1D *hZeroFiller[4];
+  
+  // Extra figures for putting different ratios in the same plot
+  for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+    
+    // Setup asymmetry strings
+    if(iAsymmetry < nAsymmetryBins){
+      asymmetryString = Form("%.1f < x_{j} < %.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+      compactAsymmetryString = Form("_A=%.1f-%.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+      compactAsymmetryString.ReplaceAll(".","v");
+    } else {
+      asymmetryString = "";
+      compactAsymmetryString = "";
+    }
+    
+    drawer->Reset();
+    
+    jetShapeRatio[iAsymmetry][firstDrawnCentralityBin][nTrackPtBins]->SetMarkerColor(ratioColors[0]);
+    jetShapeRatio[iAsymmetry][firstDrawnCentralityBin][nTrackPtBins]->SetLineColor(ratioColors[0]);
+    jetShapeRatio[iAsymmetry][firstDrawnCentralityBin][nTrackPtBins]->GetYaxis()->SetRangeUser(0.92,1.1);
+    
+    drawer->DrawHistogram(jetShapeRatio[iAsymmetry][firstDrawnCentralityBin][nTrackPtBins], "#Deltar", "Nominal / Smeared", " ");
+    
+    oneLine->Draw();
+    
+    legend = new TLegend(0.6,0.6,0.9,0.9);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry(jetShapeRatio[iAsymmetry][firstDrawnCentralityBin][nTrackPtBins],"0-10 %","l");
+    
+    ratioLegend = new TLegend(0.18,0.81,0.48,0.91);
+    ratioLegend->SetFillStyle(0);ratioLegend->SetBorderSize(0);ratioLegend->SetTextSize(0.05);ratioLegend->SetTextFont(62);
+    ratioLegend->AddEntry((TObject*) 0,"PbPb data, all x_{j}","");
+    
+    for(int iCentrality = firstDrawnCentralityBin+1; iCentrality <= lastDrawnCentralityBin; iCentrality++){
+      
+      centralityString = Form("%.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+      compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+      
+      jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->SetMarkerColor(ratioColors[iCentrality]);
+      jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->SetLineColor(ratioColors[iCentrality]);
+      
+      jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->Draw("same");
+      legend->AddEntry(jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins],centralityString,"l");
+      
+    } // Centrality loop
+    
+    legend->Draw();
+    ratioLegend->Draw();
+    
+  } // Asymmetry loop
+  
+  // Extra figures for putting different ratios in the same plot
+  for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
+    
+    centralityString = Form("%.0f-%.0f %%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+    compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+    
+    drawer->Reset();
+    
+    jetShapeRatio[nAsymmetryBins][iCentrality][nTrackPtBins]->SetMarkerColor(ratioColors[0]);
+    jetShapeRatio[nAsymmetryBins][iCentrality][nTrackPtBins]->SetLineColor(ratioColors[0]);
+    jetShapeRatio[nAsymmetryBins][iCentrality][nTrackPtBins]->GetYaxis()->SetRangeUser(0.5,1.5);
+    
+    // Prepare hiding large error points
+    hZeroFiller[3] = (TH1D*) jetShapeRatio[nAsymmetryBins][iCentrality][nTrackPtBins]->Clone(Form("zeroFiller3%d",iCentrality));
+    hZeroFiller[3]->SetMarkerStyle(kOpenCircle);
+    hZeroFiller[3]->GetYaxis()->SetRangeUser(-1,3);
+    
+    for(int iBin = 1; iBin < hZeroFiller[3]->GetNbinsX(); iBin++){
+      hZeroFiller[3]->SetBinError(iBin,0);
+      hZeroFiller[3]->SetBinContent(iBin,0);
+      //if(iBin > 12) {
+      //  hZeroFiller[3]->SetBinContent(iBin,1);
+      //  jetShapeRatio[nAsymmetryBins][iCentrality][nTrackPtBins]->SetBinContent(iBin,0);
+      //}
+    }
+    
+    drawer->DrawHistogram(jetShapeRatio[nAsymmetryBins][iCentrality][nTrackPtBins], "#Deltar", "Reco / Gen", " ");
+    hZeroFiller[3]->Draw("p,same");
+    
+    oneLine->Draw();
+    
+    //legend = new TLegend(0.6,0.6,0.9,0.9);
+    legend = new TLegend(0.19,0.19,0.49,0.49);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry(jetShapeRatio[nAsymmetryBins][iCentrality][nTrackPtBins],"All x_{j}","lp");
+    
+    ratioLegend = new TLegend(0.17,0.81,0.48,0.91);
+    ratioLegend->SetFillStyle(0);ratioLegend->SetBorderSize(0);ratioLegend->SetTextSize(0.05);ratioLegend->SetTextFont(62);
+    ratioLegend->AddEntry((TObject*) 0,Form("Analysis closure, subleading jet, %s", centralityString.Data()),"");
+    
+    for(int iAsymmetry = 0; iAsymmetry <= 2; iAsymmetry++){
+      
+      // Setup asymmetry strings
+      if(iAsymmetry < nAsymmetryBins){
+        asymmetryString = Form("%.1f < x_{j} < %.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+        compactAsymmetryString = Form("_A=%.1f-%.1f", asymmetryBinBorders[iAsymmetry], asymmetryBinBorders[iAsymmetry+1]);
+        compactAsymmetryString.ReplaceAll(".","v");
+      } else {
+        asymmetryString = "";
+        compactAsymmetryString = "";
+      }
+      
+      jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->SetMarkerColor(ratioColors[iAsymmetry+1]);
+      jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->SetLineColor(ratioColors[iAsymmetry+1]);
+      
+      // Prepare hiding large error points
+      hZeroFiller[iAsymmetry] = (TH1D*) jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->Clone(Form("zeroFiller%d%d", iAsymmetry, iCentrality));
+      hZeroFiller[iAsymmetry]->SetMarkerStyle(kOpenCircle);
+      hZeroFiller[iAsymmetry]->GetYaxis()->SetRangeUser(-1,3);
+      
+      for(int iBin = 1; iBin < hZeroFiller[iAsymmetry]->GetNbinsX(); iBin++){
+        hZeroFiller[iAsymmetry]->SetBinError(iBin,0);
+        hZeroFiller[iAsymmetry]->SetBinContent(iBin,0);
+        //if(iBin > 12) {
+        //  hZeroFiller[iAsymmetry]->SetBinContent(iBin,1);
+        //  jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->SetBinContent(iBin,0);
+        //}
+      }
+      
+      jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins]->Draw("same");
+      hZeroFiller[iAsymmetry]->Draw("p,same");
+      legend->AddEntry(jetShapeRatio[iAsymmetry][iCentrality][nTrackPtBins],asymmetryString,"lp");
+      
+    } // Asymmetry loop
+    
+    legend->Draw();
+    ratioLegend->Draw();
+    
+  } //  Centrality loop
 
 }
