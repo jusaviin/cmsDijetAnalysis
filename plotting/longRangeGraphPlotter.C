@@ -30,7 +30,7 @@ void longRangeGraphPlotter(){
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 3;
-  TString comparisonFileName[] = {"testDihadron_sameEvent_midRapidity_highNormQ_cut6.root", "testDihadron_sameEvent_midRapidity_highNormQ_cut7.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  TString comparisonFileName[] = {"testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut5.root", "testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
@@ -52,7 +52,7 @@ void longRangeGraphPlotter(){
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   
   // Plots to be compared between files
-  const bool drawJetHadronVnFileComparison = false;
+  const bool drawJetHadronVnFileComparison = true;
   const bool drawDihadronVnFileComparison = true;
   const bool drawHadronVnFileComparison = true;
   const bool drawJetVnFileComparison = false;
@@ -60,7 +60,7 @@ void longRangeGraphPlotter(){
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool saveFigures = true;                     // Save the figures in a file
+  const bool saveFigures = false;                     // Save the figures in a file
   TString saveComment = "_cutComparison";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;

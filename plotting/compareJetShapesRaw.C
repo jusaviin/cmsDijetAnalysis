@@ -51,8 +51,8 @@ void compareJetShapesRaw(){
   double asymmetryBinBorders[] = {0,0.6,0.8,1};
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};
   
-  int firstDrawnCentralityBin = 3;
-  int lastDrawnCentralityBin = 3;
+  int firstDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = 0;
   
   int firstDrawnAsymmetryBin = 0;
   int lastDrawnAsymmetryBin = nAsymmetryBins;

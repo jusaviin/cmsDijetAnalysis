@@ -30,11 +30,11 @@ MIXING=$6          # Flag for preprocessing
 #done 
 
 # Jet-track correlations have centrality and track pT binning
-for i in `seq 2 2`;  # Centrality
+for i in `seq 0 0`;  # Centrality
 do
-  for j in `seq 0 2`;  # Track pT
+  for j in `seq 3 4`;  # Track pT
   do  
-    for k in `seq 1 3`;  # xj
+    for k in `seq 0 3`;  # xj
     do
       root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",4,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i','$k','$PREPROCESS',"'${MIXING}'")' # regular jet-track correlations for leading and subleading jets
       root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",6,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i','$k','$PREPROCESS',"'${MIXING}'")' # pT weighted jet-track correlations for leading and subleading jets

@@ -185,8 +185,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
 
   
   // File for residual tracking correction. File name changed for pp automagically
-  bool applyTrackDeltaRCorrection = true;
-  bool applyTrackDeltaRResidualScale = true;
+  bool applyTrackDeltaRCorrection = false;
+  bool applyTrackDeltaRResidualScale = false;
   TString trackDeltaRCorrectionFileName = "corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_centShift5_xjBins_recoJets_uberLooseCut_tuning_2020-09-21.root";
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_onlyLowPt_centShift5_xjBins_genJets_smoothed_2020-01-29.root <--- In new files
   // corrections/trackingDeltaRCorrection_PbPb_wtaAxis_allPt_highPtUnscaled_xjBins_recoJets_smoothed_2020-01-27.root
@@ -210,7 +210,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5.root
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = true;
+  bool applySeagullCorrection = false;
   if(preprocess >= 0 && preprocess <= 2) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
@@ -275,7 +275,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   int backgroundOverlapBins = 3;       // Number of bins around deltaPhi = Pi/2 used to calculate background adjustment
   
   // Processing level
-  int processingStartLevel = DijetHistogramManager::kTrackDeltaRCorrection;  // The first processing step to be done. kMixedEventCorrection, kSeagullCorrection, kTrackDeltaRCorrection, kSpilloverCorrection, kBackgroundSubtraction, kJffCorrection
+  int processingStartLevel = DijetHistogramManager::kMixedEventCorrection;  // The first processing step to be done. kMixedEventCorrection, kSeagullCorrection, kTrackDeltaRCorrection, kSpilloverCorrection, kBackgroundSubtraction, kJffCorrection
   
   // Jet shape
   const int nRBins = 16;  // Number of R-bins for jet shape histograms
