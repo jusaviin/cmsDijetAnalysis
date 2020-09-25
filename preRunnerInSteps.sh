@@ -6,9 +6,9 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_allQ_sameTrigAss_preprocessed_2020-07-26.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_allQ_sameTrigAss_processed_2020-07-26.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_highQ_sameTrigAss_preprocessed_2020-07-26.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_highQ_sameTrigAss_processed_2020-07-26.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_lowQ_sameTrigAss_preprocessed_2020-07-26.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_lowQ_sameTrigAss_processed_2020-07-26.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ5_sameTrigAss_preprocessed_2020-09-04.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ5_sameTrigAss_noCorrections_processed_2020-09-04.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ6_sameTrigAss_preprocessed_2020-09-04.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ6_sameTrigAss_noCorrections_processed_2020-09-04.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ7_sameTrigAss_preprocessed_2020-09-04.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ7_sameTrigAss_noCorrections_processed_2020-09-04.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_trigger3-4_preprocessed_2020-03-23.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_trigger3-4_processed_2020-03-23.root" false false -1 "data/"
 
