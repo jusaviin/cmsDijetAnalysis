@@ -1048,6 +1048,22 @@ void DijetAnalyzer::RunAnalysis(){
         fHistograms->fhPtHatWeighted->Fill(ptHat,fPtHatWeight);      // pT het histogram weighted with corresponding cross section and event number
       }
       
+      // Q-vector cut for event plane. Used in a MC study to try to match flow with data.
+      if(doEventPlane){
+        
+        // Variables for event plane
+        double eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
+        double eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
+        int iEventPlane = 9; // For event planes, see the big comment in ForestReader.h
+        
+        eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
+        eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
+        eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
+        
+        if(eventPlaneQ < 2.778) continue;
+      }
+      
+      
       // ======================================
       // ===== Event quality cuts applied =====
       // ======================================
