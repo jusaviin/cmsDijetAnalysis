@@ -1054,13 +1054,42 @@ void DijetAnalyzer::RunAnalysis(){
         // Variables for event plane
         double eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
         double eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
-        int iEventPlane = 9; // For event planes, see the big comment in ForestReader.h
+        //int iEventPlane = 9; // For event planes, see the big comment in ForestReader.h
+        double eventPlaneQx = 0;
+        double eventPlaneQy = 0;
         
-        eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
-        eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
-        eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
+        // Manual calculation for Q-vector
+        // Loop over all track in the event
+        nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+        for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+          
+          // Check that all the track cuts are passed
+          //if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
+          
+          // Get the track information
+          trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+          trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+          trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+          //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+          
+          if(TMath::Abs(trackEta) > 0.75) continue;
+          if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+          if(trackPt > 3) continue;
+                    
+          eventPlaneQx += TMath::Cos(2*(trackPhi));
+          eventPlaneQy += TMath::Sin(2*(trackPhi));
+          eventPlaneMultiplicity += 1;
+          
+        }
         
-        if(eventPlaneQ < 2.778) continue;
+        if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
+        eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
+        
+        //eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
+        //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
+        //eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
+                
+        if(eventPlaneQ < 3.333) continue;
       }
       
       
