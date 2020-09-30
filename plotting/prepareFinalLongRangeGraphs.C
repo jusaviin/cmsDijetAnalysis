@@ -23,12 +23,13 @@ void prepareFinalLongRangeGraphs(){
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   
   // File for Vn from dihadron correlations
-  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ6_sameTrigAss_preprocessed_2020-09-04.root";
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-06-30.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_processed_2020-06-25.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root
   // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-06-30.root
   // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-07-07.root
+  // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ6_sameTrigAss_noCorrections_processed_2020-09-04.root
 
   // Reconstruction bias correction
   const char *jetReconstructionBiasFile = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt";
@@ -50,14 +51,15 @@ void prepareFinalLongRangeGraphs(){
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
-  const bool useSameEventJetHadron = false;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
+  const bool useSameEventJetHadron = true;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
   const bool useSameEventDihadron = true;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
   
   const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
   const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
   
   const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
-  const bool correctAtJetLevel = true;  // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
+  const bool plotOnlyCorrection = true; // True: Only show the correction in jet v2 graph. False: Regular analysis
+  const bool correctAtJetLevel = true;   // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
     
   const bool saveFigures = false;
   TString saveComment = "_MC";
@@ -69,7 +71,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "flowGraphs/tttlul.root";
+  TString outputFileName = "flowGraphs/qVectorStudy_jetVnFromCorrection_noCut_correctedJetHadron_correctedDihadron.root";
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
   // flowGraphs/exampleDihadronFromMC.root
@@ -321,6 +323,10 @@ void prepareFinalLongRangeGraphs(){
             
             jetFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
             jetFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] = TMath::Sqrt(TMath::Power(jetHadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] / hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow],2) + TMath::Power(jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] *  hadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] / TMath::Power(hadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow], 2),2));
+          }
+          
+          if(plotOnlyCorrection){
+            jetFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = uncertaintyProvider->GetJetReconstructionBiasCorrectionForJetVn(iFlow, iCentrality, iTrackPt, iAsymmetry);
           }
           
           // TODO: The systematic uncertainty calculations need to be done properly!

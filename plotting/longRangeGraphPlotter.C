@@ -24,19 +24,19 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "testDihadron_sameEvent_midRapidity_highNormQ_cut5.root";
+  TString graphFileName = "qVectorStudy_jetVnFromCorrection_cutBin5_sameEventJetHadron_sameEventDihadron.root";
   TFile *graphFile[maxFiles];
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 3;
-  TString comparisonFileName[] = {"testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut5.root", "testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  int nComparisonFiles = 4;
+  TString comparisonFileName[] = {"qVectorStudy_jetVnFromCorrection_cutBin6_sameEventJetHadron_sameEventDihadron.root", "qVectorStudy_jetVnFromCorrection_cutBin7_sameEventJetHadron_sameEventDihadron.root", "qVectorStudy_jetVnFromCorrection_noCut_correctedJetHadron_correctedDihadron.root", "testDataFullStatsNoCorrections.root","flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"First cut", "Second cut", "Third cut", "Data", "Fifth file"};
+  TString fileLegend[] = {"First cut","Second cut", "Third cut", "No cut", "Data", "Fifth file"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -50,18 +50,19 @@ void longRangeGraphPlotter(){
   const bool drawGraphAsymmetryComparison = false;    // Draw all selected asymmetry bins to the same graph
   const bool drawGraphVnComparison = false;           // Draw selected flow components to the same graph
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
+  const bool drawAtlasV2 = false;                     // Draw a line showing the v2 result from ATLAS
   
   // Plots to be compared between files
   const bool drawJetHadronVnFileComparison = true;
   const bool drawDihadronVnFileComparison = true;
   const bool drawHadronVnFileComparison = true;
-  const bool drawJetVnFileComparison = false;
+  const bool drawJetVnFileComparison = true;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison;
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool saveFigures = false;                     // Save the figures in a file
-  TString saveComment = "_cutComparison";              // String to be added to saved file names
+  const bool saveFigures = true;                     // Save the figures in a file
+  TString saveComment = "_cutComparisonDifference";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -212,7 +213,7 @@ void longRangeGraphPlotter(){
           flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->SetMarkerColor(kBlue);
           flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->Draw("p,same");
           
-          if(iFlow == 1){
+          if(iFlow == 1 && drawAtlasV2){
             atlasV2 = new TLine(0.5,atlasV2Number[iCentrality],maxTrackPt-0.5,atlasV2Number[iCentrality]);
             atlasV2->SetLineStyle(2);
             atlasV2->SetLineColor(kBlue);
@@ -229,7 +230,7 @@ void longRangeGraphPlotter(){
           legend->AddEntry(flowGraphHadron[0][iAsymmetry][iCentrality][iFlow], Form("Hadron v_{%d}", iFlow+1), "p");
           legend->AddEntry(flowGraphJet[0][iAsymmetry][iCentrality][iFlow], Form("Jet v_{%d}", iFlow+1), "p");
           
-          if(iFlow == 1){
+          if(iFlow == 1 && drawAtlasV2){
             legend->AddEntry(atlasV2, "ATLAS jet v_{2}", "l");
           }
           
@@ -363,7 +364,7 @@ void longRangeGraphPlotter(){
               flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerColor(fileColors[iFile]);
               flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow]->SetMarkerSize(1.3);
               if(iFile == 0){
-                 drawer->DrawGraph(flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.08, "Track p_{T} (GeV)", namerY, " ", "p");
+                 drawer->DrawGraph(flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, 0, 0.12, "Track p_{T} (GeV)", namerY, " ", "p");
               } else {
                 flowGraphJetHadron[iFile][iAsymmetry][iCentrality][iFlow]->Draw("p,same");
               }
@@ -448,12 +449,12 @@ void longRangeGraphPlotter(){
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
-            minZoom = 0;
-            maxZoom = 0.25;
+            minZoom = -0.05;
+            maxZoom = 0.7; // 0.25
             
             if(iCentrality == 0){
               minZoom = -0.05;
-              maxZoom = 0.2;
+              maxZoom = 0.7; // 0.2
             }
             
             for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
@@ -470,7 +471,7 @@ void longRangeGraphPlotter(){
               
             }
             
-            if(iFlow == 1){
+            if(iFlow == 1 && drawAtlasV2){
               atlasV2 = new TLine(0.5,atlasV2Number[iCentrality],maxTrackPt-0.5,atlasV2Number[iCentrality]);
               atlasV2->SetLineStyle(2);
               atlasV2->SetLineColor(kBlue);
