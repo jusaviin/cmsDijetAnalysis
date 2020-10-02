@@ -347,7 +347,9 @@ void DijetHistograms::CreateHistograms(){
   // Magnitude for event plane q-vector
   const Double_t minQVector = 0;    // Minimum value for the magnitude of q-vector
   const Double_t maxQVector = 5;  // Maximum value for the magnitude of q-vector
-  const Int_t nQVectorBins = 9;   // Number of q-vector magnitude bins
+  const Int_t nQVectorBins = 4;   // Number of q-vector magnitude bins
+  
+  Double_t wideQvectorBins[5] = {minQVector,2.222,2.778,3.333,maxQVector};
   
   Bool_t doEventPlane = (fCard->Get("IncludeEventPlane") == 1);
   
@@ -643,6 +645,10 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJet->SetBinEdges(3,wideAsymmetryBins);
   fhTrackLeadingJet->SetBinEdges(4,wideCentralityBins);
   fhTrackSubleadingJet->SetBinEdges(4,wideCentralityBins);
+  if(doEventPlane){
+    fhTrackLeadingJet->SetBinEdges(6,wideQvectorBins);
+    fhTrackSubleadingJet->SetBinEdges(6,wideQvectorBins);
+  }
 
   // Create histograms for uncorrected track-jet correlations
   fhTrackLeadingJetUncorrected = new THnSparseF("trackLeadingJetUncorrected","trackLeadingJetUncorrected",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackLeadingJetUncorrected->Sumw2();
@@ -655,6 +661,10 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJetUncorrected->SetBinEdges(3,wideAsymmetryBins);
   fhTrackLeadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
   fhTrackSubleadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
+  if(doEventPlane){
+    fhTrackLeadingJetUncorrected->SetBinEdges(6,wideQvectorBins);
+    fhTrackSubleadingJetUncorrected->SetBinEdges(6,wideQvectorBins);
+  }
   
   // Create histograms for pT weighted track-jet correlations
   fhTrackLeadingJetPtWeighted = new THnSparseF("trackLeadingJetPtWeighted","trackLeadingJetPtWeighted",7,nBins7D,lowBinBorder7D,highBinBorder7D); fhTrackLeadingJetPtWeighted->Sumw2();
@@ -667,6 +677,10 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJetPtWeighted->SetBinEdges(3,wideAsymmetryBins);
   fhTrackLeadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
   fhTrackSubleadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
+  if(doEventPlane){
+    fhTrackLeadingJetPtWeighted->SetBinEdges(6,wideQvectorBins);
+    fhTrackSubleadingJetPtWeighted->SetBinEdges(6,wideQvectorBins);
+  }
   
   // ======== THnSparses for correlation between tracks and inclusive jets ========
   
@@ -720,6 +734,10 @@ void DijetHistograms::CreateHistograms(){
   fhTrackJetInclusivePtWeighted->SetBinEdges(0,wideTrackPtBins);
   fhTrackJetInclusive->SetBinEdges(3,wideCentralityBins);
   fhTrackJetInclusivePtWeighted->SetBinEdges(3,wideCentralityBins);
+  if(doEventPlane){
+    fhTrackJetInclusive->SetBinEdges(5,wideQvectorBins);
+    fhTrackJetInclusivePtWeighted->SetBinEdges(5,wideQvectorBins);
+  }
   
   // ======== THnSparses for jet pT closures ========
   

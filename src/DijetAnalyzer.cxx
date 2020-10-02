@@ -717,6 +717,8 @@ void DijetAnalyzer::RunAnalysis(){
   // Variables for event plane
   Double_t eventPlaneQ;
   Double_t eventPlaneMultiplicity;
+  Double_t eventPlaneQx;
+  Double_t eventPlaneQy;
   Int_t centralityBin;
   Int_t iEventPlane = 9; // 8 = forward rapidity. 9 = midrapidity;
   
@@ -1032,6 +1034,8 @@ void DijetAnalyzer::RunAnalysis(){
         // Variables for event plane
         eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
         eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
+        eventPlaneQx = 0;
+        eventPlaneQy = 0;
         if(fDoEventPlane){
           
           centralityBin = 0;
@@ -1045,14 +1049,40 @@ void DijetAnalyzer::RunAnalysis(){
             centralityBin = 3;
           }
           
-          eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
+          // Manual calculation for Q-vector
+          // Loop over all track in the event
+          nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+          for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+            
+            // Check that all the track cuts are passed
+            //if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
+            
+            // Get the track information
+            trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+            trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+            trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+            //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+            
+            if(TMath::Abs(trackEta) > 0.75) continue;
+            if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+            if(trackPt > 3) continue;
+            
+            eventPlaneQx += TMath::Cos(2*(trackPhi));
+            eventPlaneQy += TMath::Sin(2*(trackPhi));
+            eventPlaneMultiplicity += 1;
+            
+          }
+          
+          if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
+          eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
+
+          //eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
           fHistograms->fhQvector[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
           
-          eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
+          //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
           fHistograms->fhEventPlaneMult[centralityBin]->Fill(eventPlaneMultiplicity,fTotalEventWeight);
           
-          eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
-          fHistograms->fhQvectorNorm[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
+          fHistograms->fhQvectorNorm[centralityBin]->Fill(eventPlaneQ / TMath::Sqrt(eventPlaneMultiplicity),fTotalEventWeight);
         }
       }
       
@@ -1495,8 +1525,6 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhCentralityDijet->Fill(centrality,fTotalEventWeight); // TODO: Total weight here instead of centrality
           
           // Variables for event plane
-          eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
-          eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
           if(fDoEventPlane){
             
             centralityBin = 0;
@@ -1510,14 +1538,11 @@ void DijetAnalyzer::RunAnalysis(){
               centralityBin = 3;
             }
             
-            eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
             fHistograms->fhQvectorDijet[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
             
-            eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
             fHistograms->fhEventPlaneMultDijet[centralityBin]->Fill(eventPlaneMultiplicity,fTotalEventWeight);
             
-            eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
-            fHistograms->fhQvectorNormDijet[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
+            fHistograms->fhQvectorNormDijet[centralityBin]->Fill(eventPlaneQ/TMath::Sqrt(eventPlaneMultiplicity),fTotalEventWeight);
           }
         }
         
@@ -1668,9 +1693,39 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   // Variables for event plane
   Double_t eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
   Double_t eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
+  Double_t eventPlaneQx = 0;
+  Double_t eventPlaneQy = 0;
+  
   if(fDoEventPlane){
-    eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
-    eventPlaneMultiplicity = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneMultiplicity(8);
+    
+    // Loop over all track in the event
+    Int_t nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+    for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+      
+      // Check that all the track cuts are passed
+      //if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
+      
+      // Get the track information
+      trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+      trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+      trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+      //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+      
+      if(TMath::Abs(trackEta) > 0.75) continue;
+      if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+      if(trackPt > 3) continue;
+      
+      eventPlaneQx += TMath::Cos(2*(trackPhi));
+      eventPlaneQy += TMath::Sin(2*(trackPhi));
+      eventPlaneMultiplicity += 1;
+      
+    }
+    
+    if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
+    eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
+    
+    //eventPlaneQ = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
+    //eventPlaneMultiplicity = fTrackReader[DijetHistograms::kSameEvent]->GetEventPlaneMultiplicity(8);
     eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
   }
   
@@ -1716,22 +1771,24 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
     
     for(Int_t iTrack = 0; iTrack < nTracksAssociated; iTrack++){
       
-      // Do not correlate the track with itself
-      if(iTriggerTrack == iTrack && correlationType == DijetHistograms::kSameEvent) continue;
-      
       // Check that all the track cuts are passed
       if(!PassTrackCuts(iTrack,fHistograms->fhTrackCuts,correlationType)) continue;
       
-      // Get the most important track information to variables
+      // Find the associated particle pT
       trackPt = fTrackReader[correlationType]->GetTrackPt(iTrack);
-      trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);
-      trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
       
       // Read the associated bin
       associatedBin = fCard->GetBin("TrackPtBinEdges",trackPt);
       
       // Only fill the histogram for the tracks with the same bin as the trigger
       if(triggerBin != associatedBin) continue;
+      
+      // Do not correlate the track with itself
+      if(iTriggerTrack == iTrack && correlationType == DijetHistograms::kSameEvent) continue;
+      
+      // Get associated particle phi and eta
+      trackPhi = fTrackReader[correlationType]->GetTrackPhi(iTrack);
+      trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
       
       // Get the efficiency correction
       trackEfficiencyCorrection = GetTrackEfficiencyCorrection(correlationType,iTrack);
@@ -2385,8 +2442,8 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kPtError);
   
   // Cut for track distance from primary vertex
-  if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceZ(iTrack)/fTrackReader[correlationType]->GetTrackVertexDistanceZError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in z-direction
-  if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceXY(iTrack)/fTrackReader[correlationType]->GetTrackVertexDistanceXYError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in xy-direction
+  if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceZ(iTrack) / fTrackReader[correlationType]->GetTrackVertexDistanceZError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in z-direction
+  if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceXY(iTrack) / fTrackReader[correlationType]->GetTrackVertexDistanceXYError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in xy-direction
   if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kVertexDistance);
   
   // Cut for energy deposition in calorimeters for high pT tracks
