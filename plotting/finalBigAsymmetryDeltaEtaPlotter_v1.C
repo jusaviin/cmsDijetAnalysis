@@ -23,6 +23,10 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   const bool drawInclusive = false;
   const bool addPreliminaryTag = false;
+  const bool smallFormat = true;  // Make the plot in a more concise format that is better for presentations
+  const bool sameScale = true;    // Draw leading and subleading histograms with same y-axis scale
+  
+  if(sameScale) deltaEtaZoom[0] = deltaEtaZoom[1];
   
   const bool saveHistogramsForHepData = false;
   
@@ -216,7 +220,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       deltaEtaStack[iCentrality][iAsymmetry] = new stackHist(Form("st_%d",iCentrality));
       //deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5, 1.5, "x"); // Changing the x-axis range
       deltaEtaStack[iCentrality][iAsymmetry]->setRange(0, 1.5, "x");
-      deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5-iJetTrack/3, deltaEtaZoom[iJetTrack/3], "y");  // Linear scale
+      if(sameScale) {deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.8, deltaEtaZoom[iJetTrack/3], "y");}  // Linear scale
+      else {deltaEtaStack[iCentrality][iAsymmetry]->setRange(-1.5-iJetTrack/3, deltaEtaZoom[iJetTrack/3], "y");}  // Linear scale
       //deltaEtaStack[iCentrality][iAsymmetry]->setRange(0.001, deltaEtaZoom[iJetTrack/3], "y");  // Log scale
       for(int iTrackPt = nTrackPtBins-2; iTrackPt >= 0; iTrackPt--){
         deltaEtaStack[iCentrality][iAsymmetry]->addHist((TH1*) deltaEtaArray[iCentrality][iTrackPt][iAsymmetry]);
@@ -265,227 +270,393 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   TH1D *axisDrawer;
   
-  // Draw all the distributions to big canvases
-  auxi_canvas *bigCanvas = new auxi_canvas(Form("theReallyBigCanvas%d",iJetTrack), "", 2500, 2500);
-  bigCanvas->SetMargin(0.08, 0.01, 0.08, 0.2); // Margin order: Left, Right, Bottom, Top
-  bigCanvas->divide(4,5);
-  
   TBox *box = new TBox();
   TLatex *mainTitle = new TLatex();
-  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "All dijets"};
-  
   TLine *line[nAsymmetryBins];
+  
+  TString xjbin[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "All dijets"};
   const char *pbpbLabel = "PbPb";
   const char *ppLabel = "pp";
   
-  for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
+  if(smallFormat){
     
-    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-            
-      if(iAsymmetry == 3 ) bigCanvas->CD(5-iCentrality);
-      else bigCanvas->CD(10+iAsymmetry*5-iCentrality);
-      //gPad->SetLogy();  // Possibility to enable log scale
-      
-      deltaEtaStack[iCentrality][iAsymmetry]->drawStack("","hist",true);
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetNdivisions(505);
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.11);
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(1.2);
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("#frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitle("#||{#Delta#eta}");
-      if(iCentrality == nCentralityBins && iAsymmetry == 2){
-        //most left-bottom conner
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.1);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(1);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.08);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.03);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.08);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelOffset(0.01);
-      }else {
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(0.8);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.15);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.14);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(0.71);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.114);
-        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.0018);
-      }
-      auxi_hist[iCentrality][iAsymmetry]->SetLineColor(kBlack);
-      auxi_hist[iCentrality][iAsymmetry]->SetFillColorAlpha(kWhite, 0);
-      auxi_hist[iCentrality][iAsymmetry]->SetMarkerStyle(24);
-      auxi_hist[iCentrality][iAsymmetry]->SetMarkerColor(kBlack);
-      //auxi_hist[iCentrality][iAsymmetry]->SetMarkerSize(.0);
-      auxi_hist[iCentrality][iAsymmetry]->SetMarkerSize(1.7);
-      
-      deltaEtaStack[iCentrality][iAsymmetry]->hst->Draw();
-      auxi_hist[iCentrality][iAsymmetry]->Draw("same");
-      
-      sumUncertainty[iCentrality][iAsymmetry]->Draw("same e2");
-      
-      if(iCentrality == nCentralityBins){
-        mainTitle->SetTextFont(22);
-        if( iAsymmetry == 2)
-          mainTitle->SetTextSize(0.08);
-        else
-          mainTitle->SetTextSize(0.11);
-        //mainTitle->DrawLatex(-1.15,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
-        //mainTitle->DrawLatex(-0.5,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]); // Change x-axis range
-        mainTitle->DrawLatex(0.1,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
-        mainTitle->DrawLatex(0.6,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]); // Change x-axis range
-      }
-      else {
-        mainTitle->SetTextFont(22);
-        mainTitle->SetTextSize(0.11);
-        //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel); // Change x-axis range
-        //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]); // Change x-axis range
-        mainTitle->DrawLatex(0.4, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel); // Change x-axis range
-        mainTitle->DrawLatex(0.4, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]); // Change x-axis range
-      }
-    } // Centrality loop
-  } // Asymmetry loop for drawing distributions to the really big canvas
-  
-  TLegend* ptLegend1 = new TLegend(0.04, 0.82, 0.27, 0.89);
-  TLegend* ptLegend2 = new TLegend(0.28, 0.82, 0.51, 0.89);
-  TLegend* ptLegend3 = new TLegend(0.53 ,0.82, 0.76, 0.89);
-  TLegend* ptLegend4 = new TLegend(0.77, 0.855, 1.00,0.89);
-  ptLegend1->SetTextSize(0.02);
-  ptLegend1->SetLineColor(kWhite);
-  ptLegend1->SetFillColor(kWhite);
-  ptLegend2->SetTextSize(0.02);
-  ptLegend2->SetLineColor(kWhite);
-  ptLegend2->SetFillColor(kWhite);
-  ptLegend3->SetTextSize(0.02);
-  ptLegend3->SetLineColor(kWhite);
-  ptLegend3->SetFillColor(kWhite);
-  ptLegend4->SetTextSize(0.02);
-  ptLegend4->SetLineColor(kWhite);
-  ptLegend4->SetFillColor(kWhite);
-  
-  TLegend* lt4 = new TLegend(0.25, 0.85, 0.85, 0.95);
-  lt4->SetTextSize(0.06);
-  lt4->SetLineColor(kWhite);
-  lt4->SetFillColor(kWhite);
-  
-  ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(5), "0.7 < p_{T}^{ch}< 1 GeV","f");
-  ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(4), "1 < p_{T}^{ch}< 2 GeV","f");
-  
-  ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(3), "2 < p_{T}^{ch}< 3 GeV","f");
-  ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(2), "3 < p_{T}^{ch}< 4 GeV","f");
-  
-  ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(1), "4 < p_{T}^{ch}< 8 GeV","f");
-  ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(0), "8 < p_{T}^{ch}< 12 GeV","f");
-  
-  //ptLegend4->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
-  ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{ch}< 12 GeV","lpfe");
+    auxi_canvas *bigCanvas = new auxi_canvas(Form("theBigCanvas%d",iJetTrack), "", 800, 1100);
+    bigCanvas->SetMargin(0.16, 0.02, 0.08, 0.11); // Margin order: Left, Right, Bottom, Top
+    bigCanvas->divide(3,2);
     
-  double cmsPositionX = 0.01;  // 0.13
-  double cmsPositionY = 0.925;  // 0.97
-  double jetShapeTitlePosition[] = {0.17,0.148,0.17};
-  double xjPosition[] = {0.76,0.77,0.76};
-  double systemPosition = 0.52;  // 0.26
-  double selectionPosition = 0.465; // 0.205
-  double cmsSize = 0.04;
-  
-  if(addPreliminaryTag){
-    cmsPositionX = 0.07;
-  }
-  
-  // Draw the labels for different xj bins
-  /*
-   bigCanvas->CD(6);
-   mainTitle->SetTextFont(42);
-   mainTitle->SetTextSize(0.13);
-   mainTitle->DrawLatexNDC(0.08,0.44,"0.0 < x_{j} < 0.6");
-   
-   bigCanvas->CD(16);
-   mainTitle->DrawLatexNDC(0.08,0.44,"0.6 < x_{j} < 0.8");
-   
-   bigCanvas->CD(26);
-   mainTitle->SetTextSize(0.12);
-   mainTitle->DrawLatexNDC(0.09,0.55,"0.8 < x_{j} < 1.0");
-   */
-  
-  bigCanvas->cd(0);
-  
-  ptLegend1->Draw();
-  ptLegend2->Draw();
-  ptLegend3->Draw();
-  ptLegend4->Draw();
-  
-  mainTitle->SetTextFont(62);
-  mainTitle->SetTextSize(cmsSize);
-  mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
-  
-  if(addPreliminaryTag){
-    mainTitle->SetTextFont(42);
-    mainTitle->SetTextSize(0.035);
-    mainTitle->DrawLatexNDC(0.03, 0.935, "Preliminary");
-  }
-  
-  mainTitle->SetTextFont(42);
-  mainTitle->SetTextSize(0.035);
-  //mainTitle->DrawLatexNDC(0.24, 0.97, deltaEtaTitle[iJetTrack/3]);
-  mainTitle->DrawLatexNDC(0.11, 0.95, "Particle yields associated");
-  mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.91, deltaEtaTitle[iJetTrack/3]);
-  
-  //mainTitle->SetTextFont(42);
-  //mainTitle->SetTextSize(0.035);
-  //mainTitle->DrawLatexNDC(xjPosition[iJetTrack/3], 0.94, xjString[iAsymmetry]);
-  
-  mainTitle->SetTextSize(0.025);
-  mainTitle->DrawLatexNDC(systemPosition, 0.945, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
-  mainTitle->SetTextSize(0.019);
-  mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
-  //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
-  //
-  
-  box = new TBox();
-  box->SetFillColor(kWhite);
-  bigCanvas->cd(0);
-  box->DrawBox(0.245,0.04, 0.27, 0.07);
-  mainTitle->SetTextSize(0.021);
-  
-  double yHeight = 0.0555;
-  mainTitle->DrawLatex(0.256, yHeight, "0");
-  box->DrawBox(0.42,0.04, 0.46, 0.07);
-  box->DrawBox(0.605,0.04, 0.64, 0.07);
-  box->DrawBox(0.78,0.04, 0.82, 0.07);
-  box->DrawBox(0.98,0.04, 0.99, 0.07);
-  
-  //box->DrawBox(0.23,0.3067, 0.243, 0.315);
-  //box->DrawBox(0.23,0.5735, 0.243, 0.58);
-  
-  mainTitle->DrawLatex(0.437, yHeight, "0");
-  mainTitle->DrawLatex(0.62, yHeight, "0");
-  mainTitle->DrawLatex(0.803, yHeight, "0");
-  mainTitle->DrawLatex(0.972, yHeight, "1.5");
-  
-  //bigCanvas->SaveAs("js_dr_normal_new.eps");
-  bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_finalStyleUpdates.pdf", deltaEtaSaveName[iJetTrack/3]));
-  //bigCanvas->SaveAs("deltaEta_normal_v3.png");
-  //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
-  
-  // Save the histograms to a file for HepData submission
-  if(saveHistogramsForHepData){
-    TString outputFileName = "hepdata/hepdata_deltaEta_hin-19-013.root";
-    TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
-    TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
-    TString asymmetryString[] = {"0<xj<06","06<xj<08","08<xj<1","allXj"};
+    int centralityIndices[] = {4,0};
+    int asymmetryIndices[] = {3,0,2};
     
-    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    TString overwriter[] = {"Leading jets", "Subleading jets"};
+    xjbin[3] = overwriter[iJetTrack/3];
+    
+    TLegend *smallPtLegend;
+    TLegend *smallPtLegend2;
+    TLegend *smallPtLegend3;
+    TLegend *smallPtLegend4;
+    TLegend *smallPtLegend5;
+    
+    for(int iAsymmetry = 0; iAsymmetry < 3; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < 2; iCentrality++){
         
-        sumHistogramPbPb[iCentrality][iAsymmetry]->Write(Form("deltaEta_track%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);;
-        sumUncertainty[iCentrality][iAsymmetry]->Write(Form("deltaEtaError_track%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+        sumUncertainty[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->SetMarkerColor(kBlack);
+        
+        bigCanvas->CD(iCentrality+2*iAsymmetry+1);
+        
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->drawStack("","hist",true);
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetNdivisions(505);
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetLabelSize(0.11);
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetTitleOffset(1.08);
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetTitleSize(0.1);
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetTitle("#frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetTitle("#||{#Delta#eta}");
+        if(iCentrality == 0 && iAsymmetry == 2){
+          // left-bottom corner
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetTitleSize(0.1);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetTitleOffset(1);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetLabelSize(0.08);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetLabelOffset(0.02);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetLabelSize(0.08);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetLabelOffset(0.01);
+        }else {
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetTitleOffset(0.82);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetYaxis()->SetTitleSize(0.13);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetTitleSize(0.113);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetTitleOffset(0.9);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetLabelSize(0.088);
+          deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->GetXaxis()->SetLabelOffset(0.014);
+        }
+        auxi_hist[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->SetLineColor(kBlack);
+        auxi_hist[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->SetFillColorAlpha(kWhite, 0);
+        auxi_hist[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->SetMarkerStyle(24);
+        auxi_hist[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->SetMarkerColor(kBlack);
+        //auxi_hist[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->SetMarkerSize(.0);
+        //auxi_hist[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->SetMarkerSize(1.7);
+        
+        deltaEtaStack[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->hst->Draw();
+        auxi_hist[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->Draw("same");
+        
+        sumUncertainty[centralityIndices[iCentrality]][asymmetryIndices[iAsymmetry]]->Draw("same e2");
+        
+        if(iCentrality == 0){
+          mainTitle->SetTextFont(22);
+          if( iAsymmetry == 2)
+            mainTitle->SetTextSize(0.086);
+          else
+            mainTitle->SetTextSize(0.11);
+          //mainTitle->DrawLatex(-1.15,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
+          //mainTitle->DrawLatex(-0.5,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]); // Change x-axis range
+          mainTitle->DrawLatex(0.1,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
+          mainTitle->DrawLatex(0.4,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[asymmetryIndices[iAsymmetry]]); // Change x-axis range
+        }
+        else {
+          mainTitle->SetTextFont(22);
+          if(iAsymmetry == 2)
+            mainTitle->SetTextSize(0.1);
+          else
+            mainTitle->SetTextSize(0.11);
+          //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel); // Change x-axis range
+          //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]); // Change x-axis range
+          mainTitle->DrawLatex(0.4, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, pbpbLabel); // Change x-axis range
+          mainTitle->DrawLatex(0.8, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, cent_lab[centralityIndices[iCentrality]]); // Change x-axis range
+        }
+        
+        if(iCentrality+2*iAsymmetry+1 == 1){
+          //smallPtLegend = new TLegend(0.5,0.39,0.95,0.77);
+          smallPtLegend = new TLegend(0.48,0.27,0.93,0.77);
+          smallPtLegend->SetTextSize(0.08);
+          smallPtLegend->SetFillStyle(0);
+          smallPtLegend->SetBorderSize(0);
+          smallPtLegend->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(5), "0.7 < p_{T}^{ch}< 1 GeV","f");
+          smallPtLegend->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(4), "1 < p_{T}^{ch}< 2 GeV","f");
+          smallPtLegend->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(3), "2 < p_{T}^{ch}< 3 GeV","f");
+          smallPtLegend->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(2), "3 < p_{T}^{ch}< 4 GeV","f");
+          smallPtLegend->Draw();
+        } else if(iCentrality+2*iAsymmetry+1 == 3){
+          //smallPtLegend2 = new TLegend(0.5,0.39,0.95,0.77);
+          smallPtLegend2 = new TLegend(0.48,0.39,0.93,0.77);
+          smallPtLegend2->SetTextSize(0.08);
+          smallPtLegend2->SetFillStyle(0);
+          smallPtLegend2->SetBorderSize(0);
+          //smallPtLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(2), "3 < p_{T}^{ch}< 4 GeV","f");
+          smallPtLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(1), "4 < p_{T}^{ch}< 8 GeV","f");
+          smallPtLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(0), "8 < p_{T}^{ch}< 12 GeV","f");
+          smallPtLegend2->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{ch}< 12 GeV","lpfe");
+          smallPtLegend2->Draw();
+        } /*else if(iCentrality+2*iAsymmetry+1 == 5){
+          smallPtLegend5 = new TLegend(0.46,0.72,0.95,0.82);
+          smallPtLegend5->SetTextSize(0.065);
+          smallPtLegend5->SetFillStyle(0);
+          smallPtLegend5->SetBorderSize(0);
+          smallPtLegend5->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{ch}< 12 GeV","lpfe");
+          smallPtLegend5->Draw();
+        }*/ else if(iCentrality+2*iAsymmetry+1 == 2){
+          smallPtLegend3 = new TLegend(0.2,0.39,0.95,0.77);
+          smallPtLegend3->SetTextSize(0.08);
+          smallPtLegend3->SetFillStyle(0);
+          smallPtLegend3->SetBorderSize(0);
+          smallPtLegend3->AddEntry((TObject*)0, "Anti-k_{T} jets, R=0.4","");
+          smallPtLegend3->AddEntry((TObject*)0, "p_{T}^{lead} > 120 GeV","");
+          smallPtLegend3->AddEntry((TObject*)0, "p_{T}^{sub} > 50 GeV","");
+          smallPtLegend3->Draw();
+        } else if(iCentrality+2*iAsymmetry+1 == 4){
+          smallPtLegend4 = new TLegend(0.2,0.48,0.95,0.77);
+          smallPtLegend4->SetTextSize(0.08);
+          smallPtLegend4->SetFillStyle(0);
+          smallPtLegend4->SetBorderSize(0);
+          smallPtLegend4->AddEntry((TObject*)0, "|#eta_{jet}| < 1.6","");
+          smallPtLegend4->AddEntry((TObject*)0, "#Delta#varphi > #frac{5#pi}{6}","");
+          smallPtLegend4->Draw();
+        }
+        
       } // Centrality loop
-      
-      // No centrality binning for pp
-      
-      sumHistogramPp[iAsymmetry]->Write(Form("deltaEta_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
-      sumUncertainty[nCentralityBins][iAsymmetry]->Write(Form("deltaEtaError_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
-      
     } // Asymmetry loop
     
-    outputFile->Close();
+    // Legends and stuff
+    bigCanvas->cd(0);
+    mainTitle->SetTextFont(62);
+    mainTitle->SetTextSize(0.06);
+    mainTitle->DrawLatexNDC(0.085, 0.94, "CMS");
+    
+    mainTitle->SetTextFont(52);
+    mainTitle->SetTextSize(0.055);
+    mainTitle->DrawLatexNDC(0.235, 0.941, "Supplementary");
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.04);
+    mainTitle->DrawLatexNDC(0.615, 0.942, "CMS-PAS-HIN-19-013");
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.04);
+    mainTitle->DrawLatexNDC(0.16, 0.9, "PbPb 1.7 nb^{-1} (5.02 TeV)  pp 320 pb^{-1} (5.02 TeV)");
+    
+    box = new TBox();
+    box->SetFillColor(kWhite);
+    box->DrawBox(0.55,0.04, 0.6, 0.075);
+    box->DrawBox(0.95,0.04, 0.99, 0.075);
+    
+    mainTitle->SetTextSize(0.038);
+    mainTitle->DrawLatex(0.562, 0.0511, "0");
+    mainTitle->DrawLatex(0.95, 0.0511, "1.5");
+    
+    bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_smallCanvas_subleadingScale_presentation.pdf", deltaEtaSaveName[iJetTrack/3]));
+    
+  } else {
+    
+    // Draw all the distributions to big canvases
+    auxi_canvas *bigCanvas = new auxi_canvas(Form("theReallyBigCanvas%d",iJetTrack), "", 2500, 2500);
+    bigCanvas->SetMargin(0.08, 0.01, 0.08, 0.2); // Margin order: Left, Right, Bottom, Top
+    bigCanvas->divide(4,5);
+    
+    for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
+      
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+        
+        if(iAsymmetry == 3 ) bigCanvas->CD(5-iCentrality);
+        else bigCanvas->CD(10+iAsymmetry*5-iCentrality);
+        //gPad->SetLogy();  // Possibility to enable log scale
+        
+        deltaEtaStack[iCentrality][iAsymmetry]->drawStack("","hist",true);
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetNdivisions(505);
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.11);
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(1.2);
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.1);
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitle("#frac{1}{N_{dijet}} #frac{dN}{d#Delta#eta}");
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitle("#||{#Delta#eta}");
+        if(iCentrality == nCentralityBins && iAsymmetry == 2){
+          //most left-bottom conner
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.1);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(1);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.08);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.03);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelSize(0.08);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetLabelOffset(0.01);
+        }else {
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleOffset(0.8);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetYaxis()->SetTitleSize(0.15);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleSize(0.14);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetTitleOffset(0.71);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelSize(0.114);
+          deltaEtaStack[iCentrality][iAsymmetry]->hst->GetXaxis()->SetLabelOffset(0.0018);
+        }
+        auxi_hist[iCentrality][iAsymmetry]->SetLineColor(kBlack);
+        auxi_hist[iCentrality][iAsymmetry]->SetFillColorAlpha(kWhite, 0);
+        auxi_hist[iCentrality][iAsymmetry]->SetMarkerStyle(24);
+        auxi_hist[iCentrality][iAsymmetry]->SetMarkerColor(kBlack);
+        //auxi_hist[iCentrality][iAsymmetry]->SetMarkerSize(.0);
+        auxi_hist[iCentrality][iAsymmetry]->SetMarkerSize(1.7);
+        
+        deltaEtaStack[iCentrality][iAsymmetry]->hst->Draw();
+        auxi_hist[iCentrality][iAsymmetry]->Draw("same");
+        
+        sumUncertainty[iCentrality][iAsymmetry]->Draw("same e2");
+        
+        if(iCentrality == nCentralityBins){
+          mainTitle->SetTextFont(22);
+          if( iAsymmetry == 2)
+            mainTitle->SetTextSize(0.08);
+          else
+            mainTitle->SetTextSize(0.11);
+          //mainTitle->DrawLatex(-1.15,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
+          //mainTitle->DrawLatex(-0.5,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]); // Change x-axis range
+          mainTitle->DrawLatex(0.1,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, ppLabel);  // Change x-axis range
+          mainTitle->DrawLatex(0.6,deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/7.4, xjbin[iAsymmetry]); // Change x-axis range
+        }
+        else {
+          mainTitle->SetTextFont(22);
+          mainTitle->SetTextSize(0.11);
+          //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel); // Change x-axis range
+          //mainTitle->DrawLatex(-1.3, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]); // Change x-axis range
+          mainTitle->DrawLatex(0.4, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/11.7, pbpbLabel); // Change x-axis range
+          mainTitle->DrawLatex(0.4, deltaEtaZoom[iJetTrack/3]-deltaEtaZoom[iJetTrack/3]/5, cent_lab[iCentrality]); // Change x-axis range
+        }
+      } // Centrality loop
+    } // Asymmetry loop for drawing distributions to the really big canvas
+    
+    TLegend* ptLegend1 = new TLegend(0.04, 0.82, 0.27, 0.89);
+    TLegend* ptLegend2 = new TLegend(0.28, 0.82, 0.51, 0.89);
+    TLegend* ptLegend3 = new TLegend(0.53 ,0.82, 0.76, 0.89);
+    TLegend* ptLegend4 = new TLegend(0.77, 0.855, 1.00,0.89);
+    ptLegend1->SetTextSize(0.02);
+    ptLegend1->SetLineColor(kWhite);
+    ptLegend1->SetFillColor(kWhite);
+    ptLegend2->SetTextSize(0.02);
+    ptLegend2->SetLineColor(kWhite);
+    ptLegend2->SetFillColor(kWhite);
+    ptLegend3->SetTextSize(0.02);
+    ptLegend3->SetLineColor(kWhite);
+    ptLegend3->SetFillColor(kWhite);
+    ptLegend4->SetTextSize(0.02);
+    ptLegend4->SetLineColor(kWhite);
+    ptLegend4->SetFillColor(kWhite);
+    
+    TLegend* lt4 = new TLegend(0.25, 0.85, 0.85, 0.95);
+    lt4->SetTextSize(0.06);
+    lt4->SetLineColor(kWhite);
+    lt4->SetFillColor(kWhite);
+    
+    ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(5), "0.7 < p_{T}^{ch}< 1 GeV","f");
+    ptLegend1->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(4), "1 < p_{T}^{ch}< 2 GeV","f");
+    
+    ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(3), "2 < p_{T}^{ch}< 3 GeV","f");
+    ptLegend2->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(2), "3 < p_{T}^{ch}< 4 GeV","f");
+    
+    ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(1), "4 < p_{T}^{ch}< 8 GeV","f");
+    ptLegend3->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(0), "8 < p_{T}^{ch}< 12 GeV","f");
+    
+    //ptLegend4->AddEntry(deltaEtaStack[4][0]->hist_trunk.at(6), "12 < p_{T}^{trk}< 300 GeV","f");
+    ptLegend4->AddEntry(sumUncertainty[4][0], "0.7 < p_{T}^{ch}< 12 GeV","lpfe");
+    
+    double cmsPositionX = 0.01;  // 0.13
+    double cmsPositionY = 0.925;  // 0.97
+    double jetShapeTitlePosition[] = {0.17,0.148,0.17};
+    double xjPosition[] = {0.76,0.77,0.76};
+    double systemPosition = 0.52;  // 0.26
+    double selectionPosition = 0.465; // 0.205
+    double cmsSize = 0.04;
+    
+    if(addPreliminaryTag){
+      cmsPositionX = 0.07;
+    }
+    
+    // Draw the labels for different xj bins
+    /*
+     bigCanvas->CD(6);
+     mainTitle->SetTextFont(42);
+     mainTitle->SetTextSize(0.13);
+     mainTitle->DrawLatexNDC(0.08,0.44,"0.0 < x_{j} < 0.6");
+     
+     bigCanvas->CD(16);
+     mainTitle->DrawLatexNDC(0.08,0.44,"0.6 < x_{j} < 0.8");
+     
+     bigCanvas->CD(26);
+     mainTitle->SetTextSize(0.12);
+     mainTitle->DrawLatexNDC(0.09,0.55,"0.8 < x_{j} < 1.0");
+     */
+    
+    bigCanvas->cd(0);
+    
+    ptLegend1->Draw();
+    ptLegend2->Draw();
+    ptLegend3->Draw();
+    ptLegend4->Draw();
+    
+    mainTitle->SetTextFont(62);
+    mainTitle->SetTextSize(cmsSize);
+    mainTitle->DrawLatexNDC(cmsPositionX, cmsPositionY, "CMS");
+    
+    if(addPreliminaryTag){
+      mainTitle->SetTextFont(42);
+      mainTitle->SetTextSize(0.035);
+      mainTitle->DrawLatexNDC(0.03, 0.935, "Preliminary");
+    }
+    
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.035);
+    //mainTitle->DrawLatexNDC(0.24, 0.97, deltaEtaTitle[iJetTrack/3]);
+    mainTitle->DrawLatexNDC(0.11, 0.95, "Particle yields associated");
+    mainTitle->DrawLatexNDC(jetShapeTitlePosition[iJetTrack/3], 0.91, deltaEtaTitle[iJetTrack/3]);
+    
+    //mainTitle->SetTextFont(42);
+    //mainTitle->SetTextSize(0.035);
+    //mainTitle->DrawLatexNDC(xjPosition[iJetTrack/3], 0.94, xjString[iAsymmetry]);
+    
+    mainTitle->SetTextSize(0.025);
+    mainTitle->DrawLatexNDC(systemPosition, 0.945, "5.02 TeV   pp 320 pb^{-1}   PbPb 1.7 nb^{-1}");
+    mainTitle->SetTextSize(0.019);
+    mainTitle->DrawLatexNDC(selectionPosition, 0.915, "anti-k_{T} R = 0.4, |#eta_{jet}| < 1.6, p_{T,1} > 120 GeV, p_{T,2} > 50 GeV, #Delta#varphi_{1,2} > #frac{5#pi}{6}");
+    //  lb->drawText("(p_{T}> 120 GeV, |#eta_{jet}|<1.6)", 0.2, 0.25, 4);
+    //
+    
+    box = new TBox();
+    box->SetFillColor(kWhite);
+    bigCanvas->cd(0);
+    box->DrawBox(0.245,0.04, 0.27, 0.07);
+    mainTitle->SetTextSize(0.021);
+    
+    double yHeight = 0.0555;
+    mainTitle->DrawLatex(0.256, yHeight, "0");
+    box->DrawBox(0.42,0.04, 0.46, 0.07);
+    box->DrawBox(0.605,0.04, 0.64, 0.07);
+    box->DrawBox(0.78,0.04, 0.82, 0.07);
+    box->DrawBox(0.98,0.04, 0.99, 0.07);
+    
+    //box->DrawBox(0.23,0.3067, 0.243, 0.315);
+    //box->DrawBox(0.23,0.5735, 0.243, 0.58);
+    
+    mainTitle->DrawLatex(0.437, yHeight, "0");
+    mainTitle->DrawLatex(0.62, yHeight, "0");
+    mainTitle->DrawLatex(0.803, yHeight, "0");
+    mainTitle->DrawLatex(0.972, yHeight, "1.5");
+    
+    //bigCanvas->SaveAs("js_dr_normal_new.eps");
+    bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_finalStyleUpdates.pdf", deltaEtaSaveName[iJetTrack/3]));
+    //bigCanvas->SaveAs("deltaEta_normal_v3.png");
+    //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
+    
+    // Save the histograms to a file for HepData submission
+    if(saveHistogramsForHepData){
+      TString outputFileName = "hepdata/hepdata_deltaEta_hin-19-013.root";
+      TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
+      TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
+      TString asymmetryString[] = {"0<xj<06","06<xj<08","08<xj<1","allXj"};
+      
+      for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+        for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          
+          sumHistogramPbPb[iCentrality][iAsymmetry]->Write(Form("deltaEta_track%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);;
+          sumUncertainty[iCentrality][iAsymmetry]->Write(Form("deltaEtaError_track%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+        } // Centrality loop
+        
+        // No centrality binning for pp
+        
+        sumHistogramPp[iAsymmetry]->Write(Form("deltaEta_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+        sumUncertainty[nCentralityBins][iAsymmetry]->Write(Form("deltaEtaError_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+        
+      } // Asymmetry loop
+      
+      outputFile->Close();
+    }
   }
   
 }
