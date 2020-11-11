@@ -43,6 +43,9 @@ public:
   void AddHistogramToDraw(DijetHistogramManager *additionalHistogram);
   void AddLegendComment(TString comment);
   
+  // Setter for event information
+  void SetDrawEventInformation(const bool drawOrNot); // Setter for drawing event information histograms
+  
   // Setter for dijets
   void SetDrawDijetHistograms(const bool drawOrNot);  // Setter for drawing dijet histograms
   
@@ -153,6 +156,7 @@ private:
   // ======== Flags for histograms to draw ========
   // ==============================================
   
+  bool fDrawEventInformation;                                                     // Draw the event information histograms
   bool fDrawDijets;                                                               // Draw the dijet histograms
   bool fDrawSingleJets[DijetHistogramManager::knSingleJetCategories];             // Draw the single jet histograms
   bool fDrawTracks[DijetHistogramManager::knTrackCategories];                     // Draw the track histograms
@@ -221,6 +225,7 @@ private:
   void BinSanityCheck(const int nBins, int first, int last);  // Sanity check for binning
   
   // Methods for drawing
+  void DrawEventInformation();    // Draw event information histograms
   void DrawDijetHistograms();     // Draw dijet histograms
   void DrawSingleJetHistograms(); // Draw single jet histograms
   void DrawTrackHistograms();     // Draw track histograms

@@ -17,6 +17,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fBaseHistograms(fBaseHistograms),
   fnAddedHistograms(0),
   fMainHistogram(0),
+  fDrawEventInformation(false),
   fDrawDijets(false),
   fSingleJetHistogramDrawn(false),
   fTrackHistogramDrawn(false),
@@ -127,6 +128,9 @@ void DijetComparingDrawer::AddLegendComment(TString comment){
  */
 void DijetComparingDrawer::DrawHistograms(){
   
+  // Draw the event information histograms
+  DrawEventInformation();
+  
   // Draw dijet histograms
   DrawDijetHistograms();
   
@@ -146,6 +150,67 @@ void DijetComparingDrawer::DrawHistograms(){
   // Draw the event mixing check
   DrawEventMixingCheck();
   
+}
+
+/*
+ * Draw event information histograms
+ *
+ *  For dijet asymmetry comparison, two files are required. The first file must have the dijet asymmetry for pp
+ *  and the second file the dijet asymmetries in different centrality bins for PbPb.
+ */
+void DijetComparingDrawer::DrawEventInformation(){
+  
+  if(!fDrawEventInformation) return;
+  
+  // Legend helper variable
+  TLegend *legend;
+  
+  // Namer helper
+  //char namerX[100];
+  
+  // === Centrality ===
+  
+  // Scale the histograms to the counts
+  FindScalingFactors("centrality",-1,-1,-1);
+  
+  // Prepare the jet pT histograms and ratio to be drawn
+  PrepareRatio("centrality", 1);
+  
+  // Draw the centrality histograms to the upper pad
+  DrawToUpperPad("Centrality percentile", "Counts");
+  
+  // Add a legend to the plot
+  legend = new TLegend(0.6,0.5,0.9,0.85);
+  SetupLegend(legend, "All events");
+  legend->Draw();
+  
+  // Draw the ratios to the lower portion of the split canvas
+  DrawToLowerPad("Centrality percentile","Ratio",fRatioZoomMin,fRatioZoomMax);
+  
+  // Save the figure to a file
+  SaveFigure("centralityInAllEvents");
+  
+  // === Centrality in dijet events ===
+  
+  // Scale the histograms to the counts
+  FindScalingFactors("centralityDijet",-1,-1,-1);
+  
+  // Prepare the jet pT histograms and ratio to be drawn
+  PrepareRatio("centralityDijet", 1);
+  
+  // Draw the centrality histograms to the upper pad
+  DrawToUpperPad("Centrality percentile", "Counts");
+  
+  // Add a legend to the plot
+  legend = new TLegend(0.6,0.5,0.9,0.85);
+  SetupLegend(legend, "Dijet events");
+  legend->Draw();
+  
+  // Draw the ratios to the lower portion of the split canvas
+  DrawToLowerPad("Centrality percentile","Ratio",fRatioZoomMin,fRatioZoomMax);
+  
+  // Save the figure to a file
+  SaveFigure("centralityInDijetEvents");
 }
 
 /*
@@ -1657,6 +1722,11 @@ void DijetComparingDrawer::SetHistogramStyle(TH1 *histogram, double rangeX, cons
   histogram->GetXaxis()->SetTitle(xTitle);
   histogram->SetLabelSize(0.09,"xy");
   histogram->SetTitleSize(0.09,"x");
+}
+
+// Setter for drawing event information histograms
+void DijetComparingDrawer::SetDrawEventInformation(const bool drawOrNot){
+  fDrawEventInformation = drawOrNot;
 }
 
 // Setter for drawing dijet histograms
