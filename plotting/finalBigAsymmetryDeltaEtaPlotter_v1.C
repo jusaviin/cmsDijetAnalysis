@@ -23,8 +23,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   const bool drawInclusive = false;
   const bool addPreliminaryTag = false;
-  const bool smallFormat = true;  // Make the plot in a more concise format that is better for presentations
-  const bool sameScale = true;    // Draw leading and subleading histograms with same y-axis scale
+  const bool smallFormat = false;  // Make the plot in a more concise format that is better for presentations
+  const bool sameScale = false;    // Draw leading and subleading histograms with same y-axis scale
   
   if(sameScale) deltaEtaZoom[0] = deltaEtaZoom[1];
   
@@ -420,7 +420,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     mainTitle->SetTextFont(52);
     mainTitle->SetTextSize(0.055);
-    mainTitle->DrawLatexNDC(0.235, 0.941, "Supplementary");
+    mainTitle->DrawLatexNDC(0.235, 0.941, "Preliminary");
+    //mainTitle->DrawLatexNDC(0.235, 0.941, "Supplementary");
     
     mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.04);
@@ -630,7 +631,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     mainTitle->DrawLatex(0.972, yHeight, "1.5");
     
     //bigCanvas->SaveAs("js_dr_normal_new.eps");
-    bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_finalStyleUpdates.pdf", deltaEtaSaveName[iJetTrack/3]));
+    bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_bigCanvas_finalStyleUpdates2.pdf", deltaEtaSaveName[iJetTrack/3]));
     //bigCanvas->SaveAs("deltaEta_normal_v3.png");
     //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
     
@@ -671,7 +672,9 @@ void finalBigAsymmetryDeltaEtaPlotter_v1(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root");
+  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root");
+  // data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root  <-- Fixed JEC bug
+  // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root <-- Bug in JEC file
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-01-31.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_averagePeakMixing_wtaAxis_allCorrections_processed_2019-08-13.root

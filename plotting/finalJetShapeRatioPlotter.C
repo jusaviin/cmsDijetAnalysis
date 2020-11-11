@@ -541,7 +541,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   //bigCanvas->SaveAs("js_dr_normal_new.eps");
   //bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetryThirdJetComparison_%s.pdf",jetShapeSaveName[iJetTrack/3]));
-  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_finalStyleUpdates.pdf",jetShapeSaveName[iJetTrack/3]));
+  bigCanvas->SaveAs(Form("figures/finalJetShapeAsymmetry_%s_finalStyleUpdates2.pdf",jetShapeSaveName[iJetTrack/3]));
   //bigCanvas->SaveAs("js_dr_normal_v3.eps");
   //bigCanvas->SaveAs("js_dr_normal_v3.pdf");
   
@@ -575,8 +575,9 @@ void finalJetShapeRatioPlotter(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root"), NULL, NULL, NULL, NULL};
-  // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root
+  TFile *ppFile[5] = { TFile::Open("data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root"), NULL, NULL, NULL, NULL};
+  // data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root <-- Fixed pp JEC
+  // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root <-- Bug in pp JEC
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_finalTrackCorr_JECv4_eschemeAxis_seagullAndJff_processed_2019-10-02.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_xjBins_finalTrackCorr_JECv4_wtaAxis_allCorrections_processed_2019-09-28.root

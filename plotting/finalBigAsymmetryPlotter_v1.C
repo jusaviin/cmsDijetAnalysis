@@ -26,7 +26,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const bool drawExtraRatio = false;           // Draw illustration of third jet effects to the ratio
   const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
   
-  const bool smallFormat = true;  // Make the plot in a more concise format that is better for presentations
+  const bool smallFormat = false;  // Make the plot in a more concise format that is better for presentations
   
   const bool addPreliminaryTag = false;
   
@@ -411,7 +411,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     mainTitle->SetTextFont(52);
     mainTitle->SetTextSize(0.055);
-    mainTitle->DrawLatexNDC(0.235, 0.941, "Supplementary");
+    mainTitle->DrawLatexNDC(0.235, 0.941, "Preliminary");
+    //mainTitle->DrawLatexNDC(0.235, 0.941, "Supplementary");
     
     mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.04);
@@ -661,7 +662,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     mainTitle->DrawLatex(0.801, yHeight, "0");
     mainTitle->DrawLatex(0.982, yHeight, "1");
     
-    bigCanvas->SaveAs(Form("figures/final%s_%s_finalStyleUpdates.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+    bigCanvas->SaveAs(Form("figures/final%s_%s_finalStyleUpdates2.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
     
   }
   
@@ -800,7 +801,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     mainTitle->SetTextFont(52);
     mainTitle->SetTextSize(0.055);
-    mainTitle->DrawLatexNDC(0.235, 0.926, "Supplementary");
+    mainTitle->DrawLatexNDC(0.235, 0.926, "Preliminary");
+    //mainTitle->DrawLatexNDC(0.235, 0.926, "Supplementary");
     
     mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.04);
@@ -1020,7 +1022,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       extraLegend->Draw();
     } // Drawing extra ratio for illustration
     
-    ratioCanvas->SaveAs(Form("figures/final%s_%s_ratio_finalStyleUpdates.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
+    ratioCanvas->SaveAs(Form("figures/final%s_%s_ratio_finalStyleUpdates2.pdf", saveString, jetShapeSaveName[iJetTrack/3]));
     
   }
   
@@ -1115,8 +1117,9 @@ void finalBigAsymmetryPlotter_v1(){
   // ==================================================================
   
   // Open data files for pp and PbPb data
-  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root");
+  TFile *ppFile = TFile::Open("data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root");
   // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04.root <--- Nominal result file
+  // data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root <--- Fixed JEC
   TFile *pbpbFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root");
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_finalTuning_onlyJetShapes_processed_2020-02-17.root <-- File with manual fluctuation reduction
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_onlyJetShapa_manualTuning_wtaAxis_processed_2020-02-04.root
