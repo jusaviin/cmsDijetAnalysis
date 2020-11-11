@@ -480,7 +480,9 @@ void qaPlotter(){
   // data/dijetPbPb2018_akFlowPuCs4PFJets_5eveMix_calo100Trigger_JECv6_finalTrack_wtaAxis_allCorrectionsWithCentralityShift_processed_2019-10-18_QA.root
   // PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncOrInc_improvisedMixingFromSubeNon0AtLowPt_wtaAxis_JECv6_noSymmetrySpilloverLooserCutUntil8_processed_2019-09-26_QA.root
 
-  TFile *seagullPpFile = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04_QA.root");
+  TFile *seagullPpFile = TFile::Open("data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_allCorrections_processed_2020-11-04_QA.root");
+  // data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_allCorrections_processed_2020-11-04_QA.root
+  // data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-02-04_QA.root
   // data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_processed_2019-09-28_QA.root
   // data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-09-28_QA.root
   // data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_testSeagull_allCorrections_processed_2019-09-28_QA.root

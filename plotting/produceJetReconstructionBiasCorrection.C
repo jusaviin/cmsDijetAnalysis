@@ -9,12 +9,12 @@
 void produceJetReconstructionBiasCorrection(){
 
   // Name for the output file
-  const char *outputFileName = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_cutBin5_recoAndGenTest.txt";
+  const char *outputFileName = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_correctedJetHadron_sameEventDihadron_caloJet_2020-11-06.txt";
   // corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt
   // corrections/jetReconstructionBiasCorrectionWithoutShift_forTestingPurposes.txt
   // corrections/jetReconstructionBiasCorrection_forTestingPurposes.txt
   
-  const char *jetVnOutputFileName = "corrections/jetReconstructionBiasCorrection_jetVn_noShiftFitUpToV4_cutBin5_recoAndGenTest.txt";
+  const char *jetVnOutputFileName = "corrections/jetReconstructionBiasCorrection_jetVn_noShiftFitUpToV4_correctedJetHadron_sameEventDihadron_caloJet_2020-11-06.txt";
   // corrections/jetReconstructionBiasCorrection_jetVn_noShiftFitUpToV4_forTestingPurposes.txt
   
   // Do all aymmetry bins
@@ -33,17 +33,17 @@ void produceJetReconstructionBiasCorrection(){
   TString saveComment = "_recoGenIllustration";
   
   // Define the file names for the MC files used in deriving the correction
-  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akFlowJet_noUncOrInc_noCentShift_midRapQcutBin5_improvisedMixing_noCorrections_processed_2020-09-25.root";
+  TString recoGenFileName = "data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-03.root";
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   // data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root
   // data/PbPbMC2018_RecoGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_jet100trigger_noCorrections_processed_2020-06-22.root
-  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowJet_noUncOrInc_noCentShift_midRapQcutBin5_improvisedMixing_noCorrections_processed_2020-09-28.root";
+  TString genGenFileName = "data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root";
   // data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
   // data/PbPbMC2018_GenGen_akPfCsJet_noUncorr_5pCentShift_improvisedMixing_noTrigger_noCorrections_processed_2020-06-22.root
   // data/PbPbMC2018_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_centShift5_noCorrections_reProcess_processed_2019-10-12.root
   // data/PbPbMC2018_GenGen_akFlowJet_noUncorr_noCentShift_xjBins_improvisedMixing_noCorrections_sube0_processed_2020-06-30.root
   
-  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ5_sameTrigAss_preprocessed_2020-09-04.root";
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-06-30.root";
 
   // Open the files
   TFile *recoGenFile = TFile::Open(recoGenFileName);
@@ -68,7 +68,7 @@ void produceJetReconstructionBiasCorrection(){
   const int backgroundRebin = 4;  // Rebinning for the background histogram before Fourier fit
   
   // Select if you want to use the distributions directly from the same event before mixing correction
-  const bool useSameEventJetHadron = true;
+  const bool useSameEventJetHadron = false;
   const bool useSameEventDihadron = true;
   
   // Select if asymmetry bins are drawn

@@ -18,21 +18,21 @@ SPILLOVERCORRECTION=$4 # Flag for JFF correction
 PREPROCESS=$5          # Flag for preprocessing
 
 # Event information histograms have no centrality or pT binning
-#root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",1,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Event information
+root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",1,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Event information
 
 # Single jet and track histograms
-#root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",2,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Single jet and dijet histograms
-#root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",3,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Track histograms
+root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",2,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Single jet and dijet histograms
+root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",3,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Track histograms
 
 # Jet-track correlations have centrality and track pT binning
-#for j in `seq 0 6`;
-#do  
-#  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",4,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # regular jet-track correlations for leading and subleading jets
+for j in `seq 0 6`;
+do  
+  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",4,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # regular jet-track correlations for leading and subleading jets
 #  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",5,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # uncorrected jet-track correlations for leading and subleading jets
-#  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",6,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # pT weighted jet-track correlations for leading and subleading jets
-#  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",7,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # regular jet-track correlations for inclusive jets
-#  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",8,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # pT weighted jet-track correlations for inclusive jets
-#done
+  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",6,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # pT weighted jet-track correlations for leading and subleading jets
+  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",7,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # regular jet-track correlations for inclusive jets
+  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",8,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j',-1,10,'$PREPROCESS')' # pT weighted jet-track correlations for inclusive jets
+done
 
 # Jet pT closure histograms
-root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Jet pT closure histograms
+#root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Jet pT closure histograms
