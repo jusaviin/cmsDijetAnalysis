@@ -739,6 +739,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
   TString compactAsymmetryString;
   char namerX[100];
   char namerY[100];
+  TString zAxisName[] = { "S(#Delta#eta,#Delta#varphi)_{raw}", "ME(#Delta#eta,#Delta#varphi)", "ME(#Delta#eta,#Delta#varphi)", "S(#Delta#eta,#Delta#varphi)",  "S(#Delta#eta,#Delta#varphi) - B(#Delta#eta,#Delta#varphi)", "B(#Delta#eta,#Delta#varphi)", "B(#Delta#eta,#Delta#varphi)", "Map(#Delta#eta,#Delta#varphi)"};
   
   // Temporary histograms for ratio plots
   TH1D *hRatio;
@@ -877,7 +878,10 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               drawnHistogram2D = fHistograms->GetHistogramJetTrackDeltaEtaDeltaPhi(iJetTrack, iCorrelationType, iAsymmetry, iCentrality, iTrackPt);
               drawnHistogram2D->Rebin2D(5,5);
               drawnHistogram2D->Scale(1.0/(5.0*5.0));
-              //drawnHistogram2D->Scale(1.0/fHistograms->GetPtIntegral(iCentrality)); // Normalization needed only for same event, others already done in file
+              
+              if(iCorrelationType == DijetHistogramManager::kSameEvent){
+                drawnHistogram2D->Scale(1.0/fHistograms->GetPtIntegral(iCentrality)); // Normalization needed only for same event, others already done in file
+              }
               drawnHistogram2D->SetZTitle("#frac{1}{N_{jets}} #frac{d^{2}N}{d#Delta#varphi d#Delta#eta}");
               
               // Change the left margin better suited for 2D-drawing
@@ -900,17 +904,23 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               // Possibility to zoom around the peak
               //drawnHistogram2D->GetXaxis()->SetRangeUser(-0.8,0.8);
               drawnHistogram2D->GetYaxis()->SetRangeUser(-3,3);
-              //drawnHistogram2D->GetZaxis()->SetRangeUser(44,59);
+              if(iCorrelationType == DijetHistogramManager::kBackground) drawnHistogram2D->GetZaxis()->SetRangeUser(44,59);
               
-              sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
-              sprintf(namerY,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));
-              fDrawer->DrawHistogram(drawnHistogram2D, namerX, namerY ,fHistograms->GetCorrelationTypeString(iCorrelationType), drawingStyle);
+              //sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
+              //sprintf(namerY,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));
+              //fDrawer->DrawHistogram(drawnHistogram2D, namerX, namerY ,fHistograms->GetCorrelationTypeString(iCorrelationType), drawingStyle);
+              
+              sprintf(namerX, "#Delta#varphi");
+              sprintf(namerY, "#Delta#eta");
+              drawnHistogram2D->GetZaxis()->SetTitle(Form("%s   (A.U.)",zAxisName[iCorrelationType].Data()));
+              fDrawer->DrawHistogram(drawnHistogram2D, namerX, namerY , " ", drawingStyle);
+              
               
               // Draw legend, but not for jet shape bin map
               if(iCorrelationType != DijetHistogramManager::kJetShapeBinMap){
-                legend = new TLegend(-0.05,0.85,0.30,0.99);
-                SetupLegend(legend,centralityString,trackPtString);
-                legend->Draw();
+                //legend = new TLegend(-0.05,0.85,0.30,0.99);
+                //SetupLegend(legend,centralityString,trackPtString);
+                //legend->Draw();
               }
               
               // Save the figure to a file
