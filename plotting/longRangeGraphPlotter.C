@@ -24,19 +24,19 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "qVectorStudy_jetVnFromCorrection_cutBin5_sameEventJetHadron_sameEventDihadron.root";
+  TString graphFileName = "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root";
   TFile *graphFile[maxFiles];
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 4;
-  TString comparisonFileName[] = {"qVectorStudy_jetVnFromCorrection_cutBin6_sameEventJetHadron_sameEventDihadron.root", "qVectorStudy_jetVnFromCorrection_cutBin7_sameEventJetHadron_sameEventDihadron.root", "qVectorStudy_jetVnFromCorrection_noCut_correctedJetHadron_correctedDihadron.root", "testDataFullStatsNoCorrections.root","flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  int nComparisonFiles = 1;
+  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"First cut","Second cut", "Third cut", "No cut", "Data", "Fifth file"};
+  TString fileLegend[] = {"Calo jets", "Calo MC", "Corrected calo",  "No cut", "Data", "Fifth file"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -51,18 +51,20 @@ void longRangeGraphPlotter(){
   const bool drawGraphVnComparison = false;           // Draw selected flow components to the same graph
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   const bool drawAtlasV2 = false;                     // Draw a line showing the v2 result from ATLAS
+  const bool fitJetVn = true;                         // Fit a constant line to jet vn points
+  const bool doSummaryCorrection = true;              // Correct the jet vn summary plots based on fits
   
   // Plots to be compared between files
-  const bool drawJetHadronVnFileComparison = true;
-  const bool drawDihadronVnFileComparison = true;
-  const bool drawHadronVnFileComparison = true;
+  const bool drawJetHadronVnFileComparison = false;
+  const bool drawDihadronVnFileComparison = false;
+  const bool drawHadronVnFileComparison = false;
   const bool drawJetVnFileComparison = true;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison;
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
   const bool saveFigures = true;                     // Save the figures in a file
-  TString saveComment = "_cutComparisonDifference";              // String to be added to saved file names
+  TString saveComment = "_caloJets";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -84,6 +86,27 @@ void longRangeGraphPlotter(){
   TGraphErrors *flowSystematicsDihadron[maxFiles][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   TGraphErrors *flowSystematicsHadron[maxFiles][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   TGraphErrors *flowSystematicsJet[maxFiles][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  
+  // Jet vn summary graph in all centrality bins
+  TGraphErrors *flowSummaryJet[maxFiles][nAsymmetryBins+1][nFlowComponents];
+  TGraphErrors *atlasJetV2graph;
+  double summaryXaxis[nCentralityBins];
+  double summaryXaxisError[nCentralityBins];
+  double summaryYaxis[maxFiles][nAsymmetryBins+1][nFlowComponents][nCentralityBins];
+  double summaryYaxisError[maxFiles][nAsymmetryBins+1][nFlowComponents][nCentralityBins];
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    summaryXaxis[iCentrality] = iCentrality+1;
+    summaryXaxisError[iCentrality] = 0;
+    for(int iFile = 0; iFile < maxFiles; iFile++){
+      for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
+        for(int iFlow = 0; iFlow < nFlowComponents; iFlow++){
+          summaryYaxis[iFile][iAsymmetry][iFlow][iCentrality] = 0;
+          summaryYaxisError[iFile][iAsymmetry][iFlow][iCentrality] = 0;
+        }
+      }
+    }
+  }
+  TString binLabels[] = {"0-10%"," ","10-30%"," ","30-50%"," ","50-90%"};
   
   char histogramNamer[150];
   int nPoints;
@@ -167,6 +190,7 @@ void longRangeGraphPlotter(){
   TLegend *vLegend;
   int markers[] = {kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar};
   int fullMarkers[] = {kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar};
+  int secondMarkers[] = {kFullCircle, kFullCross, kFullSquare, kFullDiamond, kFullStar};
   int colors[] = {kBlue,kRed,kGreen+2,kBlack, kMagenta};
   int flowColors[] = {kBlue, kBlack, kRed, kGreen+3, kMagenta};
   int fileColors[] = {kBlack, kBlue, kRed, kGreen+3, kMagenta, kCyan};
@@ -174,6 +198,7 @@ void longRangeGraphPlotter(){
   TString asymmetryLegend[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "x_{j} integrated"};
   TString compactAsymmetryString[] = {"_A=0v0-0v6", "_A=0v6-0v8", "_A=0v8-1v0", ""};
 
+  // Numbers from paper HP2020 conference
   TLine *atlasV2;
   double atlasV2Number[] = {0.018, 0.03, 0.035, 0.03};
   
@@ -182,6 +207,9 @@ void longRangeGraphPlotter(){
   
   TLine *zeroLine = new TLine(0,0,maxTrackPt,0);
   zeroLine->SetLineStyle(2);
+  
+  TLine *vnLine = new TLine(0,0,maxTrackPt,0);
+  vnLine->SetLineStyle(2);
   
   double minZoom, maxZoom;
   
@@ -450,11 +478,11 @@ void longRangeGraphPlotter(){
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
             minZoom = -0.05;
-            maxZoom = 0.7; // 0.25
+            maxZoom = 0.4; // 0.25
             
             if(iCentrality == 0){
               minZoom = -0.05;
-              maxZoom = 0.7; // 0.2
+              maxZoom = 0.4; // 0.2
             }
             
             for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
@@ -465,6 +493,20 @@ void longRangeGraphPlotter(){
                  drawer->DrawGraph(flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow], 0, maxTrackPt, minZoom, maxZoom, "Track p_{T} (GeV)", namerY, " ", "p");
               } else {
                 flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->Draw("p,same");
+              }
+              
+              // Fit a constant line to the jet v_{n} values
+              if(fitJetVn){
+                if(iFile == 1){
+                  flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->Fit("pol0","0","",0,3);
+                } else {
+                  flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->Fit("pol0","0");
+                }
+                vnLine->SetLineColor(fileColors[iFile]);
+                vnLine->DrawLine(0, flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->GetFunction("pol0")->GetParameter(0), maxTrackPt, flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->GetFunction("pol0")->GetParameter(0));
+                
+                summaryYaxis[iFile][iAsymmetry][iFlow][iCentrality] = flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->GetFunction("pol0")->GetParameter(0);
+                summaryYaxisError[iFile][iAsymmetry][iFlow][iCentrality] = flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow]->GetFunction("pol0")->GetParError(0);
               }
               
               legend->AddEntry(flowGraphJet[iFile][iAsymmetry][iCentrality][iFlow], fileLegend[iFile], "p");
@@ -492,7 +534,81 @@ void longRangeGraphPlotter(){
       } // Flow component loop
     } // Centrality loop
     
-  } // Draw stages leading to jet vn
+  } // Draw file comparison plots
+  
+  // If we draw jet vn file comparison and fit the vn plots, we can also draw summary plots
+  if(drawJetVnFileComparison && fitJetVn){
+    
+    // For summary correction it is assumed that first the data is given and then MC.
+    if(doSummaryCorrection){
+      for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+          for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+            summaryYaxis[2][iAsymmetry][iFlow][iCentrality] = summaryYaxis[0][iAsymmetry][iFlow][iCentrality] - summaryYaxis[1][iAsymmetry][iFlow][iCentrality];
+            summaryYaxisError[2][iAsymmetry][iFlow][iCentrality] = TMath::Sqrt(TMath::Power(summaryYaxisError[0][iAsymmetry][iFlow][iCentrality],2) + TMath::Power(summaryYaxisError[1][iAsymmetry][iFlow][iCentrality],2));
+          } // Centrality loop
+        } // Asymmetry loop
+      } // Flow component loop
+      nComparisonFiles++;
+    }
+    
+    drawer->SetNDivisionsX(510);
+    drawer->SetBottomMargin(0.18);
+    drawer->SetTitleOffsetX(1.63);
+    drawer->SetLabelOffsetX(0.04);
+    
+    // First, we need to construct the graphs based on the fit values
+    atlasJetV2graph = new TGraphErrors(nCentralityBins, summaryXaxis, atlasV2Number, summaryXaxisError, summaryXaxisError);
+    atlasJetV2graph->SetMarkerStyle(kFullDiamond);
+    atlasJetV2graph->SetMarkerColor(kGreen+2);
+    atlasJetV2graph->SetMarkerSize(1.3);
+    
+    for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
+      for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+          flowSummaryJet[iFile][iAsymmetry][iFlow] = new TGraphErrors(nCentralityBins, summaryXaxis, summaryYaxis[iFile][iAsymmetry][iFlow], summaryXaxisError, summaryYaxisError[iFile][iAsymmetry][iFlow]);
+          flowSummaryJet[iFile][iAsymmetry][iFlow]->SetMarkerStyle(secondMarkers[iFile]);
+          flowSummaryJet[iFile][iAsymmetry][iFlow]->SetMarkerColor(fileColors[iFile]);
+          flowSummaryJet[iFile][iAsymmetry][iFlow]->SetMarkerSize(1.3);
+          
+          // Set the bin labels for x-axis
+          for(int iCentrality = 0; iCentrality < nCentralityBins*2; iCentrality++){
+            flowSummaryJet[iFile][iAsymmetry][iFlow]->GetXaxis()->ChangeLabel(iCentrality+1,-1,-1,-1,-1,-1,binLabels[iCentrality]);
+          } // Centrality loop
+        } // Asymmetry loop
+      } // Flow component loop
+    } // File loop
+    
+    // Once the graphs are constructed, they can be plotted
+    for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+      for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+        
+        legend = new TLegend(0.2,0.6,0.5,0.9);
+        legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+        
+        for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
+          if(iFile == 0){
+            drawer->DrawGraphCustomAxes(flowSummaryJet[iFile][iAsymmetry][iFlow], 0, 4, -0.05, 0.3, "Centrality", "Jet v_{2}", " ", "ap");
+          } else {
+            flowSummaryJet[iFile][iAsymmetry][iFlow]->Draw("p,same");
+          }
+          legend->AddEntry(flowSummaryJet[iFile][iAsymmetry][iFlow], fileLegend[iFile], "p");
+        } // File loop
+        
+        if(iFlow == 1 && iAsymmetry == nAsymmetryBins){
+          atlasJetV2graph->Draw("p,same");
+          legend->AddEntry(atlasJetV2graph, "ATLAS v_{2}", "p");
+        }
+        
+        legend->Draw();
+      } // Asymmetry loop
+    } // Flow component loop
+    
+    // For testing porposes, just draw something
+    //drawer->DrawGraph(flowSummaryJet[0][nAsymmetryBins][1], 0, 4, 0, 0.3, "Centrality", "Jet v2", " ", "p");
+    //drawer->DrawGraphCustomAxes(flowSummaryJet[0][nAsymmetryBins][1], 0, 4, 0, 0.3, "Centrality", "Jet v2", " ", "ap");
+
+  }
   
 }
 
