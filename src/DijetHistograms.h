@@ -67,6 +67,10 @@ public:
   THnSparseF *fhTrackJetInclusivePtWeighted;   // pT weighted track correlation with inclusive jets [pT track][ptw inc-dphi][ptw inc-deta][cent][same/mixed]
   THnSparseF *fhJetPtClosure; // Jet pT closure histograms [inclusive/leading/subleading][gen pT][centrality][q/g][reco/gen]
   
+  // Extra histograms for additional event plane study
+  THnSparseF *fhJetEventPlaneForwardRap;  // Correlation between jets and event plane angle
+  THnSparseF *fhJetEventPlaneMidRap;  // Correlation between jets and event plane angle
+  
 private:
   
   ConfigurationCard *fCard;    // Card for binning info

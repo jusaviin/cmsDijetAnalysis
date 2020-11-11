@@ -218,7 +218,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest){
     
     // Track correction for 2015 pp data
-    fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
+    //fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
+    fTrackCorrection = NULL; // Dummy correction file. If running with 2015 data, comment this and uncomment previous line.
     
     // Track correction for 2017 pp data
     fTrackEfficiencyCorrector2018 = new TrkEff2017pp(false, "trackCorrectionTables/pp2017/");
@@ -238,7 +239,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
     
     // Track correction for 2015 PbPb data
-    fTrackCorrection = new XiaoTrkCorr("trackCorrectionTables/xiaoCorrection/eta_symmetry_cymbalCorr_FineBin.root");
+    //fTrackCorrection = new XiaoTrkCorr("trackCorrectionTables/xiaoCorrection/eta_symmetry_cymbalCorr_FineBin.root");
+    fTrackCorrection = NULL; // Dummy correction file. If running with 2015 data, comment this and uncomment previous line.
     
     // Track correction for 2018 PbPb data
     fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
@@ -269,7 +271,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     fMaximumMixingHiBin = FindMixingHiBin(200);  // 200 is the maximum number for HiBin in the forests
     
   } else {
-    fTrackCorrection = new TrkCorr(""); // Bad data type, no corrections initialized
+    fTrackCorrection = NULL; // Bad data type, no corrections initialized
     fVzWeightFunction = NULL;
     fCentralityWeightFunction = NULL;
   }
@@ -469,7 +471,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
 DijetAnalyzer::~DijetAnalyzer(){
   // destructor
   delete fHistograms;
-  delete fTrackCorrection;
+  if(fTrackCorrection != NULL) delete fTrackCorrection;
   delete fJffCorrection;
   if(fVzWeightFunction) delete fVzWeightFunction;
   if(fTrackEfficiencyCorrector2018) delete fTrackEfficiencyCorrector2018;
@@ -731,6 +733,14 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t trackEta = 0;              // Track eta
   Double_t trackPhi = 0;              // Track phi
   
+  // Event plane study related variables
+  Double_t eventPlaneQ = 0;                     // Magnitude of the event plane Q-vector
+  Double_t eventPlaneMultiplicity = 0;          // Particle multiplicity in the event plane
+  Double_t eventPlaneQx = 0;                    // x-component of the event plane vector
+  Double_t eventPlaneQy = 0;                    // y-component of the event plane vector
+  Double_t jetEventPlaneDeltaPhiForwardRap = 0; // DeltaPhi between jet and event plane angle determined from forward rapidity
+  Double_t jetEventPlaneDeltaPhiMidRap = 0;     // DeltaPhi between jet and event plane angle determined from midrapidity
+  
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
   
@@ -745,11 +755,12 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerJet[nFillJet];
   Double_t fillerLeadingJet[nFillLeadingJet];
   Double_t fillerDijet[nFillDijet];
+  Double_t fillerEventPlane[3];  // Extra filler for event plane studies
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
-  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V4_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt"};
-  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_L2L3Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2L3Residual_AK4PF.txt", "CorrectionNotAppliedPF.txt", "CorrectionNotAppliedPF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2L3Residual_AK4PF.txt"};
-  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V4_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_Uncertainty_AK4PF.txt"};
+  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V6_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V6_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2Relative_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V6_DATA_L2L3Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2L3Residual_AK4PF.txt", "CorrectionNotAppliedPF.txt", "CorrectionNotAppliedPF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2L3Residual_AK4PF.txt"};
+  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V6_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V6_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_Uncertainty_AK4PF.txt"};
   
   // For calo jets, use the correction files for calo jets (otherwise same name, but replace PF with Calo)
   if(fJetType == 0){
@@ -762,9 +773,6 @@ void DijetAnalyzer::RunAnalysis(){
     pfIndex = 0;
     pfIndex = uncertaintyFile[fDataType].find("PF", pfIndex);
     uncertaintyFile[fDataType].replace(pfIndex, 2, "Calo");
-    
-    correctionFileRelative[1] = "jetEnergyCorrections/75X_dataRun2_v13_L2Relative_AKPu4Calo_stabbed.txt";
-    correctionFileRelative[3] = "jetEnergyCorrections/75X_dataRun2_v13_L2Relative_AKPu4Calo_stabbed.txt";
     
   }
     
@@ -1052,11 +1060,11 @@ void DijetAnalyzer::RunAnalysis(){
       if(doEventPlane){
         
         // Variables for event plane
-        double eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
-        double eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
+        eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
+        eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
         //int iEventPlane = 9; // For event planes, see the big comment in ForestReader.h
-        double eventPlaneQx = 0;
-        double eventPlaneQy = 0;
+        eventPlaneQx = 0;
+        eventPlaneQy = 0;
         
         // Manual calculation for Q-vector
         // Loop over all track in the event
@@ -1087,9 +1095,9 @@ void DijetAnalyzer::RunAnalysis(){
         
         //eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
         //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
-        //eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
+        eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
                 
-        if(eventPlaneQ < 3.333) continue;
+        //if(eventPlaneQ < 3.333) continue;
       }
       
       
@@ -1606,6 +1614,32 @@ void DijetAnalyzer::RunAnalysis(){
 //          fillerDijet[9] = subleadingJetEta;               // Axis 2: Subleading jet eta
           
           fHistograms->fhDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);         // Fill the data point to dijet histogram
+          
+          
+          if(doEventPlane){
+            // Fill the additional histograms for event plane study
+            
+            // Calculate deltaPhi between the jet and the event planes determined with different detectors
+            jetEventPlaneDeltaPhiForwardRap = leadingJetPhi - fJetReader->GetEventPlaneAngle(8);
+            jetEventPlaneDeltaPhiMidRap = leadingJetPhi - fJetReader->GetEventPlaneAngle(9);
+            
+            // Transform deltaPhis to interval [-pi/2,3pi/2]
+            while(jetEventPlaneDeltaPhiForwardRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += -2*TMath::Pi();}
+            while(jetEventPlaneDeltaPhiMidRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += -2*TMath::Pi();}
+            while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
+            while(jetEventPlaneDeltaPhiMidRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += 2*TMath::Pi();}
+            
+            // Fill the additional event plane histograms
+            fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
+            fillerEventPlane[1] = eventPlaneQ;                      // Axis 1: Normalized event plane Q-vector
+            fillerEventPlane[2] = centrality;                       // Axis 2: centrality
+            
+            fHistograms->fhJetEventPlaneForwardRap->Fill(fillerEventPlane,fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
+            
+            fillerEventPlane[0] = jetEventPlaneDeltaPhiMidRap;  // Axis 0: DeltaPhi between jet and event plane
+            
+            fHistograms->fhJetEventPlaneMidRap->Fill(fillerEventPlane,fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
+          }
           
         }
         
@@ -2554,7 +2588,7 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
     
   // Find and return the track efficiency correction
   double trackEfficiency = 1;
-  trackEfficiency = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
+  //trackEfficiency = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin); // If running with 2015 data, uncomment this line
   
   return trackEfficiency;
   
