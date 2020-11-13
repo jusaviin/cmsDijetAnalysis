@@ -200,7 +200,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5.root
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = false;
+  bool applySeagullCorrection = true;
   if(preprocess >= 0 && preprocess <= 2) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
@@ -252,14 +252,14 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
-  const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
-  bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
+  const bool smoothenMixing = false; // True = Smoothen event mixing in each eta slice. False = Do not do that.
+  bool avoidPeaks = true; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
   bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
-  double minBackgroundDeltaEta = 2;  // Minimum deltaEta value for background region in subtraction method
-  double maxBackgroundDeltaEta = 3.5;  // Maximum deltaEta value for background region in subtraction method
+  double minBackgroundDeltaEta = 1.5;  // Minimum deltaEta value for background region in subtraction method
+  double maxBackgroundDeltaEta = 2.5;  // Maximum deltaEta value for background region in subtraction method
   bool oneBackgroundRegion = false;    // Choose to use symmetric region on positive/negative eta or only one side
   bool adjustBackground = false;       // Adjust background level based on differences on leading an subleading sides
   int backgroundOverlapBins = 3;       // Number of bins around deltaPhi = Pi/2 used to calculate background adjustment

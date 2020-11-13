@@ -218,7 +218,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC || fDataType == ForestReader::kLocalTest){
     
     // Track correction for 2015 pp data
-    fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
+    fTrackCorrection = NULL;
+    //fTrackCorrection = new TrkCorr("trackCorrectionTables/TrkCorr_July22_Iterative_pp_eta2p4/");
     
     // Track correction for 2017 pp data
     fTrackEfficiencyCorrector2018 = new TrkEff2017pp(false, "trackCorrectionTables/pp2017/");
@@ -238,7 +239,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
     
     // Track correction for 2015 PbPb data
-    fTrackCorrection = new XiaoTrkCorr("trackCorrectionTables/xiaoCorrection/eta_symmetry_cymbalCorr_FineBin.root");
+    fTrackCorrection = NULL;
+    //fTrackCorrection = new XiaoTrkCorr("trackCorrectionTables/xiaoCorrection/eta_symmetry_cymbalCorr_FineBin.root");
     
     // Track correction for 2018 PbPb data
     fTrackEfficiencyCorrector2018 = new TrkEff2018PbPb("general", false, "trackCorrectionTables/PbPb2018/");
@@ -269,7 +271,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     fMaximumMixingHiBin = FindMixingHiBin(200);  // 200 is the maximum number for HiBin in the forests
     
   } else {
-    fTrackCorrection = new TrkCorr(""); // Bad data type, no corrections initialized
+    fTrackCorrection = NULL; // Bad data type, no corrections initialized
     fVzWeightFunction = NULL;
     fCentralityWeightFunction = NULL;
   }
@@ -463,7 +465,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
 DijetAnalyzer::~DijetAnalyzer(){
   // destructor
   delete fHistograms;
-  delete fTrackCorrection;
+  if(fTrackCorrection != NULL) delete fTrackCorrection;
   delete fJffCorrection;
   if(fVzWeightFunction) delete fVzWeightFunction;
   if(fTrackEfficiencyCorrector2018) delete fTrackEfficiencyCorrector2018;
@@ -2519,7 +2521,8 @@ Double_t DijetAnalyzer::GetTrackEfficiencyCorrection(const Int_t correlationType
   // Find and return the track efficiency correction
   
   double trackEfficiency = 1;
-  trackEfficiency = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
+  trackEfficiency = 1;
+  //trackEfficiency = fTrackCorrection->getTrkCorr(trackPt, trackEta, trackPhi, hiBin, trackRMin);
   
   return preWeight*trackEfficiency;
   
