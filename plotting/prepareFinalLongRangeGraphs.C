@@ -16,17 +16,21 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // File for Vn from jet-hadron correlations
-  TString jetHadronFileName = "data/dijetPbPb2018_akPu4CaloJet_noUncIncOrPtw_improvisedMixing_noCorrections_processed_2020-11-03.root";
+  TString jetHadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-03.root";
+  // data/dijetPbPb2018_akPu4CaloJet_noUncIncOrPtw_improvisedMixing_noCorrections_processed_2020-11-03.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_noHighThirdJet_onlySeagull_wtaAxis_processed_2020-07-02_combine0_someStats.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
+  // data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-03.root
   // data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   
   // File for Vn from dihadron correlations
-  TString dihadronFileName = "data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_processed_2020-06-25.root";
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_smallSample_preprocessed_2020-11-11.root";
+  // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_processed_2020-06-25.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_noCorrections_processed_2020-06-18_smallStats.root
+  // data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_smallSample_preprocessed_2020-11-11.root
   // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-06-30.root
   // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-07-07.root
   // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ6_sameTrigAss_noCorrections_processed_2020-09-04.root
@@ -51,13 +55,13 @@ void prepareFinalLongRangeGraphs(){
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
-  const bool useSameEventJetHadron = false;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
-  const bool useSameEventDihadron = false;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
+  const bool useSameEventJetHadron = true;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
+  const bool useSameEventDihadron = true;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
   
   const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
   const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
   
-  const bool applyJetReconstructionBiasCorrection = true;  // Choose whether to apply the jet reconstruction bias or not
+  const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
   const bool plotOnlyCorrection = false; // True: Only show the correction in jet v2 graph. False: Regular analysis
   const bool correctAtJetLevel = true;   // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
     
@@ -71,7 +75,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_correctedJetVn_2020-11-06.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_sameEventJetHadron_sameEventDihadron_2020-11-13.root";
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
   // flowGraphs/exampleDihadronFromMC.root

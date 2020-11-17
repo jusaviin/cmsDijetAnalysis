@@ -465,7 +465,7 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
 
-  TFile *seagullFile = TFile::Open("data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_jet80trig_xjBins_wtaAxis_allCorrections_jffAndSpillWithJet80_processed_2020-05-28_allButCombine1Job36_QA.root");
+  TFile *seagullFile = TFile::Open("data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04_QA.root");
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_jet80trig_xjBins_wtaAxis_allCorrections_jffAndSpillWithJet80_processed_2020-05-28_allButCombine1Job36_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04_QA.root
