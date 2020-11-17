@@ -190,6 +190,28 @@ void DijetComparingDrawer::DrawEventInformation(){
   // Save the figure to a file
   SaveFigure("centralityInAllEvents");
   
+  // === Weighted centrality ===
+  
+  // Scale the histograms to the counts
+  FindScalingFactors("centralityWeighted",-1,-1,-1);
+  
+  // Prepare the jet pT histograms and ratio to be drawn
+  PrepareRatio("centralityWeighted", 1);
+  
+  // Draw the centrality histograms to the upper pad
+  DrawToUpperPad("Centrality percentile", "Counts");
+  
+  // Add a legend to the plot
+  legend = new TLegend(0.6,0.5,0.9,0.85);
+  SetupLegend(legend, "All events weighted");
+  legend->Draw();
+  
+  // Draw the ratios to the lower portion of the split canvas
+  DrawToLowerPad("Centrality percentile","Ratio",fRatioZoomMin,fRatioZoomMax);
+  
+  // Save the figure to a file
+  SaveFigure("centralityInAllEventsWeighted");
+  
   // === Centrality in dijet events ===
   
   // Scale the histograms to the counts
