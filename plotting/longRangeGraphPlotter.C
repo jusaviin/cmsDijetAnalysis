@@ -24,13 +24,13 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root";
+  TString graphFileName = "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_2020-11-13.root";
   TFile *graphFile[maxFiles];
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 1;
-  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
@@ -55,8 +55,8 @@ void longRangeGraphPlotter(){
   const bool doSummaryCorrection = true;              // Correct the jet vn summary plots based on fits
   
   // Plots to be compared between files
-  const bool drawJetHadronVnFileComparison = false;
-  const bool drawDihadronVnFileComparison = false;
+  const bool drawJetHadronVnFileComparison = true;
+  const bool drawDihadronVnFileComparison = true;
   const bool drawHadronVnFileComparison = false;
   const bool drawJetVnFileComparison = true;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison;
@@ -70,7 +70,7 @@ void longRangeGraphPlotter(){
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   int firstDrawnVn = 2;
-  int lastDrawnVn = 2;
+  int lastDrawnVn = 4;
   
   double maxTrackPt = 4.5;
   
@@ -90,6 +90,7 @@ void longRangeGraphPlotter(){
   // Jet vn summary graph in all centrality bins
   TGraphErrors *flowSummaryJet[maxFiles][nAsymmetryBins+1][nFlowComponents];
   TGraphErrors *atlasJetV2graph;
+  TGraphErrors *cmsHighPtV2;
   double summaryXaxis[nCentralityBins];
   double summaryXaxisError[nCentralityBins];
   double summaryYaxis[maxFiles][nAsymmetryBins+1][nFlowComponents][nCentralityBins];
@@ -198,15 +199,22 @@ void longRangeGraphPlotter(){
   TString asymmetryLegend[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "x_{j} integrated"};
   TString compactAsymmetryString[] = {"_A=0v0-0v6", "_A=0v6-0v8", "_A=0v8-1v0", ""};
 
-  // Numbers from paper HP2020 conference
+  // Numbers from HP2020 conference presentation
   TLine *atlasV2;
   double atlasV2Number[] = {0.018, 0.03, 0.035, 0.03};
+  
+  // Numbers from paper arXiv:1702.00630
+  double cmsHighPtV2Number[] = {0.015, 0.033, 0.042, 0.04};
+  double cmsHighPtV2Error[] = {0.015, 0.02, 0.03, 0.04};
   
   TString legendString;
   char namerY[100];
   
   TLine *zeroLine = new TLine(0,0,maxTrackPt,0);
   zeroLine->SetLineStyle(2);
+  
+  TLine *shortZeroLine = new TLine(0.8,0,3.2,0);
+  shortZeroLine->SetLineStyle(2);
   
   TLine *vnLine = new TLine(0,0,maxTrackPt,0);
   vnLine->SetLineStyle(2);
@@ -588,7 +596,8 @@ void longRangeGraphPlotter(){
         
         for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
           if(iFile == 0){
-            drawer->DrawGraphCustomAxes(flowSummaryJet[iFile][iAsymmetry][iFlow], 0, 4, -0.05, 0.3, "Centrality", "Jet v_{2}", " ", "ap");
+            sprintf(namerY,"Jet v_{%d}",iFlow+1);
+            drawer->DrawGraphCustomAxes(flowSummaryJet[iFile][iAsymmetry][iFlow], 0, 4, -0.05, 0.3, "Centrality", namerY, " ", "ap");
           } else {
             flowSummaryJet[iFile][iAsymmetry][iFlow]->Draw("p,same");
           }
@@ -600,7 +609,13 @@ void longRangeGraphPlotter(){
           legend->AddEntry(atlasJetV2graph, "ATLAS v_{2}", "p");
         }
         
+        shortZeroLine->Draw();
         legend->Draw();
+        
+        // Save the figures to file
+        if(saveFigures){
+          gPad->GetCanvas()->SaveAs(Form("figures/jetV%dSummary%s%s.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data()));
+        }
       } // Asymmetry loop
     } // Flow component loop
     
