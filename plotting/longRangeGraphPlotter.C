@@ -63,7 +63,7 @@ void longRangeGraphPlotter(){
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool saveFigures = true;                     // Save the figures in a file
+  const bool saveFigures = false;                     // Save the figures in a file
   TString saveComment = "_caloJets";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
@@ -203,9 +203,9 @@ void longRangeGraphPlotter(){
   TLine *atlasV2;
   double atlasV2Number[] = {0.018, 0.03, 0.035, 0.03};
   
-  // Numbers from paper arXiv:1702.00630
-  double cmsHighPtV2Number[] = {0.015, 0.033, 0.042, 0.04};
-  double cmsHighPtV2Error[] = {0.015, 0.02, 0.03, 0.04};
+  // Numbers from fitting the data from paper arXiv:1702.00630 at large pT
+  double cmsHighPtV2Number[] = {0.0220, 0.0376, 0.0431, 0.04};
+  double cmsHighPtV2Error[] = {0.0019, 0.0016, 0.0027, 0.04};
   
   TString legendString;
   char namerY[100];
@@ -571,6 +571,11 @@ void longRangeGraphPlotter(){
     atlasJetV2graph->SetMarkerColor(kGreen+2);
     atlasJetV2graph->SetMarkerSize(1.3);
     
+    cmsHighPtV2 = new TGraphErrors(nCentralityBins, summaryXaxis, cmsHighPtV2Number, summaryXaxisError, cmsHighPtV2Error);
+    cmsHighPtV2->SetMarkerStyle(kFullFourTrianglesPlus);
+    cmsHighPtV2->SetMarkerColor(kMagenta);
+    cmsHighPtV2->SetMarkerSize(1.3);
+    
     for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
       for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
         for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
@@ -607,6 +612,9 @@ void longRangeGraphPlotter(){
         if(iFlow == 1 && iAsymmetry == nAsymmetryBins){
           atlasJetV2graph->Draw("p,same");
           legend->AddEntry(atlasJetV2graph, "ATLAS v_{2}", "p");
+          
+          cmsHighPtV2->Draw("p,same");
+          legend->AddEntry(cmsHighPtV2, "CMS high p_{T} v_{2}", "p");
         }
         
         shortZeroLine->Draw();
