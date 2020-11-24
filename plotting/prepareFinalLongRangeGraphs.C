@@ -16,7 +16,8 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // File for Vn from jet-hadron correlations
-  TString jetHadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_5pCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-16.root";
+  TString jetHadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-03.root";
+  // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJet_noUncIncOrPtw_improvisedMixing_noCorrections_processed_2020-11-03.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_noHighThirdJet_onlySeagull_wtaAxis_processed_2020-07-02_combine0_someStats.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
@@ -25,7 +26,8 @@ void prepareFinalLongRangeGraphs(){
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   
   // File for Vn from dihadron correlations
-  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_smallSample_noCorrections_processed_2020-11-13.root";
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_smallSample_preprocessed_2020-11-11.root";
+  // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_processed_2020-06-25.root
   // data/dihadronPbPb2018_sameTriggerAssoc_5eventMixed_onlySeagull_deltaEta2-3v5_processed_2020-06-18_smallStats.root
@@ -66,7 +68,7 @@ void prepareFinalLongRangeGraphs(){
   const bool correctAtJetLevel = true;   // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
     
   const bool saveFigures = false;
-  TString saveComment = "_MC";
+  TString saveComment = "_caloJet";
   
   const int nRefit = 4; // Number of vn:s included in the refit
   bool refitBackground = true; // Refit the background distribution
@@ -75,7 +77,8 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root";
+  TString outputFileName = "flowGraphs/dummyMC.root";
+  // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
   // flowGraphs/exampleDihadronFromMC.root
@@ -653,6 +656,19 @@ void prepareFinalLongRangeGraphs(){
     
     // Return back to main directory
     gDirectory->cd("../");
+    
+    // Create a directory for the fit functions
+    sprintf(histogramNamer,"longRangeFitJetHadron");
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->Write(Form("longRangeFitJetHadron_A%dC%dT%d", iAsymmetry, iCentrality, iTrackPt), TObject::kOverwrite);
+        } // Track pT loop
+      } // Centrality loop
+    } // Asymmetry loop
     
     // Close the output file
     outputFile->Close();
