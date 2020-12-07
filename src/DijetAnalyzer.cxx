@@ -1380,10 +1380,10 @@ void DijetAnalyzer::RunAnalysis(){
         // For data, instead of jet flavor, mark positive vz with 1 and negative with 0
         // This is used in one of the systematic checks for long range correlations
         // TODO: Debuggery
-        //if((fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) && vz > 0){
-        //  leadingJetFlavor = 1;
-        //  subleadingJetFlavor = 1;
-        //}
+        if((fDataType == ForestReader::kPp || fDataType == ForestReader::kPbPb) && vz > 0){
+          leadingJetFlavor = 1;
+          subleadingJetFlavor = 1;
+        }
         
         // Apply the JFF correction for leading and subleading jet pT only if we are using calo jets
         // Determine the directions of the leading particle flow candidates for the leading and subleading
@@ -1432,14 +1432,16 @@ void DijetAnalyzer::RunAnalysis(){
       } // End of dijet cuts (two jets found if)
       
       // TODO: Debuggery
+      //leadingJetFlavor = 0;
+      //subleadingJetFlavor = 0;
       if(thirdJetPt > subleadingJetPt/2 && dijetFound) {
         highThirdJet++;
         
         // For data, mark the events with high pT third jet with 1. 0 means there is no such jet
-        if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp){
-          leadingJetFlavor = 1;
-          subleadingJetFlavor = 1;
-        }
+        //if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp){
+        //  leadingJetFlavor = 1;
+        //  subleadingJetFlavor = 1;
+        //}
       }
       
       //************************************************
