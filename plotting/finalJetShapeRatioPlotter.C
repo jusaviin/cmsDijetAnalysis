@@ -11,7 +11,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   const int nAsymmetryBins = pbpbHistograms[0]->GetNAsymmetryBins();
   const int nRelevantUncertainties = 5;
   
-  const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
+  const bool saveHistogramsForHepData = true; // Save the plotted histograms to a file for HepData submission
   
   const char* jetShapeTitle[] = {"Leading jet shape ratio between x_{j} bins","Subleading jet shape ratio between x_{j} bins","Jet shape ratio between x_{j} bins"};
   const char* jetType[] = {"Leading", "Subleading", "Inclusive"};
@@ -547,7 +547,7 @@ void plotJetShapeXiao(const int nDatasets, DijetHistogramManager *ppHistograms[5
   
   // Save the histograms to a file for HepData submission
   if(saveHistogramsForHepData){
-    TString outputFileName = "hepdata/hepdata_asymmetryRatio_hin-19-013.root";
+    TString outputFileName = "hepdata/hepdata_asymmetryRatio_update_hin-19-013.root";
     TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
     TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
     

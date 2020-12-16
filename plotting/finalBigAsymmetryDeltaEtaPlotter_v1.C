@@ -28,7 +28,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   if(sameScale) deltaEtaZoom[0] = deltaEtaZoom[1];
   
-  const bool saveHistogramsForHepData = false;
+  const bool saveHistogramsForHepData = true;
   
   // Open a file to include results from inclusive jet analysis HIN-16-020
   //  TFile *inclusiveResultFile = TFile::Open("data/publishedResults/officialHist_py_deta_16_020.root");
@@ -45,6 +45,8 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   TH1D *deltaEtaArray[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPp[nAsymmetryBins+1];
+  TH1D *uncertaintyForHepDataRaw[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
+  TH1D *uncertaintyForHepData[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
   TH1D *sumUncertainty[nCentralityBins+1][nAsymmetryBins+1];
   TH2D *helperHistogram;
   TH1D *addedHistogram;
@@ -102,11 +104,48 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     } // Track pT loop
   } // Asymmetry loop
   
+  // Get track pT bin by track pT bin systematic errors for HepData submission
+  int firstSumBin, lastSumBin, uncertaintyBin;
+  double binCenter;
+  if(saveHistogramsForHepData){
+    for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      
+      // First collect the histograms for pp
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        uncertaintyForHepDataRaw[nCentralityBins][iTrackPt][iAsymmetry] = (TH1D*) ppUncertaintyProvider->GetDeltaEtaSystematicUncertainty(iJetTrack, 0, iTrackPt, iAsymmetry)->Clone(Form("uncertaintyForHepDataRawPp%d%d",iTrackPt,iAsymmetry));
+        uncertaintyForHepData[nCentralityBins][iTrackPt][iAsymmetry] = (TH1D*) deltaEtaArray[nCentralityBins][iTrackPt][iAsymmetry]->Clone(Form("uncertaintyForHepDataPp%d%d",iTrackPt,iAsymmetry));
+        
+        
+        // Then collect them for PbPb
+        for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          uncertaintyForHepDataRaw[iCentrality][iTrackPt][iAsymmetry] = (TH1D*) pbpbUncertaintyProvider->GetDeltaEtaSystematicUncertainty(iJetTrack, iCentrality, iTrackPt, iAsymmetry)->Clone(Form("uncertaintyForHepDataRaw%d%d%d",iCentrality,iTrackPt,iAsymmetry));
+          uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry] = (TH1D*) deltaEtaArray[iCentrality][iTrackPt][iAsymmetry]->Clone(Form("uncertaintyForHepData%d%d%d",iCentrality,iTrackPt,iAsymmetry));
+        } // Centrality loop
+      } // Track pT loop
+      
+      // Set the bin values as distribution values and errors as systematic uncertainties
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+          
+          // The binning might be different in the uncertainty file and these histograms. Make sure correct errors are set to each bin
+          firstSumBin = uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->FindBin(-1.4);
+          lastSumBin = uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->FindBin(1.4);
+          
+          for(int iBin = firstSumBin; iBin <= lastSumBin; iBin++){
+            
+            binCenter = uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->GetBinCenter(iBin);
+            uncertaintyBin = uncertaintyForHepDataRaw[iCentrality][iTrackPt][iAsymmetry]->FindBin(binCenter);
+            uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->SetBinError(iBin, uncertaintyForHepDataRaw[iCentrality][iTrackPt][iAsymmetry]->GetBinContent(uncertaintyBin));
+          } // Bin loop
+        } // Centrality loop
+      } // Track pT loop
+      
+    } // Asymmetry loop
+  } // Histograms from HepData
+  
   // Read the inclusive histograms to make a comparison to the published results
   int inclusiveCentralityBins[] = {0,10,30,50,100};
   int inclusiveTrackPtBins[] = {0,1,2,3,4,8,12};
-  int firstSumBin, lastSumBin, uncertaintyBin;
-  double binCenter;
   
   // Find the uncertainties for the deltaEta histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
@@ -637,10 +676,11 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     // Save the histograms to a file for HepData submission
     if(saveHistogramsForHepData){
-      TString outputFileName = "hepdata/hepdata_deltaEta_hin-19-013.root";
+      TString outputFileName = "hepdata/hepdata_deltaEta_update_hin-19-013.root";
       TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
       TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
       TString asymmetryString[] = {"0<xj<06","06<xj<08","08<xj<1","allXj"};
+      TString trackPtString[] = {"07-1","1-2","2-3","3-4","4-8","8-12","12-300"};
       
       for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -654,7 +694,19 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
         sumHistogramPp[iAsymmetry]->Write(Form("deltaEta_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
         sumUncertainty[nCentralityBins][iAsymmetry]->Write(Form("deltaEtaError_track%s_pp_%s", deltaEtaSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
         
+        // Also save all the jet shape histograms in pT bins
+        for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+          for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+            
+            deltaEtaArray[iCentrality][iTrackPt][iAsymmetry]->Write(Form("deltaEta_track%s_%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), trackPtString[iTrackPt].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+            uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->Write(Form("deltaEtaError_track%s_%s_%s_%s", deltaEtaSaveName[iJetTrack/3], centralityString[iCentrality].Data(), trackPtString[iTrackPt].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+            
+          } // Track pT loop
+        } // Centrality loop
+        
       } // Asymmetry loop
+      
+      // Also save the histograms in pT bins
       
       outputFile->Close();
     }

@@ -22,9 +22,9 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   const bool drawUncertainties = true;
   const bool monteCarloLabels = false;
-  const bool normalizeJetShape = true;         // True: draw rho. False: draw P.
+  const bool normalizeJetShape = false;         // True: draw rho. False: draw P.
   const bool drawExtraRatio = false;           // Draw illustration of third jet effects to the ratio
-  const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
+  const bool saveHistogramsForHepData = true; // Save the plotted histograms to a file for HepData submission
   
   const bool smallFormat = false;  // Make the plot in a more concise format that is better for presentations
   
@@ -45,6 +45,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   TH1D *jetShapeForIntegral[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPbPb[nCentralityBins][nAsymmetryBins+1];
   TH1D *uncertaintyHistogramPp[nAsymmetryBins+1];
+  TH1D *uncertaintyForHepData[nCentralityBins+1][nTrackPtBins][nAsymmetryBins+1];
   TH1D *sumUncertainty[nCentralityBins+1][nAsymmetryBins+1];
   TH1D *helperHistogram;
   double shapeIntegralPbPb[nCentralityBins][nAsymmetryBins+1];
@@ -76,6 +77,9 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     } // track pT
   }
   
+  // Variable needed for systematic error histograms for HepData
+  double errorMemory;
+  
   // Normalize the jet shape histograms
   for(int iAsymmetry = 0; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -89,9 +93,9 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
         for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins; iTrackPt++){
           jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
         }
-      }
+      } // Normalizing jet shape
       
-    }
+    } // Centrality loop
     
     shapeIntegralPp[iAsymmetry] = sumHistogramPp[iAsymmetry]->Integral(1,sumHistogramPp[iAsymmetry]->FindBin(0.99),"width");
     if(normalizeJetShape) sumHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
@@ -103,14 +107,14 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       for(int iTrackPt = iFirstTrackPtBin; iTrackPt < nTrackPtBins; iTrackPt++){
         jetShapeArray[nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
       }
-    }
+    } // Normalizing jet shape
     
     // Read the uncertainties for the pT summed jet shapes and scale them for jet shapes
     uncertaintyHistogramPp[iAsymmetry] = ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, nTrackPtBins, iAsymmetry);
     if(normalizeJetShape) uncertaintyHistogramPp[iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
     
     // Set the bin errors in the sumUncertainty histograms to match the uncertainties read from the file
-    for(int iBin = 1; iBin <= sumUncertainty[nAsymmetryBins][iAsymmetry]->GetNbinsX(); iBin++){
+    for(int iBin = 1; iBin <= sumUncertainty[nCentralityBins][iAsymmetry]->GetNbinsX(); iBin++){
       sumUncertainty[nCentralityBins][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPp[iAsymmetry]->GetBinContent(iBin));
     }
     
@@ -122,10 +126,38 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       for(int iBin = 1; iBin <= sumUncertainty[iCentrality][iAsymmetry]->GetNbinsX(); iBin++){
         
         sumUncertainty[iCentrality][iAsymmetry]->SetBinError(iBin, uncertaintyHistogramPbPb[iCentrality][iAsymmetry]->GetBinContent(iBin));
-      }
+      } // Bin loop
       
-    }
-  }
+    } // Centrality loop
+    
+    // Prepare track pT bin by track pT bin systematic uncertainty histogram to be added to the HepData submission
+    if(saveHistogramsForHepData){
+      
+      // First collect the histograms for pp
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        uncertaintyForHepData[nCentralityBins][iTrackPt][iAsymmetry] = (TH1D*) ppUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, 0, iTrackPt, iAsymmetry)->Clone(Form("uncertaintyForHepDataPp%d%d",iTrackPt,iAsymmetry));
+        if(normalizeJetShape) uncertaintyForHepData[nCentralityBins][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPp[iAsymmetry]);
+        
+        // Then collect them for PbPb
+        for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry] = (TH1D*) pbpbUncertaintyProvider->GetJetShapeSystematicUncertainty(iJetTrack, iCentrality, iTrackPt, iAsymmetry)->Clone(Form("uncertaintyForHepData%d%d%d",iCentrality,iTrackPt,iAsymmetry));
+          if(normalizeJetShape) uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->Scale(1.0/shapeIntegralPbPb[iCentrality][iAsymmetry]);
+        } // Centrality loop
+      } // Track pT loop
+      
+      // Set the bin values as distribution values and errors as systematic uncertainties
+      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+          for(int iBin = 1; iBin <= uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->GetNbinsX(); iBin++){
+            errorMemory = uncertaintyForHepData[nCentralityBins][iTrackPt][iAsymmetry]->GetBinContent(iBin);
+            uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->SetBinContent(iBin, jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->GetBinContent(iBin));
+            uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->SetBinError(iBin, errorMemory);
+          } // Bin loop
+        } // Centrality loop
+      } // Track pT loop
+      
+    } // Uncertainty histograms for HepData submission
+  } // Asymmetry loop
   
   // Calculate the jet shape integrals and errors taking into account the systematic uncertainties
   TH1D *systematicErrorHistogram;
@@ -1029,13 +1061,14 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   // Save the histograms to a file for HepData submission
   if(saveHistogramsForHepData){
     
-    TString outputFileName = "hepdata/hepdata_jetShapes_hin-19-013.root";
-    if(!normalizeJetShape) outputFileName = "hepdata/hepdata_jetRadialMomentum_hin-19-013.root";
+    TString outputFileName = "hepdata/hepdata_jetShapes_update_hin-19-013.root";
+    if(!normalizeJetShape) outputFileName = "hepdata/hepdata_jetRadialMomentum_update_hin-19-013.root";
     TString shapeName = "Shape";
     if(!normalizeJetShape) shapeName = "RadialMomentum";
     TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
     TString centralityString[] = {"0-10", "10-30", "30-50", "50-90", "pp"};
     TString asymmetryString[] = {"0<xj<06","06<xj<08","08<xj<1","allXj"};
+    TString trackPtString[] = {"07-1","1-2","2-3","3-4","4-8","8-12","12-300"};
     
     int firstSaveBin = 0;
     if(!normalizeJetShape) firstSaveBin = nAsymmetryBins;
@@ -1044,7 +1077,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         
         sumHistogramPbPb[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
-        sumHistogramPbPb[iCentrality][iAsymmetry]->Write(Form("jet%s_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);;
+        sumHistogramPbPb[iCentrality][iAsymmetry]->Write(Form("jet%s_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
         sumUncertainty[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
         sumUncertainty[iCentrality][iAsymmetry]->Write(Form("jet%sError_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
         ratioHistogram[iCentrality][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
@@ -1059,6 +1092,18 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
       sumHistogramPp[iAsymmetry]->Write(Form("jet%s_%s_pp_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
       sumUncertainty[nCentralityBins][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
       sumUncertainty[nCentralityBins][iAsymmetry]->Write(Form("jet%sError_%s_pp_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+      
+      // Also save all the jet shape histograms in pT bins
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          
+          jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+          jetShapeArray[iCentrality][iTrackPt][iAsymmetry]->Write(Form("jet%s_%s_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), trackPtString[iTrackPt].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+          uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->GetXaxis()->SetRangeUser(0,1);
+          uncertaintyForHepData[iCentrality][iTrackPt][iAsymmetry]->Write(Form("jet%sError_%s_%s_%s_%s", shapeName.Data(), jetShapeSaveName[iJetTrack/3], centralityString[iCentrality].Data(), trackPtString[iTrackPt].Data(), asymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+          
+        } // Track pT loop
+      } // Centrality loop
       
     } // Asymmetry loop
     
