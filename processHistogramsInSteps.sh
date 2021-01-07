@@ -29,7 +29,7 @@ do
   root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",3,'$JFFCORRECTION','$SPILLOVERCORRECTION',-1,'$i',-1,-1,"'${MIXING}'")' # Track histograms
 done 
 
-# Jet-hadron correlations have centrality and track pT binning
+# Jet-hadron correlations have centrality and track pT binning.
 for i in `seq 0 3`;
 do
   for j in `seq 0 6`;
