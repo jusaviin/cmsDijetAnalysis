@@ -1057,7 +1057,7 @@ void DijetAnalyzer::RunAnalysis(){
       }
       
       // Q-vector cut for event plane. Used in a MC study to try to match flow with data.
-      if(doEventPlane){
+      if(doEventPlane){ // doEventPlane
         
         // Variables for event plane
         eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
@@ -1097,7 +1097,7 @@ void DijetAnalyzer::RunAnalysis(){
         //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
                 
-        //if(eventPlaneQ < 3.333) continue;
+        if(eventPlaneQ < 2.222) continue;  // 2.222 2.778 3.333
       }
       
       
