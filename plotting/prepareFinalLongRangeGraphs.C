@@ -16,13 +16,14 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // File for Vn from jet-hadron correlations
-  TString jetHadronFileName = "data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root";
+  TString jetHadronFileName = "data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root";
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJet_noUncIncOrPtw_improvisedMixing_noCorrections_processed_2020-11-03.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_noHighThirdJet_onlySeagull_wtaAxis_processed_2020-07-02_combine0_someStats.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_averagePeakMixing_allCorrections_processed_2020-03-13.root
+  // data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_5pCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-16.root
   // data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_xjBins_noCorrections_processed_2020-11-03.root
   // data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-03.root
   // data/PbPbMC2018_RecoGen_akFlowJet_noUncorr_noCentShift_improvisedMixing_noCorrections_jet100trigger_processed_2020-06-22.root
@@ -65,7 +66,7 @@ void prepareFinalLongRangeGraphs(){
   const bool useSameEventJetHadron = false;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
   const bool useSameEventDihadron = false;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
   
-  const bool projectManualCorrectedJetHadron = true;  // True: Manually do background projection from mixed event corrected distribution. Useful for systematic error estimation
+  const bool projectManualCorrectedJetHadron = false;  // True: Manually do background projection from mixed event corrected distribution. Useful for systematic error estimation
   const double minEtaProjection = 1.5;  // Minimum eta vaue used in the manual projection
   const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
@@ -77,7 +78,7 @@ void prepareFinalLongRangeGraphs(){
   const bool plotOnlyCorrection = false; // True: Only show the correction in jet v2 graph. False: Regular analysis
   const bool correctAtJetLevel = true;   // True: Apply jet recontruction bias correction at jet vn level. False: Apply the correction at jet-hadron correlation level
   
-  const bool printFlowTable = true;
+  const bool printFlowTable = false;
     
   const bool saveFigures = false;
   TString saveComment = "_caloJet";
@@ -89,7 +90,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_systematicUncertainties_backgroundAdjustedJetHadron_2020-12-04.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_correctedJetHadron_correctedDihadron_2021-01-07.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
@@ -264,7 +265,7 @@ void prepareFinalLongRangeGraphs(){
         // Read the two dimensional distribution from the same event
         if(useSameEventDihadron){
           helperHistogramLeading = dihadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramLeading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, nAsymmetryBins));
+          helperHistogramLeading->Scale(1.0 / dihadronReader->GetPtIntegral(iCentrality, nAsymmetryBins));
           
           refitter->SubtractBackground(helperHistogramLeading, helperHistogramLeading, 4, true);
                     
@@ -713,6 +714,40 @@ void prepareFinalLongRangeGraphs(){
         } // Track pT loop
       } // Centrality loop
     } // Asymmetry loop
+    
+    // Return back to main directory
+    gDirectory->cd("../");
+    
+    // Also save the long range distributions
+    sprintf(histogramNamer,"longRangeJetHadron");
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Write(Form("longRangeJetHadron_A%dC%dT%d", iAsymmetry, iCentrality, iTrackPt), TObject::kOverwrite);
+        } // Track pT loop
+      } // Centrality loop
+    } // Asymmetry loop
+    
+    // Return back to main directory
+    gDirectory->cd("../");
+    
+    sprintf(histogramNamer,"longRangeDihadron");
+    if(!gDirectory->GetDirectory(histogramNamer)) gDirectory->mkdir(histogramNamer);
+    gDirectory->cd(histogramNamer);
+    
+    for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->Write(Form("longRangeDihadron_A%dC%dT%d", iAsymmetry, iCentrality, iTrackPt), TObject::kOverwrite);
+        } // Track pT loop
+      } // Centrality loop
+    } // Asymmetry loop
+    
+    // Return back to main directory
+    gDirectory->cd("../");
     
     // Close the output file
     outputFile->Close();
