@@ -24,15 +24,15 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "flowGraphs_PbPbMC2018_noCentShift_noQVectorSelection_correctedJetHadron_correctedDihadron_2021-01-07.root";
+  TString graphFileName = "flowGraphs_PbPb2018_correctedJetHadron_correctedDihadron_2021-01-08.root";
   // flowGraphs_PbPb2018_caloJets_correctedJetHadron_correctedDihadron_xjBins_2020-12-03.root
   // flowGraphs_PbPb2018_systematicUncertainties_regularJetHadron_2020-12-04.root
   TFile *graphFile[maxFiles];
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 1;
-  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_noCentShift_noQVectorCut_correctedJetHadron_sameEventDihadron_2021-01-06.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root",  "flowGraphs_PbPbMC2018_noCentShift_qVectorCut5_correctedJetHadron_sameEventDihadron_2020-12-10.root", "flowGraphs_PbPbMC2018_noCentShift_qVectorCut6_correctedJetHadron_sameEventDihadron_2020-12-10.root", "flowGraphs_PbPbMC2018_noCentShift_qVectorCut7_correctedJetHadron_sameEventDihadron_2020-12-10.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_systematicUncertainties_backgroundAdjustedJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_nearEtaJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_farEtaJetHadron_2020-12-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  int nComparisonFiles = 4;
+  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_noCentShift_noQVectorCut_correctedJetHadron_correctedDihadron_2021-01-08.root", "flowGraphs_PbPbMC2018_noCentShift_qVectorCut5_correctedJetHadron_correctedDihadron_2021-01-08.root", "flowGraphs_PbPbMC2018_noCentShift_qVectorCut6_correctedJetHadron_correctedDihadron_2021-01-08.root", "flowGraphs_PbPbMC2018_noCentShift_qVectorCut7_correctedJetHadron_correctedDihadron_2021-01-08.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_systematicUncertainties_backgroundAdjustedJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_nearEtaJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_farEtaJetHadron_2020-12-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
@@ -61,12 +61,14 @@ void longRangeGraphPlotter(){
   const bool drawDihadronVnFileComparison = false;
   const bool drawHadronVnFileComparison = true;
   const bool drawJetVnFileComparison = false;
-  const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison;
+  const bool drawJetHadronYieldFileComparison = false;
+  const bool drawDihadronYieldFileComparison = true;
+  const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison || drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison;
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool saveFigures = false;                     // Save the figures in a file
-  TString saveComment = "_caloJetQvectorComparisonShifted";              // String to be added to saved file names
+  const bool saveFigures = true;                     // Save the figures in a file
+  TString saveComment = "_caloJetQvectorComparisonNominal";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -88,6 +90,9 @@ void longRangeGraphPlotter(){
   TGraphErrors *flowSystematicsDihadron[maxFiles][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   TGraphErrors *flowSystematicsHadron[maxFiles][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   TGraphErrors *flowSystematicsJet[maxFiles][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
+  
+  TGraphErrors *yieldGraphJetHadron[maxFiles][nAsymmetryBins+1][nCentralityBins];
+  TGraphErrors *yieldGraphDihadron[maxFiles][nAsymmetryBins+1][nCentralityBins];
   
   // Jet vn summary graph in all centrality bins
   TGraphErrors *flowSummaryJet[maxFiles][nAsymmetryBins+1][nFlowComponents];
@@ -173,6 +178,29 @@ void longRangeGraphPlotter(){
           }
           
         } // Flow component loop
+        
+        // If drawn, load the yield graphs
+        if(drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison){
+          sprintf(histogramNamer,"longRangeJetHadronYield/longRangeJetHadronYield_A%dC%d", iAsymmetry, iCentrality);
+          yieldGraphJetHadron[iFile][iAsymmetry][iCentrality] = (TGraphErrors*) graphFile[iFile]->Get(histogramNamer);
+          
+          sprintf(histogramNamer,"longRangeDihadronYield/longRangeDihadronYield_A%dC%d", iAsymmetry, iCentrality);
+          yieldGraphDihadron[iFile][iAsymmetry][iCentrality] = (TGraphErrors*) graphFile[iFile]->Get(histogramNamer);
+          
+          // Remove the points that are above the maximum pT limit from the graphs
+          xAxisPoints = yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->GetX();
+          nPoints = yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->GetN();
+          for(int iX = nPoints-1; iX >= 0; iX--){
+            if(xAxisPoints[iX] > maxTrackPt){
+              yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->RemovePoint(iX);
+              yieldGraphDihadron[iFile][iAsymmetry][iCentrality]->RemovePoint(iX);
+            } else {
+              break;
+            }
+          }
+          
+        }
+        
       } // Asymmetry loop
     } // Centrality loop
   } // File loop
@@ -196,7 +224,7 @@ void longRangeGraphPlotter(){
   TLegend *legend;
   TLegend *vLegend;
   int markers[] = {kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar};
-  int fullMarkers[] = {kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar};
+  int fullMarkers[] = {kFullSquare, kFullCircle, kFullDiamond, kFullCross, kFullStar};
   int secondMarkers[] = {kFullCircle, kFullCross, kFullSquare, kFullCircle, kFullFourTrianglesPlus};
   int colors[] = {kBlue,kRed,kGreen+2,kBlack, kMagenta};
   int flowColors[] = {kBlue, kBlack, kRed, kGreen+3, kMagenta};
@@ -531,7 +559,7 @@ void longRangeGraphPlotter(){
                 gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
             }
             
-          } // File comparison for jet-hadron Vn
+          } // File comparison for hadron vn
           
           if(drawJetVnFileComparison){
           
@@ -597,6 +625,80 @@ void longRangeGraphPlotter(){
         } // Asymmetry loop
       } // Flow component loop
     } // Centrality loop
+    
+    // File comparison for yields
+    if(drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison){
+      
+      double maxJetHadronYield[] = {3000, 2000, 1000, 500};
+      double maxDihadronYield[] = {5500000, 2000000, 400000, 100000};
+      drawer->SetTitleOffsetY(1.6);
+      
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+          
+          if(drawJetHadronYieldFileComparison){
+          
+            legend = new TLegend(0.5,0.55,0.8,0.9);
+            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+            legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
+            
+            for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
+              yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[iFile]);
+              yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[iFile]);
+              yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
+              if(iFile == 0){
+                 drawer->DrawGraph(yieldGraphJetHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0, maxJetHadronYield[iCentrality], "Track p_{T} (GeV)", "Jet-hadron yield", " ", "p");
+              } else {
+                yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
+              }
+              
+              legend->AddEntry(yieldGraphJetHadron[iFile][iAsymmetry][iCentrality], fileLegend[iFile], "p");
+              
+            }
+            
+            legend->Draw();
+            
+            // Save the figures to file
+            if(saveFigures){
+                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronYieldComparison%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+            }
+            
+          } // File comparison for jet-hadron yields
+          
+          if(drawDihadronYieldFileComparison){
+          
+            legend = new TLegend(0.5,0.55,0.8,0.9);
+            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+            legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
+            
+            for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
+              yieldGraphDihadron[iFile][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[iFile]);
+              yieldGraphDihadron[iFile][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[iFile]);
+              yieldGraphDihadron[iFile][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
+              if(iFile == 0){
+                 drawer->DrawGraph(yieldGraphDihadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0, maxDihadronYield[iCentrality], "Track p_{T} (GeV)", "Dihadron yield", " ", "p");
+              } else {
+                yieldGraphDihadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
+              }
+              
+              legend->AddEntry(yieldGraphDihadron[iFile][iAsymmetry][iCentrality], fileLegend[iFile], "p");
+              
+            }
+            
+            legend->Draw();
+            
+            // Save the figures to file
+            if(saveFigures){
+                gPad->GetCanvas()->SaveAs(Form("figures/dihadronYieldComparison%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+            }
+            
+          } // File comparison for dihadron yields
+          
+        } // Asymmetry loop
+      } // Centrality loop
+    } // File comparison for yields
+    
+    drawer->SetTitleOffsetY(1.1);
     
   } // Draw file comparison plots
   
