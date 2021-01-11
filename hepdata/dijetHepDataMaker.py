@@ -134,6 +134,16 @@ for iCentrality in centralityString:
         asymmetryRatioSubleading.append(asymmetryRatioReader.read_hist_1d("asymmetryRatio" + iAsymmetry + "_trackSubleadingJet_" + iCentrality)) 
         asymmetryRatioErrorSubleading.append(asymmetryRatioReader.read_hist_1d("asymmetryRatioError" + iAsymmetry + "_trackSubleadingJet_" + iCentrality)) 
 
+# File for xj matrices. For paper figures 11 and 12.
+xjMatrixReader = RootFileReader("/Users/jviinika/cms/development/dijet5TeV/hepdata/xjMatrix_hepdata.root")
+
+# Read the xj matrices from the root file
+xjMatrix = []
+xjMatrixReverse = []
+
+for iCentrality in centralityString:
+    xjMatrix.append(xjMatrixReader.read_hist_2d("xjMatrix_" + iCentrality))
+    xjMatrixReverse.append(xjMatrixReader.read_hist_2d("xjMatrix_reverse_" + iCentrality))
 
 
 # Read the variables from the histograms
@@ -253,6 +263,47 @@ def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, c
             yAxis[(i-firstCentralityBin)*nAsymmetry+iXj].add_uncertainty(systUncertainty)
         
     return xAxis, yAxis
+
+# Function for finding x, y and z-axis variables from input histograms when the histograms are binned in deltaR
+#
+# Arguments:
+#  valueHistogram: Histogram containing the actual values and statistical errors
+#
+#  return: Returns HepData variables for x and y-axes from the input histograms
+#
+def findVariablesXjMatrix(valueHistogram):
+
+    # Define reaction and centrality labels.
+    reactionLabel = ["PB PB --> CHARGED X", "PB PB --> CHARGED X", "PB PB --> CHARGED X", "PB PB --> CHARGED X", "P P --> CHARGED X"]
+    centralityLabel = ["0-10%", "10-30%", "30-50%", "50-90%", "pp"]
+    
+    # x-axis:
+    xAxis = Variable("Reconstructed $x_{j}$", is_independent=True, is_binned=True, units="")
+    xAxis.values = valueHistogram[0]["x_edges"]
+    
+    # y-axis:
+    yAxis = Variable("Generator level $x_{j}$", is_independent=True, is_binned=True, units="")
+    yAxis.values = valueHistogram[0]["y_edges"]
+    
+    # Define a list for z-axis values
+    zAxis = []
+    
+    # Read the values
+    for iCentrality in range(0,len(centralityLabel)):
+        myVariable = Variable("Probability", is_independent=False, is_binned=False, units="")
+        myVariable.values = valueHistogram[iCentrality]["z"]
+        myVariable.add_qualifier("reaction",reactionLabel[iCentrality])
+        myVariable.add_qualifier("centrality",centralityLabel[iCentrality])
+        zAxis.append(myVariable)
+        
+    # Read the uncertainties
+    for iCentrality in range(0,len(centralityLabel)):
+        statUncertainty = Uncertainty("stat", is_symmetric=True)
+        statUncertainty.values = valueHistogram[iCentrality]["dz"]
+        zAxis[iCentrality].add_uncertainty(statUncertainty)
+        
+    # Return extracted vatiables
+    return xAxis, yAxis, zAxis
 
 ######################################################################################
 #               Table for leading jet deltaEta yield. Paper figure 1.                #
@@ -587,13 +638,57 @@ for i in range(5):
 # Extract x- and y-axis information from the histograms
 xDeltaR, yDeltaR = findVariables(balancedHistogram, balancedError, "$\\rho(\Delta r)_{x_{j} > 0.8} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), False)
 
-# Table 9a: Add the variables to the table
+# Table 10b: Add the variables to the table
 table10b.add_variable(xDeltaR)
 for variable in yDeltaR:
     table10b.add_variable(variable)
 
 # Add the table to submission object
 submission.add_table(table10b)
+
+######################################################################################
+#                Table for normalized xj matrixes. Paper figure 11.                  #
+######################################################################################
+
+table11 = Table("Figure 11")
+table11.description = "Generator-level vs. reconstructed $x_{j}$ values in the analysis $x_{j}$ bins. The plots show the probability to find a generator level $x_{j}$ for a given reconstructed $x_{j}$."
+table11.location = "Data from the figure 11, located on appendix A."
+table11.keywords["observables"] = ["$x_{j}$ matrix"]
+#table11.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
+
+# Extract axis information from the histograms
+xAxis, yAxis, zAxis = findVariablesXjMatrix(xjMatrix)
+
+# Table 11: Add the variables to the table
+table11.add_variable(xAxis)
+table11.add_variable(yAxis)
+for variable in zAxis:
+    table11.add_variable(variable)
+
+# Add the table to submission object
+submission.add_table(table11)
+
+######################################################################################
+#            Table for reverse normalized xj matrixes. Paper figure 12.              #
+######################################################################################
+
+table12 = Table("Figure 12")
+table12.description = "Generator-level vs. reconstructed $x_{j}$ values in the analysis $x_{j}$ bins. The plots show the probability to find a reconstructed $x_{j}$ for a given generator level $x_{j}$."
+table12.location = "Data from the figure 12, located on appendix A."
+table12.keywords["observables"] = ["$x_{j}$ matrix"]
+#table12.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
+
+# Extract axis information from the histograms
+xAxis, yAxis, zAxis = findVariablesXjMatrix(xjMatrixReverse)
+
+# Table 12: Add the variables to the table
+table12.add_variable(xAxis)
+table12.add_variable(yAxis)
+for variable in zAxis:
+    table12.add_variable(variable)
+
+# Add the table to submission object
+submission.add_table(table12)
 
 ###########################################################################
 #                      Finalize the submission                            #
