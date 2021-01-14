@@ -733,9 +733,9 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t fillerDijet[6];
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
-  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V4_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V4_DATA_L2Relative_AK4PF.txt"};
-  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_L2L3Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2L3Residual_AK4PF.txt", "CorrectionNotAppliedPF.txt", "CorrectionNotAppliedPF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_L2L3Residual_AK4PF.txt"};
-  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V4_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V4_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V6_DATA_Uncertainty_AK4PF.txt"};
+  std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V6_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V6_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2Relative_AK4PF.txt"};
+  std::string correctionFileResidual[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V6_DATA_L2L3Residual_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2L3Residual_AK4PF.txt", "CorrectionNotAppliedPF.txt", "CorrectionNotAppliedPF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2L3Residual_AK4PF.txt"};
+  std::string uncertaintyFile[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V6_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V6_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_MC_Uncertainty_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_Uncertainty_AK4PF.txt"};
   
   // For calo jets, use the correction files for calo jets (otherwise same name, but replace PF with Calo)
   if(fJetType == 0){
@@ -748,9 +748,6 @@ void DijetAnalyzer::RunAnalysis(){
     pfIndex = 0;
     pfIndex = uncertaintyFile[fDataType].find("PF", pfIndex);
     uncertaintyFile[fDataType].replace(pfIndex, 2, "Calo");
-    
-    correctionFileRelative[1] = "jetEnergyCorrections/75X_dataRun2_v13_L2Relative_AKPu4Calo_stabbed.txt";
-    correctionFileRelative[3] = "jetEnergyCorrections/75X_dataRun2_v13_L2Relative_AKPu4Calo_stabbed.txt";
     
   }
     
@@ -1038,7 +1035,7 @@ void DijetAnalyzer::RunAnalysis(){
         eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
         eventPlaneQx = 0;
         eventPlaneQy = 0;
-        if(fDoEventPlane){
+        if(fDoEventPlane){ //
           
           centralityBin = 0;
           if(centrality < 10){
@@ -1527,7 +1524,7 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhCentralityDijet->Fill(centrality,fTotalEventWeight); // TODO: Total weight here instead of centrality
           
           // Variables for event plane
-          if(fDoEventPlane){
+          if(fDoEventPlane){ //
             
             centralityBin = 0;
             if(centrality < 10){
@@ -1698,7 +1695,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   Double_t eventPlaneQx = 0;
   Double_t eventPlaneQy = 0;
   
-  if(fDoEventPlane){
+  if(fDoEventPlane){ //
     
     // Loop over all track in the event
     Int_t nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
@@ -1833,7 +1830,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
         fillerJetTrackInclusive[4] = correlationType;            // Axis 4: Correlation type (same or mixed event)
         fillerJetTrackInclusive[5] = leadingJetFlavor;           // Axis 5: Jet flavor (quark of gluon)
         
-        if(fDoEventPlane) fillerJetTrackInclusive[5] = eventPlaneQ;  // Axis 5: Magnitude of event plane q-vector
+        if(fDoEventPlane) fillerJetTrackInclusive[5] = eventPlaneQ;  // Axis 5: Magnitude of event plane q-vector //
         
         if(fFillInclusiveJetTrackCorrelation){
           fHistograms->fhTrackJetInclusive->Fill(fillerJetTrackInclusive,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-inclusive jet correlation histogram
@@ -1852,7 +1849,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
         fillerJetTrack[5] = correlationType;            // Axis 5: Correlation type (same or mixed event)
         fillerJetTrack[6] = leadingJetFlavor;           // Axis 6: Leading jet flavor (quark or gluon)
         
-        if(fDoEventPlane) fillerJetTrack[6] = eventPlaneQ;  // Axis 6: Magnitude of event plane q-vector
+        if(fDoEventPlane) fillerJetTrack[6] = eventPlaneQ;  // Axis 6: Magnitude of event plane q-vector //
         
         if(fFillRegularJetTrackCorrelation) fHistograms->fhTrackLeadingJet->Fill(fillerJetTrack,trackEfficiencyCorrection*fTotalEventWeight*jetPtWeight); // Fill the track-leading jet correlation histogram
         if(fFillUncorrectedJetTrackCorrelation) fHistograms->fhTrackLeadingJetUncorrected->Fill(fillerJetTrack,fTotalEventWeight*jetPtWeight);                // Fill the uncorrected track-leading jet correlation histogram

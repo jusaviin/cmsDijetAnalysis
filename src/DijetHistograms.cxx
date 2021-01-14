@@ -349,8 +349,6 @@ void DijetHistograms::CreateHistograms(){
   const Double_t maxQVector = 5;  // Maximum value for the magnitude of q-vector
   const Int_t nQVectorBins = 4;   // Number of q-vector magnitude bins
   
-  Double_t wideQvectorBins[5] = {minQVector,2.222,2.778,3.333,maxQVector};
-  
   Bool_t doEventPlane = (fCard->Get("IncludeEventPlane") == 1);
   
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
@@ -379,6 +377,13 @@ void DijetHistograms::CreateHistograms(){
   Double_t ptHatBins[nPtHatBins+1];
   for(Int_t iPtHat = 0; iPtHat < nPtHatBins+1; iPtHat++){
     ptHatBins[iPtHat] = fCard->Get("PtHatBinEdges",iPtHat);
+  }
+  
+  // Binning for Qvector
+  const Int_t nWideQvectorBins = fCard->GetNBin("QvectorBinEdges");
+  Double_t wideQvectorBins[nWideQvectorBins+1];
+  for(Int_t iQ = 0; iQ < nWideQvectorBins+1; iQ++){
+    wideQvectorBins[iQ] = fCard->Get("QvectorBinEdges",iQ);
   }
   
   // Arrays for creating THnSparses
@@ -618,10 +623,10 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder7D[5] = minCorrelationType;   // low bin border for correlation types
   highBinBorder7D[5] = maxCorrelationType;  // high bin border for correlation types
   
-  if(doEventPlane){
+  if(doEventPlane){ //
     
     // Axis 6 for the track-jet correlation histogram: magnitude of event plane q-vector
-    nBins7D[6] = nQVectorBins;        // nBins for event plane q-vector magnitude
+    nBins7D[6] = nWideQvectorBins;    // nBins for event plane q-vector magnitude
     lowBinBorder7D[6] = minQVector;   // low bin border for event plane q-vector magnitude
     highBinBorder7D[6] = maxQVector;  // high bin border for event plane q-vector magnitude
     
@@ -645,7 +650,7 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJet->SetBinEdges(3,wideAsymmetryBins);
   fhTrackLeadingJet->SetBinEdges(4,wideCentralityBins);
   fhTrackSubleadingJet->SetBinEdges(4,wideCentralityBins);
-  if(doEventPlane){
+  if(doEventPlane){ //
     fhTrackLeadingJet->SetBinEdges(6,wideQvectorBins);
     fhTrackSubleadingJet->SetBinEdges(6,wideQvectorBins);
   }
@@ -661,7 +666,7 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJetUncorrected->SetBinEdges(3,wideAsymmetryBins);
   fhTrackLeadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
   fhTrackSubleadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
-  if(doEventPlane){
+  if(doEventPlane){ //
     fhTrackLeadingJetUncorrected->SetBinEdges(6,wideQvectorBins);
     fhTrackSubleadingJetUncorrected->SetBinEdges(6,wideQvectorBins);
   }
@@ -677,7 +682,7 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJetPtWeighted->SetBinEdges(3,wideAsymmetryBins);
   fhTrackLeadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
   fhTrackSubleadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
-  if(doEventPlane){
+  if(doEventPlane){ //
     fhTrackLeadingJetPtWeighted->SetBinEdges(6,wideQvectorBins);
     fhTrackSubleadingJetPtWeighted->SetBinEdges(6,wideQvectorBins);
   }
@@ -709,10 +714,10 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder6D[4] = minCorrelationType;   // low bin border for correlation types
   highBinBorder6D[4] = maxCorrelationType;  // high bin border for correlation types
   
-  if(doEventPlane){
+  if(doEventPlane){ //
     
     // Axis 5 for the track-inclusive jet correlation histogram: magnitude of event plane q-vector
-    nBins6D[5] = nQVectorBins;        // nBins for event plane q-vector magnitude
+    nBins6D[5] = nWideQvectorBins;    // nBins for event plane q-vector magnitude
     lowBinBorder6D[5] = minQVector;   // low bin border for event plane q-vector magnitude
     highBinBorder6D[5] = maxQVector;  // high bin border for event plane q-vector magnitude
     
@@ -734,7 +739,7 @@ void DijetHistograms::CreateHistograms(){
   fhTrackJetInclusivePtWeighted->SetBinEdges(0,wideTrackPtBins);
   fhTrackJetInclusive->SetBinEdges(3,wideCentralityBins);
   fhTrackJetInclusivePtWeighted->SetBinEdges(3,wideCentralityBins);
-  if(doEventPlane){
+  if(doEventPlane){ //
     fhTrackJetInclusive->SetBinEdges(5,wideQvectorBins);
     fhTrackJetInclusivePtWeighted->SetBinEdges(5,wideQvectorBins);
   }
