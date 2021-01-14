@@ -474,6 +474,20 @@ void DijetDrawer::DrawDijetHistograms(){
       // Save the figure to a file
       SaveFigure("dijetXjMatrix",compactCentralityString);
       
+      // Save the histogram to a file for HepData
+      // Create the output file
+      //TFile *outputFile = new TFile("xjMatrix_hepdata.root","UPDATE");
+      
+      //TString outputFileName = Form("xjMatrix_%d-%d", fHistograms->GetCard()->GetLowBinBorderCentrality(iCentrality), fHistograms->GetCard()->GetHighBinBorderCentrality(iCentrality));
+      //TString outputFileName = "xjMatrix_reverse_pp";
+      //drawnHistogram2D->Write(Form("xjMatrix_reverse_%.0f-%.0f", fHistograms->GetCard()->GetLowBinBorderCentrality(iCentrality), fHistograms->GetCard()->GetHighBinBorderCentrality(iCentrality)),TObject::kOverwrite);             // Number of events surviving different event cuts
+
+      // Close the file after everything is written
+      //outputFile->Close();
+      
+      // Delete the outputFile object
+      //delete outputFile;
+      
     }
     
     // === Leading jet pT vs. subleading jet pT ===
