@@ -16,7 +16,7 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // File for Vn from jet-hadron correlations
-  TString jetHadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_improvisedMising_noCorrections_qVectorCut5_processed_2020-12-09.root";
+  TString jetHadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_noCorrections_processed_2021-01-11.root";
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04.root
@@ -30,7 +30,7 @@ void prepareFinalLongRangeGraphs(){
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   
   // File for Vn from dihadron correlations
-  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_qVectorBin5_onlySeagull_processed_2020-12-07.root";
+  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBelowCut5_noCorrections_processed_2020-12-07.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -91,7 +91,7 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_noCentShift_qVectorCut5_correctedJetHadron_correctedDihadron_2021-01-08.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow5_correctedJetHadron_correctedDihadron_2021-01-13.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root

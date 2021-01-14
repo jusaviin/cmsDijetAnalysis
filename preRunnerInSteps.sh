@@ -6,9 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_improvisedMising_qVectorCut5_preprocessed_2020-12-09.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_improvisedMising_noCorrections_qVectorCut5_processed_2020-12-09.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_improvisedMising_qVectorCut6_preprocessed_2020-12-09.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_improvisedMising_noCorrections_qVectorCut6_processed_2020-12-09.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_improvisedMising_qVectorCut7_preprocessed_2020-12-09.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_improvisedMising_noCorrections_qVectorCut7_processed_2020-12-09.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_preprocessed_2021-01-11.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_noCorrections_processed_2021-01-11.root" false false -1 "data/"
 
 #./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_preprocessed_2020-05-13.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_allCorrectionsUnsmeared_processed_2020-05-13.root" true true -1 "data/"
 
