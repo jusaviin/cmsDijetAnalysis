@@ -16,7 +16,8 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // File for Vn from jet-hadron correlations
-  TString jetHadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_noCorrections_processed_2021-01-11.root";
+  TString jetHadronFileName[4];
+  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_noCorrections_processed_2021-01-11.root";
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04.root
@@ -30,7 +31,8 @@ void prepareFinalLongRangeGraphs(){
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_tuning_processed_2019-10-21.root
   
   // File for Vn from dihadron correlations
-  TString dihadronFileName = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBelowCut5_noCorrections_processed_2020-12-07.root";
+  TString dihadronFileName[4];
+  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBelowCut5_noCorrections_processed_2020-12-07.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -44,6 +46,20 @@ void prepareFinalLongRangeGraphs(){
   // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_5pCentShift_improvisedMixing_sameTriggerAssoc_noCorrections_processed_2020-07-07.root
   // data/PbPbMC2018_RecoGen_akFlowJet_dihadron_noCentShift_improvisedMixing_normQmidRap_highQ6_sameTrigAss_noCorrections_processed_2020-09-04.root
 
+  // We can use different MC configuration for different centrality bins
+  
+  // Files to use for centrality bin 10-30 %
+  jetHadronFileName[1] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMising_noCorrections_qVectorCut6_processed_2020-12-09.root";
+  dihadronFileName[1] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBin6_onlySeagull_processed_2020-12-07.root";
+  
+  // Files to use for centrality bin 30-50 %
+  jetHadronFileName[2] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMising_noCorrections_qVectorCut5_processed_2020-12-09.root";
+  dihadronFileName[2] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBin5_onlySeagull_processed_2020-12-07.root";
+  
+  // Files to use for centrality bin 50-90 %
+  jetHadronFileName[3] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_noCorrections_processed_2021-01-11.root";
+  dihadronFileName[3] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBelowCut5_noCorrections_processed_2020-12-07.root";
+  
   // Reconstruction bias correction
   const char *jetReconstructionBiasFile = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt";
   const char *jetReconstructionBiasFileForJetVn = "corrections/jetReconstructionBiasCorrection_jetVn_noShiftFitUpToV4_correctedJetHadron_sameEventDihadron_caloJet_2020-11-06.txt";
@@ -53,11 +69,13 @@ void prepareFinalLongRangeGraphs(){
   const bool disableSystematicUncertainty = true;
   
   // Open the input file and read bin numbers from it
-  TFile *jetHadronFile = TFile::Open(jetHadronFileName);
-  DijetHistogramManager *jetHadronReader = new DijetHistogramManager(jetHadronFile);
-  const int nCentralityBins = jetHadronReader->GetNCentralityBins();
-  const int nTrackPtBins = jetHadronReader->GetNTrackPtBins();
-  const int nAsymmetryBins = jetHadronReader->GetNAsymmetryBins();
+  TFile *jetHadronFile[4];
+  DijetHistogramManager *jetHadronReader[4];
+  jetHadronFile[0] = TFile::Open(jetHadronFileName[0]);
+  jetHadronReader[0] = new DijetHistogramManager(jetHadronFile[0]);
+  const int nCentralityBins = jetHadronReader[0]->GetNCentralityBins();
+  const int nTrackPtBins = jetHadronReader[0]->GetNTrackPtBins();
+  const int nAsymmetryBins = jetHadronReader[0]->GetNAsymmetryBins();
   double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
@@ -91,7 +109,10 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow5_correctedJetHadron_correctedDihadron_2021-01-13.root";
+  const bool useDifferentFilesForDifferentCentralities = true;
+  const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
+  
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedEventDihadron_bestQvectorForEachCentrality_2021-01-14.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
@@ -102,8 +123,8 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Read the dihadron file
-  TFile *dihadronFile = TFile::Open(dihadronFileName);
-  DijetHistogramManager *dihadronReader = new DijetHistogramManager(dihadronFile);
+  TFile *dihadronFile[nCentralityBinsReader];
+  DijetHistogramManager *dihadronReader[nCentralityBinsReader];
   
   // Read the uncertainties from the uncertainty file
   JffCorrector *uncertaintyProvider = new JffCorrector();
@@ -157,40 +178,50 @@ void prepareFinalLongRangeGraphs(){
   double jetFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
   
   // Read the histograms from the input files
-  jetHadronReader->SetLoadTracks(true);
-  jetHadronReader->SetLoadTrackLeadingJetCorrelations(true);
-  if(useSameEventJetHadron || projectManualCorrectedJetHadron) jetHadronReader->SetLoadTrackSubleadingJetCorrelations(true);
-  jetHadronReader->SetAsymmetryBinRange(0,nAsymmetryBins);
-  jetHadronReader->SetLoad2DHistograms(useSameEventJetHadron || projectManualCorrectedJetHadron);
-  jetHadronReader->LoadProcessedHistograms();
-  
-  dihadronReader->SetLoadTracks(true);
-  dihadronReader->SetLoadTrackLeadingJetCorrelations(true);
-  if(useSameEventDihadron) dihadronReader->SetLoadTrackSubleadingJetCorrelations(true);
-  dihadronReader->SetAsymmetryBinRange(0,nAsymmetryBins);
-  dihadronReader->SetLoad2DHistograms(useSameEventDihadron);
-  dihadronReader->LoadProcessedHistograms();
+  for(int iCentrality = 0; iCentrality < nCentralityBinsReader; iCentrality++){
+    
+    jetHadronFile[iCentrality] = TFile::Open(jetHadronFileName[iCentrality]);
+    jetHadronReader[iCentrality] = new DijetHistogramManager(jetHadronFile[iCentrality]);
+    jetHadronReader[iCentrality]->SetLoadTracks(true);
+    jetHadronReader[iCentrality]->SetLoadTrackLeadingJetCorrelations(true);
+    if(useSameEventJetHadron || projectManualCorrectedJetHadron) jetHadronReader[iCentrality]->SetLoadTrackSubleadingJetCorrelations(true);
+    jetHadronReader[iCentrality]->SetAsymmetryBinRange(0,nAsymmetryBins);
+    jetHadronReader[iCentrality]->SetLoad2DHistograms(useSameEventJetHadron || projectManualCorrectedJetHadron);
+    jetHadronReader[iCentrality]->LoadProcessedHistograms();
+    
+    dihadronFile[iCentrality] = TFile::Open(dihadronFileName[iCentrality]);
+    dihadronReader[iCentrality] = new DijetHistogramManager(dihadronFile[iCentrality]);
+    dihadronReader[iCentrality]->SetLoadTracks(true);
+    dihadronReader[iCentrality]->SetLoadTrackLeadingJetCorrelations(true);
+    if(useSameEventDihadron) dihadronReader[iCentrality]->SetLoadTrackSubleadingJetCorrelations(true);
+    dihadronReader[iCentrality]->SetAsymmetryBinRange(0,nAsymmetryBins);
+    dihadronReader[iCentrality]->SetLoad2DHistograms(useSameEventDihadron);
+    dihadronReader[iCentrality]->LoadProcessedHistograms();
+  }
 
   
   double binCenter, binError, errorScale;
   int nBins;
+  int iCentralityReader;
   
   // Read the long range jet-hadron histograms and do the fitting
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     
+    iCentralityReader = useDifferentFilesForDifferentCentralities ? iCentrality : 0;
+    
     // Track histogram for PbPb (needed for graph binning)
-    tracksForGraph[iCentrality] = jetHadronReader->GetHistogramTrackPt(DijetHistogramManager::kTrack, DijetHistogramManager::kSameEvent, iCentrality);
+    tracksForGraph[iCentrality] = jetHadronReader[iCentralityReader]->GetHistogramTrackPt(DijetHistogramManager::kTrack, DijetHistogramManager::kSameEvent, iCentrality);
     
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
         // Read the two dimensional distribution from the same event
         if(useSameEventJetHadron){
-          helperHistogramLeading = jetHadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramLeading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, iAsymmetry));
+          helperHistogramLeading = jetHadronReader[iCentralityReader]->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+          helperHistogramLeading->Scale(1.0 / jetHadronReader[iCentralityReader]->GetPtIntegral(iCentrality, iAsymmetry));
           
-          helperHistogramSubleading = jetHadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramSubleading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, iAsymmetry));
+          helperHistogramSubleading = jetHadronReader[iCentralityReader]->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+          helperHistogramSubleading->Scale(1.0 / jetHadronReader[iCentralityReader]->GetPtIntegral(iCentrality, iAsymmetry));
           
           //longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = refitter->CombineDeltaPhi(helperHistogramLeading, helperHistogramSubleading, 1.5, 2.5, Form("lulProjection%d%d%d",iAsymmetry,iCentrality,iTrackPt),true);
                     
@@ -223,18 +254,18 @@ void prepareFinalLongRangeGraphs(){
           
         } else if (projectManualCorrectedJetHadron){
           
-          helperHistogramLeading = jetHadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramLeading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, iAsymmetry));
+          helperHistogramLeading = jetHadronReader[iCentralityReader]->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
+          helperHistogramLeading->Scale(1.0 / jetHadronReader[iCentralityReader]->GetPtIntegral(iCentrality, iAsymmetry));
           
-          helperHistogramSubleading = jetHadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramSubleading->Scale(1.0 / jetHadronReader->GetPtIntegral(iCentrality, iAsymmetry));
+          helperHistogramSubleading = jetHadronReader[iCentralityReader]->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kCorrected, iAsymmetry, iCentrality, iTrackPt);
+          helperHistogramSubleading->Scale(1.0 / jetHadronReader[iCentralityReader]->GetPtIntegral(iCentrality, iAsymmetry));
           
           longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = refitter->CombineDeltaPhi(helperHistogramLeading, helperHistogramSubleading, minEtaProjection, maxEtaProjection, Form("jetHadronManualProjection%d%d%d",iAsymmetry,iCentrality,iTrackPt),oneSideProjection);
           
         } else {
           
           // Regular long range histogram
-          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = jetHadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
+          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = jetHadronReader[iCentralityReader]->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta);
           
           // Remove earlier fit from the histogram
           longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt] = longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
@@ -260,13 +291,15 @@ void prepareFinalLongRangeGraphs(){
   // Read the long range dihadron histograms and do the fitting
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     
+    iCentralityReader = useDifferentFilesForDifferentCentralities ? iCentrality : 0;
+    
     for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
         // Read the two dimensional distribution from the same event
         if(useSameEventDihadron){
-          helperHistogramLeading = dihadronReader->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
-          helperHistogramLeading->Scale(1.0 / dihadronReader->GetPtIntegral(iCentrality, nAsymmetryBins));
+          helperHistogramLeading = dihadronReader[iCentralityReader]->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
+          helperHistogramLeading->Scale(1.0 / dihadronReader[iCentralityReader]->GetPtIntegral(iCentrality, nAsymmetryBins));
           
           refitter->SubtractBackground(helperHistogramLeading, helperHistogramLeading, 4, true);
                     
@@ -296,7 +329,7 @@ void prepareFinalLongRangeGraphs(){
         } else {
           
           // Regular long range histogram
-          longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) dihadronReader->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta)->Clone(Form("dihadronLongRng%d%d%d",iCentrality,iAsymmetry,iTrackPt));
+          longRangeDihadron[iAsymmetry][iCentrality][iTrackPt] = (TH1D*) dihadronReader[iCentralityReader]->GetHistogramJetTrackDeltaPhi(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kBackground, iAsymmetry, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta)->Clone(Form("dihadronLongRng%d%d%d",iCentrality,iAsymmetry,iTrackPt));
           
           // Remove earlier fit from the histogram
           longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt] = longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
