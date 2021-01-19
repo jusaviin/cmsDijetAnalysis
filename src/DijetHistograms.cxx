@@ -462,10 +462,21 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorder6D[4] = minCentrality;  // low bin border for centrality
   highBinBorder6D[4] = maxCentrality; // high bin border for centrality
   
-  // Axis 5 for the jet histogram: jet flavor (quark/gluon)
-  nBins6D[5] = nClosureParticleTypeBins;        // nBins for jet flavor
-  lowBinBorder6D[5] = minClosureParticleType;   // low bin border for jet flavor
-  highBinBorder6D[5] = maxClosureParticleType;  // high bin border for jet flavor
+  if(doEventPlane){ //
+    
+    // Axis 5 for the jet histogram: magnitude of event plane q-vector
+    nBins6D[5] = nWideQvectorBins;    // nBins for event plane q-vector magnitude
+    lowBinBorder6D[5] = minQVector;   // low bin border for event plane q-vector magnitude
+    highBinBorder6D[5] = maxQVector;  // high bin border for event plane q-vector magnitude
+    
+  } else {
+  
+    // Axis 5 for the jet histogram: jet flavor (quark/gluon)
+    nBins6D[5] = nClosureParticleTypeBins;        // nBins for jet flavor
+    lowBinBorder6D[5] = minClosureParticleType;   // low bin border for jet flavor
+    highBinBorder6D[5] = maxClosureParticleType;  // high bin border for jet flavor
+    
+  }
   
   // Create the histograms for leading and subleading jets using the above binning information
   fhLeadingDijet = new THnSparseF("leadingJet","leadingJet",6,nBins6D,lowBinBorder6D,highBinBorder6D); fhLeadingDijet->Sumw2();
@@ -478,6 +489,11 @@ void DijetHistograms::CreateHistograms(){
   // Set custom centrality bins for histograms
   fhLeadingDijet->SetBinEdges(4,wideCentralityBins);
   fhSubleadingDijet->SetBinEdges(4,wideCentralityBins);
+  
+  if(doEventPlane){ //
+    fhLeadingDijet->SetBinEdges(5,wideQvectorBins);
+    fhSubleadingDijet->SetBinEdges(5,wideQvectorBins);
+  }
 
   // ========= THnSparse for dijets =========
   

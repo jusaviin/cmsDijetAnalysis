@@ -975,7 +975,7 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
-    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
+    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
       
       //************************************************
       //         Read basic event information
@@ -1562,6 +1562,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
           fillerDijet[5] = leadingJetFlavor;               // Axis 5: Leading jet flavor
+          if(fDoEventPlane) fillerDijet[5] = eventPlaneQ / TMath::Sqrt(eventPlaneMultiplicity);   // Axis 5: Q-vector
           fHistograms->fhLeadingDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight);    // Fill the data point to leading jet histogram
                     
           // Fill the subleading jet histogram
@@ -1571,6 +1572,7 @@ void DijetAnalyzer::RunAnalysis(){
           fillerDijet[3] = dijetAsymmetry;                 // Axis 3: Asymmetry
           fillerDijet[4] = centrality;                     // Axis 4: Centrality
           fillerDijet[5] = subleadingJetFlavor;            // Axis 5: Subleading jet flavor
+          if(fDoEventPlane) fillerDijet[5] = eventPlaneQ / TMath::Sqrt(eventPlaneMultiplicity);   // Axis 5: Q-vector
           fHistograms->fhSubleadingDijet->Fill(fillerDijet,fTotalEventWeight*jetPtWeight); // Fill the data point to subleading jet histogram
           
           // Fill the dijet histogram
