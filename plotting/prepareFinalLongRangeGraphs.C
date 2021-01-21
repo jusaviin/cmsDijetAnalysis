@@ -17,7 +17,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_noCorrections_processed_2021-01-11.root";
+  jetHadronFileName[0] = "data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root";
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04.root
@@ -32,7 +32,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBelowCut5_noCorrections_processed_2020-12-07.root";
+  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -82,16 +82,17 @@ void prepareFinalLongRangeGraphs(){
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
-  const bool useSameEventJetHadron = false;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
-  const bool useSameEventDihadron = false;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
+  const bool useSameEventJetHadron = true;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
+  const bool useSameEventDihadron = true;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
   
   const bool projectManualCorrectedJetHadron = false;  // True: Manually do background projection from mixed event corrected distribution. Useful for systematic error estimation
   const double minEtaProjection = 1.5;  // Minimum eta vaue used in the manual projection
   const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
-  const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
-  const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
+  const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
+  const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
+  const bool hideFit = true;                  // Hide fit from the histograms when drawing
   
   const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
   const bool plotOnlyCorrection = false; // True: Only show the correction in jet v2 graph. False: Regular analysis
@@ -100,7 +101,7 @@ void prepareFinalLongRangeGraphs(){
   const bool printFlowTable = false;
     
   const bool saveFigures = false;
-  TString saveComment = "_caloJet";
+  TString saveComment = "_caloJetSameEvent";
   
   const int nRefit = 4; // Number of vn:s included in the refit
   bool refitBackground = true; // Refit the background distribution
@@ -109,14 +110,15 @@ void prepareFinalLongRangeGraphs(){
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
   
-  const bool useDifferentFilesForDifferentCentralities = true;
+  const bool useDifferentFilesForDifferentCentralities = false;
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedEventDihadron_bestQvectorForEachCentrality_2021-01-14.root";
+  TString outputFileName = "flowGraphs/lullero.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
   // flowGraphs/exampleDihadronFromMC.root
+  // flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow3p3OnlyForDihadron_2021-01-19.root
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -456,13 +458,14 @@ void prepareFinalLongRangeGraphs(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
+          if(hideFit) longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0);
           drawer->DrawHistogram(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{d#Delta#phi}", " ");
           
           // Ass a legend to the figure
           legend = new TLegend(0.3,0.6,0.7,0.9);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           
-          legend->AddEntry((TObject*) 0,"Jet-hadron Fourier fit","");
+          legend->AddEntry((TObject*) 0,"Jet-hadron same event","");
           legend->AddEntry((TObject*) 0, Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
           legend->AddEntry((TObject*) 0, Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
           if(iAsymmetry < nAsymmetryBins){
@@ -488,13 +491,14 @@ void prepareFinalLongRangeGraphs(){
       for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
         for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
+          if(hideFit) longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0);
           drawer->DrawHistogram(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt], "#Delta#phi", "#frac{dN}{d#Delta#phi}", " ");
           
           // Ass a legend to the figure
           legend = new TLegend(0.3,0.6,0.7,0.9);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           
-          legend->AddEntry((TObject*) 0,"Dihadron Fourier fit","");
+          legend->AddEntry((TObject*) 0,"Dihadron same event","");
           legend->AddEntry((TObject*) 0, Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
           legend->AddEntry((TObject*) 0, Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
           if(iAsymmetry < nAsymmetryBins){
