@@ -714,6 +714,12 @@ void DijetAnalyzer::RunAnalysis(){
 //  Double_t highestJetPtSmeared = 0;   // Smeared pT of the highest jet
 //  Double_t highestJetPtErrorUp = 0;   // Uncertainty to be added to the jet with highest pT
 //  Double_t highestJetPtErrorDown = 0; // Uncertainty to be subtracted from the jet with highest pT
+//  Double_t smearingEta = 0;
+//  Double_t smearingPhi = 0;
+//  Double_t leadingSmearingEta = 0;
+//  Double_t leadingSmearingPhi = 0;
+//  Double_t subleadingSmearingEta = 0;
+//  Double_t subleadingSmearingPhi = 0;
   
   // Variables for jet matching and closure
   Int_t unmatchedCounter = 0;       // Number of jets that fail the matching
@@ -1097,7 +1103,7 @@ void DijetAnalyzer::RunAnalysis(){
         //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
                 
-        if(eventPlaneQ < 2.222) continue;  // 2.222 2.778 3.333
+        //if(eventPlaneQ > 2.8) continue;  // 2.222 2.778 3.333
       }
       
       
@@ -1133,6 +1139,12 @@ void DijetAnalyzer::RunAnalysis(){
         jetPhi = fJetReader->GetJetPhi(jetIndex);
         jetEta = fJetReader->GetJetEta(jetIndex);
         jetFlavor = 0;
+        
+//        // Smearing for the angles:
+//        smearingEta = fRng->Gaus(0,0.0207); // Number based on study of Enea using 0-10 % centrality bin
+//        smearingPhi = fRng->Gaus(0,0.0215); // Number based on study of Enea using 0-10 % centrality bin
+//        jetEta = jetEta + smearingEta;
+//        jetPhi = jetPhi + smearingPhi;
         
         // For data, instead of jet flavor, mark positive vz with 1 and negative with 0
         // This is used in one of the systematic checks for long range correlations
@@ -1217,10 +1229,22 @@ void DijetAnalyzer::RunAnalysis(){
           leadingJetPt = jetPt;
           highestIndex = jetIndex;
           leadingJetFlavor = jetFlavor;
+          
+//          // Smearing study
+//          subleadingSmearingEta = leadingSmearingEta;
+//          leadingSmearingEta = smearingEta;
+//          subleadingSmearingPhi = leadingSmearingPhi;
+//          leadingSmearingPhi = smearingPhi;
+          
         } else if(jetPt > subleadingJetPt){
           thirdJetPt = subleadingJetPt;
           subleadingJetPt = jetPt;
           secondHighestIndex = jetIndex;
+          
+//          // Smearing study
+//          subleadingSmearingEta = smearingEta;
+//          subleadingSmearingPhi = smearingPhi;
+          
         } else if (jetPt > thirdJetPt){
           thirdJetPt = jetPt;
         }
@@ -1370,6 +1394,12 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetPhi = fJetReader->GetJetPhi(secondHighestIndex);
         subleadingJetEta = fJetReader->GetJetEta(secondHighestIndex);
         subleadingJetFlavor = 0; // 0 = Quark jet
+        
+//        // Smearing for the angles:
+//        leadingJetEta = leadingJetEta + leadingSmearingEta;
+//        leadingJetPhi = leadingJetPhi + leadingSmearingPhi;
+//        subleadingJetEta = subleadingJetEta + subleadingSmearingEta;
+//        subleadingJetPhi = subleadingJetPhi + subleadingSmearingPhi;
         
         // If matching jets or using reco jets, find the jet flavor
         if(fMatchJets || fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
