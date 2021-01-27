@@ -15,8 +15,8 @@ submission = Submission()
 # Add basic paper info to the submission object
 submission.read_abstract("abstract.txt")
 submission.add_link("Webpage with all figures and tables", "https://cms-results.web.cern.ch/cms-results/public-results/publications/HIN-19-013/")
-submission.add_link("arXiv", "http://arxiv.org/abs/arXiv:20XX.XXXXXX")
-submission.add_record_id(1010101, "inspire")
+submission.add_link("arXiv", "http://arxiv.org/abs/arXiv:2101.04720")
+submission.add_record_id(1840683, "inspire")
 
 # All the figures are inserted as table objects to HepData
 from hepdata_lib import Table
@@ -404,7 +404,7 @@ for iTrackPt in range(-1,nTrackPt):
 
 table4a = Table("Figure 4a")
 table4a.description = "The ratio between leading jet radial momentum profiles in PbPb and pp collisions as a function of $\Delta r$."
-table4a.location = "Data from the top row of figure 4, located on page 11."
+table4a.location = "Data from the top row of figure 4, located on page 12."
 table4a.keywords["observables"] = ["Leading jet radial momentum profile ratio"]
 #table4a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -596,7 +596,7 @@ submission.add_table(table9b)
 
 table10a = Table("Figure 10a")
 table10a.description = "Ratio between unbalanced selection of subleading jet shapes to all subleading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
-table10a.location = "Data from the top row of figure 10, located on page 22."
+table10a.location = "Data from the top row of figure 10, located on page 17."
 table10a.keywords["observables"] = ["Subleading jet shape unbalanced ratio"]
 #table10a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
@@ -624,7 +624,7 @@ submission.add_table(table10a)
 
 table10b = Table("Figure 10b")
 table10b.description = "Ratio between balanced selection of subleading jet shapes to all subleading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
-table10b.location = "Data from the bottom row of figure 10, located on page 22."
+table10b.location = "Data from the bottom row of figure 10, located on page 17."
 table10b.keywords["observables"] = ["Subleading jet shape balanced ratio"]
 #table10b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
