@@ -17,7 +17,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root";
+  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_xjBins_noCorrections_processed_2020-11-03.root";
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04.root
@@ -32,7 +32,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root";
+  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_smallSample_xjBins_noCorrections_processed_2020-11-11.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -82,17 +82,17 @@ void prepareFinalLongRangeGraphs(){
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
-  const bool useSameEventJetHadron = true;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
-  const bool useSameEventDihadron = true;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
+  const bool useSameEventJetHadron = false;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
+  const bool useSameEventDihadron = false;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
   
   const bool projectManualCorrectedJetHadron = false;  // True: Manually do background projection from mixed event corrected distribution. Useful for systematic error estimation
   const double minEtaProjection = 1.5;  // Minimum eta vaue used in the manual projection
   const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
-  const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
-  const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
-  const bool hideFit = true;                  // Hide fit from the histograms when drawing
+  const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
+  const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
+  const bool hideFit = false;                  // Hide fit from the histograms when drawing
   
   const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
   const bool plotOnlyCorrection = false; // True: Only show the correction in jet v2 graph. False: Regular analysis
@@ -113,7 +113,7 @@ void prepareFinalLongRangeGraphs(){
   const bool useDifferentFilesForDifferentCentralities = false;
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
-  TString outputFileName = "flowGraphs/lullero.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_noCentShift_2021-01-22.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
