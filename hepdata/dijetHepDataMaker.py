@@ -34,7 +34,7 @@ xjString = ["0<xj<06", "06<xj<08", "08<xj<1", "allXj"]
 asymmetryString = ["Imbalanced", "Balanced"]
 trackPtString = ["","_07-1","_1-2","_2-3","_3-4","_4-8","_8-12","_12-300"]
 centralityDescription = ["the 0-10 % centrality bin in PbPb", "the 10-30 % centrality bin in PbPb", "the 30-50 % centrality bin in PbPb", "the 50-90 % centrality bin in PbPb", "pp"]
-trackPtDescription = ["", " for the charged particle $p_{T}$ bin $0.7 < p_{T}^{ch} <1$ GeV", " for the charged particle $p_{T}$ bin $1 < p_{T}^{ch} <2$ GeV", " for the charged particle $p_{T}$ bin $2 < p_{T}^{ch} <3$ GeV", " for the charged particle $p_{T}$ bin $3 < p_{T}^{ch} <4$ GeV", " for the charged particle $p_{T}$ bin $4 < p_{T}^{ch} <8$ GeV", " for the charged particle $p_{T}$ bin $8 < p_{T}^{ch} <12$ GeV", " for the charged particle $p_{T}$ bin $12 < p_{T}^{ch} <300$ GeV"]
+trackPtDescription = ["", " for the charged particle $p_{\mathrm{T}}$ bin $0.7 < p_{\mathrm{T}}^{\mathrm{ch}} < 1$ GeV", " for the charged particle $p_{\mathrm{T}}$ bin $1 < p_{\mathrm{T}}^{\mathrm{ch}} < 2$ GeV", " for the charged particle $p_{\mathrm{T}}$ bin $2 < p_{\mathrm{T}}^{\mathrm{ch}} < 3$ GeV", " for the charged particle $p_{\mathrm{T}}$ bin $3 < p_{\mathrm{T}}^{\mathrm{ch}} < 4$ GeV", " for the charged particle $p_{\mathrm{T}}$ bin $4 < p_{\mathrm{T}}^{\mathrm{ch}} < 8$ GeV", " for the charged particle $p_{\mathrm{T}}$ bin $8 < p_{\mathrm{T}}^{\mathrm{ch}} < 12$ GeV", " for the charged particle $p_{\mathrm{T}}$ bin $12 < p_{\mathrm{T}}^{\mathrm{ch}} < 300$ GeV"]
 
 # Numbers of bins
 nCentrality = 5       # Number of centrality bins, including pp
@@ -145,6 +145,10 @@ for iCentrality in centralityString:
     xjMatrix.append(xjMatrixReader.read_hist_2d("xjMatrix_" + iCentrality))
     xjMatrixReverse.append(xjMatrixReader.read_hist_2d("xjMatrix_reverse_" + iCentrality))
 
+# Reaction labels to be added as keywords
+pbpbReactionLabel = "PB PB --> DIJET CHARGED X"
+ppReactionLabel = "P P --> DIJET CHARGED X"
+reactionLabel = [pbpbReactionLabel, pbpbReactionLabel, pbpbReactionLabel, pbpbReactionLabel, ppReactionLabel]
 
 # Read the variables from the histograms
 from hepdata_lib import Variable, Uncertainty
@@ -157,18 +161,22 @@ from hepdata_lib import Variable, Uncertainty
 #  yAxisName: Label given to the histogram y-axis
 #  includeAsymmetry: True = Make data for all asymmetry bins. False = Only use one asymmetry bin
 #  centralityBins: Tuple where first index gives the number of centrality bins and the second the selected one, if number is 1
+#  isLeading: True = Leading jet. False = Subleading jet
 #  deltaEtaMode: True = Assume deltaEta histogram. False = Assume deltaR histogram
 #  trackPtBin: Given track pT bin. Negative value implies that pT integrated is used instead
 #
 #  return: Returns HepData variables for x and y-axes from the input histograms
 #
-def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, centralityBins, deltaEtaMode, trackPtBin = -1):
+def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, centralityBins, isLeading, deltaEtaMode, trackPtBin = -1):
 
     # Define reaction and centrality labels.
-    reactionLabel = ["PB PB --> CHARGED X", "PB PB --> CHARGED X", "PB PB --> CHARGED X", "PB PB --> CHARGED X", "P P --> CHARGED X"]
+    pbpbReactionLabel = "PB PB --> DIJET CHARGED X"
+    pbpbEnergyLabel = "$\sqrt{s_{\mathrm{NN}}}$"
+    energyLabel = [pbpbEnergyLabel, pbpbEnergyLabel, pbpbEnergyLabel, pbpbEnergyLabel, "$\sqrt{s}$"]
+    reactionLabel = [pbpbReactionLabel, pbpbReactionLabel, pbpbReactionLabel, pbpbReactionLabel, "P P --> DIJET CHARGED X"]
     centralityLabel = ["0-10%", "10-30%", "30-50%", "50-90%", "pp"]
     asymmetryLabel = ["$0 < x_{j} < 0.6$", "$0.6 < x_{j} < 0.8$", "$0.8 < x_{j} < 1.0$", "All $x_{j}$"]
-    trackPtLabel = ["$0.7 < p_{T}^{ch} < 300$ GeV", "$0.7 < p_{T}^{ch} < 1$ GeV", "$1 < p_{T}^{ch} < 2$ GeV", "$2 < p_{T}^{ch} < 3$ GeV", "$3 < p_{T}^{ch} < 4$ GeV", "$4 < p_{T}^{ch} < 8$ GeV", "$8 < p_{T}^{ch} < 12$ GeV", "$12 < p_{T}^{ch} < 300$ GeV"]
+    trackPtLabel = ["$0.7 < p_{\mathrm{T}}^{\mathrm{ch}} < 300$ GeV", "$0.7 < p_{\mathrm{T}}^{\mathrm{ch}} < 1$ GeV", "$1 < p_{\mathrm{T}}^{\mathrm{ch}} < 2$ GeV", "$2 < p_{\mathrm{T}}^{\mathrm{ch}} < 3$ GeV", "$3 < p_{\mathrm{T}}^{\mathrm{ch}} < 4$ GeV", "$4 < p_{\mathrm{T}}^{\mathrm{ch}} < 8$ GeV", "$8 < p_{\mathrm{T}}^{\mathrm{ch}} < 12$ GeV", "$12 < p_{\mathrm{T}}^{\mathrm{ch}} < 300$ GeV"]
     
     # Figure out the asymmetry bin range
     nAsymmetry = 1
@@ -179,12 +187,19 @@ def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, c
     firstCentralityBin = centralityBins[1]
     lastCentralityBin = centralityBins[1]+1
     
+    oneCentralityBin = True
     if centralityBins[0] > 1:
         firstCentralityBin = 0
         lastCentralityBin = centralityBins[0]
+        energyLabel[4] = "$\sqrt{s_{\mathrm{NN}}}$"
+        oneCentralityBin = False
         
     if deltaEtaMode:
-        trackPtLabel[0] = "$0.7 < p_{T}^{ch} < 12$ GeV"
+        trackPtLabel[0] = "$0.7 < p_{\mathrm{T}}^{\mathrm{ch}} < 12$ GeV"
+        
+    jetLabel = "Subleading"
+    if isLeading:
+        jetLabel = "Leading"
     
     # x-axis: deltaR value
     variableName = "$\Delta r$"
@@ -226,9 +241,22 @@ def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, c
         for iXj in range(nAsymmetry):
             myVariable = Variable(yAxisName, is_independent=False, is_binned=False, units="")
             myVariable.values = valueHistogram[(i-firstCentralityBin)*nAsymmetry+iXj]["y"]
-            myVariable.add_qualifier("reaction",reactionLabel[i])
-            myVariable.add_qualifier("centrality",centralityLabel[i])
-            myVariable.add_qualifier("$p_{T}^{ch}$",trackPtLabel[trackPtBin+1])
+            myVariable.add_qualifier(energyLabel[i],"5.02 TeV")
+            myVariable.add_qualifier("Reaction",reactionLabel[i])
+            if oneCentralityBin:
+                myVariable.add_qualifier("Centrality",centralityLabel[i])
+            myVariable.add_qualifier("Jet algorithm", "Anti-k$_{\mathrm{T}}$ R = 0.4")
+            myVariable.add_qualifier("Jet type", jetLabel)
+            myVariable.add_qualifier("Leading jet $p_{\mathrm{T}}$", "> 120 GeV")
+            myVariable.add_qualifier("Subleading jet $p_{\mathrm{T}}$", "> 50 GeV")
+            myVariable.add_qualifier("$|\eta^{\mathrm{jet}}|$", "< 1.6")
+            myVariable.add_qualifier("$\Delta\\varphi_{\mathrm{subleading}}^{\mathrm{leading}}$","$> 5\pi/6$")
+            myVariable.add_qualifier("$p_{\mathrm{T}}^{\mathrm{ch}}$",trackPtLabel[trackPtBin+1])
+            myVariable.add_qualifier("$|\eta^{\mathrm{ch}}|$", "< 2.4")
+            if deltaEtaMode:
+                myVariable.add_qualifier("$|\Delta\\varphi_{\mathrm{ch}}^{\mathrm{jet}}|$", "< 1.0")
+            if not oneCentralityBin:
+                myVariable.add_qualifier("Centrality",centralityLabel[i])
             if includeAsymmetry:
                 myVariable.add_qualifier("$x_{j}$",asymmetryLabel[iXj])
         
@@ -274,7 +302,8 @@ def findVariables(valueHistogram, errorHistogram, yAxisName, includeAsymmetry, c
 def findVariablesXjMatrix(valueHistogram):
 
     # Define reaction and centrality labels.
-    reactionLabel = ["PB PB --> CHARGED X", "PB PB --> CHARGED X", "PB PB --> CHARGED X", "PB PB --> CHARGED X", "P P --> CHARGED X"]
+    pbpbReactionLabel = "PB PB --> DIJET CHARGED X"
+    reactionLabel = [pbpbReactionLabel, pbpbReactionLabel, pbpbReactionLabel, pbpbReactionLabel, "P P --> DIJET CHARGED X"]
     centralityLabel = ["0-10%", "10-30%", "30-50%", "50-90%", "pp"]
     
     # x-axis:
@@ -292,8 +321,12 @@ def findVariablesXjMatrix(valueHistogram):
     for iCentrality in range(0,len(centralityLabel)):
         myVariable = Variable("Probability", is_independent=False, is_binned=False, units="")
         myVariable.values = valueHistogram[iCentrality]["z"]
-        myVariable.add_qualifier("reaction",reactionLabel[iCentrality])
-        myVariable.add_qualifier("centrality",centralityLabel[iCentrality])
+        myVariable.add_qualifier("Reaction",reactionLabel[iCentrality])
+        myVariable.add_qualifier("Leading jet $p_{\mathrm{T}}$", "> 120 GeV")
+        myVariable.add_qualifier("Subleading jet $p_{\mathrm{T}}$", "> 50 GeV")
+        myVariable.add_qualifier("$|\eta^{\mathrm{jet}}|$", "< 1.6")
+        myVariable.add_qualifier("$\Delta\\varphi_{\mathrm{subleading}}^{\mathrm{leading}}$","$> 5\pi/6$")
+        myVariable.add_qualifier("Centrality",centralityLabel[iCentrality])
         zAxis.append(myVariable)
         
     # Read the uncertainties
@@ -316,10 +349,11 @@ for iTrackPt in range(-1,nTrackPtDeltaEta):
         table1.description = "The distribution of charged particle yields within $|\Delta\\varphi| < 1.0$ correlated with the leading jets as a function of $\Delta\eta$ in {:s} collisions. The results are shown in different dijet momentum balance bins{:s}.".format(centralityDescription[iCentrality],trackPtDescription[iTrackPt+1])
         table1.location = "Data from figure 1, located on page 9."
         table1.keywords["observables"] = ["Particle yield correlated to leading jets"]
+        table1.keywords["reactions"] = [reactionLabel[iCentrality]]
         #table1.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
         # Extract x- and y-axis information from the histograms
-        xDeltaEta, yDeltaEta = findVariables(deltaEtaLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], deltaEtaErrorLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\frac{1}{N_{\mathrm{dijet}}}\\frac{\mathrm{d}N}{\mathrm{d}\Delta\eta}$", True, (1,iCentrality), True, iTrackPt)
+        xDeltaEta, yDeltaEta = findVariables(deltaEtaLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], deltaEtaErrorLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\frac{1}{N_{\mathrm{dijet}}}\\frac{\mathrm{d}N}{\mathrm{d}\Delta\eta}$", True, (1,iCentrality), True, True, iTrackPt)
 
         # Add the variables to the table
         table1.add_variable(xDeltaEta)
@@ -340,10 +374,11 @@ for iTrackPt in range(-1,nTrackPtDeltaEta):
         table2.description = "The distribution of charged particle yields within $|\Delta\\varphi| < 1.0$ correlated with the subleading jets as a function of $\Delta\eta$ in {:s} collisions. The results are shown in different dijet momentum balance bins{:s}.".format(centralityDescription[iCentrality],trackPtDescription[iTrackPt+1])
         table2.location = "Data from figure 2, located on page 10."
         table2.keywords["observables"] = ["Particle yield correlated to subleading jets"]
+        table2.keywords["reactions"] = [reactionLabel[iCentrality]]
         #table2.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
         # Extract x- and y-axis information from the histograms
-        xDeltaEta, yDeltaEta = findVariables(deltaEtaSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], deltaEtaErrorSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\frac{1}{N_{\mathrm{dijet}}}\\frac{\mathrm{d}N}{\mathrm{d}\Delta\eta}$", True, (1,iCentrality), True, iTrackPt)
+        xDeltaEta, yDeltaEta = findVariables(deltaEtaSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], deltaEtaErrorSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\frac{1}{N_{\mathrm{dijet}}}\\frac{\mathrm{d}N}{\mathrm{d}\Delta\eta}$", True, (1,iCentrality), False, True, iTrackPt)
 
         # Add the variables to the table
         table2.add_variable(xDeltaEta)
@@ -363,10 +398,11 @@ for iTrackPt in range(-1,nTrackPt):
     table3a.description = "The leading jet radial momentum profiles in pp and PbPb collisions and a function of $\Delta r${:s}. The PbPb results are shown for different centrality regions.".format(trackPtDescription[iTrackPt+1])
     table3a.location = "Data from the top row of figure 3, located on page 11."
     table3a.keywords["observables"] = ["Leading jet radial momentum profile"]
+    table3a.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
     #table3a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
     # Extract x- and y-axis information from the histograms
-    xDeltaR, yDeltaR = findVariables(jetMomentumLeading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], jetMomentumErrorLeading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], "$P(\Delta r)$", False, (5,1), False, iTrackPt)
+    xDeltaR, yDeltaR = findVariables(jetMomentumLeading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], jetMomentumErrorLeading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], "$P(\Delta r)$", False, (5,1), True, False, iTrackPt)
 
     # Add the variables to the table
     table3a.add_variable(xDeltaR)
@@ -385,10 +421,11 @@ for iTrackPt in range(-1,nTrackPt):
     table3b.description = "The subleading jet radial momentum profiles in pp and PbPb collisions as a function of $\Delta r${:s}. The PbPb results are shown for different centrality regions.".format(trackPtDescription[iTrackPt+1])
     table3b.location = "Data from the bottom row of figure 3, located on page 11."
     table3b.keywords["observables"] = ["Subleading jet radial momentum profile"]
+    table3b.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
     #table3b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
     # Extract x- and y-axis information from the histograms
-    xDeltaR, yDeltaR = findVariables(jetMomentumSubleading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], jetMomentumErrorSubleading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], "$P(\Delta r)$", False, (5,1), False, iTrackPt)
+    xDeltaR, yDeltaR = findVariables(jetMomentumSubleading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], jetMomentumErrorSubleading[(iTrackPt+1)*nCentrality : nCentrality + (iTrackPt+1)*nCentrality], "$P(\Delta r)$", False, (5,1), False, False, iTrackPt)
 
     # Add the variables to the table
     table3b.add_variable(xDeltaR)
@@ -406,10 +443,11 @@ table4a = Table("Figure 4a")
 table4a.description = "The ratio between leading jet radial momentum profiles in PbPb and pp collisions as a function of $\Delta r$."
 table4a.location = "Data from the top row of figure 4, located on page 12."
 table4a.keywords["observables"] = ["Leading jet radial momentum profile ratio"]
+table4a.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table4a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(jetMomentumRatioLeading, jetMomentumRatioErrorLeading, "$P(\Delta r)_{\mathrm{PbPb}} / P(\Delta r)_{\mathrm{pp}}$", False, (4,1), False)
+xDeltaR, yDeltaR = findVariables(jetMomentumRatioLeading, jetMomentumRatioErrorLeading, "$P(\Delta r)_{\mathrm{PbPb}} / P(\Delta r)_{\mathrm{pp}}$", False, (4,1), True, False)
 
 # Add the variables to the table
 table4a.add_variable(xDeltaR)
@@ -427,10 +465,11 @@ table4b = Table("Figure 4b")
 table4b.description = "The ratio between subleading jet radial momentum profiles in PbPb and pp collisions as a function of $\Delta r$."
 table4b.location = "Data from the bottom row of figure 4, located on page 11."
 table4b.keywords["observables"] = ["Subleading jet radial momentum profile ratio"]
+table4b.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table4b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(jetMomentumRatioSubleading, jetMomentumRatioErrorSubleading, "$P(\Delta r)_{\mathrm{PbPb}} / P(\Delta r)_{\mathrm{pp}}$", False, (4,1), False)
+xDeltaR, yDeltaR = findVariables(jetMomentumRatioSubleading, jetMomentumRatioErrorSubleading, "$P(\Delta r)_{\mathrm{PbPb}} / P(\Delta r)_{\mathrm{pp}}$", False, (4,1), False, False)
 
 # Add the variables to the table
 table4b.add_variable(xDeltaR)
@@ -445,16 +484,17 @@ submission.add_table(table4b)
 ##################################################################################
 
 # Make separate tables from each centrality and track pT bin
-for iTrackPt in range(-1,nTrackPtDeltaEta):
+for iTrackPt in range(-1,nTrackPt):
     for iCentrality in range(0,nCentrality):
         table5 = Table("Figure 5-{:d}".format(iCentrality+nCentrality*(iTrackPt+1)))
         table5.description = "Jet shapes for leading jets in {:s} collisions. The results are shown in different dijet momentum balance bins{:s}.".format(centralityDescription[iCentrality],trackPtDescription[iTrackPt+1])
         table5.location = "Data from figure 5, located on page 13."
         table5.keywords["observables"] = ["Leading jet shape"]
+        table5.keywords["reactions"] = [reactionLabel[iCentrality]]
         #table5.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
         # Extract x- and y-axis information from the histograms
-        xDeltaR, yDeltaR = findVariables(jetShapeLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], jetShapeErrorLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\rho(\Delta r)$", True, (1,iCentrality), False, iTrackPt)
+        xDeltaR, yDeltaR = findVariables(jetShapeLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], jetShapeErrorLeading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\rho(\Delta r)$", True, (1,iCentrality), True, False, iTrackPt)
 
         # Add the variables to the table
         table5.add_variable(xDeltaR)
@@ -474,10 +514,11 @@ for iCentrality in range(0,nCentrality-1):
     table6.description = "Ratios of leading jet shapes between PbPb and pp collisions. The results from {:s} % centrality bin in PbPb are compared to pp using several dijet momentum balance selections.".format(centralityString[iCentrality])
     table6.location = "Data from figure 6, located on page 14."
     table6.keywords["observables"] = ["Leading jet shape ratio"]
+    table6.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
     #table6.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
     # Extract x- and y-axis information from the histograms
-    xDeltaR, yDeltaR = findVariables(jetShapeRatioLeading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], jetShapeRatioErrorLeading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], "$\\rho(\Delta r)_{\mathrm{PbPb}} / \\rho(\Delta r)_{\mathrm{pp}}$", True, (1,iCentrality), False)
+    xDeltaR, yDeltaR = findVariables(jetShapeRatioLeading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], jetShapeRatioErrorLeading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], "$\\rho(\Delta r)_{\mathrm{PbPb}} / \\rho(\Delta r)_{\mathrm{pp}}$", True, (1,iCentrality), True, False)
 
     # Add the variables to the table
     table6.add_variable(xDeltaR)
@@ -492,16 +533,17 @@ for iCentrality in range(0,nCentrality-1):
 ##################################################################################
 
 # Make separate tables from each centrality and track pT bin
-for iTrackPt in range(-1,nTrackPtDeltaEta):
+for iTrackPt in range(-1,nTrackPt):
     for iCentrality in range(0,nCentrality):
         table7 = Table("Figure 7-{:d}".format(iCentrality+nCentrality*(iTrackPt+1)))
         table7.description = "Jet shapes for subleading jets in {:s} collisions. The results are shown in different dijet momentum balance bins{:s}.".format(centralityDescription[iCentrality],trackPtDescription[iTrackPt+1])
         table7.location = "Data from figure 7, located on page 15."
         table7.keywords["observables"] = ["Subleading jet shape"]
+        table7.keywords["reactions"] = [reactionLabel[iCentrality]]
         #table7.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
         # Extract x- and y-axis information from the histograms
-        xDeltaR, yDeltaR = findVariables(jetShapeSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], jetShapeErrorSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\rho(\Delta r)$", True, (1,iCentrality), False, iTrackPt)
+        xDeltaR, yDeltaR = findVariables(jetShapeSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], jetShapeErrorSubleading[nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality : nAsymmetry+nAsymmetry*iCentrality+(iTrackPt+1)*nAsymmetry*nCentrality], "$\\rho(\Delta r)$", True, (1,iCentrality), False, False, iTrackPt)
 
         # Add the variables to the table
         table7.add_variable(xDeltaR)
@@ -521,10 +563,11 @@ for iCentrality in range(0,nCentrality-1):
     table8.description = "Ratios of subleading jet shapes between PbPb and pp collisions. The results from {:s} % centrality bin in PbPb are compared to pp using several dijet momentum balance selections.".format(centralityString[iCentrality])
     table8.location = "Data from figure 8, located on page 16."
     table8.keywords["observables"] = ["Subleading jet shape ratio"]
+    table8.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
     #table8.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
     # Extract x- and y-axis information from the histograms
-    xDeltaR, yDeltaR = findVariables(jetShapeRatioSubleading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], jetShapeRatioErrorSubleading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], "$\\rho(\Delta r)_{\mathrm{PbPb}} / \\rho(\Delta r)_{\mathrm{pp}}$", True, (1,iCentrality), False)
+    xDeltaR, yDeltaR = findVariables(jetShapeRatioSubleading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], jetShapeRatioErrorSubleading[iCentrality*nAsymmetry : nAsymmetry + iCentrality*nAsymmetry], "$\\rho(\Delta r)_{\mathrm{PbPb}} / \\rho(\Delta r)_{\mathrm{pp}}$", True, (1,iCentrality), False, False)
 
     # Add the variables to the table
     table8.add_variable(xDeltaR)
@@ -542,6 +585,7 @@ table9a = Table("Figure 9a")
 table9a.description = "Ratio between unbalanced selection of leading jet shapes to all leading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
 table9a.location = "Data from the top row of figure 9, located on page 17."
 table9a.keywords["observables"] = ["Leading jet shape unbalanced ratio"]
+table9a.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table9.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Find the unbalanced histograms from the list of all asymmetry histograms
@@ -552,7 +596,7 @@ for i in range(5):
     unbalancedError.append(asymmetryRatioErrorLeading[2*i])
     
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(unbalancedHistogram, unbalancedError, "$\\rho(\Delta r)_{x_{j} < 0.6} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), False)
+xDeltaR, yDeltaR = findVariables(unbalancedHistogram, unbalancedError, "$\\rho(\Delta r)_{x_{j} < 0.6} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), True, False)
 
 # Table 9a: Add the variables to the table
 table9a.add_variable(xDeltaR)
@@ -570,6 +614,7 @@ table9b = Table("Figure 9b")
 table9b.description = "Ratio between balanced selection of leading jet shapes to all leading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
 table9b.location = "Data from the bottom row of figure 9, located on page 17."
 table9b.keywords["observables"] = ["Leading jet shape balanced ratio"]
+table9b.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table9b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Find the balanced histograms from the list of all asymmetry histograms
@@ -580,7 +625,7 @@ for i in range(5):
     balancedError.append(asymmetryRatioErrorLeading[2*i+1])
     
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(balancedHistogram, balancedError, "$\\rho(\Delta r)_{x_{j} > 0.8} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), False)
+xDeltaR, yDeltaR = findVariables(balancedHistogram, balancedError, "$\\rho(\Delta r)_{x_{j} > 0.8} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), True, False)
 
 # Table 9a: Add the variables to the table
 table9b.add_variable(xDeltaR)
@@ -598,6 +643,7 @@ table10a = Table("Figure 10a")
 table10a.description = "Ratio between unbalanced selection of subleading jet shapes to all subleading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
 table10a.location = "Data from the top row of figure 10, located on page 17."
 table10a.keywords["observables"] = ["Subleading jet shape unbalanced ratio"]
+table10a.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table10a.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Find the unbalanced histograms from the list of all asymmetry histograms
@@ -608,7 +654,7 @@ for i in range(5):
     unbalancedError.append(asymmetryRatioErrorSubleading[2*i])
     
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(unbalancedHistogram, unbalancedError, "$\\rho(\Delta r)_{x_{j} < 0.6} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), False)
+xDeltaR, yDeltaR = findVariables(unbalancedHistogram, unbalancedError, "$\\rho(\Delta r)_{x_{j} < 0.6} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), False, False)
 
 # Table 10a: Add the variables to the table
 table10a.add_variable(xDeltaR)
@@ -626,6 +672,7 @@ table10b = Table("Figure 10b")
 table10b.description = "Ratio between balanced selection of subleading jet shapes to all subleading jet shapes in pp and PbPb collisions. The PbPb results are shown for different centrality regions."
 table10b.location = "Data from the bottom row of figure 10, located on page 17."
 table10b.keywords["observables"] = ["Subleading jet shape balanced ratio"]
+table10b.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table10b.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Find the balanced histograms from the list of all asymmetry histograms
@@ -636,7 +683,7 @@ for i in range(5):
     balancedError.append(asymmetryRatioErrorSubleading[2*i+1])
     
 # Extract x- and y-axis information from the histograms
-xDeltaR, yDeltaR = findVariables(balancedHistogram, balancedError, "$\\rho(\Delta r)_{x_{j} > 0.8} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), False)
+xDeltaR, yDeltaR = findVariables(balancedHistogram, balancedError, "$\\rho(\Delta r)_{x_{j} > 0.8} / \\rho(\Delta r)_{\mathrm{all}}$", False, (5,1), False, False)
 
 # Table 10b: Add the variables to the table
 table10b.add_variable(xDeltaR)
@@ -654,6 +701,7 @@ table11 = Table("Figure 11")
 table11.description = "Generator-level vs. reconstructed $x_{j}$ values in the analysis $x_{j}$ bins. The plots show the probability to find a generator level $x_{j}$ for a given reconstructed $x_{j}$."
 table11.location = "Data from the figure 11, located on appendix A."
 table11.keywords["observables"] = ["$x_{j}$ matrix"]
+table11.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table11.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Extract axis information from the histograms
@@ -676,6 +724,7 @@ table12 = Table("Figure 12")
 table12.description = "Generator-level vs. reconstructed $x_{j}$ values in the analysis $x_{j}$ bins. The plots show the probability to find a reconstructed $x_{j}$ for a given generator level $x_{j}$."
 table12.location = "Data from the figure 12, located on appendix A."
 table12.keywords["observables"] = ["$x_{j}$ matrix"]
+table12.keywords["reactions"] = [pbpbReactionLabel, ppReactionLabel]
 #table12.add_image("example_inputs/CMS-B2G-17-009_Figure_004-a.pdf") # Possibility to add image
 
 # Extract axis information from the histograms
