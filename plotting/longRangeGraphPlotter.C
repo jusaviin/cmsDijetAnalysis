@@ -24,21 +24,22 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 6;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "flowGraphs_PbPb2018_correctedJetHadron_correctedDihadron_2021-01-08.root";
+  TString graphFileName = "flowGraphs_PbPb2018_caloJets_correctedJetHadron_correctedDihadron_2021-01-28.root";
+  // flowGraphs_PbPb2018_correctedJetHadron_correctedDihadron_2021-01-08.root
   // flowGraphs_PbPb2018_caloJets_correctedJetHadron_correctedDihadron_xjBins_2020-12-03.root
   // flowGraphs_PbPb2018_systematicUncertainties_regularJetHadron_2020-12-04.root
   TFile *graphFile[maxFiles];
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 3;
-  TString comparisonFileName[] = {  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2OnlyForDihadron_2021-01-19.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2OnlyForDihadron_2021-01-21.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_noCentShift_2021-01-22.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedEventDihadron_bestQvectorForEachCentrality_2021-01-14.root", "flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow6ForDihadron_correctedJetHadron_correctedDihadron_2021-01-11.root", "flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow7ForDihadron_correctedJetHadron_correctedDihadron_2021-01-11.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_systematicUncertainties_backgroundAdjustedJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_nearEtaJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_farEtaJetHadron_2020-12-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  int nComparisonFiles = 1;
+  TString comparisonFileName[] = { "flowGraphs_PbPb2018_caloJets_correctedJetHadron_correctedDihadron_jetAxisSmear_smallStats_2021-01-28.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2OnlyForDihadron_2021-01-19.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2OnlyForDihadron_2021-01-21.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_noCentShift_2021-01-22.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedEventDihadron_bestQvectorForEachCentrality_2021-01-14.root", "flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow6ForDihadron_correctedJetHadron_correctedDihadron_2021-01-11.root", "flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow7ForDihadron_correctedJetHadron_correctedDihadron_2021-01-11.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_systematicUncertainties_backgroundAdjustedJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_nearEtaJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_farEtaJetHadron_2020-12-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"Calo jets", "MC+5%, Q < 2", "MC+4%, Q < 2.2", "Nominal MC", "MC+4%, Q < 2.2",  "MC+5%, Q < 3.33"};
+  TString fileLegend[] = {"Calo jets", "Smeared axis", "MC+4%, Q < 2.2", "Nominal MC", "MC+4%, Q < 2.2",  "MC+5%, Q < 3.33"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -54,27 +55,27 @@ void longRangeGraphPlotter(){
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   const bool drawAtlasV2 = false;                     // Draw a line showing the v2 result from ATLAS
   const bool fitJetVn = true;                         // Fit a constant line to jet vn points
-  const bool doSummaryCorrection = true;              // Correct the jet vn summary plots based on fits
+  const bool doSummaryCorrection = false;              // Correct the jet vn summary plots based on fits
   
   // Plots to be compared between files
-  const bool drawJetHadronVnFileComparison = false;
+  const bool drawJetHadronVnFileComparison = true;
   const bool drawDihadronVnFileComparison = false;
-  const bool drawHadronVnFileComparison = true;
+  const bool drawHadronVnFileComparison = false;
   const bool drawJetVnFileComparison = false;
   const bool drawJetHadronYieldFileComparison = false;
-  const bool drawDihadronYieldFileComparison = true;
+  const bool drawDihadronYieldFileComparison = false;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison || drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison;
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
   const bool saveFigures = true;                     // Save the figures in a file
-  TString saveComment = "_centralityScan";              // String to be added to saved file names
+  TString saveComment = "_axisSmear";              // String to be added to saved file names
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
-  int firstDrawnVn = 2;
-  int lastDrawnVn = 2;
+  int firstDrawnVn = 3;
+  int lastDrawnVn = 3;
   
   double maxTrackPt = 4.5;
   
@@ -217,7 +218,7 @@ void longRangeGraphPlotter(){
                              {    0.1,  0.1,  0.1,  0.1,  0.1}}; // v4
   
   // How to zoom vn plots    //    v1,   v2,   v3,   v4
-  double jetHadronZoomTable[4] = {0.1, 0.05, 0.005, 0.01};
+  double jetHadronZoomTable[4] = {0.1, 0.03, 0.005, 0.01};
   double dihadronZoomTable[4]  = {0.08, 0.08, 0.03, 0.03};
 
   // Helper variables for drawing figures
@@ -474,7 +475,7 @@ void longRangeGraphPlotter(){
           if(drawJetHadronVnFileComparison){
           
             sprintf(namerY,"Jet-hadron V_{%d}",iFlow+1);
-            legend = new TLegend(0.2,0.55,0.5,0.9);
+            legend = new TLegend(0.2,0.65,0.5,0.9);
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
@@ -493,6 +494,9 @@ void longRangeGraphPlotter(){
             }
             
             legend->Draw();
+            
+            // DEBUGGERY
+            
             
             // Save the figures to file
             if(saveFigures){
