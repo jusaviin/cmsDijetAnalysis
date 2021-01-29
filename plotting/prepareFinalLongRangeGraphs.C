@@ -17,9 +17,10 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_noCentShift_bigStats_improvisedMixing_xjBins_noCorrections_processed_2020-11-03.root";
+  jetHadronFileName[0] = "data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root";
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
+  // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_onlySeagull_processed_2021-01-25_combine0.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveMix_eschemeAxis_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJet_noUncIncOrPtw_improvisedMixing_noCorrections_processed_2020-11-03.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_noHighThirdJet_onlySeagull_wtaAxis_processed_2020-07-02_combine0_someStats.root
@@ -32,7 +33,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_smallSample_xjBins_noCorrections_processed_2020-11-11.root";
+  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -90,7 +91,7 @@ void prepareFinalLongRangeGraphs(){
   const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
-  const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
+  const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
   const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
   const bool hideFit = false;                  // Hide fit from the histograms when drawing
   
@@ -113,7 +114,7 @@ void prepareFinalLongRangeGraphs(){
   const bool useDifferentFilesForDifferentCentralities = false;
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_noCentShift_2021-01-22.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_correctedJetHadron_correctedDihadron_2021-01-28.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
@@ -563,7 +564,11 @@ void prepareFinalLongRangeGraphs(){
   
   double integralValue, integralError;
   
-  double defaultXpoints[] = {0.85, 1.5, 2.5, 3.5, 6, 10, 14};
+  double defaultXpoints[4][7] = {{0.851634, 1.36101, 2.36141, 3.37805, 6, 10, 14},  // 0-10
+                                 {0.852587, 1.36155, 2.36649, 3.38798, 6, 10, 14},  // 10-30
+                                 {0.85171, 1.36099, 2.37474, 3.4076, 6, 10, 14},  // 30-50
+                                 {0.852, 1.361, 2.365, 3.5, 6, 10, 14},    // 50-90
+  };
   
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
 
@@ -577,7 +582,7 @@ void prepareFinalLongRangeGraphs(){
         graphPointsX[iTrackPt] = tracksForGraph[iCentrality]->GetMean();
       } else {
         cout << "WARNING! No tracks in input file!!!! Using default x-values!!" << endl;
-        graphPointsX[iTrackPt] = defaultXpoints[iTrackPt];
+        graphPointsX[iTrackPt] = defaultXpoints[iCentrality][iTrackPt];
       }
 
       // Give the systematic uncertainties some width along x-axis
