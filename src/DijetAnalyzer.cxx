@@ -1103,7 +1103,7 @@ void DijetAnalyzer::RunAnalysis(){
         //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
                 
-        if(eventPlaneQ > 2.8) continue;  // 2.222 2.778 3.333
+        if(eventPlaneQ < 1.8) continue;  // 2.222 2.778 3.333
       }
       
       
