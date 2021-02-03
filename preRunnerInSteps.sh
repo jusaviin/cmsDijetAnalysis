@@ -6,11 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow1p5_improvisedMixing_preprocessed_2021-01-25.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow1p5_improvisedMixing_noCorrections_processed_2021-01-25.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow1p8_improvisedMixing_preprocessed_2021-01-25.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow1p8_improvisedMixing_noCorrections_processed_2021-01-25.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelo2_improvisedMixing_preprocessed_2021-01-25.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2_improvisedMixing_noCorrections_processed_2021-01-25.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2p2_improvisedMixing_preprocessed_2021-01-25.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2p2_improvisedMixing_noCorrections_processed_2021-01-25.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2p8_improvisedMixing_preprocessed_2021-01-25.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2p8_improvisedMixing_noCorrections_processed_2021-01-25.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2_improvisedMixing_preprocessed_2021-01-25.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2_improvisedMixing_noCorrections_processed_2021-01-25.root" false false -1 "data/"
 
 #./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_preprocessed_2020-05-13.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_20pSmear_wtaAxis_allCorrectionsUnsmeared_processed_2020-05-13.root" true true -1 "data/"
 

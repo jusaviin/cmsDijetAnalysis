@@ -17,7 +17,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_5pCentShift_bigStats_improvisedMixing_noCorrections_processed_2020-11-16.root";
+  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2p8_improvisedMixing_noCorrections_processed_2021-01-25.root";
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_onlySeagull_processed_2021-01-25_combine0.root
@@ -33,7 +33,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_improvisedMixing_noXj_qVectorAbove3p3_noCorrections_processed_2021-01-15.root";
+  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_noXj_qVectorBelow2p8_noCorrections_processed_2021-01-15.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -50,16 +50,16 @@ void prepareFinalLongRangeGraphs(){
   // We can use different MC configuration for different centrality bins
   
   // Files to use for centrality bin 10-30 %
-  jetHadronFileName[1] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMising_noCorrections_qVectorCut6_processed_2020-12-09.root";
-  dihadronFileName[1] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBin6_onlySeagull_processed_2020-12-07.root";
+  jetHadronFileName[1] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_qVectorBelow1p8_improvisedMixing_noCorrections_processed_2021-01-27.root";
+  dihadronFileName[1] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_improvisedMixing_noXj_qVectorBelow1p8_noCorrections_processed_2021-01-15.root";
   
   // Files to use for centrality bin 30-50 %
-  jetHadronFileName[2] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMising_noCorrections_qVectorCut5_processed_2020-12-09.root";
-  dihadronFileName[2] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBin5_onlySeagull_processed_2020-12-07.root";
+  jetHadronFileName[2] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_qVectorBelow1p8_improvisedMixing_noCorrections_processed_2021-01-27.root";
+  dihadronFileName[2] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_improvisedMixing_noXj_qVectorBelow1p5_noCorrections_processed_2021-01-15.root";
   
   // Files to use for centrality bin 50-90 %
-  jetHadronFileName[3] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_improvisedMixing_qVectorCutBelow5_noCorrections_processed_2021-01-11.root";
-  dihadronFileName[3] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_qVectorBelowCut5_noCorrections_processed_2020-12-07.root";
+  jetHadronFileName[3] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_qVectorBelow1p8_improvisedMixing_noCorrections_processed_2021-01-27.root";
+  dihadronFileName[3] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_improvisedMixing_noXj_qVectorBelow1p5_noCorrections_processed_2021-01-15.root";
   
   // Reconstruction bias correction
   const char *jetReconstructionBiasFile = "corrections/jetReconstructionBiasCorrection_noShiftFitUpToV4_forTestingPurposes.txt";
@@ -92,7 +92,7 @@ void prepareFinalLongRangeGraphs(){
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
   const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
-  const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
+  const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
   const bool hideFit = false;                  // Hide fit from the histograms when drawing
   
   const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
@@ -114,7 +114,7 @@ void prepareFinalLongRangeGraphs(){
   const bool useDifferentFilesForDifferentCentralities = false;
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorAbove3p3OnlyForDihadron_2021-02-01.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2p8_2021-02-02.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
