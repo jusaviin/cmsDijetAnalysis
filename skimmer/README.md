@@ -8,7 +8,7 @@
 
    ./skimmer
 
-   Running without arguments gives usage instructions for the main program. For the file name list provide a text file with one file name in each row. Check that everything works and that the output file contains the branched you desire.
+   Running without arguments gives usage instructions for the main program. For the file name list provide a text file with one file name in each row. Check that everything works and that the output file contains the branches you desire.
 
 2) Tar the files for running in lxplus:
 
