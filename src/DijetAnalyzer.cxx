@@ -714,12 +714,15 @@ void DijetAnalyzer::RunAnalysis(){
 //  Double_t highestJetPtSmeared = 0;   // Smeared pT of the highest jet
 //  Double_t highestJetPtErrorUp = 0;   // Uncertainty to be added to the jet with highest pT
 //  Double_t highestJetPtErrorDown = 0; // Uncertainty to be subtracted from the jet with highest pT
-//  Double_t smearingEta = 0;
-//  Double_t smearingPhi = 0;
-//  Double_t leadingSmearingEta = 0;
-//  Double_t leadingSmearingPhi = 0;
-//  Double_t subleadingSmearingEta = 0;
-//  Double_t subleadingSmearingPhi = 0;
+  Double_t smearingEta = 0;
+  Double_t smearingPhi = 0;
+  Double_t leadingSmearingEta = 0;
+  Double_t leadingSmearingPhi = 0;
+  Double_t subleadingSmearingEta = 0;
+  Double_t subleadingSmearingPhi = 0;
+  Double_t smearPhiSigmas[4] = {0.022, 0.017, 0.015, 0.015};
+  Double_t smearEtaSigmas[4] = {0.021, 0.016, 0.013, 0.013};
+  Int_t centralityBin = 0;
   
   // Variables for jet matching and closure
   Int_t unmatchedCounter = 0;       // Number of jets that fail the matching
@@ -784,7 +787,7 @@ void DijetAnalyzer::RunAnalysis(){
     
   vector<string> correctionFiles;
   correctionFiles.push_back(correctionFileRelative[fDataType]);
-  if(fJetType > 0 && (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp))  correctionFiles.push_back(correctionFileResidual[fDataType]);
+  if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp)  correctionFiles.push_back(correctionFileResidual[fDataType]);
   
   fJetCorrector2018 = new JetCorrector(correctionFiles);
   fJetUncertainty2018 = new JetUncertainty(uncertaintyFile[fDataType]);
@@ -1006,7 +1009,7 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
-    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){
+    for(Int_t iEvent = 0; iEvent < 10; iEvent++){ // nEvents
       
       //************************************************
       //         Read basic event information
@@ -1123,6 +1126,7 @@ void DijetAnalyzer::RunAnalysis(){
       highestPhi = 0;
       highestEta = 0;
       nJetsInThisEvent = 0;
+      centralityBin = GetCentralityBin(centrality);  // Only needed for smearing study
       
 //      // Extra variables for smearing study
 //      highestJetPtSmeared = 0;
@@ -1140,11 +1144,14 @@ void DijetAnalyzer::RunAnalysis(){
         jetEta = fJetReader->GetJetEta(jetIndex);
         jetFlavor = 0;
         
-//        // Smearing for the angles:
-//        smearingEta = fRng->Gaus(0,0.0207); // Number based on study of Enea using 0-10 % centrality bin
-//        smearingPhi = fRng->Gaus(0,0.0215); // Number based on study of Enea using 0-10 % centrality bin
-//        jetEta = jetEta + smearingEta;
-//        jetPhi = jetPhi + smearingPhi;
+        // Smearing for the angles:
+        if(fJetUncertaintyMode == 4){
+          smearingEta = fRng->Gaus(0,smearEtaSigmas[centralityBin]); // Number based on study of Enea
+          smearingPhi = fRng->Gaus(0,smearPhiSigmas[centralityBin]); // Number based on study of Enea
+          jetEta = jetEta + smearingEta;
+          jetPhi = jetPhi + smearingPhi;
+        }
+
         
         // For data, instead of jet flavor, mark positive vz with 1 and negative with 0
         // This is used in one of the systematic checks for long range correlations
@@ -1230,20 +1237,24 @@ void DijetAnalyzer::RunAnalysis(){
           highestIndex = jetIndex;
           leadingJetFlavor = jetFlavor;
           
-//          // Smearing study
-//          subleadingSmearingEta = leadingSmearingEta;
-//          leadingSmearingEta = smearingEta;
-//          subleadingSmearingPhi = leadingSmearingPhi;
-//          leadingSmearingPhi = smearingPhi;
+          // Smearing study
+          if(fJetUncertaintyMode == 4){
+            subleadingSmearingEta = leadingSmearingEta;
+            leadingSmearingEta = smearingEta;
+            subleadingSmearingPhi = leadingSmearingPhi;
+            leadingSmearingPhi = smearingPhi;
+          }
           
         } else if(jetPt > subleadingJetPt){
           thirdJetPt = subleadingJetPt;
           subleadingJetPt = jetPt;
           secondHighestIndex = jetIndex;
           
-//          // Smearing study
-//          subleadingSmearingEta = smearingEta;
-//          subleadingSmearingPhi = smearingPhi;
+          // Smearing study
+          if(fJetUncertaintyMode == 4){
+            subleadingSmearingEta = smearingEta;
+            subleadingSmearingPhi = smearingPhi;
+          }
           
         } else if (jetPt > thirdJetPt){
           thirdJetPt = jetPt;
@@ -1395,11 +1406,13 @@ void DijetAnalyzer::RunAnalysis(){
         subleadingJetEta = fJetReader->GetJetEta(secondHighestIndex);
         subleadingJetFlavor = 0; // 0 = Quark jet
         
-//        // Smearing for the angles:
-//        leadingJetEta = leadingJetEta + leadingSmearingEta;
-//        leadingJetPhi = leadingJetPhi + leadingSmearingPhi;
-//        subleadingJetEta = subleadingJetEta + subleadingSmearingEta;
-//        subleadingJetPhi = subleadingJetPhi + subleadingSmearingPhi;
+        // Smearing for the angles:
+        if(fJetUncertaintyMode == 4){
+          leadingJetEta = leadingJetEta + leadingSmearingEta;
+          leadingJetPhi = leadingJetPhi + leadingSmearingPhi;
+          subleadingJetEta = subleadingJetEta + subleadingSmearingEta;
+          subleadingJetPhi = subleadingJetPhi + subleadingSmearingPhi;
+        }
         
         // If matching jets or using reco jets, find the jet flavor
         if(fMatchJets || fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
@@ -1555,6 +1568,8 @@ void DijetAnalyzer::RunAnalysis(){
       // If a dijet is found and not vetoed, fill some information to fHistograms
       if((dijetFound && !matchVeto) || (dijetFound && findMatchedDijet)){
                         
+        cout << "Event: " << iEvent << " leading jet: " << leadingJetPt << endl;
+        
         matchedDijetCounter++;
         
         // Histograms for jet pT closure
@@ -2799,6 +2814,20 @@ Int_t DijetAnalyzer::FindMixingHiBin(const Int_t hiBin) const{
  */
 DijetHistograms* DijetAnalyzer::GetHistograms() const{
   return fHistograms;
+}
+
+/*
+ * Getter for centrality bin
+ */
+Int_t DijetAnalyzer::GetCentralityBin(const Double_t centrality) const{
+  
+  // Find the correct centrality bin
+  Int_t centralityBin = 0;
+  if(centrality > fCard->Get("CentralityBinEdges",2)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",3)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",4)) centralityBin++;
+  
+  return centralityBin;
 }
 
 /*

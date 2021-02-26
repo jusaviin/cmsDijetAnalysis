@@ -86,6 +86,7 @@ private:
   Int_t FindMixingVzBin(const Double_t vz) const; // Find a vz bin from mixing table for a given vz value
   Int_t FindMixingHiBin(const Int_t hiBin) const; // Find a centrality bin from the mixing table for a given hiBin value
   Bool_t CheckForSameEvent(const Int_t sameEventIndex, const Int_t mixedEventIndex) const; // Check if mixed event is tha same as regular event
+  Int_t GetCentralityBin(const Double_t centrality) const; // Getter for centrality bin
   
   // Private data members
   ForestReader *fJetReader;            // Reader for jets in the event

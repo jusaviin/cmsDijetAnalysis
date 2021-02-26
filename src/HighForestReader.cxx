@@ -261,7 +261,6 @@ void HighForestReader::Initialize(){
   fJetTree->SetBranchStatus(branchName,1);
   fJetTree->SetBranchAddress(branchName,&fJetEtaArray,&fJetEtaBranch);
   
-  
   fJetTree->SetBranchStatus("nref",1);
   fJetTree->SetBranchAddress("nref",&fnJets,&fnJetsBranch);
   fJetTree->SetBranchStatus("rawpt",1);
@@ -522,7 +521,6 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     }
     
   }
-  
   
   Initialize();
 }
