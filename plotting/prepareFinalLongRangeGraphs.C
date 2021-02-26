@@ -17,7 +17,9 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift_qVectorBelow2p8_improvisedMixing_noCorrections_processed_2021-01-25.root";
+  jetHadronFileName[0] = "data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root";
+  // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
+  // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_adjustedBackgroundLevel_onlySeagull_processed_2020-11-04.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_onlySeagull_processed_2021-01-25_combine0.root
@@ -33,7 +35,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_noXj_qVectorBelow2p8_noCorrections_processed_2021-01-15.root";
+  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root";
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -114,12 +116,13 @@ void prepareFinalLongRangeGraphs(){
   const bool useDifferentFilesForDifferentCentralities = false;
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2p8_2021-02-02.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_angleSmear_correctedJetHadron_correctedDihadron_2021-02-26.root";
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
   // flowGraphs/exampleDihadronFromMC.root
   // flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow3p3OnlyForDihadron_2021-01-19.root
+  // flowGraphs/flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorAbove1p8_2021-02-11.root
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -466,7 +469,7 @@ void prepareFinalLongRangeGraphs(){
           legend = new TLegend(0.3,0.6,0.7,0.9);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           
-          legend->AddEntry((TObject*) 0,"Jet-hadron same event","");
+          legend->AddEntry((TObject*) 0,"Jet-hadron long range","");
           legend->AddEntry((TObject*) 0, Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
           legend->AddEntry((TObject*) 0, Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
           if(iAsymmetry < nAsymmetryBins){
@@ -499,7 +502,7 @@ void prepareFinalLongRangeGraphs(){
           legend = new TLegend(0.3,0.6,0.7,0.9);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           
-          legend->AddEntry((TObject*) 0,"Dihadron same event","");
+          legend->AddEntry((TObject*) 0,"Dihadron long range","");
           legend->AddEntry((TObject*) 0, Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
           legend->AddEntry((TObject*) 0, Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
           if(iAsymmetry < nAsymmetryBins){

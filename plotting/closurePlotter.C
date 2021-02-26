@@ -323,11 +323,11 @@ void closurePlotter(){
   // Open files containing the QA histograms
   DijetHistogramManager *inputManager[knCollisionSystems][knDataTypes];
   TFile *inputFile[knCollisionSystems][knDataTypes];
-  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_20EveMixed_xjBins_wtaAxis_allCorrections_processed_2020-01-31.root");
+  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_allCorrections_processed_2020-11-04.root");
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13.root
   // data/ppData2017_highForest_pfJets_onlyJets_wtaAxis_processed_2019-08-05.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  inputFile[kPbPb][kData] = TFile::Open("data/ppData2017_highForest_pfJets_20EventsMixed_finalTrackCorr_xjBins_JECv4_wtaAxis_tunedSeagull_allCorrections_processed_2019-10-17.root");
+  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root");
   // data/dijetPbPb2018_highForest_akFlowPu4CsPFJets_JECv5b_onlyJets_processed_2019-08-28.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_onlyL2RelV4_wtaAxis_processed_2019-08-13.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root
@@ -336,10 +336,10 @@ void closurePlotter(){
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   // data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root
   // data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root
-  inputFile[kPp][kMC] = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noCorrelations_jetTrigger_dijetWeight_JECv4_processed_2019-11-14.root");
+  inputFile[kPp][kMC] = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-12-04.root");
   // data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
   // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
-  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root");
+  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_5pCentShift_bigStats_improvisedMixing_xjBins_preprocessed_2020-11-16.root");
   // data/PbPbMC_RecoReco_akFlowPuCs4PfJets_onlyJets_JECv5b_processed_2019-08-28.root
   // data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_noCorrections_processed_2019-08-09.root
   // data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
@@ -384,12 +384,14 @@ void closurePlotter(){
   closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_JECv6_processed_2019-09-24.root");
   
   // Load the necessary histograms to histogram managers
-  for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
-    for(int iDataType = 0; iDataType < knMonteCarloTypes; iDataType++){
-      closureManager[iSystem][iDataType] = new DijetHistogramManager(closureFile[iSystem][iDataType]);
-      closureManager[iSystem][iDataType]->SetLoadAllTracks(true,true);
-      closureManager[iSystem][iDataType]->SetLoadAllInclusiveTracks(true,true);
-      closureManager[iSystem][iDataType]->LoadProcessedHistograms();
+  if(drawTrackClosure){
+    for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
+      for(int iDataType = 0; iDataType < knMonteCarloTypes; iDataType++){
+        closureManager[iSystem][iDataType] = new DijetHistogramManager(closureFile[iSystem][iDataType]);
+        closureManager[iSystem][iDataType]->SetLoadAllTracks(true,true);
+        closureManager[iSystem][iDataType]->SetLoadAllInclusiveTracks(true,true);
+        closureManager[iSystem][iDataType]->LoadProcessedHistograms();
+      }
     }
   }
   

@@ -10,7 +10,7 @@ void compareJetSpectra(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = {"data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root", "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_fixSeagull_allCorrections_processed_2020-02-17.root"};
+  TString fileNames[] = {"data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_JECv4_processed_2020-08-21.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root"};
   
   // data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_fixSeagull_allCorrections_processed_2020-02-17.root
@@ -34,7 +34,7 @@ void compareJetSpectra(){
   }
   
   // Choose if you want to write the figures to pdf file
-  const bool saveFigures = false;
+  const bool saveFigures = true;
   TString saveComment = "MC";
   
   // Get the number of asymmetry bins
@@ -218,7 +218,7 @@ void compareJetSpectra(){
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/jetSpectraCentralityComparison%s%s%s.pdf", saveComment.Data(), labels[iJetTrack], compactAsymmetryString[iAsymmetry].Data()));
+        gPad->GetCanvas()->SaveAs(Form("figures/jetSpectraCentralityComparison%s%s%s.png", saveComment.Data(), labels[iJetTrack], compactAsymmetryString[iAsymmetry].Data()));
       }
       
     } // Centrality loop

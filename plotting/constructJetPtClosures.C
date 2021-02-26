@@ -78,10 +78,10 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
   // Zooming and legend position options
   double yZoomLow = 0.9;
   double yZoomHigh = 1.1;
-  double legendX1 = 0.39;
-  double legendX2 = 0.81;
-  double legendY1 = 0.63;
-  double legendY2 = 0.9;
+  double legendX1 = 0.51;
+  double legendX2 = 0.93;
+  double legendY1 = 0.65;
+  double legendY2 = 0.92;
   
   if(legendNzoom == 1){
     yZoomLow = 0;
@@ -94,6 +94,11 @@ void drawClosureHistogram(TH1D *histogram[DijetHistograms::knClosureTypes+1], co
     legendX2 = 0.88;
     legendY1 = 0.65;
     legendY2 = 0.92;
+  } else if(legendNzoom == 2){
+    legendX1 = 0.16;
+    legendX2 = 0.58;
+    legendY1 = 0.78;
+    legendY2 = 0.99;
   }
   
   // Set a good style for the inclusive histogram
@@ -143,7 +148,7 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC2018_GenGen_akCaloJet_onlyJets_5pCentShift_jetPtClosure_processed_2021-02-05.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_smearCheck_jetPtClosure_processed_2020-05-14.root
   // data/PbPbMC2018_RecoReco_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
@@ -158,16 +163,16 @@ void constructJetPtClosures(){
   
   bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
   bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
-  bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
+  bool drawInclusiveClosure = true;     // Produce the closure plots for inclusive jet pT
   
   bool drawPtClosure = true;
-  bool drawEtaClosure = false;
+  bool drawEtaClosure = true;
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
   bool fitResolution = false;  // Fit the jet pT resolution histograms
   
-  bool saveFigures = true ;  // Save the figures to file
+  bool saveFigures = true;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================
@@ -195,7 +200,7 @@ void constructJetPtClosures(){
   double centralityBinBorders[5] = {0,10,30,50,90};  // Bin borders for centrality
   
   // Choose which xj bins to draw
-  int firstDrawnAsymmetryBin = 0;
+  int firstDrawnAsymmetryBin = 3;
   int lastDrawAsymmetryBin = 3;
   
   // Initialize reco/gen ratio and closure histograms
@@ -337,9 +342,9 @@ void constructJetPtClosures(){
         }
         
         if(drawEtaClosure){
-          drawClosureHistogram(hJetPtClosureEta[iClosureType][iCentrality][iAsymmetry], "#eta", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 0, "EtaClosure", saveFigures);
+          drawClosureHistogram(hJetPtClosureEta[iClosureType][iCentrality][iAsymmetry], "#eta", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 2, "EtaClosure", saveFigures);
           
-          drawClosureHistogram(hJetPtClosureSigmaEta[iClosureType][iCentrality][iAsymmetry], "Gen p_{T} (GeV)", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 1, "EtaResolution", saveFigures);
+          drawClosureHistogram(hJetPtClosureSigmaEta[iClosureType][iCentrality][iAsymmetry], "#eta", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 1, "EtaResolution", saveFigures);
           
         }
         

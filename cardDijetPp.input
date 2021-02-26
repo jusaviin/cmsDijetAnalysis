@@ -24,8 +24,8 @@ FilledHistograms 3 # Bit 0 = Event information histograms      (to set: 1)
                     # Regular and uncorrected correlation = 24
 
 # Cuts for dijets
-JetType 1                  # 0 = Calo jets, 1 = PF jets
-JetAxis 2                  # 0 = Escheme axis, 1 = Leading PF candidate axis, 2 = WTA
+JetType 0                  # 0 = Calo jets, 1 = PF jets
+JetAxis 0                  # 0 = Escheme axis, 1 = Leading PF candidate axis, 2 = WTA
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
 MaxPtCut 5020              # Maximum pT of a leading jet accepted in the analysis
