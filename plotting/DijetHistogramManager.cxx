@@ -1924,10 +1924,10 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
             // Remove the asymmetry restriction for the last iAsymmetry bin. That will be asymmetry inclusive.
             if(iAsymmetry == fnAsymmetryBins) nRestrictionAxes--;
             
-            fhJetPtClosure[iClosureType][iGenJetPt][knJetEtaBins][iCentralityBin][iAsymmetry][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
+//            fhJetPtClosure[iClosureType][iGenJetPt][knJetEtaBins][iCentralityBin][iAsymmetry][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
             
-//            // Eta binning for the closure histogram
-//            for(int iJetEta = 0; iJetEta < knJetEtaBins; iJetEta++){
+            // Eta binning for the closure histogram
+            for(int iJetEta = 0; iJetEta < knJetEtaBins; iJetEta++){
 //              
 //              // For the last closure particle bin no restrictions for quark/gluon jets
 //              /*if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
@@ -1940,34 +1940,34 @@ void DijetHistogramManager::LoadJetPtClosureHistograms(){
 //               
 //               fhJetPtClosure[iClosureType][iGenJetPt][iJetEta][iCentralityBin][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",5,nRestrictionAxes,axisIndices,lowLimits,highLimits);*/
 //              
-//              // Fill the pT integrated ets slices only once
-//              if(iGenJetPt == 0){
-//                
-//                // Setup the axes with restrictions
-//                nRestrictionAxes = 4;
-//                axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
-//                axisIndices[1] = 3; lowLimits[1] = iJetEta+1;    highLimits[1] = iJetEta+1;          // Jet eta
-//                axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
-//                axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
-//                axisIndices[4] = 7; lowLimits[4] = iAsymmetry+1;       highLimits[4] = iAsymmetry+1;        // Asymmetry
-//                
-//                // For the last closure particle bin no restrictions for quark/gluon jets
-//                if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
-//                  
-//                  // Move asymmetry restriction one spece in the array
-//                  axisIndices[3] = 7; lowLimits[3] = iAsymmetry+1; highLimits[3] = iAsymmetry+1;  // Asymmetry
-//                  
-//                  // Remove the last set array bin
-//                  nRestrictionAxes--;
-//                }
-//                
-//                // Remove the asymmetry restriction for the last iAsymmetry bin. That will be asymmetry inclusive.
-//                if(iAsymmetry == fnAsymmetryBins) nRestrictionAxes--;
-//                
-//                fhJetPtClosure[iClosureType][knGenJetPtBins][iJetEta][iCentralityBin][iAsymmetry][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
-//              }
-//              
-//            } // Jet eta bin loop
+              // Fill the pT integrated eta slices only once
+              if(iGenJetPt == 0){
+                
+                // Setup the axes with restrictions
+                nRestrictionAxes = 5;
+                axisIndices[0] = 0; lowLimits[0] = iClosureType+1; highLimits[0] = iClosureType+1;   // Leading/subleading/inclusive
+                axisIndices[1] = 3; lowLimits[1] = iJetEta+1;    highLimits[1] = iJetEta+1;          // Jet eta
+                axisIndices[2] = 4; lowLimits[2] = lowerCentralityBin; highLimits[2] = higherCentralityBin; // Centrality
+                axisIndices[3] = 5; lowLimits[3] = iClosureParticle+1; highLimits[3] = iClosureParticle+1;  // Quark/gluon
+                axisIndices[4] = 7; lowLimits[4] = iAsymmetry+1;       highLimits[4] = iAsymmetry+1;        // Asymmetry
+                
+                // For the last closure particle bin no restrictions for quark/gluon jets
+                if(iClosureParticle == DijetHistograms::knClosureParticleTypes){
+                  
+                  // Move asymmetry restriction one spece in the array
+                  axisIndices[3] = 7; lowLimits[3] = iAsymmetry+1; highLimits[3] = iAsymmetry+1;  // Asymmetry
+                  
+                  // Remove the last set array bin
+                  nRestrictionAxes--;
+                }
+                
+                // Remove the asymmetry restriction for the last iAsymmetry bin. That will be asymmetry inclusive.
+                if(iAsymmetry == fnAsymmetryBins) nRestrictionAxes--;
+                
+                fhJetPtClosure[iClosureType][knGenJetPtBins][iJetEta][iCentralityBin][iAsymmetry][iClosureParticle] = FindHistogram(fInputFile,"jetPtClosure",6,nRestrictionAxes,axisIndices,lowLimits,highLimits);
+              }
+              
+            } // Jet eta bin loop
           } // Dijet asymmetry loop
         } // Centrality loop
       } // Closure particle loop
