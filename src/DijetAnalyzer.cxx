@@ -1009,7 +1009,7 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
-    for(Int_t iEvent = 0; iEvent < 10; iEvent++){ // nEvents
+    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
       
       //************************************************
       //         Read basic event information
@@ -1106,7 +1106,7 @@ void DijetAnalyzer::RunAnalysis(){
         //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
                 
-        if(eventPlaneQ < 1.8) continue;  // 2.222 2.778 3.333
+        if(eventPlaneQ < 3.3) continue;  // 2.222 2.778 3.333
       }
       
       
@@ -1567,8 +1567,6 @@ void DijetAnalyzer::RunAnalysis(){
       
       // If a dijet is found and not vetoed, fill some information to fHistograms
       if((dijetFound && !matchVeto) || (dijetFound && findMatchedDijet)){
-                        
-        cout << "Event: " << iEvent << " leading jet: " << leadingJetPt << endl;
         
         matchedDijetCounter++;
         
