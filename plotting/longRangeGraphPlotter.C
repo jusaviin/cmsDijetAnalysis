@@ -7,10 +7,7 @@
 /*
  * Find the point where pol0 and pol1 lines cross
  */
-double findCrossingPoint(TF1* poly1, TLine *poly0){
-  
-  // Find the constant value of the zeroth order polynomial
-  double constant = poly0->GetY1();
+double findCrossingPoint(TF1* poly1, double constant){
   
   // Find the parameters of the first order polynomial
   double level = poly1->GetParameter(0);
@@ -18,6 +15,19 @@ double findCrossingPoint(TF1* poly1, TLine *poly0){
   
   // We need to solve equation x * slope + level = consant => x = (constant - level) / slope
   return (constant - level) / slope;
+  
+}
+
+/*
+ * Find the point where pol0 and pol1 lines cross
+ */
+double findCrossingPoint(TF1* poly1, TLine *poly0){
+  
+  // Find the constant value of the zeroth order polynomial
+  double constant = poly0->GetY1();
+  
+  // Uee the function for constant to get the final results
+  return findCrossingPoint(poly1, constant);
   
 }
 
@@ -50,14 +60,14 @@ void longRangeGraphPlotter(){
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 5;
-  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_subeNon0_caloJets_onlyDihadron_correctedDihadron_2021-02-26.root", "flowGraphs_PbPbMC2018_subeNon0_caloJets_onlyDihadron_qVectorBelow1p8_correctedDihadron_2021-02-26.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow1p8_onlyForDihadron_2021-01-19.root", "flowGraphs_PbPbMC2018_subeNon0_caloJets_onlyDihadron_qVectorBelow2p5_correctedDihadron_2021-02-26.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2p5_onlyForDihadron_2021-01-19.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorAbove2p8_2021-02-11.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorAbove3p3_2021-02-11.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorAbove3p3_2021-02-11.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2_2021-02-02.root",   "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2_2021-02-02.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2p2_2021-02-02.root",    "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedEventDihadron_bestQvectorForEachCentrality_2021-01-14.root", "flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow7ForDihadron_correctedJetHadron_correctedDihadron_2021-01-11.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_systematicUncertainties_backgroundAdjustedJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_nearEtaJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_farEtaJetHadron_2020-12-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  int nComparisonFiles = 6;
+  TString comparisonFileName[] = {"flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow1p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow1p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-04.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p5_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p8_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2_2021-02-02.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2_2021-02-02.root",   "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p8_2021-02-02.root",     "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2_2021-02-02.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_5pCentShift_qVectorBelow2p2_2021-02-02.root",    "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedEventDihadron_bestQvectorForEachCentrality_2021-01-14.root", "flowGraphs_PbPbMC2018_5pCentShift_qVectorCutBelow7ForDihadron_correctedJetHadron_correctedDihadron_2021-01-11.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_systematicUncertainties_backgroundAdjustedJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_nearEtaJetHadron_2020-12-04.root", "flowGraphs_PbPb2018_systematicUncertainties_farEtaJetHadron_2020-12-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-05.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root", "qVectorStudy_manualCut6_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_manualCut7_recoJets_sameEventJetHadron_sameEventDihadron_2020-10-20.root", "qVectorStudy_noCut_correctedJetHadron_correctedDihadron.root", "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"Calo jets", "MC+5%", "HYDJET+5%, Q < 1.8", "MC+5%, Q < 1.8", "HYDJET+5%, Q < 2.5",  "MC+5%, Q < 2.5"};
+  TString fileLegend[] = {"Calo jets", "Corrected calo jet", "MC+5%, Q < 1.8", "MC+5%, Q < 2", "MC+5%, Q < 2.2",  "MC+5%, Q < 2.5", "MC+5% Q < 2.8"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -79,18 +89,19 @@ void longRangeGraphPlotter(){
   // Plots to be compared between files
   const bool drawJetHadronVnFileComparison = false;
   const bool drawDihadronVnFileComparison = false;
-  const bool drawHadronVnFileComparison = true;
+  const bool drawHadronVnFileComparison = false;
   const bool drawJetVnFileComparison = false;
-  const bool drawJetHadronYieldFileComparison = false;
+  const bool drawJetHadronYieldFileComparison = true;
   const bool drawDihadronYieldFileComparison = false;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison || drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison;
-  const bool drawQvectorTrends = false;
+  const bool drawQvectorTrends = true;
   const bool drawHadronVnVersusJetVn = false;
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
   const bool saveFigures = false;                     // Save the figures in a file
-  TString saveComment = "_smearCheck";              // String to be added to saved file names
+  TString saveComment = "_hydjetCorrection";              // String to be added to saved file names
+  int labelShiftNumber = 4;                         // Percentege of centrality shift to be added to labels
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -116,6 +127,8 @@ void longRangeGraphPlotter(){
   
   TGraphErrors *yieldGraphJetHadron[maxFiles][nAsymmetryBins+1][nCentralityBins];
   TGraphErrors *yieldGraphDihadron[maxFiles][nAsymmetryBins+1][nCentralityBins];
+  TGraphErrors *yieldGraphJetHadronVsQvector[maxPtBin][nAsymmetryBins+1][nCentralityBins];
+  TGraphErrors *yieldGraphDihadronVsQvector[maxPtBin][nAsymmetryBins+1][nCentralityBins];
  
   TGraphErrors *ratioGraph[nCentralityBins];
   double defaultAxis[4] = {1,2,3,4};
@@ -139,13 +152,13 @@ void longRangeGraphPlotter(){
   // Axes for graphs as a function of Q-vector cut
   double xAxisValuesQvector[nComparisonFiles];
   double xAxisErrorsQvector[nComparisonFiles];
-  double yAxisValuesQvector[5][nComparisonFiles];  // Number 5 gives the different graph types
-  double yAxisErrorsQvector[5][nComparisonFiles];  // Number 5 gives the different graph types
+  double yAxisValuesQvector[7][nComparisonFiles];  // Number 7 gives the different graph types
+  double yAxisErrorsQvector[7][nComparisonFiles];  // Number 7 gives the different graph types
   
   TLine *qLine[5][nAsymmetryBins+1][nCentralityBins][nFlowComponents][nTrackPtBins];
   TLine *dataLine[maxFiles][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   double qVectorXMin = 1;
-  double qVectorXMax = 4;
+  double qVectorXMax = 3.3;
   double fineTunedQ[nTrackPtBins][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   
 //  // Manual corrections for jet v2 values determined from Q-vector fits
@@ -153,10 +166,15 @@ void longRangeGraphPlotter(){
 //                                   {0.0945, 0.0991, 0.1129, 0.1456},
 //                                   {0.0570, 0.0703, 0.0811, 0.1006}};
   
-  // Manual corrections for jet v2 values determined from hadron v2 to jet v2 fits
-  double manualCorrection[3][4] = {{0.0894, 0.0850, 0.0735, 0.1284},
-                                   {0.0947, 0.0993, 0.1131, 0.1454},
-                                   {0.0569, 0.0705, 0.0815, 0.1025}};
+//  // Manual corrections for jet v2 values determined from hadron v2 to jet v2 fits
+//  double manualCorrection[3][4] = {{0.0894, 0.0850, 0.0735, 0.1284},
+//                                   {0.0947, 0.0993, 0.1131, 0.1454},
+//                                   {0.0569, 0.0705, 0.0815, 0.1025}};
+  
+  // Manual corrections for jet v2 values determined from hadron v2 to jet v2 fits with only HYDJET particles
+  double manualCorrection[3][4] = {{0.0829, 0.0784, 0.0584, 0.1201},
+                                   {0.0886, 0.0923, 0.0957, 0.1160},
+                                   {0.0546, 0.0556, 0.0475, 0.05}};
   
   // For x-axis, set the Q-vector value from the file. This can be decoded from the filename
   TObjArray *nameContents;
@@ -304,7 +322,7 @@ void longRangeGraphPlotter(){
   TLegend *legend;
   TLegend *vLegend;
   int markers[] = {kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar};
-  int fullMarkers[] = {kFullSquare, kFullCircle, kFullDiamond, kFullCross, kFullStar, kFullFourTrianglesPlus};
+  int fullMarkers[] = {kFullSquare, kFullCircle, kFullDiamond, kFullCross, kFullStar, kFullFourTrianglesPlus, kFullDoubleDiamond};
   int secondMarkers[] = {kFullCircle, kFullCross, kFullSquare, kFullCircle, kFullFourTrianglesPlus};
   int colors[] = {kBlue,kRed,kGreen+2,kBlack, kMagenta};
   int flowColors[] = {kBlue, kBlack, kRed, kGreen+3, kMagenta};
@@ -312,9 +330,10 @@ void longRangeGraphPlotter(){
   TString asymmetryString[] = {" 0.0 < x_{j} < 0.6", " 0.6 < x_{j} < 0.8", " 0.8 < x_{j} < 1.0", ""};
   TString asymmetryLegend[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "x_{j} integrated"};
   TString compactAsymmetryString[] = {"_A=0v0-0v6", "_A=0v6-0v8", "_A=0v8-1v0", ""};
+  double normalizationValue[2]; // Normalizer for yields
 
   
-  // After all the graph have been loaded from the input files, combine information from these graphs to a new one
+  // After all the graphs have been loaded from the input files, combine information from these graphs to a new one
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
       for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
@@ -403,6 +422,44 @@ void longRangeGraphPlotter(){
                     
         } // Point loop in the graph
       } // Flow component loop
+      
+      // Combination of information for yields
+      if(drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison){
+        for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+          for(int iFile = 0; iFile < nComparisonFiles+1; iFile++){
+            
+            // Dihadron yield
+            yieldGraphDihadron[iFile][iAsymmetry][iCentrality]->GetPoint(iPoint, xValueForQ, yValueForQ);
+            yErrorForQ = yieldGraphDihadron[iFile][iAsymmetry][iCentrality]->GetErrorY(iPoint);
+            
+            if(iFile == 0){
+              normalizationValue[0] = yValueForQ;
+            } else {
+              yAxisValuesQvector[5][iFile-1] = yValueForQ / normalizationValue[0];
+              yAxisErrorsQvector[5][iFile-1] = yErrorForQ / normalizationValue[0];
+            }
+            
+            // Jet-hadron yield
+            yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->GetPoint(iPoint, xValueForQ, yValueForQ);
+            yErrorForQ = yieldGraphJetHadron[iFile][iAsymmetry][iCentrality]->GetErrorY(iPoint);
+            
+            if(iFile == 0){
+              normalizationValue[1] = yValueForQ;
+            } else {
+              yAxisValuesQvector[6][iFile-1] = yValueForQ / normalizationValue[1];
+              yAxisErrorsQvector[6][iFile-1] = yErrorForQ / normalizationValue[1];
+            }
+            
+          } // Loop over files
+          
+          // After the points from all the files have been collected, these can be put into new formatted graphs
+          yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality] = new TGraphErrors(nComparisonFiles, xAxisValuesQvector, yAxisValuesQvector[5], xAxisErrorsQvector, yAxisErrorsQvector[5]);
+          yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality] = new TGraphErrors(nComparisonFiles, xAxisValuesQvector, yAxisValuesQvector[6], xAxisErrorsQvector, yAxisErrorsQvector[6]);
+          
+        } // Point loop in the graph
+        
+      } // Doing yields
+      
     } // Asymmetry loop
   } // Centrality loop
   
@@ -443,6 +500,9 @@ void longRangeGraphPlotter(){
   
   TLine *oneLine = new TLine(0,1,maxTrackPt,1);
   oneLine->SetLineStyle(2);
+  
+  TLine *oneQLine = new TLine(qVectorXMin,1,qVectorXMax,1);
+  oneQLine->SetLineStyle(2);
   
   TH1D *vnLineError = new TH1D("vnLineError","vnLineError",1,0,maxTrackPt);
   
@@ -830,7 +890,7 @@ void longRangeGraphPlotter(){
             if(drawQvectorTrends){
               legend = new TLegend(0.2,0.6,0.5,0.9);
               legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, 5%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
+              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, %d%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data(), labelShiftNumber));
               
               for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
                 flowGraphQvectorHadron[iPoint][iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iPoint]);
@@ -839,7 +899,7 @@ void longRangeGraphPlotter(){
                 flowGraphQvectorHadron[iPoint][iAsymmetry][iCentrality][iFlow]->Fit("pol1");
                 flowGraphQvectorHadron[iPoint][iAsymmetry][iCentrality][iFlow]->GetFunction("pol1")->SetLineColor(fileColors[iPoint]);
                 if(iPoint == 0){
-                  drawer->DrawGraph(flowGraphQvectorHadron[iPoint][iAsymmetry][iCentrality][iFlow], qVectorXMin, qVectorXMax, 0, 0.35, "Q-vector below", namerY, " ", "p");
+                  drawer->DrawGraph(flowGraphQvectorHadron[iPoint][iAsymmetry][iCentrality][iFlow], qVectorXMin, qVectorXMax, 0, 0.35, "Q-vector above", namerY, " ", "p");
                 } else {
                   flowGraphQvectorHadron[iPoint][iAsymmetry][iCentrality][iFlow]->Draw("p,same");
                 }
@@ -867,7 +927,7 @@ void longRangeGraphPlotter(){
           if(drawJetVnFileComparison){
           
             sprintf(namerY,"Jet v_{%d}",iFlow+1);
-            legend = new TLegend(0.2,0.55,0.5,0.9);
+            legend = new TLegend(0.2,0.7,0.5,0.9);
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
@@ -935,7 +995,7 @@ void longRangeGraphPlotter(){
             if(drawQvectorTrends){
               legend = new TLegend(0.2,0.65,0.5,0.9);
               legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, 4%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
+              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, %d%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data(), labelShiftNumber));
               
               for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
                 flowGraphQvectorJet[iPoint][iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iPoint]);
@@ -965,7 +1025,7 @@ void longRangeGraphPlotter(){
             
             legend = new TLegend(0.2,0.65,0.5,0.9);
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-            legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, 4%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
+            legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, HYDJET %d%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data(), labelShiftNumber));
             
             for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
               flowGraphHadronVsJet[iPoint][iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iPoint]);
@@ -1044,6 +1104,36 @@ void longRangeGraphPlotter(){
                 gPad->GetCanvas()->SaveAs(Form("figures/jetHadronYieldComparison%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
             }
             
+            // Plots as a function of Q-vector
+            if(drawQvectorTrends){
+              legend = new TLegend(0.2,0.6,0.5,0.9);
+              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, %d%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data(), labelShiftNumber));
+              
+              for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+                yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[iPoint]);
+                yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[iPoint]);
+                yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
+                yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality]->Fit("pol1");
+                yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality]->GetFunction("pol1")->SetLineColor(fileColors[iPoint]);
+                if(iPoint == 0){
+                  drawer->DrawGraph(yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality], qVectorXMin, qVectorXMax, 0.2, 1.6, "Q-vector below", "Jet-hadron yield: MC/data", " ", "p");
+                } else {
+                  yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality]->Draw("p,same");
+                }
+                                
+                // Solve where the function crosses the line
+                crossingPoint = findCrossingPoint(yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality]->GetFunction("pol1"), 1);
+                
+                legend->AddEntry(yieldGraphJetHadronVsQvector[iPoint][iAsymmetry][iCentrality], Form("%.1f < p_{T} < %.1f GeV, Q = %.3f", trackPtBinBorders[iPoint], trackPtBinBorders[iPoint+1], crossingPoint), "p");
+                
+              } // Track pT loop
+              
+              oneQLine->Draw();
+              legend->Draw();
+              
+            } // Drawing trends
+            
           } // File comparison for jet-hadron yields
           
           if(drawDihadronYieldFileComparison){
@@ -1064,7 +1154,7 @@ void longRangeGraphPlotter(){
               
               legend->AddEntry(yieldGraphDihadron[iFile][iAsymmetry][iCentrality], fileLegend[iFile], "p");
               
-            }
+            } // File loop
             
             legend->Draw();
             
@@ -1072,6 +1162,36 @@ void longRangeGraphPlotter(){
             if(saveFigures){
                 gPad->GetCanvas()->SaveAs(Form("figures/dihadronYieldComparison%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
             }
+            
+            // Plots as a function of Q-vector
+            if(drawQvectorTrends){
+              legend = new TLegend(0.2,0.6,0.5,0.9);
+              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s, %d%% shifted", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data(), labelShiftNumber));
+              
+              for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+                yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[iPoint]);
+                yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[iPoint]);
+                yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
+                yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality]->Fit("pol1");
+                yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality]->GetFunction("pol1")->SetLineColor(fileColors[iPoint]);
+                if(iPoint == 0){
+                  drawer->DrawGraph(yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality], qVectorXMin, qVectorXMax, 0.2, 1.6, "Q-vector below", "Dihadron yield: MC/data", " ", "p");
+                } else {
+                  yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality]->Draw("p,same");
+                }
+                                
+                // Solve where the function crosses the line
+                crossingPoint = findCrossingPoint(yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality]->GetFunction("pol1"), 1);
+                
+                legend->AddEntry(yieldGraphDihadronVsQvector[iPoint][iAsymmetry][iCentrality], Form("%.1f < p_{T} < %.1f GeV, Q = %.3f", trackPtBinBorders[iPoint], trackPtBinBorders[iPoint+1], crossingPoint), "p");
+                
+              } // Track pT loop
+              
+              oneQLine->Draw();
+              legend->Draw();
+              
+            } // Drawing trends
             
           } // File comparison for dihadron yields
           
