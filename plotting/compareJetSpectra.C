@@ -48,10 +48,10 @@ void compareJetSpectra(){
   
   const int firstDrawnCentralityBin = 0;
   const int lastDrawnCentralityBin = nCentralityBins;
-  const int firstDrawnAsymmetryBin = 0;
+  const int firstDrawnAsymmetryBin = nAsymmetryBins;
   const int lastDrawnAsymmetryBin = nAsymmetryBins;
   
-  const int iJetTrack = DijetHistogramManager::kTrackLeadingJet; // DijetHistogramManager::kTrackSubleadingJet
+  const int iJetType = DijetHistogramManager::kLeadingJet; //kLeadingJet kSubleadingJet kAnyJet
   
   const bool drawAsymmetryRatio = false;
   const bool drawCentralityRatio = true;
@@ -64,6 +64,7 @@ void compareJetSpectra(){
   for(int iFile = 0; iFile < nFilesToCompare; iFile++){
     histograms[iFile]->SetLoadLeadingJetHistograms(true);
     histograms[iFile]->SetLoadSubleadingJetHistograms(true);
+    histograms[iFile]->SetLoadAnyJetHistograms(true);
     histograms[iFile]->LoadProcessedHistograms();
   }
 
@@ -82,7 +83,7 @@ void compareJetSpectra(){
       
       iHistogram = iCentrality == nCentralityBins ? 0 : 1;
       
-      jetPt[iAsymmetry][iCentrality] = histograms[iHistogram]->GetHistogramJetPt(iJetTrack, iCentrality, iAsymmetry);
+      jetPt[iAsymmetry][iCentrality] = histograms[iHistogram]->GetHistogramJetPt(iJetType, iCentrality, iAsymmetry);
       lowNormalizationBin = jetPt[iAsymmetry][iCentrality]->FindBin(200.5);
       highNormalizationBin = jetPt[iAsymmetry][iCentrality]->FindBin(499.5);
       jetPt[iAsymmetry][iCentrality]->Scale(1.0/jetPt[iAsymmetry][iCentrality]->Integral(lowNormalizationBin, highNormalizationBin));
@@ -144,7 +145,7 @@ void compareJetSpectra(){
       
       legend = new TLegend(0.25,0.05,0.65,0.4);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetTrack]),"");
+      legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetType]),"");
       legend->AddEntry((TObject*) 0,centralityString.Data(),"");
       legend->AddEntry(jetPt[nAsymmetryBins][iCentrality],asymmetryString[nAsymmetryBins],"l");
       
@@ -171,7 +172,7 @@ void compareJetSpectra(){
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/jetSpectraXjComparison%s%s.pdf", labels[iJetTrack], compactCentralityString.Data()));
+        gPad->GetCanvas()->SaveAs(Form("figures/jetSpectraXjComparison%s%s.pdf", labels[iJetType], compactCentralityString.Data()));
       }
       
     } // Centrality loop
@@ -191,7 +192,7 @@ void compareJetSpectra(){
       
       legend = new TLegend(0.6,0.45,0.9,0.8);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-      legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetTrack]),"");
+      legend->AddEntry((TObject*) 0,Form("%s jet",labels[iJetType]),"");
       if(iAsymmetry < nAsymmetryBins) legend->AddEntry((TObject*) 0,asymmetryString[iAsymmetry].Data(),"");
       legend->AddEntry(jetPt[iAsymmetry][nCentralityBins], ratioLabel, "l");
       
@@ -218,7 +219,7 @@ void compareJetSpectra(){
       
       // Save the figures into a file
       if(saveFigures){
-        gPad->GetCanvas()->SaveAs(Form("figures/jetSpectraCentralityComparison%s%s%s.png", saveComment.Data(), labels[iJetTrack], compactAsymmetryString[iAsymmetry].Data()));
+        gPad->GetCanvas()->SaveAs(Form("figures/jetSpectraCentralityComparison%s%s%s.png", saveComment.Data(), labels[iJetType], compactAsymmetryString[iAsymmetry].Data()));
       }
       
     } // Centrality loop
