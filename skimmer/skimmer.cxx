@@ -149,22 +149,26 @@ int main(int argc,char *argv[]){
   ReadFileList(fileNameVector,fileNameFile,1,fileSearchIndex,runLocal);
   
   // Maximum size of arrays
+  const Int_t nMaxEventPlane = 30;  // Maximum number of event planes in an event
   const Int_t nMaxJet = 250;        // Maximum number of jets in an event
   const Int_t nMaxTrack = 60000;    // Maximum number of tracks in an event
+  
+  bool includeEventPlane = true;
+  bool includePfCandidates = false;
   
   //jetTree[0] = (TTree*)inputFile->Get("ak4CaloJetAnalyzer/t");
   //jetTree[1] = (TTree*)inputFile->Get("ak4PFJetAnalyzer/t");
   
   // Define trees to be read from the files
-  const int nJetTrees = 4; // 4 For PbPb, 2 for pp
+  const int nJetTrees = 3; // 3 For PbPb, 2 for pp
   TChain *heavyIonTree = new TChain("hiEvtAnalyzer/HiTree");
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *skimTree = new TChain("skimanalysis/HltTree");
   TChain *jetTree[nJetTrees];
   jetTree[0] = new TChain("akPu4CaloJetAnalyzer/t");     // For pp: ak4CaloJetAnalyzer/t
   jetTree[1] = new TChain("akCs4PFJetAnalyzer/t");       // For pp: ak4PFJetAnalyzer/t
-  jetTree[2] = new TChain("akPu4PFJetAnalyzer/t");       // For pp: remove
-  jetTree[3] = new TChain("akFlowPuCs4PFJetAnalyzer/t"); // For pp: remove
+  //jetTree[2] = new TChain("akPu4PFJetAnalyzer/t");       // For pp: remove
+  jetTree[2] = new TChain("akFlowPuCs4PFJetAnalyzer/t"); // For pp: remove
   TChain *trackTree = new TChain("ppTrack/trackTree");
   TChain *genTrackTree = new TChain("HiGenParticleAna/hi");
   TChain *particleFlowCandidateTree = new TChain("pfcandAnalyzer/pfTree");
@@ -180,6 +184,13 @@ int main(int argc,char *argv[]){
   TBranch *ptHatBranch;           // Branch for pT hat
   TBranch *eventWeightBranch;     // Branch for jet weight for 2018 MC
   
+  TBranch *nEventPlaneBranch;              // Branch for number of event planes
+  TBranch *eventPlaneAngleBranch;          // Branch for event plane angles
+  TBranch *eventPLaneQBranch;              // Branch for Q-vector magnitude in an event plane
+  TBranch *eventPlaneQxBranch;             // Branch for Q-vector x-component in an event plane
+  TBranch *eventPlaneQyBranch;             // Branch for Q-vector y-component in an event plane
+  TBranch *eventPlaneMultiplicityBranch;   // Branch for event plane multiplicity
+  
   // Leaves for heavy ion tree
   UInt_t run;           // Run number
   ULong64_t event;      // Event number
@@ -188,6 +199,13 @@ int main(int argc,char *argv[]){
   Int_t hiBin;          // HiBin = Centrality percentile * 2
   Float_t ptHat;        // pT hat
   Float_t eventWeight;  // jet weight in the 2018 MC tree
+  
+  Int_t nEventPlane;                                     // Number of event planes
+  Float_t eventPlaneAngle[nMaxEventPlane] = {0};         // Event plane angles
+  Float_t eventPlaneQ[nMaxEventPlane] = {0};             // Magnitude of Q-vector in event plane
+  Float_t eventPlaneQx[nMaxEventPlane] = {0};            // x-component of the Q-vector
+  Float_t eventPlaneQy[nMaxEventPlane] = {0};            // y-component of the Q-vecotr
+  Float_t eventPlaneMultiplicity[nMaxEventPlane] = {0};  // Particle multiplicity in an event plane
   
   // Branches for HLT tree
   TBranch *caloJetFilterBranch80;         // Branch for calo jet 80 filter bit
@@ -275,7 +293,7 @@ int main(int argc,char *argv[]){
   TBranch *trackAlgorithmBranch;             // Branch for track algorithm
   TBranch *trackOriginalAlgorithmBranch;     // Branch for track original algorithm
   TBranch *trackMVABranch;                   // Branch for track MVA
-  TBranch *trackChargeBranch;                   // Branch for track MVA
+  TBranch *trackChargeBranch;                // Branch for track charge
   
   // Leaves for the track tree
   Int_t nTracks;                                            // Number of tracks
@@ -337,7 +355,7 @@ int main(int argc,char *argv[]){
     skimTree->Add(*listIterator);
     trackTree->Add(*listIterator);
     genTrackTree->Add(*listIterator);
-    particleFlowCandidateTree->Add(*listIterator);
+    if(includePfCandidates) particleFlowCandidateTree->Add(*listIterator);
     
     for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
       jetTree[iJetType]->Add(*listIterator);
@@ -362,6 +380,22 @@ int main(int argc,char *argv[]){
   heavyIonTree->SetBranchAddress("vz",&vertexZ,&hiVzBranch);
   heavyIonTree->SetBranchStatus("hiBin",1);
   heavyIonTree->SetBranchAddress("hiBin",&hiBin,&hiBinBranch);
+  
+  // Only do event plane variables if requested
+  if(includeEventPlane){
+    heavyIonTree->SetBranchStatus("hiNevtPlane",1);
+    heavyIonTree->SetBranchAddress("hiNevtPlane",&nEventPlane,&nEventPlaneBranch);
+    heavyIonTree->SetBranchStatus("hiEvtPlanes",1);
+    heavyIonTree->SetBranchAddress("hiEvtPlanes",&eventPlaneAngle,&eventPlaneAngleBranch);
+    heavyIonTree->SetBranchStatus("hiEvtPlaneQ",1);
+    heavyIonTree->SetBranchAddress("hiEvtPlaneQ",&eventPlaneQ,&eventPLaneQBranch);
+    heavyIonTree->SetBranchStatus("hiEvtPlaneQx",1);
+    heavyIonTree->SetBranchAddress("hiEvtPlaneQx",&eventPlaneQx,&eventPlaneQxBranch);
+    heavyIonTree->SetBranchStatus("hiEvtPlaneQy",1);
+    heavyIonTree->SetBranchAddress("hiEvtPlaneQy",&eventPlaneQy,&eventPlaneQyBranch);
+    heavyIonTree->SetBranchStatus("hiEvtPlaneMult",1);
+    heavyIonTree->SetBranchAddress("hiEvtPlaneMult",&eventPlaneMultiplicity,&eventPlaneMultiplicityBranch);
+  }
   
   // ptHat and event weight only for MC
   if(isMC){
@@ -538,17 +572,19 @@ int main(int argc,char *argv[]){
     
   }
   
-  // Connect the branches to the particle flow candidate tree
-  particleFlowCandidateTree->SetBranchStatus("*",0);
-  
-  particleFlowCandidateTree->SetBranchStatus("pfId",1);
-  particleFlowCandidateTree->SetBranchAddress("pfId",&particleFlowCandidateIdVector,&particleFlowCandidateIdBranch);
-  particleFlowCandidateTree->SetBranchStatus("pfPt",1);
-  particleFlowCandidateTree->SetBranchAddress("pfPt",&particleFlowCandidatePtVector,&particleFlowCandidatePtBranch);
-  particleFlowCandidateTree->SetBranchStatus("pfPhi",1);
-  particleFlowCandidateTree->SetBranchAddress("pfPhi",&particleFlowCandidatePhiVector,&particleFlowCandidatePhiBranch);
-  particleFlowCandidateTree->SetBranchStatus("pfEta",1);
-  particleFlowCandidateTree->SetBranchAddress("pfEta",&particleFlowCandidateEtaVector,&particleFlowCandidateEtaBranch);
+  // Connect the branches to the particle flow candidate tree if requested
+  if(includePfCandidates){
+    particleFlowCandidateTree->SetBranchStatus("*",0);
+    
+    particleFlowCandidateTree->SetBranchStatus("pfId",1);
+    particleFlowCandidateTree->SetBranchAddress("pfId",&particleFlowCandidateIdVector,&particleFlowCandidateIdBranch);
+    particleFlowCandidateTree->SetBranchStatus("pfPt",1);
+    particleFlowCandidateTree->SetBranchAddress("pfPt",&particleFlowCandidatePtVector,&particleFlowCandidatePtBranch);
+    particleFlowCandidateTree->SetBranchStatus("pfPhi",1);
+    particleFlowCandidateTree->SetBranchAddress("pfPhi",&particleFlowCandidatePhiVector,&particleFlowCandidatePhiBranch);
+    particleFlowCandidateTree->SetBranchStatus("pfEta",1);
+    particleFlowCandidateTree->SetBranchAddress("pfEta",&particleFlowCandidateEtaVector,&particleFlowCandidateEtaBranch);
+  }
   
   
   // ========================================== //
@@ -564,6 +600,16 @@ int main(int argc,char *argv[]){
   heavyIonTreeOutput->Branch("lumi",&lumi,"lumi/i");
   heavyIonTreeOutput->Branch("vz",&vertexZ,"vz/F");
   heavyIonTreeOutput->Branch("hiBin",&hiBin,"hiBin/I");
+  
+  // Only do event plane if requested
+  if(includeEventPlane){
+    heavyIonTreeOutput->Branch("hiNevtPlane",&nEventPlane,"hiNevtPlane/I");
+    heavyIonTreeOutput->Branch("hiEvtPlanes",&eventPlaneAngle,"hiEvtPlanes[hiNevtPlane]/F");
+    heavyIonTreeOutput->Branch("hiEvtPlaneQ",&eventPlaneQ,"hiEvtPlaneQ[hiNevtPlane]/F");
+    heavyIonTreeOutput->Branch("hiEvtPlaneQx",&eventPlaneQx,"hiEvtPlaneQx[hiNevtPlane]/F");
+    heavyIonTreeOutput->Branch("hiEvtPlaneQy",&eventPlaneQy,"hiEvtPlaneQy[hiNevtPlane]/F");
+    heavyIonTreeOutput->Branch("hiEvtPlaneMult",&eventPlaneMultiplicity,"hiEvtPlaneMult[hiNevtPlane]/F");
+  }
   
   // ptHat and event weight only for MC
   if(isMC){
@@ -730,10 +776,13 @@ int main(int argc,char *argv[]){
   std::vector<float> *particleFlowCandidatePhiOutputVector = new std::vector<float>(); particleFlowCandidatePhiOutputVector->clear();
   std::vector<float> *particleFlowCandidateEtaOutputVector = new std::vector<float>(); particleFlowCandidateEtaOutputVector->clear();
   
-  particleFlowCandidateTreeOutput->Branch("pfId","vector<int>",&particleFlowCandidateIdOutputVector);
-  particleFlowCandidateTreeOutput->Branch("pfPt","vector<float>",&particleFlowCandidatePtOutputVector);
-  particleFlowCandidateTreeOutput->Branch("pfPhi","vector<float>",&particleFlowCandidatePhiOutputVector);
-  particleFlowCandidateTreeOutput->Branch("pfEta","vector<float>",&particleFlowCandidateEtaOutputVector);
+  // Only define branched is requested
+  if(includePfCandidates){
+    particleFlowCandidateTreeOutput->Branch("pfId","vector<int>",&particleFlowCandidateIdOutputVector);
+    particleFlowCandidateTreeOutput->Branch("pfPt","vector<float>",&particleFlowCandidatePtOutputVector);
+    particleFlowCandidateTreeOutput->Branch("pfPhi","vector<float>",&particleFlowCandidatePhiOutputVector);
+    particleFlowCandidateTreeOutput->Branch("pfEta","vector<float>",&particleFlowCandidateEtaOutputVector);
+  }
   
   // ========================================== //
   //          Loop over all events              //
@@ -782,7 +831,7 @@ int main(int argc,char *argv[]){
         
         // Apply very basic jet cuts
         if(jetPtArray[iJetType][iJet] < 25) passJetCuts = false;    // Minumum pT cut of 25 GeV
-        if(jetEtaArray[iJetType][iJet] > 2) passJetCuts = false;    // Maximum eta cut of 2
+        if(jetEtaArray[iJetType][iJet] > 2 && jetEtaArrayWTA[iJetType][iJet] > 2) passJetCuts = false;    // Maximum eta cut of 2
         
         // Fill the jet arrays with reconstructed jets
         if(passJetCuts){
@@ -915,20 +964,22 @@ int main(int argc,char *argv[]){
       
     } // Filling gen tracks for MC
     
-    // Particle flow candidate loop
-    for(int pfi = 0; pfi < particleFlowCandidateIdVector->size(); pfi++) {
+    // Particle flow candidate loop. Do only if requested
+    if(includePfCandidates){
+      for(int pfi = 0; pfi < particleFlowCandidateIdVector->size(); pfi++) {
+        
+        // pT cut for PF condidates
+        if(particleFlowCandidatePtVector->at(pfi) < 2) continue;  // Minimum PF candidate pT cut of 2 GeV
+        
+        particleFlowCandidateIdOutputVector->push_back(particleFlowCandidateIdVector->at(pfi));
+        particleFlowCandidatePtOutputVector->push_back(particleFlowCandidatePtVector->at(pfi));
+        particleFlowCandidatePhiOutputVector->push_back(particleFlowCandidatePhiVector->at(pfi));
+        particleFlowCandidateEtaOutputVector->push_back(particleFlowCandidateEtaVector->at(pfi));
+        
+      } // particle flow candidate loop
       
-      // pT cut for PF condidates
-      if(particleFlowCandidatePtVector->at(pfi) < 2) continue;  // Minimum PF candidate pT cut of 2 GeV
-      
-      particleFlowCandidateIdOutputVector->push_back(particleFlowCandidateIdVector->at(pfi));
-      particleFlowCandidatePtOutputVector->push_back(particleFlowCandidatePtVector->at(pfi));
-      particleFlowCandidatePhiOutputVector->push_back(particleFlowCandidatePhiVector->at(pfi));
-      particleFlowCandidateEtaOutputVector->push_back(particleFlowCandidateEtaVector->at(pfi));
-      
-    } // particle flow candidate loop
-    
-    particleFlowCandidateTreeOutput->Fill();
+      particleFlowCandidateTreeOutput->Fill();
+    }
     
     // Clear the vectors before the next event! Otherwise all the tracks pile up cumulatively
     if(isMC){
@@ -940,10 +991,12 @@ int main(int argc,char *argv[]){
       genTrackSubeventVector->clear();
     }
     
-    particleFlowCandidateIdOutputVector->clear();
-    particleFlowCandidatePtOutputVector->clear();
-    particleFlowCandidatePhiOutputVector->clear();
-    particleFlowCandidateEtaOutputVector->clear();
+    if(includePfCandidates){
+      particleFlowCandidateIdOutputVector->clear();
+      particleFlowCandidatePtOutputVector->clear();
+      particleFlowCandidatePhiOutputVector->clear();
+      particleFlowCandidateEtaOutputVector->clear();
+    }
     
   } // Event loop
   
@@ -970,7 +1023,7 @@ int main(int argc,char *argv[]){
   
   gDirectory->cd("../");
   
-  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akPu4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer"};
+  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer","akPu4PFJetAnalyzer"};
   
   for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
     
@@ -989,18 +1042,26 @@ int main(int argc,char *argv[]){
   trackTreeOutput->Write();
   
   gDirectory->cd("../");
-  gDirectory->mkdir("HiGenParticleAna");
-  gDirectory->cd("HiGenParticleAna");
   
-  genTrackTreeOutput->Write();
+  // Generator particles only present in MC
+  if(isMC){
+    gDirectory->mkdir("HiGenParticleAna");
+    gDirectory->cd("HiGenParticleAna");
+    
+    genTrackTreeOutput->Write();
+    
+    gDirectory->cd("../");
+  }
   
-  gDirectory->cd("../");
-  gDirectory->mkdir("pfcandAnalyzer");
-  gDirectory->cd("pfcandAnalyzer");
-
-  particleFlowCandidateTreeOutput->Write();
-  
-  gDirectory->cd("../");
+  // Only write PF candidates if requested
+  if(includePfCandidates){
+    gDirectory->mkdir("pfcandAnalyzer");
+    gDirectory->cd("pfcandAnalyzer");
+    
+    particleFlowCandidateTreeOutput->Write();
+    
+    gDirectory->cd("../");
+  }
   
   outputFile->Close();
   
