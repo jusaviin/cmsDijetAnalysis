@@ -153,22 +153,22 @@ int main(int argc,char *argv[]){
   const Int_t nMaxJet = 250;        // Maximum number of jets in an event
   const Int_t nMaxTrack = 60000;    // Maximum number of tracks in an event
   
-  bool includeEventPlane = true;
+  bool includeEventPlane = false;
   bool includePfCandidates = false;
   
   //jetTree[0] = (TTree*)inputFile->Get("ak4CaloJetAnalyzer/t");
   //jetTree[1] = (TTree*)inputFile->Get("ak4PFJetAnalyzer/t");
   
   // Define trees to be read from the files
-  const int nJetTrees = 3; // 3 For PbPb, 2 for pp
+  const int nJetTrees = 4; // 3 For PbPb, 2 for pp
   TChain *heavyIonTree = new TChain("hiEvtAnalyzer/HiTree");
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *skimTree = new TChain("skimanalysis/HltTree");
   TChain *jetTree[nJetTrees];
   jetTree[0] = new TChain("akPu4CaloJetAnalyzer/t");     // For pp: ak4CaloJetAnalyzer/t
   jetTree[1] = new TChain("akCs4PFJetAnalyzer/t");       // For pp: ak4PFJetAnalyzer/t
-  //jetTree[2] = new TChain("akPu4PFJetAnalyzer/t");       // For pp: remove
-  jetTree[2] = new TChain("akFlowPuCs4PFJetAnalyzer/t"); // For pp: remove
+  jetTree[2] = new TChain("akPu4PFJetAnalyzer/t");       // For pp: remove
+  jetTree[3] = new TChain("akFlowPuCs4PFJetAnalyzer/t"); // For pp: remove
   TChain *trackTree = new TChain("ppTrack/trackTree");
   TChain *genTrackTree = new TChain("HiGenParticleAna/hi");
   TChain *particleFlowCandidateTree = new TChain("pfcandAnalyzer/pfTree");
@@ -1023,7 +1023,7 @@ int main(int argc,char *argv[]){
   
   gDirectory->cd("../");
   
-  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer","akPu4PFJetAnalyzer"};
+  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akPu4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer"};
   
   for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
     
