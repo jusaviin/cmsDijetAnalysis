@@ -20,7 +20,8 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag);
+  jetHadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift%s_improvisedMixing_noCorrections_processed_2021-01-25.root", qVectorTag);
+  // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
@@ -38,7 +39,8 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_subeNon0_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag);
+  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-01-15.root", qVectorTag);
+  // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -86,6 +88,8 @@ void prepareFinalLongRangeGraphs(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
+  const bool cumulativePtBins = true; // True = Combine pT bins from below, False = Separate pT bins
+  
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
   const bool useSameEventJetHadron = false;     // True: Prepare final graphs from raw dijet distribution. False: Use mixed event corrected distributions
@@ -96,7 +100,7 @@ void prepareFinalLongRangeGraphs(){
   const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
-  const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
+  const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
   const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
   const bool hideFit = false;                  // Hide fit from the histograms when drawing
   
@@ -119,7 +123,8 @@ void prepareFinalLongRangeGraphs(){
   const bool useDifferentFilesForDifferentCentralities = false;
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
-  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets%s_correctedJetHadron_correctedDihadron_2021-03-12.root", qVectorTag);
+  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_5pCentShift_caloJets%s_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag);
+  // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
@@ -231,9 +236,7 @@ void prepareFinalLongRangeGraphs(){
           
           helperHistogramSubleading = jetHadronReader[iCentralityReader]->GetHistogramJetTrackDeltaEtaDeltaPhi(DijetHistogramManager::kTrackSubleadingJet, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
           helperHistogramSubleading->Scale(1.0 / jetHadronReader[iCentralityReader]->GetPtIntegral(iCentrality, iAsymmetry));
-          
-          //longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt] = refitter->CombineDeltaPhi(helperHistogramLeading, helperHistogramSubleading, 1.5, 2.5, Form("lulProjection%d%d%d",iAsymmetry,iCentrality,iTrackPt),true);
-                    
+                              
           refitter->SubtractBackground(helperHistogramLeading, helperHistogramSubleading, 4, false);
                     
           helperHistogram = refitter->GetBackground();
@@ -287,6 +290,11 @@ void prepareFinalLongRangeGraphs(){
         // Fit the background with Fourier fit
         longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
         longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+        
+        // If we are using cumulative binning, add all the previous pT bins to the distribution
+        if(cumulativePtBins && iTrackPt != 0){
+          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Add(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt-1]);
+        }
         
         refitter->FourierFit(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt], nRefit);
         longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt] = longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
@@ -348,6 +356,11 @@ void prepareFinalLongRangeGraphs(){
         // Fit the background with Fourier fit
         longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->Rebin(backgroundRebin);
         longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/backgroundRebin);
+        
+        // If we are using cumulative binning, add all the previous pT bins to the distribution
+        if(cumulativePtBins && iTrackPt != 0){
+          longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->Add(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt-1]);
+        }
         
         refitter->FourierFit(longRangeDihadron[iAsymmetry][iCentrality][iTrackPt], nRefit);
         longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt] = longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("fourier");
