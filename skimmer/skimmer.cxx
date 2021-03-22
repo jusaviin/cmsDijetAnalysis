@@ -153,22 +153,22 @@ int main(int argc,char *argv[]){
   const Int_t nMaxJet = 250;        // Maximum number of jets in an event
   const Int_t nMaxTrack = 60000;    // Maximum number of tracks in an event
   
-  bool includeEventPlane = false;
+  bool includeEventPlane = true;
   bool includePfCandidates = false;
   
   //jetTree[0] = (TTree*)inputFile->Get("ak4CaloJetAnalyzer/t");
   //jetTree[1] = (TTree*)inputFile->Get("ak4PFJetAnalyzer/t");
   
   // Define trees to be read from the files
-  const int nJetTrees = 4; // 3 For PbPb, 2 for pp
+  const int nJetTrees = 3; // 3 For PbPb, 2 for pp
   TChain *heavyIonTree = new TChain("hiEvtAnalyzer/HiTree");
   TChain *hltTree = new TChain("hltanalysis/HltTree");
   TChain *skimTree = new TChain("skimanalysis/HltTree");
   TChain *jetTree[nJetTrees];
   jetTree[0] = new TChain("akPu4CaloJetAnalyzer/t");     // For pp: ak4CaloJetAnalyzer/t
   jetTree[1] = new TChain("akCs4PFJetAnalyzer/t");       // For pp: ak4PFJetAnalyzer/t
-  jetTree[2] = new TChain("akPu4PFJetAnalyzer/t");       // For pp: remove
-  jetTree[3] = new TChain("akFlowPuCs4PFJetAnalyzer/t"); // For pp: remove
+  //jetTree[2] = new TChain("akPu4PFJetAnalyzer/t");       // For pp: remove
+  jetTree[2] = new TChain("akFlowPuCs4PFJetAnalyzer/t"); // For pp: remove
   TChain *trackTree = new TChain("ppTrack/trackTree");
   TChain *genTrackTree = new TChain("HiGenParticleAna/hi");
   TChain *particleFlowCandidateTree = new TChain("pfcandAnalyzer/pfTree");
@@ -237,41 +237,45 @@ int main(int argc,char *argv[]){
   
   // Branches for jet tree
   TBranch *nJetsBranch[nJetTrees];            // Branch for number of jets in an event
-  TBranch *nGenJetsBranch[nJetTrees];         // Branch for the number of generator level jets in an event
-  TBranch *jetPtBranch[nJetTrees];            // Branch for jet pT
-  TBranch *jetPhiBranch[nJetTrees];           // Branch for jet phi
-  TBranch *jetPhiBranchWTA[nJetTrees];        // Branch for jet phi with WTA axis
-  TBranch *jetEtaBranch[nJetTrees];           // Branch for jet eta
-  TBranch *jetEtaBranchWTA[nJetTrees];        // Branch for jet eta with WTA axis
-  TBranch *jetRawPtBranch[nJetTrees];         // Branch for raw jet pT
-  TBranch *jetMaxTrackPtBranch[nJetTrees];    // Maximum pT for a track inside a jet
-  TBranch *jetRefPtBranch[nJetTrees];         // Branch for reference generator level pT for a reconstructed jet
-  TBranch *jetRefFlavorBranch[nJetTrees];     // Branch for flavor for the parton initiating the jet
-  TBranch *jetRefFlavorForBBranch[nJetTrees]; // Branch for flavor for the parton initiating the jet
-  TBranch *genJetPtBranch[nJetTrees];         // Branch for the generator level jet pT
-  TBranch *genJetEtaBranch[nJetTrees];        // Branch for the generetor level jet eta
-  TBranch *genJetEtaBranchWTA[nJetTrees];     // Branch for the generetor level jet eta with WTA axis
-  TBranch *genJetPhiBranch[nJetTrees];        // Branch for the generator level jet phi
-  TBranch *genJetPhiBranchWTA[nJetTrees];     // Branch for the generator level jet phi with WTA axis
+  TBranch *nGenJetsBranch[nJetTrees];               // Branch for the number of generator level jets in an event
+  TBranch *jetPtBranch[nJetTrees];                  // Branch for jet pT
+  TBranch *jetPhiBranch[nJetTrees];                 // Branch for jet phi
+  TBranch *jetPhiBranchWTA[nJetTrees];              // Branch for jet phi with WTA axis
+  TBranch *jetEtaBranch[nJetTrees];                 // Branch for jet eta
+  TBranch *jetEtaBranchWTA[nJetTrees];              // Branch for jet eta with WTA axis
+  TBranch *jetRawPtBranch[nJetTrees];               // Branch for raw jet pT
+  TBranch *jetMaxTrackPtBranch[nJetTrees];          // Maximum pT for a track inside a jet
+  TBranch *jetRefPtBranch[nJetTrees];               // Branch for reference generator level pT for a reconstructed jet
+  TBranch *jetRefFlavorBranch[nJetTrees];           // Branch for flavor for the parton initiating the jet
+  TBranch *jetRefFlavorForBBranch[nJetTrees];       // Branch for flavor for the parton initiating the jet
+  TBranch *jetMatchedHadronFlavorBranch[nJetTrees]; // Branch for flavor for the parton initiating the jet (new)
+  TBranch *jetMatchedPartonFlavorBranch[nJetTrees]; // Branch for flavor for the parton initiating the jet (new)
+  TBranch *genJetPtBranch[nJetTrees];               // Branch for the generator level jet pT
+  TBranch *genJetEtaBranch[nJetTrees];              // Branch for the generetor level jet eta
+  TBranch *genJetEtaBranchWTA[nJetTrees];           // Branch for the generetor level jet eta with WTA axis
+  TBranch *genJetPhiBranch[nJetTrees];              // Branch for the generator level jet phi
+  TBranch *genJetPhiBranchWTA[nJetTrees];           // Branch for the generator level jet phi with WTA axis
   
   // Leaves for jet tree
-  Int_t nJets[nJetTrees];                                  // number of jets in an event
-  Int_t nGenJets[nJetTrees];                               // number of generator level jets in an event
-  Float_t jetPtArray[nJetTrees][nMaxJet] = {{0}};          // pT:s of all the jets in an event
-  Float_t jetPhiArray[nJetTrees][nMaxJet] = {{0}};         // phis of all the jets in an event
-  Float_t jetPhiArrayWTA[nJetTrees][nMaxJet] = {{0}};      // phis of all the jets in an event  with WTA axis
-  Float_t jetEtaArray[nJetTrees][nMaxJet] = {{0}};         // etas of all the jets in an event
-  Float_t jetEtaArrayWTA[nJetTrees][nMaxJet] = {{0}};      // etas of all the jets in an event  with WTA axis
-  Float_t jetRawPtArray[nJetTrees][nMaxJet] = {{0}};       // raw jet pT for all the jets in an event
-  Float_t jetMaxTrackPtArray[nJetTrees][nMaxJet] = {{0}};  // maximum track pT inside a jet for all the jets in an event
-  Float_t jetRefPtArray[nJetTrees][nMaxJet] = {{0}};       // reference generator level pT for a reconstructed jet
-  Int_t jetRefFlavorArray[nJetTrees][nMaxJet] = {{0}};     // flavor for initiating parton for the reference gen jet
-  Int_t jetRefFlavorForBArray[nJetTrees][nMaxJet] = {{0}}; // heavy flavor for initiating parton for the reference gen jet
-  Float_t genJetPtArray[nJetTrees][nMaxJet] = {{0}};       // pT:s of all the generator level jets in an event
-  Float_t genJetPhiArray[nJetTrees][nMaxJet] = {{0}};      // phis of all the generator level jets in an event
-  Float_t genJetPhiArrayWTA[nJetTrees][nMaxJet] = {{0}};   // phis of all the generator level jets in an event with WTA axis
-  Float_t genJetEtaArray[nJetTrees][nMaxJet] = {{0}};      // etas of all the generator level jets in an event
-  Float_t genJetEtaArrayWTA[nJetTrees][nMaxJet] = {{0}};   // etas of all the generator level jets in an event with WTA axis
+  Int_t nJets[nJetTrees];                                        // number of jets in an event
+  Int_t nGenJets[nJetTrees];                                     // number of generator level jets in an event
+  Float_t jetPtArray[nJetTrees][nMaxJet] = {{0}};                // pT:s of all the jets in an event
+  Float_t jetPhiArray[nJetTrees][nMaxJet] = {{0}};               // phis of all the jets in an event
+  Float_t jetPhiArrayWTA[nJetTrees][nMaxJet] = {{0}};            // phis of all the jets in an event  with WTA axis
+  Float_t jetEtaArray[nJetTrees][nMaxJet] = {{0}};               // etas of all the jets in an event
+  Float_t jetEtaArrayWTA[nJetTrees][nMaxJet] = {{0}};            // etas of all the jets in an event  with WTA axis
+  Float_t jetRawPtArray[nJetTrees][nMaxJet] = {{0}};             // raw jet pT for all the jets in an event
+  Float_t jetMaxTrackPtArray[nJetTrees][nMaxJet] = {{0}};        // maximum track pT inside a jet for all the jets in an event
+  Float_t jetRefPtArray[nJetTrees][nMaxJet] = {{0}};             // reference generator level pT for a reconstructed jet
+  Int_t jetRefFlavorArray[nJetTrees][nMaxJet] = {{0}};           // flavor for initiating parton for the reference gen jet
+  Int_t jetRefFlavorForBArray[nJetTrees][nMaxJet] = {{0}};       // heavy flavor for initiating parton for the reference gen jet
+  Int_t jetMatchedHadronFlavorArray[nJetTrees][nMaxJet] = {{0}}; // flavor for initiating parton for the reference gen jet (new)
+  Int_t jetMatchedPartonFlavorArray[nJetTrees][nMaxJet] = {{0}}; // flavor for initiating parton for the reference gen jet (new)
+  Float_t genJetPtArray[nJetTrees][nMaxJet] = {{0}};             // pT:s of all the generator level jets in an event
+  Float_t genJetPhiArray[nJetTrees][nMaxJet] = {{0}};            // phis of all the generator level jets in an event
+  Float_t genJetPhiArrayWTA[nJetTrees][nMaxJet] = {{0}};         // phis of all the generator level jets in an event with WTA axis
+  Float_t genJetEtaArray[nJetTrees][nMaxJet] = {{0}};            // etas of all the generator level jets in an event
+  Float_t genJetEtaArrayWTA[nJetTrees][nMaxJet] = {{0}};         // etas of all the generator level jets in an event with WTA axis
   
   // Branches for track tree
   TBranch *nTracksBranch;                    // Branch for number of tracks
@@ -479,11 +483,20 @@ int main(int argc,char *argv[]){
       jetTree[iJetType]->SetBranchStatus("refparton_flavor",1);
       jetTree[iJetType]->SetBranchAddress("refparton_flavor",&jetRefFlavorArray[iJetType],&jetRefFlavorBranch[iJetType]);
       jetTree[iJetType]->SetBranchStatus("refparton_flavorForB",1);
-      jetTree[iJetType]->SetBranchAddress("refparton_flavorForB",&jetRefFlavorForBArray[iJetType],&jetRefFlavorForBBranch[iJetType]);
+      jetTree[iJetType]->SetBranchAddress("refparton_flavorForB", &jetRefFlavorForBArray[iJetType], &jetRefFlavorForBBranch[iJetType]);
+      
+      // Calo jets do not have matched flavor branches
+      if(iJetType != 0){
+        jetTree[iJetType]->SetBranchStatus("matchedHadronFlavor",1);
+        jetTree[iJetType]->SetBranchAddress("matchedHadronFlavor", &jetMatchedHadronFlavorArray[iJetType], &jetMatchedHadronFlavorBranch[iJetType]);
+        jetTree[iJetType]->SetBranchStatus("matchedPartonFlavor",1);
+        jetTree[iJetType]->SetBranchAddress("matchedPartonFlavor", &jetMatchedPartonFlavorArray[iJetType], &jetMatchedPartonFlavorBranch[iJetType]);
+      }
+      
+      
+      // Gen jet variables
       jetTree[iJetType]->SetBranchStatus("genpt",1);
       jetTree[iJetType]->SetBranchAddress("genpt",&genJetPtArray[iJetType],&genJetPtBranch[iJetType]);
-      
-      // TODO: For newer forests, add matchedHadronFlavor and matchedPartonFlavor
       
       // Gen jet phi for e-scheme and WTA axes
       jetTree[iJetType]->SetBranchStatus("genphi",1);
@@ -640,23 +653,25 @@ int main(int argc,char *argv[]){
   TTree *jetTreeOutput[nJetTrees];
   
   // Leaves for jet tree
-  Int_t nJetsOutput[nJetTrees];                                  // number of jets in an event
-  Int_t nGenJetsOutput[nJetTrees];                               // number of generator level jets in an event
-  Float_t jetPtArrayOutput[nJetTrees][nMaxJet] = {{0}};          // pT:s of all the jets in an event
-  Float_t jetPhiArrayOutput[nJetTrees][nMaxJet] = {{0}};         // phis of all the jets in an event
-  Float_t jetPhiArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};      // phis of all the jets in an event  with WTA axis
-  Float_t jetEtaArrayOutput[nJetTrees][nMaxJet] = {{0}};         // etas of all the jets in an event
-  Float_t jetEtaArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};      // etas of all the jets in an event  with WTA axis
-  Float_t jetRawPtArrayOutput[nJetTrees][nMaxJet] = {{0}};       // raw jet pT for all the jets in an event
-  Float_t jetMaxTrackPtArrayOutput[nJetTrees][nMaxJet] = {{0}};  // maximum track pT inside a jet for all the jets in an event
-  Float_t jetRefPtArrayOutput[nJetTrees][nMaxJet] = {{0}};       // reference generator level pT for a reconstructed jet
-  Int_t jetRefFlavorArrayOutput[nJetTrees][nMaxJet] = {{0}};     // flavor for initiating parton for the reference gen jet
-  Int_t jetRefFlavorForBArrayOutput[nJetTrees][nMaxJet] = {{0}}; // heavy flavor for initiating parton for the reference gen jet
-  Float_t genJetPtArrayOutput[nJetTrees][nMaxJet] = {{0}};       // pT:s of all the generator level jets in an event
-  Float_t genJetPhiArrayOutput[nJetTrees][nMaxJet] = {{0}};      // phis of all the generator level jets in an event
-  Float_t genJetPhiArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};   // phis of all the generator level jets in an event with WTA axis
-  Float_t genJetEtaArrayOutput[nJetTrees][nMaxJet] = {{0}};      // etas of all the generator level jets in an event
-  Float_t genJetEtaArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};   // etas of all the generator level jets in an event with WTA axis
+  Int_t nJetsOutput[nJetTrees];                                        // number of jets in an event
+  Int_t nGenJetsOutput[nJetTrees];                                     // number of generator level jets in an event
+  Float_t jetPtArrayOutput[nJetTrees][nMaxJet] = {{0}};                // pT:s of all the jets in an event
+  Float_t jetPhiArrayOutput[nJetTrees][nMaxJet] = {{0}};               // phis of all the jets in an event
+  Float_t jetPhiArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};            // phis of all the jets in an event  with WTA axis
+  Float_t jetEtaArrayOutput[nJetTrees][nMaxJet] = {{0}};               // etas of all the jets in an event
+  Float_t jetEtaArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};            // etas of all the jets in an event  with WTA axis
+  Float_t jetRawPtArrayOutput[nJetTrees][nMaxJet] = {{0}};             // raw jet pT for all the jets in an event
+  Float_t jetMaxTrackPtArrayOutput[nJetTrees][nMaxJet] = {{0}};        // maximum track pT inside a jet for all the jets in an event
+  Float_t jetRefPtArrayOutput[nJetTrees][nMaxJet] = {{0}};             // reference generator level pT for a reconstructed jet
+  Int_t jetRefFlavorArrayOutput[nJetTrees][nMaxJet] = {{0}};           // flavor for initiating parton for the reference gen jet
+  Int_t jetRefFlavorForBArrayOutput[nJetTrees][nMaxJet] = {{0}};       // heavy flavor for initiating parton for the reference gen jet
+  Int_t jetMatchedHadronFlavorArrayOutput[nJetTrees][nMaxJet] = {{0}}; // flavor for initiating parton for the matched gen jet
+  Int_t jetMatchedPartonFlavorArrayOutput[nJetTrees][nMaxJet] = {{0}}; // flavor for initiating parton for the matched gen jet gen jet
+  Float_t genJetPtArrayOutput[nJetTrees][nMaxJet] = {{0}};             // pT:s of all the generator level jets in an event
+  Float_t genJetPhiArrayOutput[nJetTrees][nMaxJet] = {{0}};            // phis of all the generator level jets in an event
+  Float_t genJetPhiArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};         // phis of all the generator level jets in an event with WTA axis
+  Float_t genJetEtaArrayOutput[nJetTrees][nMaxJet] = {{0}};            // etas of all the generator level jets in an event
+  Float_t genJetEtaArrayWTAOutput[nJetTrees][nMaxJet] = {{0}};         // etas of all the generator level jets in an event with WTA axis
   
   for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
     
@@ -679,8 +694,14 @@ int main(int argc,char *argv[]){
     // If we are looking at Monte Carlo, connect the reference pT and parton arrays
     if(isMC){
       jetTreeOutput[iJetType]->Branch("refpt",&jetRefPtArrayOutput[iJetType],"refpt[nref]/F");
-      jetTreeOutput[iJetType]->Branch("refparton_flavor",&jetRefFlavorArrayOutput[iJetType],"refparton_flavor[nref]/I");
-      jetTreeOutput[iJetType]->Branch("refparton_flavorForB",&jetRefFlavorForBArrayOutput[iJetType],"refparton_flavorForB[nref]/I");
+      jetTreeOutput[iJetType]->Branch("refparton_flavor", &jetRefFlavorArrayOutput[iJetType], "refparton_flavor[nref]/I");
+      jetTreeOutput[iJetType]->Branch("refparton_flavorForB", &jetRefFlavorForBArrayOutput[iJetType], "refparton_flavorForB[nref]/I");
+      
+      // Calo jets do not have matched flavor branches
+      if(iJetType != 0){
+        jetTreeOutput[iJetType]->Branch("matchedHadronFlavor", &jetMatchedHadronFlavorArrayOutput[iJetType], "matchedHadronFlavor[nref]/I");
+        jetTreeOutput[iJetType]->Branch("matchedPartonFlavor", &jetMatchedPartonFlavorArrayOutput[iJetType], "matchedPartonFlavor[nref]/I");
+      }
       
       jetTreeOutput[iJetType]->Branch("ngen",&nGenJetsOutput[iJetType],"ngen/I");
       
@@ -847,6 +868,12 @@ int main(int argc,char *argv[]){
             jetRefPtArrayOutput[iJetType][iJetOutput] = jetRefPtArray[iJetType][iJet];
             jetRefFlavorArrayOutput[iJetType][iJetOutput] = jetRefFlavorArray[iJetType][iJet];
             jetRefFlavorForBArrayOutput[iJetType][iJetOutput] = jetRefFlavorForBArray[iJetType][iJet];
+            
+            // Calo jets do not have matched flavor branches
+            if(iJetType != 0){
+              jetMatchedPartonFlavorArrayOutput[iJetType][iJetOutput] = jetMatchedPartonFlavorArray[iJetType][iJet];
+              jetMatchedHadronFlavorArrayOutput[iJetType][iJetOutput] = jetMatchedHadronFlavorArray[iJetType][iJet];
+            }
           }
           
           iJetOutput++;
@@ -1023,7 +1050,7 @@ int main(int argc,char *argv[]){
   
   gDirectory->cd("../");
   
-  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akPu4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer"};
+  const char *jetDirectories[] = {"akPu4CaloJetAnalyzer","akCs4PFJetAnalyzer","akFlowPuCs4PFJetAnalyzer","akPu4PFJetAnalyzer"};
   
   for(int iJetType = 0; iJetType < nJetTrees; iJetType++){
     
