@@ -9,7 +9,7 @@ MatchJets 0 # 0 = Do not match jets. 1 = Match generator level jets with reconst
 
 # Specify the forest type in the selected data files and choose forest readers based on this
 ForestType 0 # 0 = High Forest, 1 = Skim Forest
-ReadMode 2019   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 data, 2019 = Use trigger with 2018 MC
+ReadMode 2018   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 data, 2019 = Use trigger with 2018 MC
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
 FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
@@ -25,8 +25,8 @@ FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
                     # Regular and uncorrected correlation = 24
 
 # Cuts for dijets
-JetType 0                  # 0 = Calo jets, 1 = csPF jets, 2 = puPF jets, 3 = flowPuCsPF jets 
-JetAxis 0                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate, 2 = WTA
+JetType 3                  # 0 = Calo jets, 1 = csPF jets, 2 = puPF jets, 3 = flowPuCsPF jets 
+JetAxis 2                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate, 2 = WTA
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
 MaxPtCut 5020               # Maximum pT of a leading jet accepted in the analysis

@@ -10,7 +10,7 @@ void compareJetSpectra(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString fileNames[] = {"data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_JECv4_processed_2020-08-21.root", "data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_xjBins_5pShiftedCent_5eveMix_jet100Trigger_allCorrections_processed_2019-10-21.root"};
+  TString fileNames[] = {"data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root", "data/dijetPbPb2018_akFlowJet_onlyJets_wtaAxis_fixedSkimCheck_noMixing_processed_2021-03-17.root"};
   
   // data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_xjBins_allCorrections_processed_2020-11-04.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_fixSeagull_allCorrections_processed_2020-02-17.root
@@ -34,8 +34,8 @@ void compareJetSpectra(){
   }
   
   // Choose if you want to write the figures to pdf file
-  const bool saveFigures = true;
-  TString saveComment = "MC";
+  const bool saveFigures = false;
+  TString saveComment = "lul";
   
   // Get the number of asymmetry bins
   const int nAsymmetryBins = histograms[1]->GetNAsymmetryBins();
