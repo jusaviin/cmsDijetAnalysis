@@ -243,6 +243,7 @@ public:
   
   // Getter for jet pT closure histograms
   TH1D* GetHistogramJetPtClosure(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, int iAsymmetry, const int iClosureParticle) const; // Jet pT closure
+  TH2D* GetHistogramJetPtClosureReactionPlane(const int iClosureType, const int iGenPtBin, const int iEtaBin, const int iCentrality, int iAsymmetry, const int iClosureParticle) const; // Jet pT closure with respect to the reaction plane
   
   TH1D* GetOneDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0, int bin6 = 0) const; // Getter for any one-dimensional histogram based on input string
   TH2D* GetTwoDimensionalHistogram(TString name, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0) const; // Getter for any two-dimensional histogram based on input string
@@ -410,6 +411,7 @@ private:
   
   // Histograms for jet pT closure
   TH1D *fhJetPtClosure[DijetHistograms::knClosureTypes][knGenJetPtBins+1][knJetEtaBins+1][kMaxCentralityBins][kMaxAsymmetryBins+1][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure
+  TH2D *fhJetPtClosureReactionPlane[DijetHistograms::knClosureTypes][knGenJetPtBins+1][knJetEtaBins+1][kMaxCentralityBins][kMaxAsymmetryBins+1][DijetHistograms::knClosureParticleTypes+1]; // Jet pT closure 
   
   // QA histograms for seagull correction
   TH1D *fhSeagullDeltaEta[knJetTrackCorrelations][kMaxAsymmetryBins+1][kMaxCentralityBins][kMaxTrackPtBins]; // Background eta projection for seagull fit
