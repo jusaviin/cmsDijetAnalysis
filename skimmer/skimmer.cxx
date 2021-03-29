@@ -894,7 +894,7 @@ int main(int argc,char *argv[]){
           
           // Apply very basic jet cuts
           if(genJetPtArray[iJetType][iJet] < 25) passJetCuts = false;    // Minumum pT cut of 25 GeV
-          if(genJetEtaArray[iJetType][iJet] > 2) passJetCuts = false;    // Maximum eta cut of 2
+          if(genJetEtaArray[iJetType][iJet] > 2 && genJetEtaArrayWTA[iJetType][iJet] > 2) passJetCuts = false;    // Maximum eta cut of 2
           
           // Fill the jet arrays with generated jets
           if(passJetCuts){
@@ -976,7 +976,7 @@ int main(int argc,char *argv[]){
         if(TMath::Abs(genTrackEtaArray->at(iTrack)) >= 2.4) continue; //acceptance of the tracker
         
         if(genTrackPtArray->at(iTrack) < 0.7) continue;   // Minimum track pT
-        if(genTrackPtArray->at(iTrack) > 300 ) continue;  // Maximum track pT
+        //if(genTrackPtArray->at(iTrack) > 300 ) continue;  // Maximum track pT
         
         // Fill the output vectors with gen particles surviving the cuts
         genTrackPtVector->push_back(genTrackPtArray->at(iTrack));
