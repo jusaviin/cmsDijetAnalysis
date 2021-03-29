@@ -793,9 +793,14 @@ void DijetHistograms::CreateHistograms(){
   // Extra axes added for xj study
   
   // Axis 7 for the jet pT closure histogram: dijet momentum balance xj
-  nBinsJetClosure[7] = nWideAsymmetryBins;     // nBins for wide dijet asymmetry bins
-  lowBinBorderJetClosure[7] = minXj;           // low bin border for dijet asymmetry
-  highBinBorderJetClosure[7] = maxXj;          // high bin border for dijet asymmetry
+  //nBinsJetClosure[7] = nWideAsymmetryBins;     // nBins for wide dijet asymmetry bins
+  //lowBinBorderJetClosure[7] = minXj;           // low bin border for dijet asymmetry
+  //highBinBorderJetClosure[7] = maxXj;          // high bin border for dijet asymmetry
+  
+  // Axis 7 for the jet pT closure histogram: angle with respect to reaction plane
+  nBinsJetClosure[7] = nDeltaPhiBinsJetTrack;     // nBins for wide dijet asymmetry bins
+  lowBinBorderJetClosure[7] = minDeltaPhiJetTrack;           // low bin border for dijet asymmetry
+  highBinBorderJetClosure[7] = maxDeltaPhiJetTrack;          // high bin border for dijet asymmetry
   
   // xj study
   
@@ -806,7 +811,7 @@ void DijetHistograms::CreateHistograms(){
   fhJetPtClosure->SetBinEdges(4,wideCentralityBins);
   
   // Set up wide xj bins for extra axis used in xj study
-  fhJetPtClosure->SetBinEdges(7,wideAsymmetryBins);
+  //fhJetPtClosure->SetBinEdges(7,wideAsymmetryBins);
   // xj study
   
   // ======== Extra THnSparses for additional event plane study ========

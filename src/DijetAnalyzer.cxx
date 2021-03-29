@@ -1106,7 +1106,7 @@ void DijetAnalyzer::RunAnalysis(){
         //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
                 
-        if(eventPlaneQ < 3.3) continue;  // 2.222 2.778 3.333
+        //if(eventPlaneQ > 2.8) continue;  // 2.222 2.778 3.333
       }
       
       
@@ -1923,6 +1923,16 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
     jetPhi = swapper;
   }
   
+  // Check how the jet energy is affacted by the reaction plane
+  Double_t jetEventPlaneDeltaPhiForwardRap = 0;
+  if(fCard->Get("IncludeEventPlane") == 1){
+    jetEventPlaneDeltaPhiForwardRap = jetPhi - fJetReader->GetEventPlaneAngle(8);
+    
+    // Transform deltaPhis to interval [-pi/2,3pi/2]
+    while(jetEventPlaneDeltaPhiForwardRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += -2*TMath::Pi();}
+    while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
+  }
+  
   // Helper variable for smearing study
   Double_t smearingFactor;
   
@@ -1966,7 +1976,10 @@ void DijetAnalyzer::FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t
   fillerClosure[6] = recoPt/matchedGenPt;  // Axis 6: Reconstructed level jet to generator level jet pT ratio
   
   // Extra axis used for xj study
-  fillerClosure[7] = xj;                   // Axis 7: Dijet momentum balance
+  //fillerClosure[7] = xj;                   // Axis 7: Dijet momentum balance
+  
+  // Repurpose the seventh axis for deltaPhi with respect to the reaction plane
+  fillerClosure[7] = jetEventPlaneDeltaPhiForwardRap;
   
   // Fill the closure histogram
   fHistograms->fhJetPtClosure->Fill(fillerClosure,fTotalEventWeight);
