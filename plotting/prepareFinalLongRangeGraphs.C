@@ -16,11 +16,11 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_qVectorAbove3p3";
+  const char* qVectorTag = "_qVectorBelow2p8";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_5pCentShift%s_improvisedMixing_noCorrections_processed_2021-02-01.root", qVectorTag);
+  jetHadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4v5pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-24.root", qVectorTag);
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
@@ -39,7 +39,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-01-15.root", qVectorTag);
+  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4v5pCentShift_subeNon0_improvisedMixing_noXj%s_noCorrections_processed_2021-03-22.root", qVectorTag);
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
@@ -82,13 +82,13 @@ void prepareFinalLongRangeGraphs(){
   jetHadronFile[0] = TFile::Open(jetHadronFileName[0]);
   jetHadronReader[0] = new DijetHistogramManager(jetHadronFile[0]);
   const int nCentralityBins = 3;//jetHadronReader[0]->GetNCentralityBins();
-  const int nTrackPtBins = 5;//jetHadronReader[0]->GetNTrackPtBins();
+  const int maxTrackPtBin = 4;//jetHadronReader[0]->GetNTrackPtBins();
   const int nAsymmetryBins = jetHadronReader[0]->GetNAsymmetryBins();
   double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
-  const bool cumulativePtBins = true; // True = Combine pT bins from below, False = Separate pT bins
+  const bool cumulativePtBins = false; // True = Combine pT bins from below, False = Separate pT bins
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
@@ -100,7 +100,7 @@ void prepareFinalLongRangeGraphs(){
   const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
-  const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
+  const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
   const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
   const bool hideFit = false;                  // Hide fit from the histograms when drawing
   
@@ -123,7 +123,7 @@ void prepareFinalLongRangeGraphs(){
   const bool useDifferentFilesForDifferentCentralities = false;
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
-  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_5pCentShift_caloJets%s_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag);
+  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_4v5pCentShift_subeNon0_caloJets%s_correctedJetHadron_correctedDihadron_2021-03-30.root", qVectorTag);
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
@@ -150,11 +150,11 @@ void prepareFinalLongRangeGraphs(){
   DijetMethods *refitter = new DijetMethods();
   
   // Define arrays for the histograms
-  TH1D *longRangeJetHadron[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
-  TF1 *longRangeFitJetHadron[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TH1D *longRangeJetHadron[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin];
+  TF1 *longRangeFitJetHadron[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin];
   
-  TH1D *longRangeDihadron[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
-  TF1 *longRangeFitDihadron[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins];
+  TH1D *longRangeDihadron[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin];
+  TF1 *longRangeFitDihadron[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin];
   
   // Helper histograms to get the background projection from same event histgorams
   TH2D *helperHistogram;
@@ -165,31 +165,31 @@ void prepareFinalLongRangeGraphs(){
   TH1D *tracksForGraph[nCentralityBins+1];
   
   // Arrays for extracted vn numbers for jet-hadron correlations
-  double jetHadronFlowTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double jetHadronFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double jetHadronFlowTable[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double jetHadronFlowError[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
   
   // Arrays for extracted vn numbers for jet-hadron correlations corrected for jet reconstruction bias
-  double jetHadronFlowTableCorrected[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double jetHadronFlowErrorCorrected[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double jetHadronFlowTableCorrected[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double jetHadronFlowErrorCorrected[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
   
   // Arrays for extracted vn numbers for dihadrons
-  double dihadronFlowTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double dihadronFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double dihadronFlowTable[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double dihadronFlowError[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
   
   // Arrays for extracted vn numbers for single hadrons
-  double hadronFlowTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double hadronFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double hadronFlowTable[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double hadronFlowError[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
   
   // Arrays for extracted vn numbers for jets
-  double jetFlowTable[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double jetFlowError[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double jetFlowTable[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double jetFlowError[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
   
   // Arrays for systematic uncertainties
-  double jetHadronFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double jetHadronFlowSystematicUncertaintyCorrected[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double dihadronFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double hadronFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
-  double jetFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][nTrackPtBins][nRefit];
+  double jetHadronFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double jetHadronFlowSystematicUncertaintyCorrected[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double dihadronFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double hadronFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
+  double jetFlowSystematicUncertainty[nAsymmetryBins+1][nCentralityBins+1][maxTrackPtBin][nRefit];
   
   // Read the histograms from the input files
   for(int iCentrality = 0; iCentrality < nCentralityBinsReader; iCentrality++){
@@ -226,7 +226,7 @@ void prepareFinalLongRangeGraphs(){
     // Track histogram for PbPb (needed for graph binning)
     tracksForGraph[iCentrality] = jetHadronReader[iCentralityReader]->GetHistogramTrackPt(DijetHistogramManager::kTrack, DijetHistogramManager::kSameEvent, iCentrality);
     
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
         // Read the two dimensional distribution from the same event
@@ -310,7 +310,7 @@ void prepareFinalLongRangeGraphs(){
     
     iCentralityReader = useDifferentFilesForDifferentCentralities ? iCentrality : 0;
     
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+    for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         
         // Read the two dimensional distribution from the same event
@@ -377,7 +377,7 @@ void prepareFinalLongRangeGraphs(){
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
       for(int iFlow = 0; iFlow < nRefit; iFlow++){
-        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
           
           // For jet-hadron vn, these numbers can be directly read from the Fourier fits
           jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] = longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetParameter(iFlow+1);
@@ -451,7 +451,7 @@ void prepareFinalLongRangeGraphs(){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
         for(int iFlow = 1; iFlow < 2; iFlow++){
-          for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+          for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
             
             cout << "Jet Vn for iAsymmetry: " << iAsymmetry << " iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << " is " << jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow] << " +- " << jetHadronFlowError[iAsymmetry][iCentrality][iTrackPt][iFlow] << endl;
             
@@ -475,7 +475,7 @@ void prepareFinalLongRangeGraphs(){
   
   if(drawFourierFitJetHadron){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+      for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
         for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
           if(hideFit) longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0);
@@ -508,7 +508,7 @@ void prepareFinalLongRangeGraphs(){
 
   if(drawFourierFitDihadron){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-      for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+      for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
         for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
           
           if(hideFit) longRangeFitDihadron[iAsymmetry][iCentrality][iTrackPt]->SetLineWidth(0);
@@ -540,28 +540,28 @@ void prepareFinalLongRangeGraphs(){
   } // Drawing Fourier fits
   
   // Contruct graphs from the arrays and save them to a file
-  double graphPointsX[nTrackPtBins-2];                        // x-axis points in flow graphs
-  double graphErrorsX[nTrackPtBins-2];                        // No errors for x-axis
-  double graphSystematicsX[nTrackPtBins-2];                   // No errors for x-axis
-  double graphPointsYJetHadron[nTrackPtBins-2];               // Vn values from jet-hadron correlations
-  double graphErrorsYJetHadron[nTrackPtBins-2];               // Statistical errors for jet-hadron Vn
-  double graphSystematicsYJetHadron[nTrackPtBins-2];          // Systematic uncertainties for jet-hadron Vn
-  double graphPointsYDihadron[nTrackPtBins-2];                // Vn values for dihadrons
-  double graphErrorsYDihadron[nTrackPtBins-2];                // Statistical errors for dihadron Vn
-  double graphSystematicsYDihadron[nTrackPtBins-2];           // Systematic uncertainties for dihadron Vn
-  double graphPointsYJetHadronCorrected[nTrackPtBins-2];      // Vn values for corrected jet-hadron correlations
-  double graphErrorsYJetHadronCorrected[nTrackPtBins-2];      // Statistical errors for corrected jet-hadron Vn
-  double graphSystematicsYJetHadronCorrected[nTrackPtBins-2]; // Systematic uncertainties for corrected jet-hadron Vn
-  double graphPointsYHadron[nTrackPtBins-2];                  // vn values for hadrons
-  double graphErrorsYHadron[nTrackPtBins-2];                  // Statistical errors for hadron vn
-  double graphSystematicsYHadron[nTrackPtBins-2];             // Systematic uncertainties for hadron vn
-  double graphPointsYJet[nTrackPtBins-2];                     // vn values for jets
-  double graphErrorsYJet[nTrackPtBins-2];                     // Statistical errors for jet vn
-  double graphSystematicsYJet[nTrackPtBins-2];                // Systematic uncertainties for jet vn
-  double graphPointsYieldJetHadron[nTrackPtBins-2];           // Yield values for jet-hadron correlations
-  double graphErrorsYieldJetHadron[nTrackPtBins-2];           // Yield errors for jet-hadron correlations
-  double graphPointsYieldDihadron[nTrackPtBins-2];            // Yield values for dihadron correlations
-  double graphErrorsYieldDihadron[nTrackPtBins-2];            // Yield errors for dihadron correlations
+  double graphPointsX[maxTrackPtBin];                        // x-axis points in flow graphs
+  double graphErrorsX[maxTrackPtBin];                        // No errors for x-axis
+  double graphSystematicsX[maxTrackPtBin];                   // No errors for x-axis
+  double graphPointsYJetHadron[maxTrackPtBin];               // Vn values from jet-hadron correlations
+  double graphErrorsYJetHadron[maxTrackPtBin];               // Statistical errors for jet-hadron Vn
+  double graphSystematicsYJetHadron[maxTrackPtBin];          // Systematic uncertainties for jet-hadron Vn
+  double graphPointsYDihadron[maxTrackPtBin];                // Vn values for dihadrons
+  double graphErrorsYDihadron[maxTrackPtBin];                // Statistical errors for dihadron Vn
+  double graphSystematicsYDihadron[maxTrackPtBin];           // Systematic uncertainties for dihadron Vn
+  double graphPointsYJetHadronCorrected[maxTrackPtBin];      // Vn values for corrected jet-hadron correlations
+  double graphErrorsYJetHadronCorrected[maxTrackPtBin];      // Statistical errors for corrected jet-hadron Vn
+  double graphSystematicsYJetHadronCorrected[maxTrackPtBin]; // Systematic uncertainties for corrected jet-hadron Vn
+  double graphPointsYHadron[maxTrackPtBin];                  // vn values for hadrons
+  double graphErrorsYHadron[maxTrackPtBin];                  // Statistical errors for hadron vn
+  double graphSystematicsYHadron[maxTrackPtBin];             // Systematic uncertainties for hadron vn
+  double graphPointsYJet[maxTrackPtBin];                     // vn values for jets
+  double graphErrorsYJet[maxTrackPtBin];                     // Statistical errors for jet vn
+  double graphSystematicsYJet[maxTrackPtBin];                // Systematic uncertainties for jet vn
+  double graphPointsYieldJetHadron[maxTrackPtBin];           // Yield values for jet-hadron correlations
+  double graphErrorsYieldJetHadron[maxTrackPtBin];           // Yield errors for jet-hadron correlations
+  double graphPointsYieldDihadron[maxTrackPtBin];            // Yield values for dihadron correlations
+  double graphErrorsYieldDihadron[maxTrackPtBin];            // Yield errors for dihadron correlations
   
   
   TGraphErrors *flowGraphJetHadron[nAsymmetryBins+1][nCentralityBins+1][nRefit];
@@ -591,7 +591,7 @@ void prepareFinalLongRangeGraphs(){
   
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
 
-    for(int iTrackPt = 0; iTrackPt < nTrackPtBins - 2; iTrackPt++){
+    for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
 
       // Find a good place to put the track pT points for the graphs
       if(tracksForGraph[iCentrality]){
@@ -634,7 +634,7 @@ void prepareFinalLongRangeGraphs(){
     // Create an array for the y-axis and make a graph out of vn values
     for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
       for(int iFlow = 0; iFlow < nRefit; iFlow++){
-        for(int iTrackPt = 0; iTrackPt < nTrackPtBins-2; iTrackPt++){
+        for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
           
           // Graphs for jet-hadron correlations
           graphPointsYJetHadron[iTrackPt] = jetHadronFlowTable[iAsymmetry][iCentrality][iTrackPt][iFlow];
@@ -692,22 +692,22 @@ void prepareFinalLongRangeGraphs(){
         } // Track pT loop
         
         // Create all graphs
-        flowGraphJetHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYJetHadron, graphErrorsX, graphErrorsYJetHadron);
-        flowSystematicsJetHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYJetHadron, graphSystematicsX, graphSystematicsYJetHadron);
-        flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYJetHadronCorrected, graphErrorsX, graphErrorsYJetHadronCorrected);
-        flowSystematicsJetHadronCorrected[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYJetHadronCorrected, graphSystematicsX, graphSystematicsYJetHadronCorrected);
-        flowGraphDihadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYDihadron, graphErrorsX, graphErrorsYDihadron);
-        flowSystematicsDihadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYDihadron, graphSystematicsX, graphSystematicsYDihadron);
-        flowGraphHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYHadron, graphErrorsX, graphErrorsYHadron);
-        flowSystematicsHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYHadron, graphSystematicsX, graphSystematicsYHadron);
-        flowGraphJet[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYJet, graphErrorsX, graphErrorsYJet);
-        flowSystematicsJet[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYJet, graphSystematicsX, graphSystematicsYJet);
+        flowGraphJetHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYJetHadron, graphErrorsX, graphErrorsYJetHadron);
+        flowSystematicsJetHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYJetHadron, graphSystematicsX, graphSystematicsYJetHadron);
+        flowGraphJetHadronCorrected[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYJetHadronCorrected, graphErrorsX, graphErrorsYJetHadronCorrected);
+        flowSystematicsJetHadronCorrected[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYJetHadronCorrected, graphSystematicsX, graphSystematicsYJetHadronCorrected);
+        flowGraphDihadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYDihadron, graphErrorsX, graphErrorsYDihadron);
+        flowSystematicsDihadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYDihadron, graphSystematicsX, graphSystematicsYDihadron);
+        flowGraphHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYHadron, graphErrorsX, graphErrorsYHadron);
+        flowSystematicsHadron[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYHadron, graphSystematicsX, graphSystematicsYHadron);
+        flowGraphJet[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYJet, graphErrorsX, graphErrorsYJet);
+        flowSystematicsJet[iAsymmetry][iCentrality][iFlow] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYJet, graphSystematicsX, graphSystematicsYJet);
 
         
       } // Flow component loop
       
-      yieldGraphJetHadron[iAsymmetry][iCentrality] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYieldJetHadron, graphErrorsX, graphErrorsYieldJetHadron);
-      yieldGraphDihadron[iAsymmetry][iCentrality] = new TGraphErrors(nTrackPtBins-2, graphPointsX, graphPointsYieldDihadron, graphErrorsX, graphErrorsYieldDihadron);
+      yieldGraphJetHadron[iAsymmetry][iCentrality] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYieldJetHadron, graphErrorsX, graphErrorsYieldJetHadron);
+      yieldGraphDihadron[iAsymmetry][iCentrality] = new TGraphErrors(maxTrackPtBin, graphPointsX, graphPointsYieldDihadron, graphErrorsX, graphErrorsYieldDihadron);
       
     } // Asymmetry loop
   } // Centrality loop
@@ -811,7 +811,7 @@ void prepareFinalLongRangeGraphs(){
     
     for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
           longRangeFitJetHadron[iAsymmetry][iCentrality][iTrackPt]->Write(Form("longRangeFitJetHadron_A%dC%dT%d", iAsymmetry, iCentrality, iTrackPt), TObject::kOverwrite);
         } // Track pT loop
       } // Centrality loop
@@ -827,7 +827,7 @@ void prepareFinalLongRangeGraphs(){
     
     for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
           longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Write(Form("longRangeJetHadron_A%dC%dT%d", iAsymmetry, iCentrality, iTrackPt), TObject::kOverwrite);
         } // Track pT loop
       } // Centrality loop
@@ -857,7 +857,7 @@ void prepareFinalLongRangeGraphs(){
     
     for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-        for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
           longRangeDihadron[iAsymmetry][iCentrality][iTrackPt]->Write(Form("longRangeDihadron_A%dC%dT%d", iAsymmetry, iCentrality, iTrackPt), TObject::kOverwrite);
         } // Track pT loop
       } // Centrality loop
