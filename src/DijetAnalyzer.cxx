@@ -264,7 +264,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       fCentralityWeightFunction->SetParameters(4.40810, -7.75301e-02, 4.91953e-04, -1.34961e-06, 1.44407e-09, -160, 1, 3.68078e-15); // 2015
     } else { // Weight function for 2018 MC
       fCentralityWeightFunction = new TF1("fcent","pol6",0,90); // 2018
-      fCentralityWeightFunction->SetParameters(4.64945,-0.201337, 0.00435794,-7.00799e-05,8.18299e-07,-5.52604e-09,1.54472e-11); // 2018
+      //fCentralityWeightFunction->SetParameters(4.64945,-0.201337, 0.00435794,-7.00799e-05,8.18299e-07,-5.52604e-09,1.54472e-11); // 2018
+      fCentralityWeightFunction->SetParameters(4.83916,-0.232099, 0.00594562,-0.000110747,1.39167e-06,-9.75264e-09,2.80523e-11); // 2018 weight for MinBias
     }
     
     // Set the number of HiBins for mixing pool
@@ -843,7 +844,9 @@ void DijetAnalyzer::RunAnalysis(){
         std::string lineInFile;
         std::ifstream mixingFileStream(fileListName[fLocalRun][fDataType]);
         while (std::getline(mixingFileStream,lineInFile)) {
-          mixingFiles.push_back(lineInFile);
+          if(fFileNames.at(0) != lineInFile){
+            mixingFiles.push_back(lineInFile);
+          }
         }
         fTrackReader[DijetHistograms::kMixedEvent]->ReadForestFromFileList(mixingFiles); // TODO: Testing new reader
       
@@ -1257,7 +1260,8 @@ void DijetAnalyzer::RunAnalysis(){
               }
               
               // Correlate inclusive jets with tracks. Only do this once per event for dihadrons
-              if(!onlyMix && nJetsInThisEvent == 0) CorrelateTracksAndJets(inclusiveJetInfo[nJetsInThisEvent],inclusiveJetInfo[nJetsInThisEvent],DijetHistograms::kSameEvent,true);
+              // Comment for min bias running
+              //if(!onlyMix && nJetsInThisEvent == 0) CorrelateTracksAndJets(inclusiveJetInfo[nJetsInThisEvent],inclusiveJetInfo[nJetsInThisEvent],DijetHistograms::kSameEvent,true);
               
               // Increase the number of jets we have found in the event
               nJetsInThisEvent++;
@@ -1284,6 +1288,11 @@ void DijetAnalyzer::RunAnalysis(){
         fillerJet[3] = centrality;            // Axis 3 = centrality
         fillerJet[4] = leadingJetFlavor;      // Axis 4 = any leading jet flavor
         fHistograms->fhLeadingJet->Fill(fillerJet,fTotalEventWeight*jetPtWeight);
+      }
+      
+      // MinBias running
+      if(fFillInclusiveJetTrackCorrelation){
+        CorrelateTracksAndJets(inclusiveJetInfo[0],inclusiveJetInfo[0],DijetHistograms::kSameEvent,true);
       }
       
       //************************************************
@@ -2164,7 +2173,7 @@ Double_t DijetAnalyzer::GetVzWeight(const Double_t vz) const{
  *   return: Multiplicative correction factor for the given CMS hiBin
  */
 Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
-  if(fDataType != ForestReader::kPbPbMC) return 1;
+  //if(fDataType != ForestReader::kPbPbMC) return 1; // Comment for MinBias running
   
   // Different range for centrality weight function for 2015 and 2018.
   if(fReadMode < 2000){

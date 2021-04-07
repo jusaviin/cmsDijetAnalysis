@@ -220,8 +220,8 @@ void GeneratorLevelForestReader::Initialize(){
   // Helper variable for choosing correct branches in HLT tree
   const char *branchNameHlt[2] = {"none","none"};
   
-  // Connect the branches to the HLT tree
-  fHltTree->SetBranchStatus("*",0);
+  // Connect the branches to the HLT tree. Comment HLT tree for MinBias running
+  /*fHltTree->SetBranchStatus("*",0);
   if(fDataType == kPp){ // pp data
     branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
     branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1_v1";
@@ -234,7 +234,8 @@ void GeneratorLevelForestReader::Initialize(){
     fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
   } else {
     fCaloJetFilterBit = 1;  // No filter for local test of MC if not specifically required
-  }
+  }*/
+  fCaloJetFilterBit = 1;  // No trigger for this MinBias running
   fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   
   // Connect the branches to the skim tree (different for pp and PbPb Monte Carlo)
@@ -309,7 +310,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
-  fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree");
+  //fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree");  // Comment HLT tree for MinBias running
   fSkimTree = (TTree*)inputFile->Get("skimanalysis/HltTree");
   
   // The jet tree has different name in different datasets
@@ -359,7 +360,7 @@ void GeneratorLevelForestReader::BurnForest(){
 void GeneratorLevelForestReader::GetEvent(Int_t nEvent){
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
-  fHltTree->GetEntry(nEvent);
+  //fHltTree->GetEntry(nEvent); // Comment HLT tree for MinBias running
   fSkimTree->GetEntry(nEvent);
   fTrackTree->GetEntry(nEvent);
   

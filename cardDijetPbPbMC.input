@@ -12,7 +12,7 @@ ForestType 0 # 0 = High Forest, 1 = Skim Forest
 ReadMode 2019   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 data, 2019 = Use trigger with 2018 MC
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
-FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
+FilledHistograms 71 # Bit 0 = Event information histograms      (to set: 1)
                     # Bit 1 = Jet histograms                    (to set: 2)
                     # Bit 2 = Track histograms                  (to set: 4)
                     # Bit 3 = Regular jet-track correlation     (to set: 8)
@@ -46,13 +46,13 @@ CalorimeterSignalLimitPt 20 # Require signal in calorimeters for all track above
 HighPtEtFraction 0.5        # For high pT tracks, require Et to be at least this fraction of pT
 Chi2QualityCut 0.15         # Maximum accepted chi2/(nDof*nHits) for tracks
 MinimumTrackHits 11         # Require this many hits for each track 
-SubeventCut 1               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
+SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
 
 # Cuts for event selection
 ZVertexCut 15       # Maximum vz value for accepted tracks
 LowPtHatCut 50      # Minimum accepted pT hat
 HighPtHatCut 1000   # Maximum accepted pT hat
-IncludeEventPlane 1 # 0 = Nominal. 1 = Add q-vector as one histogram axis
+IncludeEventPlane 0 # 0 = Nominal. 1 = Add q-vector as one histogram axis
 
 # Binning for THnSparses
 AsymmetryBinType    1  # 0 = Do binning in AJ, 1 = Do binning in xJ
