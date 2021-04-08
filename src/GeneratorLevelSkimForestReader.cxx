@@ -24,9 +24,10 @@ GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader() :
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
+ *   Bool_t minimumBiasMode: There is no HLT tree in minimum bias files, it cannot be loaded for those runs
  */
-GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
-  SkimForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane),
+GeneratorLevelSkimForestReader::GeneratorLevelSkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t minimumBiasMode) :
+  SkimForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane,minimumBiasMode),
   fTrackChargeArray(0),
   fTrackSubeventArray(0)
 {

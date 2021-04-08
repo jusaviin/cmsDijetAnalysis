@@ -20,7 +20,7 @@ public:
   
   // Constructors and destructors
   SkimForestReader();                                              // Default constructor
-  SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane); // Custom constructor
+  SkimForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t minimumBiasMode); // Custom constructor
   SkimForestReader(const SkimForestReader& in);                    // Copy constructor
   virtual ~SkimForestReader();                                     // Destructor
   SkimForestReader& operator=(const SkimForestReader& obj);        // Equal sign operator

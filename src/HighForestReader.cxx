@@ -56,9 +56,10 @@ HighForestReader::HighForestReader() :
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
+ *   Bool_t minimumBiasMode: There is no HLT tree in minimum bias files, it cannot be loaded for those runs
  */
-HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
-  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane),
+HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t minimumBiasMode) :
+  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane,minimumBiasMode),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -303,45 +304,48 @@ void HighForestReader::Initialize(){
   // skimanalysis/HltTree         pPAprimaryVertexFilter          Event selection for pp
   // skimanalysis/HltTree           pBeamScrapingFilter           Event selection for pp
   
-  // Connect the branches to the HLT tree. Comment HLT tree for MinBias running
-  /*fHltTree->SetBranchStatus("*",0);
-  if(fDataType == kPp || (fDataType == kPpMC && fReadMode == 2019)){ // pp data
-    
-    if(fReadMode > 2000){
-      fHltTree->SetBranchStatus("HLT_HIAK4CaloJet80_v1",1); // 2017 syntax
-      fHltTree->SetBranchAddress("HLT_HIAK4CaloJet80_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
-    } else {
-      fHltTree->SetBranchStatus("HLT_AK4CaloJet80_Eta5p1_v1",1); // 2015 syntax
-      fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  // Connect the branches to the HLT tree.
+  if(fMinimumBiasMode){
+    fCaloJetFilterBit = 1;  // No trigger selection for MinBias running
+  } else {
+    fHltTree->SetBranchStatus("*",0);
+    if(fDataType == kPp || (fDataType == kPpMC && fReadMode == 2019)){ // pp data
       
+      if(fReadMode > 2000){
+        fHltTree->SetBranchStatus("HLT_HIAK4CaloJet80_v1",1); // 2017 syntax
+        fHltTree->SetBranchAddress("HLT_HIAK4CaloJet80_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+      } else {
+        fHltTree->SetBranchStatus("HLT_AK4CaloJet80_Eta5p1_v1",1); // 2015 syntax
+        fHltTree->SetBranchAddress("HLT_AK4CaloJet80_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+        
+      }
+      
+    }else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb data
+      
+      // Trigger branch naming is different for 2018 and 2015 forests
+      if(fReadMode > 2000){
+        
+        // Calo jet 80 trigger
+        //fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet80Eta5p1_v1",1); // 2018 syntax
+        //fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet80Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+        
+        // Calo jet 100 trigger
+        fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1); // 2018 syntax
+        fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+        
+        // PF jet 80 trigger
+        //fHltTree->SetBranchStatus("HLT_HICsAK4PFJet80Eta1p5_v1",1); // 2018 syntax
+        //fHltTree->SetBranchAddress("HLT_HICsAK4PFJet80Eta1p5_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
+        
+      } else {
+        fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1); // 2015 syntax
+        fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2015 syntax
+      }
+    } else { // Local test or MC
+      fCaloJetFilterBit = 1;  // No filter for local test or MC forests
     }
-    
-  }else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb data
-    
-    // Trigger branch naming is different for 2018 and 2015 forests
-    if(fReadMode > 2000){
-      
-      // Calo jet 80 trigger
-      //fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet80Eta5p1_v1",1); // 2018 syntax
-      //fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet80Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
-      
-      // Calo jet 100 trigger
-      fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1); // 2018 syntax
-      fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
-      
-      // PF jet 80 trigger
-      //fHltTree->SetBranchStatus("HLT_HICsAK4PFJet80Eta1p5_v1",1); // 2018 syntax
-      //fHltTree->SetBranchAddress("HLT_HICsAK4PFJet80Eta1p5_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2018 syntax
-      
-    } else {
-      fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100_Eta5p1_v1",1); // 2015 syntax
-      fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100_Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch); // 2015 syntax
-    }
-  } else { // Local test or MC
-    fCaloJetFilterBit = 1;  // No filter for local test or MC forests
   }
-   */
-  fCaloJetFilterBit = 1;  // No trigger selection for MinBias running
+  
   fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   
   // Connect the branches to the skim tree (different for pp and PbPb data and Monte Carlo)
@@ -481,7 +485,7 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
-  //fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree"); // Comment HLT tree for MinBias running
+  if(!fMinimumBiasMode) fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree"); // No HLT for MinBias
   fSkimTree = (TTree*)inputFile->Get("skimanalysis/HltTree");
   
   // The jet tree has different name in different datasets
@@ -555,7 +559,7 @@ void HighForestReader::BurnForest(){
 void HighForestReader::GetEvent(Int_t nEvent){
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
-  //fHltTree->GetEntry(nEvent);  // Comment HLT tree for MinBias running
+  if(!fMinimumBiasMode) fHltTree->GetEntry(nEvent);  // No HLT for MinBias
   fSkimTree->GetEntry(nEvent);
   fTrackTree->GetEntry(nEvent);
   

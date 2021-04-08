@@ -24,8 +24,7 @@ FilledHistograms 1 # Bit 0 = Event information histograms      (to set: 1)
                     # Regular and uncorrected correlation = 24
 
 # Dihadron mode
-#TriggerTrackLow 3   # Low bin border for the trigger track
-#TriggerTrackHigh 4  # High bin border for the trigger track
+MinBias 0   # Flag for minimum bias running
 
 # Cuts for dijets
 JetType 0                  # 0 = Calo jets, 1 = PF CS jets, 2 = PF PU jets, 3 = PF flow CS jets

@@ -36,9 +36,10 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
+ *   Bool_t minimumBiasMode: There is no HLT tree in minimum bias files, it cannot be loaded for those runs
  */
-GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
-  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane),
+GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t minimumBiasMode) :
+  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane,minimumBiasMode),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -220,22 +221,26 @@ void GeneratorLevelForestReader::Initialize(){
   // Helper variable for choosing correct branches in HLT tree
   const char *branchNameHlt[2] = {"none","none"};
   
-  // Connect the branches to the HLT tree. Comment HLT tree for MinBias running
-  /*fHltTree->SetBranchStatus("*",0);
-  if(fDataType == kPp){ // pp data
-    branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
-    branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1_v1";
-    fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
-    fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
-  } else if (fDataType == kPpMC){
-    fCaloJetFilterBit = 1; // No filtering for Monte Carlo
-  } else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb or MC is specifically required
-    fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1);
-    fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+  // Connect the branches to the HLT tree. No HLT for minimum bias
+  if(fMinimumBiasMode){
+    fCaloJetFilterBit = 1;  // No trigger for this MinBias running
   } else {
-    fCaloJetFilterBit = 1;  // No filter for local test of MC if not specifically required
-  }*/
-  fCaloJetFilterBit = 1;  // No trigger for this MinBias running
+    fHltTree->SetBranchStatus("*",0);
+    if(fDataType == kPp){ // pp data
+      branchNameHlt[0] = "HLT_AK4CaloJet80_Eta5p1_v1";
+      branchNameHlt[1] = "HLT_AK4PFJet80_Eta5p1_v1";
+      fHltTree->SetBranchStatus(branchNameHlt[fJetType],1);
+      fHltTree->SetBranchAddress(branchNameHlt[fJetType],&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    } else if (fDataType == kPpMC){
+      fCaloJetFilterBit = 1; // No filtering for Monte Carlo
+    } else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb or MC is specifically required
+      fHltTree->SetBranchStatus("HLT_HIPuAK4CaloJet100Eta5p1_v1",1);
+      fHltTree->SetBranchAddress("HLT_HIPuAK4CaloJet100Eta5p1_v1",&fCaloJetFilterBit,&fCaloJetFilterBranch);
+    } else {
+      fCaloJetFilterBit = 1;  // No filter for local test of MC if not specifically required
+    }
+  }
+  
   fCaloJetFilterBitPrescale = 1; // Set the prescaled filter bit to 1. Only relevant for minimum bias PbPb (data skim)
   
   // Connect the branches to the skim tree (different for pp and PbPb Monte Carlo)
@@ -310,7 +315,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   
   // Connect a trees from the file to the reader
   fHeavyIonTree = (TTree*)inputFile->Get("hiEvtAnalyzer/HiTree");
-  //fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree");  // Comment HLT tree for MinBias running
+  if(!fMinimumBiasMode) fHltTree = (TTree*)inputFile->Get("hltanalysis/HltTree");  // No HLT for minimum bias
   fSkimTree = (TTree*)inputFile->Get("skimanalysis/HltTree");
   
   // The jet tree has different name in different datasets
@@ -360,7 +365,7 @@ void GeneratorLevelForestReader::BurnForest(){
 void GeneratorLevelForestReader::GetEvent(Int_t nEvent){
   fHeavyIonTree->GetEntry(nEvent);
   fJetTree->GetEntry(nEvent);
-  //fHltTree->GetEntry(nEvent); // Comment HLT tree for MinBias running
+  if(!fMinimumBiasMode) fHltTree->GetEntry(nEvent); // No HLT for minimum bias
   fSkimTree->GetEntry(nEvent);
   fTrackTree->GetEntry(nEvent);
   

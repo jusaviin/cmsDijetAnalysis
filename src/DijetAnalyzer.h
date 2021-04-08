@@ -173,6 +173,9 @@ private:
   Bool_t fFillInclusiveJetTrackCorrelation;   // Fill inclusive jet-track correlation histograms
   Bool_t fFillJetPtClosure;                   // Fill jet pT closure histograms
   Bool_t fFillDijetJetTrackCorrelation;       // Fill dijet jet-track correlation histograms
+  
+  // Miscellanous variables
+  Bool_t fMinimumBiasMode;                     // Run mode for minimum bias data
 
 };
 

@@ -72,7 +72,7 @@ public:
   
   // Constructors and destructors
   ForestReader();                                          // Default constructor
-  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane); // Custom constructor
+  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t minBiasMode); // Custom constructor
   ForestReader(const ForestReader& in);                    // Copy constructor
   virtual ~ForestReader();                                 // Destructor
   ForestReader& operator=(const ForestReader& obj);        // Equal sign operator
@@ -168,6 +168,7 @@ protected:
   Int_t fJetAxis;      // Jet axis used for the jets. 0 = Anti-kT, 1 = Leading particle flow candidate, 2 = WTA
   Bool_t fMatchJets;   // Match generator and reconstructed level jets
   Bool_t fDoEventPlane; // Include event plane branches in the tree
+  Bool_t fMinimumBiasMode; // There is no HLT tree in minimum bias files, it cannot be loaded for those runs
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;                   // Branch for vertex z-position
