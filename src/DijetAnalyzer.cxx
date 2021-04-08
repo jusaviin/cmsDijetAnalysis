@@ -985,7 +985,7 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
-    for(Int_t iEvent = 0; iEvent < 10; iEvent++){ // nEvents
+    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
       
       //************************************************
       //         Read basic event information
@@ -2039,9 +2039,9 @@ void DijetAnalyzer::MixTracksAndJets(const Double_t inclusiveJetInfo[60][4], con
     
     // Do the correlation with a jet from the current event and track from mixing event
     if(fFillInclusiveJetTrackCorrelation){
-      for(int iJet = 0; iJet < nJetsInThisEvent; iJet++){
-        CorrelateTracksAndJets(inclusiveJetInfo[iJet],inclusiveJetInfo[iJet],DijetHistograms::kMixedEvent,true);
-      }
+      //for(int iJet = 0; iJet < nJetsInThisEvent; iJet++){
+        CorrelateTracksAndJets(inclusiveJetInfo[0],inclusiveJetInfo[0],DijetHistograms::kMixedEvent,true);
+      //}
     }
     
     // Do the correlations with the dijet from current event and tracks from mixing event
