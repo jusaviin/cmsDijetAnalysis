@@ -6,7 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/dihadronPbPb2018_sameTriggerAssoc_minBias_5eventMixed_preprocessed_2021-04-07.root" "data/dihadronPbPb2018_sameTriggerAssoc_minBias_5eventMixed_noCorrections_processed_2021-04-07.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/dihadronPbPb2018_sameTriggerAssoc_minBias_5eventMixed_preprocessed_2021-04-07.root" "data/dihadronPbPb2018_sameTriggerAssoc_minBias_5eventMixedFromCaloDijet_noCorrections_processed_2021-04-07.root" false false -1 "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_noQcut_preprocessed_2021-03-29.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_noQcut_noCorrections_processed_2021-03-29.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_qVectorAbove1p5_preprocessed_2021-03-29.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_qVectorAbove1p5_noCorrections_processed_2021-03-29.root" false false -1 "data/"
