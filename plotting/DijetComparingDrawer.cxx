@@ -233,6 +233,65 @@ void DijetComparingDrawer::DrawEventInformation(){
   
   // Save the figure to a file
   SaveFigure("centralityInDijetEvents");
+  
+  // === Multiplicity ===
+  
+  TH1D *testHistogram = fBaseHistograms->GetHistogramMultiplicity(0);
+  
+  // Loop over centrality
+  if(testHistogram != NULL){
+    for(int iCentrality = 0; iCentrality < fBaseHistograms->GetNCentralityBins(); iCentrality++){
+      
+      // ==================================
+      // === Multiplicity in all events ===
+      // ==================================
+      
+      // Scale the histograms to the counts
+      FindScalingFactors("multiplicity",iCentrality,-1,-1);
+      
+      // Prepare the jet pT histograms and ratio to be drawn
+      PrepareRatio("multiplicity", 1, iCentrality);
+      
+      // Draw the centrality histograms to the upper pad
+      DrawToUpperPad("Multiplicity", "Counts");
+      
+      // Add a legend to the plot
+      legend = new TLegend(0.6,0.5,0.9,0.85);
+      SetupLegend(legend, "All events");
+      legend->Draw();
+      
+      // Draw the ratios to the lower portion of the split canvas
+      DrawToLowerPad("Multiplicity","Ratio",fRatioZoomMin,fRatioZoomMax);
+      
+      // Save the figure to a file
+      SaveFigure("multiplicity");
+      
+      // ==================================
+      // == Multiplicity in dijet events ==
+      // ==================================
+      
+      // Scale the histograms to the counts
+      FindScalingFactors("multiplicityDijet",iCentrality,-1,-1);
+      
+      // Prepare the jet pT histograms and ratio to be drawn
+      PrepareRatio("multiplicityDijet", 1, iCentrality);
+      
+      // Draw the centrality histograms to the upper pad
+      DrawToUpperPad("Multiplicity", "Counts");
+      
+      // Add a legend to the plot
+      legend = new TLegend(0.6,0.5,0.9,0.85);
+      SetupLegend(legend, "Dijet events");
+      legend->Draw();
+      
+      // Draw the ratios to the lower portion of the split canvas
+      DrawToLowerPad("Multiplicity","Ratio",fRatioZoomMin,fRatioZoomMax);
+      
+      // Save the figure to a file
+      SaveFigure("multiplicityDijet");
+      
+    } // Centrality loop
+  } // Multiplicity histograms
 }
 
 /*

@@ -25,6 +25,8 @@ DijetHistograms::DijetHistograms() :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
+  fhMultiplicity(0),
+  fhMultiplicityDijet(0),
   fhLeadingJet(0),
   fhLeadingDijet(0),
   fhSubleadingDijet(0),
@@ -65,6 +67,8 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
+  fhMultiplicity(0),
+  fhMultiplicityDijet(0),
   fhLeadingJet(0),
   fhLeadingDijet(0),
   fhSubleadingDijet(0),
@@ -105,6 +109,8 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhCentralityDijet(in.fhCentralityDijet),
   fhPtHat(in.fhPtHat),
   fhPtHatWeighted(in.fhPtHatWeighted),
+  fhMultiplicity(in.fhMultiplicity),
+  fhMultiplicityDijet(in.fhMultiplicityDijet),
   fhLeadingJet(in.fhLeadingJet),
   fhLeadingDijet(in.fhLeadingDijet),
   fhSubleadingDijet(in.fhSubleadingDijet),
@@ -149,6 +155,8 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhCentralityDijet = in.fhCentralityDijet;
   fhPtHat = in.fhPtHat;
   fhPtHatWeighted = in.fhPtHatWeighted;
+  fhMultiplicity = in.fhMultiplicity;
+  fhMultiplicityDijet = in.fhMultiplicityDijet;
   fhLeadingJet = in.fhLeadingJet;
   fhLeadingDijet = in.fhLeadingDijet;
   fhSubleadingDijet = in.fhSubleadingDijet;
@@ -190,6 +198,8 @@ DijetHistograms::~DijetHistograms(){
   delete fhCentralityDijet;
   delete fhPtHat;
   delete fhPtHatWeighted;
+  delete fhMultiplicity;
+  delete fhMultiplicityDijet;
   delete fhLeadingJet;
   delete fhLeadingDijet;
   delete fhSubleadingDijet;
@@ -313,6 +323,11 @@ void DijetHistograms::CreateHistograms(){
   const Double_t maxQvector = 5;         // Maximun normalized Q-vector value
   const Int_t nBinsQvector = 9;          // Number of Q-vector magnitude bins
   
+  // Binning for multiplicity
+  const Double_t minMultiplicity = 0;
+  const Double_t maxMultiplicity = 4000;
+  const Int_t nMultiplicityBins = 400;
+  
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
   Double_t wideCentralityBins[nWideCentralityBins+1];
@@ -351,6 +366,11 @@ void DijetHistograms::CreateHistograms(){
   // Smearing study variables complete!
   
   // Arrays for creating THnSparses
+  const Int_t nAxesMultiplicity = 2;
+  Int_t nBinsMultiplicity[nAxesMultiplicity];
+  Double_t lowBinBorderMultiplicity[nAxesMultiplicity];
+  Double_t highBinBorderMultiplicity[nAxesMultiplicity];
+  
   const Int_t nAxesJets = 6;   // 6 is nominal, 3 more added for smearing study
   Int_t nBinsJets[nAxesJets];
   Double_t lowBinBorderJets[nAxesJets];
@@ -418,6 +438,27 @@ void DijetHistograms::CreateHistograms(){
     fhTrackCuts->GetXaxis()->SetBinLabel(i+1,kTrackCutStrings[i]);
     fhTrackCutsInclusive->GetXaxis()->SetBinLabel(i+1,kTrackCutStrings[i]);
   }
+  
+  // ======== THnSparses for multiplicity ========
+  
+  // Axis 0 for the multiplicity histogram: multiplicity
+  nBinsMultiplicity[0] = nMultiplicityBins;       // nBins for leading/subleading jet pT
+  lowBinBorderMultiplicity[0] = minMultiplicity;  // low bin border for leading/subleading jet pT
+  highBinBorderMultiplicity[0] = maxMultiplicity; // high bin border for leading/subleading jet pT
+  
+  // Axis 1 for the multiplicity histogram: centrality
+  nBinsMultiplicity[1] = nWideCentralityBins;     // nBins for wide centrality bins
+  lowBinBorderMultiplicity[1] = minCentrality;    // low bin border for centrality
+  highBinBorderMultiplicity[1] = maxCentrality;   // high bin border for centrality
+  
+  // Create the histograms for leading and subleading jets using the above binning information
+  fhMultiplicity = new THnSparseF("multiplicity", "multiplicity", nAxesMultiplicity, nBinsMultiplicity, lowBinBorderMultiplicity, highBinBorderMultiplicity); fhMultiplicity->Sumw2();
+  fhMultiplicityDijet = new THnSparseF("multiplicityDijet", "multiplicityDijet", nAxesMultiplicity, nBinsMultiplicity, lowBinBorderMultiplicity, highBinBorderMultiplicity); fhMultiplicityDijet->Sumw2();
+  
+  // Set custom centrality bins for histograms
+  fhMultiplicity->SetBinEdges(1,wideCentralityBins);
+  fhMultiplicityDijet->SetBinEdges(1,wideCentralityBins);
+  
   
   // ======== THnSparses for leading and subleading jets ========
   
@@ -857,6 +898,8 @@ void DijetHistograms::Write() const{
   fhCentralityDijet->Write();
   fhPtHat->Write();
   fhPtHatWeighted->Write();
+  fhMultiplicity->Write();
+  fhMultiplicityDijet->Write();
   fhLeadingJet->Write();
   fhLeadingDijet->Write();
   fhSubleadingDijet->Write();
