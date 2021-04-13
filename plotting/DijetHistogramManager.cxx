@@ -1455,14 +1455,14 @@ void DijetHistogramManager::LoadMultiplicityHistograms(){
   int lowerCentralityBin = 0;
   int higherCentralityBin = 0;
   
-  for(int iCentralityBin = fFirstLoadedCentralityBin; iCentralityBin <= fLastLoadedCentralityBin; iCentralityBin++){
+  for(int iCentralityBin = 0; iCentralityBin < fnCentralityBins; iCentralityBin++){
     
     // Select the centrality bin indices
     lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
     higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
     
-    fhMultiplicity[iCentralityBin] = FindHistogram(fInputFile, "multiplicity", 2, 4, lowerCentralityBin, higherCentralityBin);
-    fhMultiplicityDijet[iCentralityBin] = FindHistogram(fInputFile, "multiplicityDijet", 5, 4, lowerCentralityBin, higherCentralityBin);
+    fhMultiplicity[iCentralityBin] = FindHistogram(fInputFile, "multiplicity", 0, 1, lowerCentralityBin, higherCentralityBin);
+    fhMultiplicityDijet[iCentralityBin] = FindHistogram(fInputFile, "multiplicityDijet", 0, 1, lowerCentralityBin, higherCentralityBin);
     
   } // Centrality loop
 }
@@ -2187,7 +2187,7 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     fhPtHatWeighted->Write("",TObject::kOverwrite);      // Weighted pT hat distribution (only meaningful for MC)
     
     // Loop over centrality
-    for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+    for(int iCentrality = 0; iCentrality < fnCentralityBins; iCentrality++){
       sprintf(histogramNamer, "multiplicity_C%d", iCentrality);
       if(fhMultiplicity[iCentrality]) fhMultiplicity[iCentrality]->Write(histogramNamer, TObject::kOverwrite);
       
@@ -2794,7 +2794,7 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     fhPtHat = (TH1D*) fInputFile->Get("pthat");                            // pT hat for MC events
     fhPtHatWeighted = (TH1D*) fInputFile->Get("pthatWeighted");            // Weighted pT hat for MC events
     
-    for(int iCentrality = fFirstLoadedCentralityBin; iCentrality <= fLastLoadedCentralityBin; iCentrality++){
+    for(int iCentrality = 0; iCentrality < fnCentralityBins; iCentrality++){
       
       sprintf(histogramNamer, "multiplicity_C%d", iCentrality);
       fhMultiplicity[iCentrality] = (TH1D*) fInputFile->Get(histogramNamer);
