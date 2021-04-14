@@ -167,6 +167,8 @@ void DijetComparingDrawer::DrawEventInformation(){
   
   // Namer helper
   //char namerX[100];
+  TString centralityString;
+  TString compactCentralityString;
   
   // === Centrality ===
   
@@ -242,6 +244,9 @@ void DijetComparingDrawer::DrawEventInformation(){
   if(testHistogram != NULL){
     for(int iCentrality = 0; iCentrality < fBaseHistograms->GetNCentralityBins(); iCentrality++){
       
+      centralityString = Form("Cent: %.0f-%.0f%%",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      compactCentralityString = Form("_C=%.0f-%.0f",fBaseHistograms->GetCentralityBinBorder(iCentrality),fBaseHistograms->GetCentralityBinBorder(iCentrality+1));
+      
       // ==================================
       // === Multiplicity in all events ===
       // ==================================
@@ -257,14 +262,14 @@ void DijetComparingDrawer::DrawEventInformation(){
       
       // Add a legend to the plot
       legend = new TLegend(0.6,0.5,0.9,0.85);
-      SetupLegend(legend, "All events");
+      SetupLegend(legend, "All events", centralityString);
       legend->Draw();
       
       // Draw the ratios to the lower portion of the split canvas
       DrawToLowerPad("Multiplicity","Ratio",fRatioZoomMin,fRatioZoomMax);
       
       // Save the figure to a file
-      SaveFigure("multiplicity");
+      SaveFigure("multiplicity", compactCentralityString);
       
       // ==================================
       // == Multiplicity in dijet events ==
@@ -281,14 +286,14 @@ void DijetComparingDrawer::DrawEventInformation(){
       
       // Add a legend to the plot
       legend = new TLegend(0.6,0.5,0.9,0.85);
-      SetupLegend(legend, "Dijet events");
+      SetupLegend(legend, "Dijet events", centralityString);
       legend->Draw();
       
       // Draw the ratios to the lower portion of the split canvas
       DrawToLowerPad("Multiplicity","Ratio",fRatioZoomMin,fRatioZoomMax);
       
       // Save the figure to a file
-      SaveFigure("multiplicityDijet");
+      SaveFigure("multiplicityDijet", compactCentralityString);
       
     } // Centrality loop
   } // Multiplicity histograms
