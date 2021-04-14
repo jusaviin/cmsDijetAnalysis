@@ -5,9 +5,9 @@ void fitJetEventPlaneVn(){
 
   // Open the data files
   TFile *inputFile[3];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbData2018_akCaloJet_eschemeAxis_2021-04-12.root");
-  inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbData2018_akPfCsJet_wtaAxis_2021-04-12.root");
-  inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbData2018_akFlowJet_wtaAxis_2021-04-12.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_recoJets_akCaloJet_eschemeAxis_noCentShift_2021-01-26.root");
+  inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_recoJets_akPfCsJet_wtaAxis_noCentShift_2021-01-26.root");
+  inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_recoJets_akFlowJet_wtaAxis_noCentShift_2021-01-26.root");
   
   TString jetTypeString[3] = {"Calo jet","PFCS jet","PFCS flow jet"};
   
@@ -18,6 +18,9 @@ void fitJetEventPlaneVn(){
   
   bool drawAllInSamePlot = true;  // True: Draw all three jet collection to the same plot. False: Use separate plots
   bool hideFit = true;
+  
+  bool saveFigures = true;
+  TString saveComment = "_MC";
   
   // Read the histograms from the data files
   const int nCentralityBins = 4;
@@ -104,6 +107,7 @@ void fitJetEventPlaneVn(){
   JDrawer *drawer = new JDrawer();
   
   TString centralityString;
+  TString compactCentralityString;
   TLegend *legend;
   int colors[] = {kBlack, kRed, kBlue};
   double maxYscale, minYscale;
@@ -111,6 +115,7 @@ void fitJetEventPlaneVn(){
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
     
     centralityString = Form("Cent: %.0f-%.0f%%",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
+    compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
     
     if(drawAllInSamePlot){
       legend = new TLegend(0.2,0.73,0.4,1);
@@ -148,11 +153,22 @@ void fitJetEventPlaneVn(){
         legend->AddEntry((TObject*)0, centralityString, "");
         legend->AddEntry((TObject*)0, jetTypeString[iJetType], "");
         legend->Draw();
+        
+        if(saveFigures){
+          gPad->GetCanvas()->SaveAs(Form("figures/jetEventPlaneDeltaPhi%s_%s%s.pdf", saveComment.Data(), jetTypeString[iJetType].Data(), compactCentralityString.Data()));
+        }
+        
       } else {
-        legend->AddEntry(jetEventPlaneMidRapidity[iJetType][0][iCentrality], Form("%s, v_{2} = %.4f", jetTypeString[iJetType].Data(), fitFunctionMidRapidity[iJetType][0][iCentrality]->GetParameter(2)) ,"l");
+        legend->AddEntry(jetEventPlaneMidRapidity[iJetType][0][iCentrality], Form("%s, v_{2} = %.3f", jetTypeString[iJetType].Data(), fitFunctionMidRapidity[iJetType][0][iCentrality]->GetParameter(2)) ,"l");
       }
       
     } // Jet type loop
-    if(drawAllInSamePlot) legend->Draw();
+    if(drawAllInSamePlot){
+      legend->Draw();
+      
+      if(saveFigures){
+        gPad->GetCanvas()->SaveAs(Form("figures/jetEventPlaneDeltaPhi%s_jetTypeComparison%s.pdf", saveComment.Data(), compactCentralityString.Data()));
+      }
+    }
   } // Centrality loop
 }
