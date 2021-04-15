@@ -12,7 +12,7 @@ ForestType 0 # 0 = High Forest, 1 = Skim Forest
 ReadMode 2018   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 = 2018 High forest syntax
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
-FilledHistograms 3 # Bit 0 = Event information histograms      (to set: 1)
+FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
                     # Bit 1 = Jet histograms                    (to set: 2)
                     # Bit 2 = Track histograms                  (to set: 4)
                     # Bit 3 = Regular jet-track correlation     (to set: 8)
@@ -24,7 +24,7 @@ FilledHistograms 3 # Bit 0 = Event information histograms      (to set: 1)
                     # Regular and uncorrected correlation = 24
 
 # Cuts for dijets
-JetType 3                  # 0 = Calo jets, 1 = PF CS jets, 2 = PF PU jets, 3 = PF flow CS jets
+JetType 1                  # 0 = Calo jets, 1 = PF CS jets, 2 = PF PU jets, 3 = PF flow CS jets
 JetAxis 2                  # 0 = Anti-kt axis, 1 = Leading Pf candidate axis, 2 = WTA
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events

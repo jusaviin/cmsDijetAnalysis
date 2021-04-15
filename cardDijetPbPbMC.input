@@ -25,7 +25,7 @@ FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
                     # Regular and uncorrected correlation = 24
 
 # Cuts for dijets
-JetType 3                  # 0 = Calo jets, 1 = csPF jets, 2 = puPF jets, 3 = flowPuCsPF jets 
+JetType 1                  # 0 = Calo jets, 1 = csPF jets, 2 = puPF jets, 3 = flowPuCsPF jets 
 JetAxis 2                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate, 2 = WTA
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
@@ -52,7 +52,7 @@ SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
 ZVertexCut 15       # Maximum vz value for accepted tracks
 LowPtHatCut 50      # Minimum accepted pT hat
 HighPtHatCut 1000   # Maximum accepted pT hat
-IncludeEventPlane 0 # 0 = No event plane info. 1 = Read event plane branches.
+IncludeEventPlane 1 # 0 = No event plane info. 1 = Read event plane branches.
 
 # Binning for THnSparses
 AsymmetryBinType    1  # 0 = Do binning in AJ, 1 = Do binning in xJ
