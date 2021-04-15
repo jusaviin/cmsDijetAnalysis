@@ -735,13 +735,14 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t highThirdJet = 0;           // TODO: Debuggery
   
   // Variables for tracks
-  Double_t fillerTrack[4];            // Track histogram filler
-  Double_t trackEfficiencyCorrection; // Track efficiency correction
-  Int_t nTracks;                      // Number of tracks in an event
-  Double_t trackPt = 0;               // Track pT
-  Double_t trackEta = 0;              // Track eta
-  Double_t trackPhi = 0;              // Track phi
-  Int_t trackMultiplicity = 0;        // Multiplicity
+  Double_t fillerTrack[4];                // Track histogram filler
+  Double_t trackEfficiencyCorrection;     // Track efficiency correction
+  Int_t nTracks;                          // Number of tracks in an event
+  Double_t trackPt = 0;                   // Track pT
+  Double_t trackEta = 0;                  // Track eta
+  Double_t trackPhi = 0;                  // Track phi
+  Double_t trackMultiplicity = 0;         // Multiplicity
+  Double_t trackMultiplicityWeighted = 0; // Weighted multiplicity
   
   // Event plane study related variables
   Double_t eventPlaneQ = 0;                     // Magnitude of the event plane Q-vector
@@ -762,7 +763,7 @@ void DijetAnalyzer::RunAnalysis(){
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
   const Int_t nFillLeadingJet = 6;  // 6 is nominal, 9 used for smearing study
   const Int_t nFillDijet = 6;      // 6 is nominal, 10 used for xj study
-  const Int_t nFillMultiplicity = 2; // 2 is nominal
+  const Int_t nFillMultiplicity = 3; // 3 is nominal
   Double_t fillerJet[nFillJet];
   Double_t fillerLeadingJet[nFillLeadingJet];
   Double_t fillerDijet[nFillDijet];
@@ -1069,49 +1070,55 @@ void DijetAnalyzer::RunAnalysis(){
       }
       
       // Q-vector cut for event plane. Used in a MC study to try to match flow with data.
-    if(doEventPlane){ // doEventPlane
-       
+      if(doEventPlane){ // doEventPlane
+        
         // Variables for event plane
         eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
         eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
         int iEventPlane = 9; // For event planes, see the big comment in ForestReader.h
         eventPlaneQx = 0;
         eventPlaneQy = 0;
-         /*
-        // Manual calculation for Q-vector
-        // Loop over all track in the event
-        nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
-        for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+        
+        // Manual calculation for Q-vector in MC
+        if(fDataType == ForestReader::kPbPbMC || fDataType == ForestReader::kPpMC){
           
-          // Check that all the track cuts are passed
-          //if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
+          // Loop over all track in the event
+          nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+          for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+            
+            // Check that all the track cuts are passed
+            //if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
+            
+            // Get the track information
+            trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+            trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+            trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+            //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+            
+            if(TMath::Abs(trackEta) > 0.75) continue;
+            if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+            if(trackPt > 3) continue;
+            
+            eventPlaneQx += TMath::Cos(2*(trackPhi));
+            eventPlaneQy += TMath::Sin(2*(trackPhi));
+            eventPlaneMultiplicity += 1;
+            
+          }
           
-          // Get the track information
-          trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
-          trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
-          trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
-          //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+          if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
+          eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
           
-          if(TMath::Abs(trackEta) > 0.75) continue;
-          if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
-          if(trackPt > 3) continue;
-                    
-          eventPlaneQx += TMath::Cos(2*(trackPhi));
-          eventPlaneQy += TMath::Sin(2*(trackPhi));
-          eventPlaneMultiplicity += 1;
-          
+        // For data, read Q-vector and multiplicity directly from the forest
+        } else {
+          eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
+          eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
         }
         
-        if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
-        eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
-        */
-        
-        eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
-        eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
+        // Normalize the Q-vector with multiplicity
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
-                
-        //if(eventPlaneQ < 3.3) continue;  // 2.222 2.778 3.333
-      
+        
+        if(eventPlaneQ < 3.3) continue;  // 2.222 2.778 3.333
+        
       }
       
       
@@ -1502,6 +1509,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Loop over all track in the event
         nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
         trackMultiplicity = 0;
+        trackMultiplicityWeighted = 0;
         for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
           
           // Check that all the track cuts are passed
@@ -1513,7 +1521,8 @@ void DijetAnalyzer::RunAnalysis(){
           trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
           trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
           
-          trackMultiplicity += trackEfficiencyCorrection;
+          trackMultiplicity += 1;
+          trackMultiplicityWeighted += trackEfficiencyCorrection;
           
           // Fill track histograms
           if(fFillTrackHistograms){
@@ -1530,7 +1539,8 @@ void DijetAnalyzer::RunAnalysis(){
         // Fill multiplicity histogram from all events
         if(fFillEventInformation){
           fillerMultiplicity[0] = trackMultiplicity;
-          fillerMultiplicity[1] = centrality;
+          fillerMultiplicity[1] = trackMultiplicityWeighted;
+          fillerMultiplicity[2] = centrality;
           fHistograms->fhMultiplicity->Fill(fillerMultiplicity, fTotalEventWeight);
         }
       }
@@ -1605,7 +1615,8 @@ void DijetAnalyzer::RunAnalysis(){
           // Fill multiplicity histogram from dijet events
           if(fFillEventInformation){
             fillerMultiplicity[0] = trackMultiplicity;
-            fillerMultiplicity[1] = centrality;
+            fillerMultiplicity[1] = trackMultiplicityWeighted;
+            fillerMultiplicity[2] = centrality;
             fHistograms->fhMultiplicityDijet->Fill(fillerMultiplicity, fTotalEventWeight);
           }
         }

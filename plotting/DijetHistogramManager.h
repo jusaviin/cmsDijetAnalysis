@@ -213,8 +213,10 @@ public:
   TH1D* GetHistogramCentralityWeighted() const; // Getter for weighted centrality histogram in all events
   TH1D* GetHistogramCentralityDijet() const;    // Getter for centrality histogram in dijet events
   
-  TH1D* GetHistogramMultiplicity(int iCentrality) const;       // Getter for multiplicity from all events
-  TH1D* GetHistogramMultiplicityDijet(int iCentrality) const;  // Getter for multiplicity from dijet events
+  TH1D* GetHistogramMultiplicity(int iCentrality) const;               // Getter for multiplicity from all events
+  TH1D* GetHistogramMultiplicityWeighted(int iCentrality) const;       // Getter for efficiency weighted multiplicity from all events
+  TH1D* GetHistogramMultiplicityDijet(int iCentrality) const;          // Getter for multiplicity from dijet events
+  TH1D* GetHistogramMultiplicityDijetWeighted(int iCentrality) const;  // Getter for efficiency weighted multiplicity from dijet events
   
   // Getters for single jet histograms
   TH1D* GetHistogramJetPt(const int iJetType, int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;     // Jet pT histograms
@@ -379,8 +381,10 @@ private:
   TH1D *fhPtHat;              // pT hat for MC events (only meaningful for MC)
   TH1D *fhPtHatWeighted;      // Weighted pT hat distribution (only meaningful for MC)
   
-  TH1D *fhMultiplicity[kMaxCentralityBins];      // Multiplicity form all events
-  TH1D *fhMultiplicityDijet[kMaxCentralityBins]; // Multiplicity form dijet events
+  TH1D *fhMultiplicity[kMaxCentralityBins];              // Multiplicity form all events
+  TH1D *fhMultiplicityWeighted[kMaxCentralityBins];      // Efficiency weighted multiplicity form all events
+  TH1D *fhMultiplicityDijet[kMaxCentralityBins];         // Multiplicity form dijet events
+  TH1D *fhMultiplicityDijetWeighted[kMaxCentralityBins]; // Efficiency weighted multiplicity form dijet events
   
   // Histograms for single jets
   TH1D *fhJetPt[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];          // Jet pT histograms

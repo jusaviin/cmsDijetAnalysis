@@ -325,8 +325,10 @@ void DijetHistograms::CreateHistograms(){
   
   // Binning for multiplicity
   const Double_t minMultiplicity = 0;
-  const Double_t maxMultiplicity = 4000;
-  const Int_t nMultiplicityBins = 400;
+  const Double_t maxMultiplicity = 2000;
+  const Double_t maxMultiplicityWeighted = 4000;
+  const Int_t nMultiplicityBins = 200;
+  const Int_t nMultiplicityBinsWeighted = 200;
   
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
@@ -366,7 +368,7 @@ void DijetHistograms::CreateHistograms(){
   // Smearing study variables complete!
   
   // Arrays for creating THnSparses
-  const Int_t nAxesMultiplicity = 2;
+  const Int_t nAxesMultiplicity = 3;
   Int_t nBinsMultiplicity[nAxesMultiplicity];
   Double_t lowBinBorderMultiplicity[nAxesMultiplicity];
   Double_t highBinBorderMultiplicity[nAxesMultiplicity];
@@ -442,22 +444,27 @@ void DijetHistograms::CreateHistograms(){
   // ======== THnSparses for multiplicity ========
   
   // Axis 0 for the multiplicity histogram: multiplicity
-  nBinsMultiplicity[0] = nMultiplicityBins;       // nBins for leading/subleading jet pT
-  lowBinBorderMultiplicity[0] = minMultiplicity;  // low bin border for leading/subleading jet pT
-  highBinBorderMultiplicity[0] = maxMultiplicity; // high bin border for leading/subleading jet pT
+  nBinsMultiplicity[0] = nMultiplicityBins;       // nBins for multiplicity
+  lowBinBorderMultiplicity[0] = minMultiplicity;  // low bin border for multiplicity
+  highBinBorderMultiplicity[0] = maxMultiplicity; // high bin border for multiplicity
   
-  // Axis 1 for the multiplicity histogram: centrality
-  nBinsMultiplicity[1] = nWideCentralityBins;     // nBins for wide centrality bins
-  lowBinBorderMultiplicity[1] = minCentrality;    // low bin border for centrality
-  highBinBorderMultiplicity[1] = maxCentrality;   // high bin border for centrality
+  // Axis 1 for the multiplicity histogram: weighted multiplicity
+  nBinsMultiplicity[1] = nMultiplicityBinsWeighted;       // nBins for weighted multiplicity
+  lowBinBorderMultiplicity[1] = minMultiplicity;          // low bin border for weighted multiplicity
+  highBinBorderMultiplicity[1] = maxMultiplicityWeighted; // high bin border for weighted multiplicity
+  
+  // Axis 2 for the multiplicity histogram: centrality
+  nBinsMultiplicity[2] = nWideCentralityBins;     // nBins for wide centrality bins
+  lowBinBorderMultiplicity[2] = minCentrality;    // low bin border for centrality
+  highBinBorderMultiplicity[2] = maxCentrality;   // high bin border for centrality
   
   // Create the histograms for leading and subleading jets using the above binning information
   fhMultiplicity = new THnSparseF("multiplicity", "multiplicity", nAxesMultiplicity, nBinsMultiplicity, lowBinBorderMultiplicity, highBinBorderMultiplicity); fhMultiplicity->Sumw2();
   fhMultiplicityDijet = new THnSparseF("multiplicityDijet", "multiplicityDijet", nAxesMultiplicity, nBinsMultiplicity, lowBinBorderMultiplicity, highBinBorderMultiplicity); fhMultiplicityDijet->Sumw2();
   
   // Set custom centrality bins for histograms
-  fhMultiplicity->SetBinEdges(1,wideCentralityBins);
-  fhMultiplicityDijet->SetBinEdges(1,wideCentralityBins);
+  fhMultiplicity->SetBinEdges(2,wideCentralityBins);
+  fhMultiplicityDijet->SetBinEdges(2,wideCentralityBins);
   
   
   // ======== THnSparses for leading and subleading jets ========

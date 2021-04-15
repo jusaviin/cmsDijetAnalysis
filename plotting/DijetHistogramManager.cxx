@@ -123,8 +123,10 @@ DijetHistogramManager::DijetHistogramManager() :
     fhDijetDphi[iCentrality] = NULL;                  // Dijet deltaPhi histograms
     fhDijetXjMatrix[iCentrality] = NULL;              // Matrix between reconstructed and generated dijet xj values
     
-    fhMultiplicity[iCentrality] = NULL;       // Track multiplicity from all events
-    fhMultiplicityDijet[iCentrality] = NULL;  // Track multiplicity from dijet events
+    fhMultiplicity[iCentrality] = NULL;               // Track multiplicity from all events
+    fhMultiplicityWeighted[iCentrality] = NULL;       // Efficiency weighted track multiplicity from all events
+    fhMultiplicityDijet[iCentrality] = NULL;          // Track multiplicity from dijet events
+    fhMultiplicityDijetWeighted[iCentrality] = NULL;  // Efficiency weighted track multiplicity from dijet events
     
     for(int iAsymmetry = 0; iAsymmetry <= kMaxAsymmetryBins; iAsymmetry++){
       fhDijetLeadingVsSubleadingPt[iAsymmetry][iCentrality] = NULL; // Leading versus subleading jet pT 2D histograms
@@ -442,8 +444,10 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
     fhDijetDphi[iCentrality] = in.fhDijetDphi[iCentrality];                       // Dijet deltaPhi histograms
     fhDijetXjMatrix[iCentrality] = in.fhDijetXjMatrix[iCentrality];               // Matrix between reconstructed and generated dijet xj values
     
-    fhMultiplicity[iCentrality] = in.fhMultiplicity[iCentrality];            // Track multiplicity from all events
-    fhMultiplicityDijet[iCentrality] = in.fhMultiplicityDijet[iCentrality];  // Track multiplicity from dijet events
+    fhMultiplicity[iCentrality] = in.fhMultiplicity[iCentrality];                           // Track multiplicity from all events
+    fhMultiplicityWeighted[iCentrality] = in.fhMultiplicityWeighted[iCentrality];           // Efficiency weighted track multiplicity from all events
+    fhMultiplicityDijet[iCentrality] = in.fhMultiplicityDijet[iCentrality];                 // Track multiplicity from dijet events
+    fhMultiplicityDijetWeighted[iCentrality] = in.fhMultiplicityDijetWeighted[iCentrality]; // Efficiency weighted track multiplicity from dijet events
     
     // Asymmetry loop
     for(int iAsymmetry = 0; iAsymmetry <= kMaxAsymmetryBins; iAsymmetry++){
@@ -1443,10 +1447,11 @@ void DijetHistogramManager::LoadHistograms(){
  *
  * THnSparse for multiplicity:
  *
- *     Histogram name        Axis index        Content of axis
- * --------------------------------------------------------------
- *   multiplicity(Dijet)       Axis 0         Track multiplicity
- *   multiplicity(Dijet)       Axis 1             Centrality
+ *     Histogram name        Axis index            Content of axis
+ * --------------------------------------------------------------------------
+ *   multiplicity(Dijet)       Axis 0             Track multiplicity
+ *   multiplicity(Dijet)       Axis 1       Efficiency weighted multiplicity
+ *   multiplicity(Dijet)       Axis 2                 Centrality
  */
 void DijetHistogramManager::LoadMultiplicityHistograms(){
     
@@ -1461,8 +1466,10 @@ void DijetHistogramManager::LoadMultiplicityHistograms(){
     lowerCentralityBin = fCentralityBinIndices[iCentralityBin];
     higherCentralityBin = fCentralityBinIndices[iCentralityBin+1]+duplicateRemoverCentrality;
     
-    fhMultiplicity[iCentralityBin] = FindHistogram(fInputFile, "multiplicity", 0, 1, lowerCentralityBin, higherCentralityBin);
-    fhMultiplicityDijet[iCentralityBin] = FindHistogram(fInputFile, "multiplicityDijet", 0, 1, lowerCentralityBin, higherCentralityBin);
+    fhMultiplicity[iCentralityBin] = FindHistogram(fInputFile, "multiplicity", 0, 2, lowerCentralityBin, higherCentralityBin);
+    fhMultiplicityWeighted[iCentralityBin] = FindHistogram(fInputFile, "multiplicity", 1, 2, lowerCentralityBin, higherCentralityBin);
+    fhMultiplicityDijet[iCentralityBin] = FindHistogram(fInputFile, "multiplicityDijet", 0, 2, lowerCentralityBin, higherCentralityBin);
+    fhMultiplicityDijetWeighted[iCentralityBin] = FindHistogram(fInputFile, "multiplicityDijet", 1, 2, lowerCentralityBin, higherCentralityBin);
     
   } // Centrality loop
 }
@@ -2186,14 +2193,27 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
     fhPtHat->Write("",TObject::kOverwrite);              // pT hat for MC events (only meaningful for MC)
     fhPtHatWeighted->Write("",TObject::kOverwrite);      // Weighted pT hat distribution (only meaningful for MC)
     
+    // Create a directory for the multiplicity histograms if it does not already exist
+    if(!gDirectory->GetDirectory("multiplicity")) gDirectory->mkdir("multiplicity");
+    gDirectory->cd("multiplicity");
+    
     // Loop over centrality
     for(int iCentrality = 0; iCentrality < fnCentralityBins; iCentrality++){
       sprintf(histogramNamer, "multiplicity_C%d", iCentrality);
       if(fhMultiplicity[iCentrality]) fhMultiplicity[iCentrality]->Write(histogramNamer, TObject::kOverwrite);
       
+      sprintf(histogramNamer, "multiplicityWeighted_C%d", iCentrality);
+      if(fhMultiplicityWeighted[iCentrality]) fhMultiplicityWeighted[iCentrality]->Write(histogramNamer, TObject::kOverwrite);
+      
       sprintf(histogramNamer, "multiplicityDijet_C%d", iCentrality);
       if(fhMultiplicityDijet[iCentrality]) fhMultiplicityDijet[iCentrality]->Write(histogramNamer, TObject::kOverwrite);
+      
+      sprintf(histogramNamer, "multiplicityDijetWeighted_C%d", iCentrality);
+      if(fhMultiplicityDijetWeighted[iCentrality]) fhMultiplicityDijetWeighted[iCentrality]->Write(histogramNamer, TObject::kOverwrite);
     }
+    
+    // Return back to main directory
+    gDirectory->cd("../");
   }
  
   // Write the single jet histograms to the output file
@@ -2796,11 +2816,17 @@ void DijetHistogramManager::LoadProcessedHistograms(){
     
     for(int iCentrality = 0; iCentrality < fnCentralityBins; iCentrality++){
       
-      sprintf(histogramNamer, "multiplicity_C%d", iCentrality);
+      sprintf(histogramNamer, "multiplicity/multiplicity_C%d", iCentrality);
       fhMultiplicity[iCentrality] = (TH1D*) fInputFile->Get(histogramNamer);
       
-      sprintf(histogramNamer, "multiplicityDijet_C%d", iCentrality);
+      sprintf(histogramNamer, "multiplicity/multiplicityWeighted_C%d", iCentrality);
+      fhMultiplicityWeighted[iCentrality] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      sprintf(histogramNamer, "multiplicity/multiplicityDijet_C%d", iCentrality);
       fhMultiplicityDijet[iCentrality] = (TH1D*) fInputFile->Get(histogramNamer);
+      
+      sprintf(histogramNamer, "multiplicity/multiplicityDijetWeighted_C%d", iCentrality);
+      fhMultiplicityDijetWeighted[iCentrality] = (TH1D*) fInputFile->Get(histogramNamer);
       
     }
   }
@@ -3858,10 +3884,22 @@ TH1D* DijetHistogramManager::GetHistogramMultiplicity(int iCentrality) const{
   return fhMultiplicity[iCentrality];
 }
 
+// Getter for track efficiency weighted multiplicity histogram in all events
+TH1D* DijetHistogramManager::GetHistogramMultiplicityWeighted(int iCentrality) const{
+  if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
+  return fhMultiplicityWeighted[iCentrality];
+}
+
 // Getter for multiplicity histogram in dijet events
 TH1D* DijetHistogramManager::GetHistogramMultiplicityDijet(int iCentrality) const{
   if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
   return fhMultiplicityDijet[iCentrality];
+}
+
+// Getter for track efficiency weighted  multiplicity histogram in dijet events
+TH1D* DijetHistogramManager::GetHistogramMultiplicityDijetWeighted(int iCentrality) const{
+  if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
+  return fhMultiplicityDijetWeighted[iCentrality];
 }
 
 // Getters for single jet histograms
@@ -4125,7 +4163,9 @@ TH1D* DijetHistogramManager::GetOneDimensionalHistogram(TString name, int bin1, 
   if(name.EqualTo("centralityweighted",TString::kIgnoreCase) || name.EqualTo("fhcentralityweighted",TString::kIgnoreCase)) return GetHistogramCentralityWeighted();
   if(name.EqualTo("centralitydijet",TString::kIgnoreCase) || name.EqualTo("fhcentralitydijet",TString::kIgnoreCase)) return GetHistogramCentralityDijet();
   if(name.EqualTo("multiplicity",TString::kIgnoreCase) || name.EqualTo("fhmultiplicity",TString::kIgnoreCase)) return GetHistogramMultiplicity(bin1);
+  if(name.EqualTo("multiplicityweighted",TString::kIgnoreCase) || name.EqualTo("fhmultiplicityweighted",TString::kIgnoreCase)) return GetHistogramMultiplicityWeighted(bin1);
   if(name.EqualTo("multiplicitydijet",TString::kIgnoreCase) || name.EqualTo("fhmultiplicitydijet",TString::kIgnoreCase)) return GetHistogramMultiplicityDijet(bin1);
+  if(name.EqualTo("multiplicitydijetweighted",TString::kIgnoreCase) || name.EqualTo("fhmultiplicitydijetweighted",TString::kIgnoreCase)) return GetHistogramMultiplicityDijetWeighted(bin1);
   if(name.EqualTo("jetpt",TString::kIgnoreCase) || name.EqualTo("fhjetpt",TString::kIgnoreCase)) return GetHistogramJetPt(bin1,bin2,bin3);
   if(name.EqualTo("jetphi",TString::kIgnoreCase) || name.EqualTo("fhjetphi",TString::kIgnoreCase)) return GetHistogramJetPhi(bin1,bin2,bin3);
   if(name.EqualTo("jeteta",TString::kIgnoreCase) || name.EqualTo("fhjeteta",TString::kIgnoreCase)) return GetHistogramJetEta(bin1,bin2,bin3);
