@@ -6,7 +6,9 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_preprocessed_2021-04-08.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_noCorrections_processed_2021-04-08.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/dihadronPbPb2018_sameTriggerAssoc_flowDijet_5eventMixed_preprocessed_2021-04-13_part0.root" "data/dihadronPbPb2018_sameTriggerAssoc_flowDijet_5eventMixed_noCorrections_processed_2021-04-13_part0.root" false false -1 "data/"
+
+#./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_preprocessed_2021-04-08.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_noCorrections_processed_2021-04-08.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorAbove1p5_preprocessed_2021-04-08.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorAbove1p5_noCorrections_processed_2021-04-08.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorAbove1p8_preprocessed_2021-04-08.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorAbove1p8_noCorrections_processed_2021-04-08.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorAbove2_preprocessed_2021-04-08.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorAbove2_noCorrections_processed_2021-04-08.root" false false -1 "data/"
