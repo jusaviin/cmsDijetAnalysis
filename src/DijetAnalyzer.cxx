@@ -39,6 +39,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fForestType(0),
   fReadMode(0),
   fJetType(0),
+  fOtherType(0),
   fMatchJets(false),
   fMatchDijet(false),
   fMatchLeadingJet(false),
@@ -61,6 +62,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fMixedEventVz(0),
   fMixedEventHiBin(0),
   fJetAxis(0),
+  fOtherAxis(0),
   fVzCut(0),
   fMinimumPtHat(0),
   fMaximumPtHat(0),
@@ -100,6 +102,7 @@ DijetAnalyzer::DijetAnalyzer() :
   
   // Initialize readers to null
   fJetReader = NULL;
+  fOtherReader = NULL;
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
   
@@ -122,6 +125,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fJetUncertainty2018(),
   fForestType(0),
   fJetType(0),
+  fOtherType(0),
   fMatchJets(false),
   fMatchDijet(false),
   fMatchLeadingJet(false),
@@ -162,6 +166,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Initialize readers to null
   fJetReader = NULL;
+  fOtherReader = NULL;
   fTrackReader[DijetHistograms::kSameEvent] = NULL;
   fTrackReader[DijetHistograms::kMixedEvent] = NULL;
   
@@ -173,6 +178,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Jet axis type
   fJetAxis = fCard->Get("JetAxis");
+  fOtherAxis = 2 - fJetAxis;  // Transform escheme axis to WTA axis and vice versa
   
   // vz cut
   fVzCut = fCard->Get("ZVertexCut");          // Event cut vor the z-position of the primary vertex
@@ -314,6 +320,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
  */
 DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fJetReader(in.fJetReader),
+  fOtherReader(in.fOtherReader),
   fFileNames(in.fFileNames),
   fCard(in.fCard),
   fHistograms(in.fHistograms),
@@ -329,6 +336,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fForestType(in.fForestType),
   fReadMode(in.fReadMode),
   fJetType(in.fJetType),
+  fOtherType(in.fOtherType),
   fMatchJets(in.fMatchJets),
   fMatchDijet(in.fMatchDijet),
   fMatchLeadingJet(in.fMatchLeadingJet),
@@ -349,6 +357,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fMixedEventVz(in.fMixedEventVz),
   fMixedEventHiBin(in.fMixedEventHiBin),
   fJetAxis(in.fJetAxis),
+  fOtherAxis(in.fOtherAxis),
   fVzCut(in.fVzCut),
   fMinimumPtHat(in.fMinimumPtHat),
   fMaximumPtHat(in.fMaximumPtHat),
@@ -394,6 +403,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   if (&in==this) return *this;
   
   fJetReader = in.fJetReader;
+  fOtherReader = in.fOtherReader;
   fTrackReader[DijetHistograms::kSameEvent] = in.fTrackReader[DijetHistograms::kSameEvent];
   fTrackReader[DijetHistograms::kMixedEvent] = in.fTrackReader[DijetHistograms::kMixedEvent];
   fFileNames = in.fFileNames;
@@ -411,6 +421,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fForestType = in.fForestType;
   fReadMode = in.fReadMode;
   fJetType = in.fJetType;
+  fOtherType = in.fOtherType;
   fMatchJets = in.fMatchJets;
   fMatchDijet = in.fMatchDijet;
   fMatchLeadingJet = in.fMatchLeadingJet;
@@ -431,6 +442,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fMixedEventVz = in.fMixedEventVz;
   fMixedEventHiBin = in.fMixedEventHiBin;
   fJetAxis = in.fJetAxis;
+  fOtherAxis = in.fOtherAxis;
   fVzCut = in.fVzCut;
   fMinimumPtHat = in.fMinimumPtHat;
   fMaximumPtHat = in.fMaximumPtHat;
@@ -483,6 +495,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fSmearingFunction) delete fSmearingFunction;
   if(fRng) delete fRng;
   if(fJetReader) delete fJetReader;
+  if(fOtherReader) delete fOtherReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
   if(fTrackReader[DijetHistograms::kMixedEvent]) delete fTrackReader[DijetHistograms::kMixedEvent];
 }
@@ -611,6 +624,7 @@ void DijetAnalyzer::RunAnalysis(){
   //****************************************
   fForestType = fCard->Get("ForestType");
   fJetType = fCard->Get("JetType");
+  fOtherType = 3 - fJetType;  // Tranform calo jets into flow jets and flow jets into calo jets
   fMatchJets = (fCard->Get("MatchJets") >= 1);
   fMatchDijet = (fCard->Get("MatchJets") == 2 || fCard->Get("MatchJets") == 4);
   fMatchLeadingJet = (fCard->Get("MatchJets") == 3 || fCard->Get("MatchJets") == 5);
@@ -638,12 +652,14 @@ void DijetAnalyzer::RunAnalysis(){
   // Input files and forest readers for analysis
   TFile *inputFile;
   TFile *copyInputFile; // If we read forest for tracks and jets with different readers, we need to give different file pointers to them
+  TFile *otherInputFile;
   TFile *mixedEventFile;
   
   // Event variables
   Int_t nEvents = 0;                // Number of events
   Bool_t dijetFound = false;        // Is there a dijet in the event?
   Bool_t twoJetsFound = false;      // Are there two jets in the event?
+  Bool_t twoOtherJetsFound = false; // Are the two other jets in the event?
   Bool_t matchVeto = false;         // Veto the found dijet because it did not match with Gen or Reco
   Double_t vz = 0;                  // Vertex z-position
   Double_t centrality = 0;          // Event centrality
@@ -668,6 +684,9 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t leadingJetPhi = 0;       // Leading jet phi
   Double_t leadingJetEta = 0;       // Leading jet eta
   Double_t leadingJetFlavor = 0;    // Flavor of the leading jet
+  Double_t leadingOtherJetPt = 0;
+  Double_t subleadingOtherJetPt = 0;
+  Double_t thirdOtherJetPt = 0;
   Double_t subleadingJetPt = 0;     // Subleading jet pT
   Double_t subleadingJetPhi = 0;    // Subleading jet phi
   Double_t subleadingJetEta = 0;    // Subleading jet eta
@@ -682,6 +701,8 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t swapJetEta = 0;          // Swapping helper variable
   Int_t secondHighestIndex = -1;    // Index of the subleading jet in the event
   Int_t highestIndex = -1;          // Index of the leading jet in the event
+  Int_t secondHighestOtherIndex;
+  Int_t highestOtherIndex;
   Int_t swapIndex = -1;             // Swapping helper variable
   Double_t jetPt = 0;               // pT of the i:th jet in the event
   Double_t jetPtCorrected = 0;      // Jet pT corrected with the JFF correction
@@ -803,14 +824,18 @@ void DijetAnalyzer::RunAnalysis(){
   if(fMcCorrelationType == kGenReco || fMcCorrelationType == kGenGen){
     if(fForestType == kSkimForest) {
       fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
+      fOtherReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fOtherType,fOtherAxis,fMatchJets,doEventPlane);
     } else {
       fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
+      fOtherReader = new GeneratorLevelForestReader(fDataType,fReadMode,fOtherType,fOtherAxis,fMatchJets,doEventPlane);
     }
   } else {
     if(fForestType == kSkimForest) {
       fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
+      fOtherReader = new SkimForestReader(fDataType,fReadMode,fOtherType,fOtherAxis,fMatchJets,doEventPlane);
     } else {
       fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
+      fOtherReader = new HighForestReader(fDataType,fReadMode,fOtherType,fOtherAxis,fMatchJets,doEventPlane);
     }
   }
   
@@ -930,6 +955,7 @@ void DijetAnalyzer::RunAnalysis(){
     currentFile = fFileNames.at(iFile);
     inputFile = TFile::Open(currentFile);
     if(useDifferentReaderFotJetsAndTracks) copyInputFile = TFile::Open(currentFile);
+    otherInputFile = TFile::Open(currentFile);
 
     // Mixing in the case we use the data file also for mixing (true for pp)
     if(mixEvents && fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC){
@@ -994,6 +1020,7 @@ void DijetAnalyzer::RunAnalysis(){
     // If file is good, read the forest from the file
     fJetReader->ReadForestFromFile(inputFile);  // There might be a memory leak in handling the forest...
     if(useDifferentReaderFotJetsAndTracks) fTrackReader[DijetHistograms::kSameEvent]->ReadForestFromFile(copyInputFile); // If we mix reco and gen, the reader for jets and tracks is different
+    fOtherReader->ReadForestFromFile(otherInputFile);
     nEvents = fJetReader->GetNEvents();
     
     // Read also the forest for event mixing and prepare mixing pool
@@ -1024,6 +1051,7 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Read the event to memory
       fJetReader->GetEvent(iEvent);
+      fOtherReader->GetEvent(iEvent);
       
       // If track reader is not the same as jet reader, read the event to memory in trackReader
       if(useDifferentReaderFotJetsAndTracks) fTrackReader[DijetHistograms::kSameEvent]->GetEvent(iEvent);
@@ -1128,6 +1156,7 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Reset the variables used in dijet finding
       twoJetsFound = false;
+      twoOtherJetsFound = false;
       dijetFound = false;
       highestIndex = -1;
       secondHighestIndex = -1;
@@ -1139,6 +1168,12 @@ void DijetAnalyzer::RunAnalysis(){
       highestEta = 0;
       nJetsInThisEvent = 0;
       centralityBin = GetCentralityBin(centrality);  // Only needed for smearing study
+      
+      highestOtherIndex = -1;
+      secondHighestOtherIndex = -1;
+      leadingOtherJetPt = 0;
+      subleadingOtherJetPt = 0;
+      thirdOtherJetPt = 0;
       
 //      // Extra variables for smearing study
 //      highestJetPtSmeared = 0;
@@ -1202,43 +1237,6 @@ void DijetAnalyzer::RunAnalysis(){
         //  ======= Jet quality cuts applied =======
         //  ========================================
         
-        // For 2018 data: do a correction for the jet pT
-        fJetCorrector2018->SetJetPT(jetPt);
-        fJetCorrector2018->SetJetEta(jetEta);
-        fJetCorrector2018->SetJetPhi(jetPhi);
-        
-        fJetUncertainty2018->SetJetPT(jetPt);
-        fJetUncertainty2018->SetJetEta(jetEta);
-        fJetUncertainty2018->SetJetPhi(jetPhi);
-        
-        jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
-        
-//        // Extra code for smearing study
-//
-//        // Add random smearing of 20 % to the jet pT
-//        jetPtSmeared = jetPtCorrected*fRng->Gaus(1,0.2);     // Smearing for 20 % of the jet pT
-//
-//        // For the uncertainties, calculate the relative uncertainty
-//        jetPtErrorUp = fJetUncertainty2018->GetUncertainty().second;
-//        jetPtErrorDown = fJetUncertainty2018->GetUncertainty().first;
-//
-//        // Extra code for smearing study
-        
-        // Only do the correction for 2018 data and reconstructed Monte Carlo
-        if(fReadMode > 2000 && !(fMcCorrelationType == kGenGen || fMcCorrelationType == kGenReco)) {
-          jetPt = jetPtCorrected;
-          
-          // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
-          if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
-          if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
-          
-          // If we are using smearing scenario, modify the jet pT using gaussian smearing
-          if(fJetUncertaintyMode == 3){
-            smearingFactor = GetSmearingFactor(jetPt, centrality);
-            jetPt = jetPt * fRng->Gaus(1,smearingFactor);
-          }
-          
-        }
         
         // Find leading, subleading and third highest jet pT
         if(jetPt > leadingJetPt){
@@ -1483,7 +1481,6 @@ void DijetAnalyzer::RunAnalysis(){
           dijetFound = false;
         }
         
-        if(dijetFound) dijetCounter++;
       } // End of dijet cuts (two jets found if)
       
       // TODO: Debuggery
@@ -1497,6 +1494,92 @@ void DijetAnalyzer::RunAnalysis(){
         //  leadingJetFlavor = 1;
         //  subleadingJetFlavor = 1;
         //}
+      }
+      
+      // Check that dijet definition is also fulfilled for the other jets
+      if(dijetFound){
+        
+        //********************************************************
+        //    Loop over all other jets and find leading other jet
+        //********************************************************
+        
+        // Search for leading jet and fill histograms for all jets within the eta range
+        for(Int_t jetIndex = 0; jetIndex < fOtherReader->GetNJets(); jetIndex++) {
+          jetPt = fOtherReader->GetJetPt(jetIndex);
+          jetPhi = fOtherReader->GetJetPhi(jetIndex);
+          jetEta = fOtherReader->GetJetEta(jetIndex);
+          jetFlavor = 0;
+          
+          //  ========================================
+          //  ======== Apply jet quality cuts ========
+          //  ========================================
+          
+          if(TMath::Abs(jetEta) >= fJetSearchEtaCut) continue; // Cut for search eta range
+          if(fMinimumMaxTrackPtFraction >= fOtherReader->GetJetMaxTrackPt(jetIndex)/fOtherReader->GetJetRawPt(jetIndex)) continue; // Cut for jets with only very low pT particles
+          if(fMaximumMaxTrackPtFraction <= fOtherReader->GetJetMaxTrackPt(jetIndex)/fOtherReader->GetJetRawPt(jetIndex)) continue; // Cut for jets where all the pT is taken by one track
+          
+          // Jet matching between reconstructed and generator level jets
+          if(fMatchJets && !fOtherReader->HasMatchingJet(jetIndex)) {
+            unmatchedCounter++;
+            continue;
+          }
+          
+          //  ========================================
+          //  ======= Jet quality cuts applied =======
+          //  ========================================
+          
+          // Find leading, subleading and third highest jet pT
+          if(jetPt > leadingOtherJetPt){
+            thirdOtherJetPt = subleadingOtherJetPt;
+            subleadingOtherJetPt = leadingOtherJetPt;
+            secondHighestOtherIndex = highestOtherIndex;
+            leadingOtherJetPt = jetPt;
+            highestOtherIndex = jetIndex;
+            
+          } else if(jetPt > subleadingOtherJetPt){
+            thirdOtherJetPt = subleadingOtherJetPt;
+            subleadingOtherJetPt = jetPt;
+            secondHighestOtherIndex = jetIndex;
+            
+          } else if (jetPt > thirdOtherJetPt){
+            thirdOtherJetPt = jetPt;
+          }
+          
+        } // Finding highest pT other jets
+        
+        // Check if at least two jets were found
+        if(highestOtherIndex > -1 && secondHighestOtherIndex > -1) twoOtherJetsFound = true;
+        
+        // Only apply the dijet cuts for events with at least two jets
+        if(twoOtherJetsFound){
+          
+          // Read the eta and phi values for leading and subleading jets
+          leadingJetPhi = fOtherReader->GetJetPhi(highestOtherIndex);
+          leadingJetEta = fOtherReader->GetJetEta(highestOtherIndex);
+          subleadingJetPhi = fOtherReader->GetJetPhi(secondHighestOtherIndex);
+          subleadingJetEta = fOtherReader->GetJetEta(secondHighestOtherIndex);
+          
+          dphi =  leadingJetPhi - subleadingJetPhi;
+          if(dphi < 0) dphi = -dphi;
+          if(dphi > TMath::Pi()) dphi = 2*TMath::Pi() - dphi;
+          
+          // Apply dijet cuts
+          if((leadingOtherJetPt >= fJetMaximumPtCut) ||              // Maximum leading jet pT cut
+             (leadingOtherJetPt <= fLeadingJetMinPtCut) ||           // Leading jet minimum pT cut
+             (subleadingOtherJetPt <= fSubleadingJetMinPtCut) ||     // Subleading jet minimum pT cut
+             (TMath::Abs(leadingJetEta) >= fJetEtaCut) ||       // Leading jet eta cut
+             (TMath::Abs(subleadingJetEta) >= fJetEtaCut)||     // Subleading jet eta cut
+             (TMath::Abs(dphi) <= fDeltaPhiCut)){               // DeltaPhi cut
+            dijetFound = false;
+          }
+          
+          if(dijetFound) dijetCounter++;
+          
+        // If no two other jets in the event, there cannot be a mathcing dijet
+        } else {
+          dijetFound = false;
+        }
+        
       }
       
       //************************************************
@@ -1772,6 +1855,7 @@ void DijetAnalyzer::RunAnalysis(){
     // Close the input files after the event has been read
     inputFile->Close();
     if(useDifferentReaderFotJetsAndTracks) copyInputFile->Close();
+    otherInputFile->Close();
     if(mixEvents && fDataType != ForestReader::kPbPb && fDataType != ForestReader::kPbPbMC) mixedEventFile->Close();
     
   } // File loop

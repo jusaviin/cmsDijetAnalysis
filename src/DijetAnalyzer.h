@@ -90,6 +90,7 @@ private:
   
   // Private data members
   ForestReader *fJetReader;            // Reader for jets in the event
+  ForestReader *fOtherReader;          // Reader for other jets in the event
   ForestReader *fTrackReader[2];       // Readers for tracks in the event. Index 0 = same event. Index 1 = mixed event.
   std::vector<TString> fFileNames;     // Vector for all the files to loop over
   ConfigurationCard *fCard;            // Configuration card for the analysis
@@ -110,7 +111,8 @@ private:
   Int_t fDataType;                   // Analyzed data type
   Int_t fForestType;                 // Analyzed forest type
   Int_t fReadMode;                   // Read mode. 0 = Regular forest, 1 = PYTHIA8 forest
-  Int_t fJetType;                    // Type of jets used for analysis. 0 = Calo jets, 1 = PF jets
+  Int_t fJetType;                    // Type of jets used for analysis. 0 = Calo jets, 1 = PF jets,
+  Int_t fOtherType;                  // Type of jets used for dijet matching
   Bool_t fMatchJets;                 // Match generator and reconstruction level jets
   Bool_t fMatchDijet;                // Match reco and gen dijets (have the same leading and subleading jets for both reco and gen)
   Bool_t fMatchLeadingJet;           // Match reco and gen leading jets (in both cases the leading jet fulfills the requirements)
@@ -140,6 +142,7 @@ private:
   
   // Jet and track selection cuts
   Int_t fJetAxis;                      // Used jet axis type. 0 = Anti-kT jet axis, 1 = Axis from leading PF candidate
+  Int_t fOtherAxis;                    // Axis type used for dijet matching
   Double_t fVzCut;                     // Cut for vertez z-position in an event
   Double_t fMinimumPtHat;              // Minimum accepted pT hat value
   Double_t fMaximumPtHat;              // Maximum accepted pT hat value

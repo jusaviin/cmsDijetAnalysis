@@ -564,7 +564,7 @@ Float_t HighForestReader::GetJetPt(Int_t iJet) const{
   
   // TODO: For 2018, JEC is applied on the fly, so raw pT should be returned here
   // If this is fixed in the forest, can return the regular pT instead
-  if(fReadMode > 2000) return fJetRawPtArray[iJet];
+  //if(fReadMode > 2000) return fJetRawPtArray[iJet];
   
   return fJetPtArray[iJet];
 }
