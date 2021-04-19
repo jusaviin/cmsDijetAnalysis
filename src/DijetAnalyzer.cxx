@@ -1117,7 +1117,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Normalize the Q-vector with multiplicity
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
         
-        if(eventPlaneQ < 3.3) continue;  // 2.222 2.778 3.333
+        //if(eventPlaneQ < 3.3) continue;  // 2.222 2.778 3.333
         
       }
       
@@ -1248,6 +1248,7 @@ void DijetAnalyzer::RunAnalysis(){
           leadingJetPt = jetPt;
           highestIndex = jetIndex;
           leadingJetFlavor = jetFlavor;
+//          leadingJetPhi = jetPhi;  // TODO TODO TODO: Only needed for the all events event plane mod
           
           // Smearing study
           if(fJetUncertaintyMode == 4){
@@ -1374,6 +1375,32 @@ void DijetAnalyzer::RunAnalysis(){
         } // Eta cut
         
       } // End of search for leading jet loop
+      
+//      // TODO TODO TODO: Do the correlation with any leading jet
+//      if(doEventPlane){
+//        // Fill the additional histograms for event plane study
+//
+//        // Calculate deltaPhi between the jet and the event planes determined with different detectors
+//        jetEventPlaneDeltaPhiForwardRap = leadingJetPhi - fJetReader->GetEventPlaneAngle(8);
+//        jetEventPlaneDeltaPhiMidRap = leadingJetPhi - fJetReader->GetEventPlaneAngle(9);
+//
+//        // Transform deltaPhis to interval [-pi/2,3pi/2]
+//        while(jetEventPlaneDeltaPhiForwardRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += -2*TMath::Pi();}
+//        while(jetEventPlaneDeltaPhiMidRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += -2*TMath::Pi();}
+//        while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
+//        while(jetEventPlaneDeltaPhiMidRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += 2*TMath::Pi();}
+//
+//        // Fill the additional event plane histograms
+//        fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
+//        fillerEventPlane[1] = eventPlaneQ;                      // Axis 1: Normalized event plane Q-vector
+//        fillerEventPlane[2] = centrality;                       // Axis 2: centrality
+//
+//        fHistograms->fhJetEventPlaneForwardRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
+//
+//        fillerEventPlane[0] = jetEventPlaneDeltaPhiMidRap;  // Axis 0: DeltaPhi between jet and event plane
+//
+//        fHistograms->fhJetEventPlaneMidRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
+//      }
       
       //************************************************
       //     Fill histograms for all leading jets

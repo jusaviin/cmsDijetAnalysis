@@ -16,7 +16,7 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_noQcut";
+  const char* qVectorTag = "_qVectorBelow2p8";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
@@ -88,7 +88,7 @@ void prepareFinalLongRangeGraphs(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
-  const bool cumulativePtBins = false; // True = Combine pT bins from below, False = Separate pT bins
+  const bool cumulativePtBins = true; // True = Combine pT bins from below, False = Separate pT bins
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
@@ -127,7 +127,7 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_smallStatsForDihadron_flowJets_correctedJetHadron_correctedDihadron_2021-04-16.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_smallStatsForDihadron_flowJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-04-16.root";
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root

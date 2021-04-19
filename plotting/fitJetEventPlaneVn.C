@@ -5,9 +5,9 @@ void fitJetEventPlaneVn(){
 
   // Open the data files
   TFile *inputFile[3];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_recoJets_akCaloJet_eschemeAxis_noCentShift_2021-01-26.root");
-  inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_recoJets_akPfCsJet_wtaAxis_noCentShift_2021-01-26.root");
-  inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_recoJets_akFlowJet_wtaAxis_noCentShift_2021-01-26.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akCaloJet_dijetEvents_2021-04-19.root");
+  inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akPfCsJet_dijetEvents_2021-04-19.root");
+  inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akFlowJet_dijetEvents_2021-04-19.root");
   
   TString jetTypeString[3] = {"Calo jet","PFCS jet","PFCS flow jet"};
   
