@@ -16,12 +16,14 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_noQcut";
+  const char* qVectorTag = "_qVectorAbove3p3";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-02.root", qVectorTag);
-  // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
+  jetHadronFileName[0] = "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_newSkims_noCorrections_processed_2021-04-02_allButPart1File80.root";
+  // Form("data/PbPbMC2018_RecoGen_akPfCsJet_onlyRegular_4pCentShift_improvisedMixing_subeNon0%s_noCorrections_processed_2021-04-14.root", qVectorTag)
+  // data/dijetPbPb2018_akPfCsJets_onlyRegular_20eveMix_newSkims_noCorrections_processed_2021-04-14.root
+  // data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_newSkims_noCorrections_processed_2021-04-02_allButPart1File80.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
   // data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root
@@ -39,8 +41,8 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj%s_noCorrections_processed_2021-04-08.root", qVectorTag);
-  // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
+  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root";
+  // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_combine0.root
@@ -100,8 +102,8 @@ void prepareFinalLongRangeGraphs(){
   const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
-  const bool drawFourierFitJetHadron = false;   // Draw the fits done to the jet-hadron distributions
-  const bool drawFourierFitDihadron = true;   // Draw the fits done to the dihadron distributions
+  const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
+  const bool drawFourierFitDihadron = false;   // Draw the fits done to the dihadron distributions
   const bool hideFit = false;                  // Hide fit from the histograms when drawing
   
   const bool applyJetReconstructionBiasCorrection = false;  // Choose whether to apply the jet reconstruction bias or not
@@ -111,11 +113,12 @@ void prepareFinalLongRangeGraphs(){
   const bool printFlowTable = false;
     
   const bool saveFigures = false;
-  TString saveComment = "_caloJetSameEvent";
+  TString saveComment = "_flowJet_scaled";
   
   const int nRefit = 4; // Number of vn:s included in the refit
   bool refitBackground = true; // Refit the background distribution
   int backgroundRebin = 2; // Rebin applied to the background distributions
+  bool scaleToOne = true;  // Scale the histograms to one for drawing purposes
   
   // To get the single hadron vn from dihadron vn, we need to divide with the trigger bin vn
   const int dihadronNormalizationBin = -1; // Bin used for normalizing dihadron V2 to hadron v2. For -1, each bin is normalized by the square root of that bin
@@ -127,8 +130,8 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_flowJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_2021-04-14.root", qVectorTag);
-  // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
+  TString outputFileName = "flowGraphs/testest.root";
+  // Form("flowGraphs/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfcsJets%s_dihadronFromCaloDijet_correctedJetHadron_correctedDihadron_2021-04-20.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
   // flowGraphs/flowGraphs_PbPbData_noJetReconstructionCorrection.root
@@ -300,6 +303,12 @@ void prepareFinalLongRangeGraphs(){
         // If we are using cumulative binning, add all the previous pT bins to the distribution
         if(cumulativePtBins && iTrackPt != 0){
           longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Add(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt-1]);
+        }
+        
+        // Scaling to one for drawing percentages
+        if(scaleToOne){
+          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Fit("pol0");
+          longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->Scale(1.0 / longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt]->GetFunction("pol0")->GetParameter(0));
         }
         
         refitter->FourierFit(longRangeJetHadron[iAsymmetry][iCentrality][iTrackPt], nRefit);
@@ -491,7 +500,7 @@ void prepareFinalLongRangeGraphs(){
           legend = new TLegend(0.3,0.6,0.7,0.9);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           
-          legend->AddEntry((TObject*) 0,"Jet-hadron long range","");
+          legend->AddEntry((TObject*) 0,"Jet-hadron flow, MC","");
           legend->AddEntry((TObject*) 0, Form("C: %.0f-%.0f %%",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
           legend->AddEntry((TObject*) 0, Form("%.1f < p_{T} < %.1f GeV",trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]), "");
           if(iAsymmetry < nAsymmetryBins){
