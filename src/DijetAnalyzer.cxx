@@ -874,7 +874,7 @@ void DijetAnalyzer::RunAnalysis(){
         
         // Define names for mixing file lists for different datasets
         const char* fileListName[2][5] = {
-          {"none", "mixingFileList/PbPbData2018_MinBiasFiles.txt", "none", "mixingFileList/PbPbMC2018_MinBiasFiles.txt", "none"}, // Crab
+          {"none", Form("mixingFileList/PbPbData2018_MinBiasFiles_set%d.txt", mixingFileIndex), "none", "mixingFileList/PbPbMC2018_MinBiasFiles.txt", "none"}, // Crab
           {"none", "mixingFileList/mixingFilesPbPb.txt", "none", "mixingFileList/mixingFilesPbPbMC.txt", "none"}}; // Local test
         
         // Create a stream to read the input file
