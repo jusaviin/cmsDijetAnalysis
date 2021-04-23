@@ -31,6 +31,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fPtWeightFunction(0),
   fDijetWeightFunction(0),
   fSmearingFunction(0),
+  fFakeV2Function(0),
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
@@ -207,6 +208,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Function for smearing the jet pT for systemtic uncertainties
   fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
   
+  // Function for generating fake v2. Currently set for 5 % v2
+  fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos(2*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
+  
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
   //fDijetWeightFunction->SetParameters(0.683267,2.97273e-03,-6.71989e-06,6.26340e-09,1.81108,16.8066,84.4603);
@@ -324,6 +328,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fPtWeightFunction(in.fPtWeightFunction),
   fDijetWeightFunction(in.fDijetWeightFunction),
   fSmearingFunction(in.fSmearingFunction),
+  fFakeV2Function(in.fFakeV2Function),
   fRng(in.fRng),
   fDataType(in.fDataType),
   fForestType(in.fForestType),
@@ -406,6 +411,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fPtWeightFunction = in.fPtWeightFunction;
   fDijetWeightFunction = in.fDijetWeightFunction;
   fSmearingFunction = in.fSmearingFunction;
+  fFakeV2Function = in.fFakeV2Function;
   fRng = in.fRng;
   fDataType = in.fDataType;
   fForestType = in.fForestType;
@@ -481,6 +487,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
   if(fSmearingFunction) delete fSmearingFunction;
+  if(fFakeV2Function) delete fFakeV2Function;
   if(fRng) delete fRng;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
@@ -754,6 +761,9 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
+  
+  // Possibility to fake jet v2
+  Double_t fakeJetV2Weight = 1;
   
   // File name helper variables
   TString currentFile;
@@ -1735,6 +1745,9 @@ void DijetAnalyzer::RunAnalysis(){
             while(jetEventPlaneDeltaPhiMidRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += -2*TMath::Pi();}
             while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
             while(jetEventPlaneDeltaPhiMidRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += 2*TMath::Pi();}
+            
+            fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
+            //fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
             
             // Fill the additional event plane histograms
             fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
