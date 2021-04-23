@@ -4,12 +4,13 @@
 void fitJetEventPlaneVn(){
 
   // Open the data files
+  const int nFiles = 2;
   TFile *inputFile[3];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akCaloJet_dijetEvents_2021-04-19.root");
-  inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akPfCsJet_dijetEvents_2021-04-19.root");
-  inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akFlowJet_dijetEvents_2021-04-19.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_dijetEvents_2021-04-23.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_dijetEvents_fakeV2Weight_2021-04-23.root");
+  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akFlowJet_dijetEvents_2021-04-19.root");
   
-  TString jetTypeString[3] = {"Calo jet","PFCS jet","PFCS flow jet"};
+  TString jetTypeString[3] = {"Gen jets","Fake v_{2} for gen jets","PFCS flow jet"};
   
   double centralityBinBorders[] = {0,10,30,50,90};
   
@@ -20,17 +21,17 @@ void fitJetEventPlaneVn(){
   bool hideFit = true;
   
   bool saveFigures = true;
-  TString saveComment = "_MC";
+  TString saveComment = "_genJets";
   
   // Read the histograms from the data files
   const int nCentralityBins = 4;
   const int nQvectorBins = 4;
-  TH1D *jetEventPlaneMidRapidity[3][nQvectorBins][nCentralityBins];
-  TF1 *fitFunctionMidRapidity[3][nQvectorBins][nCentralityBins];
-  double averageYield[3][nQvectorBins][nCentralityBins];
-  double scaleFactor[3][nQvectorBins][nCentralityBins];
+  TH1D *jetEventPlaneMidRapidity[nFiles][nQvectorBins][nCentralityBins];
+  TF1 *fitFunctionMidRapidity[nFiles][nQvectorBins][nCentralityBins];
+  double averageYield[nFiles][nQvectorBins][nCentralityBins];
+  double scaleFactor[nFiles][nQvectorBins][nCentralityBins];
   
-  for(int iJetType = 0; iJetType < 3; iJetType++){
+  for(int iJetType = 0; iJetType < nFiles; iJetType++){
     for(int iQvector = 0; iQvector < 1; iQvector++){  // nQvectorBins
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         
@@ -44,7 +45,7 @@ void fitJetEventPlaneVn(){
   if(matchYields){
     
     // Find the average yield from each histogram
-    for(int iJetType = 0; iJetType < 3; iJetType++){
+    for(int iJetType = 0; iJetType < nFiles; iJetType++){
       for(int iQvector = 0; iQvector < 1; iQvector++){ // nQvectorBins
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           
@@ -57,7 +58,7 @@ void fitJetEventPlaneVn(){
     
     // Scale the yields based on the basis
     
-    for(int iJetType = 0; iJetType < 3; iJetType++){
+    for(int iJetType = 0; iJetType < nFiles; iJetType++){
       for(int iQvector = 0; iQvector < 1; iQvector++){ // nQvectorBins
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           
@@ -73,7 +74,7 @@ void fitJetEventPlaneVn(){
   
   // Do a fourier fit up to v4 to all histograms
   DijetMethods *fitter = new DijetMethods();
-  for(int iJetType = 0; iJetType < 3; iJetType++){
+  for(int iJetType = 0; iJetType < nFiles; iJetType++){
     for(int iQvector = 0; iQvector < 1; iQvector++){ // nQvectorBins
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         
@@ -84,25 +85,25 @@ void fitJetEventPlaneVn(){
     } // Q-vector loop
   } // Jet type loop
   
-  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[0][0][0]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[0][0][1]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[0][0][2]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[1][0][0]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[1][0][1]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[1][0][2]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[2][0][0]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[2][0][1]->GetParameter(2) << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[2][0][2]->GetParameter(2) << endl;
-  
-  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[0][0][0]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[0][0][1]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[0][0][2]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[1][0][0]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[1][0][1]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[1][0][2]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[2][0][0]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[2][0][1]->Integral() << endl;
-  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[2][0][2]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[0][0][0]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[0][0][1]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[0][0][2]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[1][0][0]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[1][0][1]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[1][0][2]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[2][0][0]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[2][0][1]->GetParameter(2) << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[2][0][2]->GetParameter(2) << endl;
+//
+//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[0][0][0]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[0][0][1]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[0][0][2]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[1][0][0]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[1][0][1]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[1][0][2]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[2][0][0]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[2][0][1]->Integral() << endl;
+//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[2][0][2]->Integral() << endl;
     
   JDrawer *drawer = new JDrawer();
   
@@ -128,7 +129,7 @@ void fitJetEventPlaneVn(){
     minYscale = jetEventPlaneMidRapidity[referenceYield][0][iCentrality]->GetMinimum();
     minYscale = minYscale - 0.02*minYscale;
     
-    for(int iJetType = 0; iJetType < 3; iJetType++){
+    for(int iJetType = 0; iJetType < nFiles; iJetType++){
       
       if(hideFit) jetEventPlaneMidRapidity[iJetType][0][iCentrality]->RecursiveRemove(fitFunctionMidRapidity[iJetType][0][iCentrality]);
       
