@@ -30,22 +30,22 @@ MIXING=$6          # Flag for preprocessing
 #done 
 
 # Jet-track correlations have centrality and track pT binning
-#for i in `seq 0 0`;  # Centrality
-#do
-#  for j in `seq 3 4`;  # Track pT
-#  do  
-#    for k in `seq 0 3`;  # xj
-#    do
-#      root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",4,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i','$k','$PREPROCESS',"'${MIXING}'")' # regular jet-track correlations for leading and subleading jets
+for i in `seq 1 1`;  # Centrality
+do
+  for j in `seq 1 1`;  # Track pT
+  do  
+    for k in `seq 3 3`;  # xj
+    do
+      root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",4,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i','$k','$PREPROCESS',"'${MIXING}'")' # regular jet-track correlations for leading and subleading jets
 #      root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",6,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i','$k','$PREPROCESS',"'${MIXING}'")' # pT weighted jet-track correlations for leading and subleading jets
-#    done
+    done
 #   root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",7,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i',10,'$PREPROCESS',"'${MIXING}'")' # regular jet-track correlations for inclusive jets
 #   root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",8,'$JFFCORRECTION','$SPILLOVERCORRECTION','$j','$i',10,'$PREPROCESS',"'${MIXING}'")' # pT weighted jet-track correlations for inclusive jets
-#  done
-#done
+  done
+done
 
 # Jet pT closure plots have centrality binning
-for i in `seq 0 3`;
-do
-  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION',-1,'$i')' # Single jet and dijet histograms
-done 
+#for i in `seq 0 3`;
+#do
+#  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION',-1,'$i')' # Single jet and dijet histograms
+#done 

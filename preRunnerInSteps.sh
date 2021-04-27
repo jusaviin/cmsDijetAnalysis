@@ -6,8 +6,10 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_GenGen_akCaloJet_onlyRegular_noCentShift_improvisedMixing_preprocessed_2021-04-22.root" "data/PbPbMC2018_GenGen_akCaloJet_onlyRegular_noCentShift_improvisedMixing_noCorrections_processed_2021-04-22.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_GenGen_akCaloJet_onlyRegular_noCentShift_improvisedMixing_subeNon0_fakeV2Weight_preprocessed_2021-04-22.root" "data/PbPbMC2018_GenGen_akCaloJet_onlyRegular_noCentShift_improvisedMixing_subeNon0_fakeV2Weight_noCorrections_processed_2021-04-22.root" false false -1 "data/"
+#./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_doubleDijet_2021-04-19.root" "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_doubleDijet_preprocessed_2021-04-19.root" false false 2 "data/"
+./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_doubleDijet_preprocessed_2021-04-19.root" "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_doubleDijet_noCorrections_processed_2021-04-19.root" false false -1 "data/"
+
+#./processHistogramsInSteps.sh "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_doubleDijet_preprocessed_2021-04-19.root" "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_doubleDijet_noCorrections_processed_2021-04-19.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/dijetPbPb2018_akCaloJet_onlyJets_eventPlaneAllEvents_noMixing_2021-04-16.root" "data/dijetPbPb2018_akCaloJet_onlyJets_eventPlaneAllEvents_noMixing_processed_2021-04-16.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/dijetPbPb2018_akFlowJet_onlyJets_eventPlaneAllEvents_noMixing_2021-04-16.root" "data/dijetPbPb2018_akFlowJet_onlyJets_eventPlaneAllEvents_noMixing_processed_2021-04-16.root" false false -1 "data/"
