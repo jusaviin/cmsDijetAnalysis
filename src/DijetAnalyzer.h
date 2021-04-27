@@ -96,6 +96,7 @@ private:
   TF1 *fCentralityWeightFunction;      // Weighting function for centrality. Needed for MC.
   TF1 *fPtWeightFunction;              // Weighting function for jet pT. Needed for MC.
   TF1 *fDijetWeightFunction;           // Weighting function for leading jet pT. Needed for MC.
+  TF1 *fFakeV2Function;                // Function that can be used to fake v2
   TrackingEfficiencyInterface *fTrackEfficiencyCorrector2018;  // Tracking efficiency corrector for 2018 PbPb and 2017 pp data.
   JetCorrector *fJetCorrector2018;     // Class for making jet energy correction for 2018 data
   JetUncertainty *fJetUncertainty2018; // Class for finding uncertainty for jet pT for 2018 data
