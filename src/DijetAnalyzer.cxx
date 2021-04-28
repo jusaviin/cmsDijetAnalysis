@@ -1739,9 +1739,9 @@ void DijetAnalyzer::RunAnalysis(){
             
             // Calculate deltaPhi between the jet and the event planes determined with different detectors
             jetPhiForFakeV2 = leadingJetPhi;
-            if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
-              jetPhiForFakeV2 = fJetReader->GetMatchedPhi(highestIndex);
-            }
+            //if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
+            //  jetPhiForFakeV2 = fJetReader->GetMatchedPhi(highestIndex);
+            //}
             
             jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
             jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
@@ -1752,8 +1752,8 @@ void DijetAnalyzer::RunAnalysis(){
             while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
             while(jetEventPlaneDeltaPhiMidRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += 2*TMath::Pi();}
             
-            fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
-            fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
+            //fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
+            //fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
             
             // Fill the additional event plane histograms
             fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane

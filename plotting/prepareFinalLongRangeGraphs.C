@@ -16,11 +16,11 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_qVectorBelow2p8";
+  const char* qVectorTag = "_qVectorAbove3p3";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/dijetPbPb2018_akFlowJets_onlyRegular_20eveMix_doubleDijet_noCorrections_processed_2021-04-19.root";
+  jetHadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akFlowJet_onlyRegular_4pCentShift_improvisedMixing%s_doubleDijet_noCorrections_processed_2021-04-20.root", qVectorTag);
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
@@ -39,7 +39,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root";
+  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag);
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
@@ -128,7 +128,7 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_flowJets_doubleDijet_correctedJetHadron_correctedDihadronFromCaloJets_2021-04-27.root";
+  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_4pCentShift_flowJets%s_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-04-28.root", qVectorTag);
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
@@ -235,9 +235,7 @@ void prepareFinalLongRangeGraphs(){
     
     for(int iTrackPt = 0; iTrackPt < maxTrackPtBin; iTrackPt++){
       for(int iAsymmetry = firstAsymmetryBin; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
-        
-        cout << "Doing loop iCentrality: " << iCentrality << " iTrackPt: " << iTrackPt << " iAsymmetry:" << iAsymmetry << endl;
-        
+                
         // Read the two dimensional distribution from the same event
         if(useSameEventJetHadron){
           helperHistogramLeading = jetHadronReader[iCentralityReader]->GetHistogramJetTrackDeltaEtaDeltaPhi(correlationTypeJetHadron, DijetHistogramManager::kSameEvent, iAsymmetry, iCentrality, iTrackPt);
