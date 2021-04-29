@@ -4,23 +4,24 @@
 void fitJetEventPlaneVn(){
 
   // Open the data files
-  const int nFiles = 2;
-  TFile *inputFile[3];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_dijetEvents_2021-04-23.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_dijetEvents_fakeV2Weight_2021-04-23.root");
-  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akFlowJet_dijetEvents_2021-04-19.root");
+  const int nFiles = 4;
+  TFile *inputFile[nFiles];
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPb2018_caloJets_180GeVLeadingJet_dijetEvents_2021-04-28.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbData2018_akCaloJet_eschemeAxis_2021-04-12.root");
+  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPb2018_flowJets_180GeVLeadingJet_dijetEvents_2021-04-28.root");
+  if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbData2018_akFlowJet_wtaAxis_2021-04-12.root");
   
-  TString jetTypeString[3] = {"Gen jets","Fake v_{2} for gen jets","PFCS flow jet"};
+  TString jetTypeString[4] = {"Calo jets > 180 GeV","Calo jets > 120 GeV","PFCS flow jet > 180 GeV","PFCS flow jet > 120 GeV"};
   
   double centralityBinBorders[] = {0,10,30,50,90};
   
   bool matchYields = true;  // For comparison purposes, match the average yields of different jet collections
-  int referenceYield = 1;   // Choose which jet collection to use as basis for yield matching
+  int referenceYield = 2;   // Choose which jet collection to use as basis for yield matching
   
   bool drawAllInSamePlot = true;  // True: Draw all three jet collection to the same plot. False: Use separate plots
   bool hideFit = true;
   
-  bool saveFigures = true;
+  bool saveFigures = false;
   TString saveComment = "_genJets";
   
   // Read the histograms from the data files
@@ -110,7 +111,7 @@ void fitJetEventPlaneVn(){
   TString centralityString;
   TString compactCentralityString;
   TLegend *legend;
-  int colors[] = {kBlack, kRed, kBlue};
+  int colors[] = {kBlack, kRed, kBlue, kGreen+3};
   double maxYscale, minYscale;
   
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
