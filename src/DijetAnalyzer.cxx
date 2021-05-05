@@ -758,6 +758,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t eventPlaneQy = 0;                    // y-component of the event plane vector
   Double_t jetEventPlaneDeltaPhiForwardRap = 0; // DeltaPhi between jet and event plane angle determined from forward rapidity
   Double_t jetEventPlaneDeltaPhiMidRap = 0;     // DeltaPhi between jet and event plane angle determined from midrapidity
+  Double_t eventPlaneAngle = 0;                 // Manually calculated event plane angle
   
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
@@ -1106,9 +1107,11 @@ void DijetAnalyzer::RunAnalysis(){
             trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
             //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
             
-            if(TMath::Abs(trackEta) > 0.75) continue;
+            //if(TMath::Abs(trackEta) > 0.75) continue;
+            if(TMath::Abs(trackEta) > 2) continue;
             if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
-            if(trackPt > 3) continue;
+            //if(trackPt > 3) continue;
+            if(trackPt > 5) continue;
             
             eventPlaneQx += TMath::Cos(2*(trackPhi));
             eventPlaneQy += TMath::Sin(2*(trackPhi));
@@ -1118,6 +1121,8 @@ void DijetAnalyzer::RunAnalysis(){
           
           if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
           eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
+          
+          eventPlaneAngle = 0.5 * TMath::ATan2(eventPlaneQy, eventPlaneQx);
           
         // For data, read Q-vector and multiplicity directly from the forest
         } else {
@@ -1743,8 +1748,12 @@ void DijetAnalyzer::RunAnalysis(){
             //  jetPhiForFakeV2 = fJetReader->GetMatchedPhi(highestIndex);
             //}
             
-            jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
-            jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
+            
+            //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
+            //jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
+            
+            jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - eventPlaneAngle;
+            jetEventPlaneDeltaPhiMidRap = eventPlaneAngle - fJetReader->GetEventPlaneAngle(8);  // Diff between manual and forest
             
             // Transform deltaPhis to interval [-pi/2,3pi/2]
             while(jetEventPlaneDeltaPhiForwardRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += -2*TMath::Pi();}
@@ -1752,8 +1761,8 @@ void DijetAnalyzer::RunAnalysis(){
             while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
             while(jetEventPlaneDeltaPhiMidRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += 2*TMath::Pi();}
             
-            //fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
-            //fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
+            fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
+            fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
             
             // Fill the additional event plane histograms
             fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
@@ -2304,6 +2313,7 @@ Double_t DijetAnalyzer::GetJetPtWeight(const Double_t jetPt) const{
   if(fReadMode < 2000){
     return 1.0;  // No weighting for the most peripheral centrality bins 2015
   } else {
+    //return 1.0;  // TODO: DEBUG Jet pT weight disabled
     return fPtWeightFunction->Eval(jetPt);  // No weighting for the most peripheral centrality bins 2018
   }
 }
@@ -2412,7 +2422,7 @@ Double_t DijetAnalyzer::GetSmearingFactor(Double_t jetPt, const Double_t central
  */
 Double_t DijetAnalyzer::GetDijetWeight(const Double_t jetPt) const{
   if(fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPp) return 1.0;  // No weight for data
-  return 1.0; // TODO: Current dijet weight is disabled
+  return 1.0; // TODO: DEBUG Current dijet weight is disabled
   
   // Only weight 2017 and 2018 MC
   if(fReadMode < 2000){
