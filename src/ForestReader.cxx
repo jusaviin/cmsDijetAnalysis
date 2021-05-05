@@ -19,6 +19,8 @@ ForestReader::ForestReader() :
   fnEventPlaneBranch(0),
   fEventPlaneAngleBranch(0),
   fEventPlaneQBranch(0),
+  fEventPlaneQxBranch(0),
+  fEventPlaneQyBranch(0),
   fEventPlaneMultiplicityBranch(0),
   fJetPtBranch(0),
   fJetPhiBranch(0),
@@ -64,6 +66,8 @@ ForestReader::ForestReader() :
   fnEventPlane(0),
   fEventPlaneAngle(),
   fEventPlaneQ(),
+  fEventPlaneQx(),
+  fEventPlaneQy(),
   fEventPlaneMultiplicity(),
   fnJets(0),
   fnMatchedJets(0),
@@ -115,6 +119,8 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t 
   fnEventPlaneBranch(0),
   fEventPlaneAngleBranch(0),
   fEventPlaneQBranch(0),
+  fEventPlaneQxBranch(0),
+  fEventPlaneQyBranch(0),
   fEventPlaneMultiplicityBranch(0),
   fJetPtBranch(0),
   fJetPhiBranch(0),
@@ -160,6 +166,8 @@ ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t 
   fnEventPlane(0),
   fEventPlaneAngle(),
   fEventPlaneQ(),
+  fEventPlaneQx(),
+  fEventPlaneQy(),
   fEventPlaneMultiplicity(),
   fnJets(0),
   fnMatchedJets(0),
@@ -205,6 +213,8 @@ ForestReader::ForestReader(const ForestReader& in) :
   fnEventPlaneBranch(in.fnEventPlaneBranch),
   fEventPlaneAngleBranch(in.fEventPlaneAngleBranch),
   fEventPlaneQBranch(in.fEventPlaneQBranch),
+  fEventPlaneQxBranch(in.fEventPlaneQxBranch),
+  fEventPlaneQyBranch(in.fEventPlaneQyBranch),
   fEventPlaneMultiplicityBranch(in.fEventPlaneMultiplicityBranch),
   fJetPtBranch(in.fJetPtBranch),
   fJetPhiBranch(in.fJetPhiBranch),
@@ -277,6 +287,8 @@ ForestReader::ForestReader(const ForestReader& in) :
   for(Int_t iEventPlane = 0; iEventPlane < fMaxEventPlanes; iEventPlane++){
     fEventPlaneAngle[iEventPlane] = in.fEventPlaneAngle[iEventPlane];
     fEventPlaneQ[iEventPlane] = in.fEventPlaneQ[iEventPlane];
+    fEventPlaneQx[iEventPlane] = in.fEventPlaneQx[iEventPlane];
+    fEventPlaneQy[iEventPlane] = in.fEventPlaneQy[iEventPlane];
     fEventPlaneMultiplicity[iEventPlane] = in.fEventPlaneMultiplicity[iEventPlane];
   }
   
@@ -302,6 +314,8 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fnEventPlaneBranch = in.fnEventPlaneBranch;
   fEventPlaneAngleBranch = in.fEventPlaneAngleBranch;
   fEventPlaneQBranch = in.fEventPlaneQBranch;
+  fEventPlaneQxBranch = in.fEventPlaneQxBranch;
+  fEventPlaneQyBranch = in.fEventPlaneQyBranch;
   fEventPlaneMultiplicityBranch = in.fEventPlaneMultiplicityBranch;
   fJetPtBranch = in.fJetPtBranch;
   fJetPhiBranch = in.fJetPhiBranch;
@@ -373,6 +387,8 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   for(Int_t iEventPlane = 0; iEventPlane < fMaxEventPlanes; iEventPlane++){
     fEventPlaneAngle[iEventPlane] = in.fEventPlaneAngle[iEventPlane];
     fEventPlaneQ[iEventPlane] = in.fEventPlaneQ[iEventPlane];
+    fEventPlaneQx[iEventPlane] = in.fEventPlaneQx[iEventPlane];
+    fEventPlaneQy[iEventPlane] = in.fEventPlaneQy[iEventPlane];
     fEventPlaneMultiplicity[iEventPlane] = in.fEventPlaneMultiplicity[iEventPlane];
   }
   
@@ -453,6 +469,16 @@ Float_t ForestReader::GetEventPlaneAngle(Int_t iEventPlane) const{
 // Getter for the magnitude of the q-vector for the i:th event plane
 Float_t ForestReader::GetEventPlaneQ(Int_t iEventPlane) const{
   return fEventPlaneQ[iEventPlane];
+}
+
+// Getter for the x-component of the q-vector for the i:th event plane
+Float_t ForestReader::GetEventPlaneQx(Int_t iEventPlane) const{
+  return fEventPlaneQx[iEventPlane];
+}
+
+// Getter for the y-component of the q-vector for the i:th event plane
+Float_t ForestReader::GetEventPlaneQy(Int_t iEventPlane) const{
+  return fEventPlaneQy[iEventPlane];
 }
 
 // Getter for the particle multiplicity in the i:th event plane

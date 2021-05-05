@@ -93,6 +93,8 @@ public:
   Int_t GenNEventPlane() const;       // Getter for the number of event planes
   Float_t GetEventPlaneAngle(Int_t iEventPlane) const;        // Getter for the event plane angle for the i:th event plane
   Float_t GetEventPlaneQ(Int_t iEventPlane) const;            // Getter for the magnitude of the q-vector for the i:th event plane
+  Float_t GetEventPlaneQx(Int_t iEventPlane) const;           // Getter for the x-component of the q-vector for the i:th event plane
+  Float_t GetEventPlaneQy(Int_t iEventPlane) const;           // Getter for the y-component of the q-vector for the i:th event plane
   Float_t GetEventPlaneMultiplicity(Int_t iEventPlane) const; // Getter for the particle multiplicity in the i:th event plane
   
   // Getters for leaves in jet tree
@@ -176,6 +178,8 @@ protected:
   TBranch *fnEventPlaneBranch;            // Branch for the number of event planes
   TBranch *fEventPlaneAngleBranch;        // Branch for the event plane angles
   TBranch *fEventPlaneQBranch;            // Branch for the event plane Q-vector magnitude
+  TBranch *fEventPlaneQxBranch;           // Branch for the x-component of the event plane Q-vector
+  TBranch *fEventPlaneQyBranch;           // Branch for the y-component of the event plane Q-vector
   TBranch *fEventPlaneMultiplicityBranch; // Branch for the particle multiplicity in the event plane
   
   // Branches for jet tree
@@ -234,6 +238,8 @@ protected:
   Int_t fnEventPlane;  // Number of event planes
   Float_t fEventPlaneAngle[fMaxEventPlanes] = {0};          // Event plane angles
   Float_t fEventPlaneQ[fMaxEventPlanes] = {0};              // Event plane q-vector magnitudes
+  Float_t fEventPlaneQx[fMaxEventPlanes] = {0};             // Event plane q-vector x-components
+  Float_t fEventPlaneQy[fMaxEventPlanes] = {0};             // Event plane q-vector y-components
   Float_t fEventPlaneMultiplicity[fMaxEventPlanes] = {0};   // Multiplicity of particles in the event plane
   
   // Leaves for jet tree

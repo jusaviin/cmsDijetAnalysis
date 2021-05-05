@@ -166,6 +166,10 @@ void GeneratorLevelForestReader::Initialize(){
     fHeavyIonTree->SetBranchAddress("hiEvtPlanes",&fEventPlaneAngle,&fEventPlaneAngleBranch);
     fHeavyIonTree->SetBranchStatus("hiEvtPlaneQ",1);
     fHeavyIonTree->SetBranchAddress("hiEvtPlaneQ",&fEventPlaneQ,&fEventPlaneQBranch);
+    fHeavyIonTree->SetBranchStatus("hiEvtPlaneQx",1);
+    fHeavyIonTree->SetBranchAddress("hiEvtPlaneQx",&fEventPlaneQx,&fEventPlaneQxBranch);
+    fHeavyIonTree->SetBranchStatus("hiEvtPlaneQy",1);
+    fHeavyIonTree->SetBranchAddress("hiEvtPlaneQy",&fEventPlaneQ,&fEventPlaneQyBranch);
     fHeavyIonTree->SetBranchStatus("hiEvtPlaneMult",1);
     fHeavyIonTree->SetBranchAddress("hiEvtPlaneMult",&fEventPlaneMultiplicity,&fEventPlaneMultiplicityBranch);
   }
