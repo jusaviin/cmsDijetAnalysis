@@ -51,7 +51,7 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 7;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "flowGraphs_PbPbMC2018_genJets_subeNon0_fakeJetV2_correctedJetHadron_correctedDihadronWideDeltaEta_2021-04-29.root";
+  TString graphFileName = "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root";
   // flowGraphs_PbPb2018_flowJets_doubleDijet_correctedJetHadron_correctedDihadronFromCaloJets_2021-04-27.root
   // flowGraphs_PbPb2018_fullStats_pfCsJets_dihadronFromCaloDijet_correctedJetHadron_correctedEventDihadron_2021-04-20.root
   // flowGraphs_PbPb2018_fullStats_flowJets_correctedJetHadron_correctedDihadronFromCaloDijets_2021-04-06.root
@@ -66,13 +66,13 @@ void longRangeGraphPlotter(){
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 1;
-  TString comparisonFileName[] = {  "flowGraphs_PbPbMC2018_genJets_wideDeltaEta_fakeV2_correctedJetHadron_correctedDihadronFromRegular_2021-05-05.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow1p8_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p2_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p5_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p8_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_pfCsJets_fakeV2_noCentShift_subeNon0_correctedJetHadron_correctedDihadronFromRegularCalo_2021-05-03.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p5_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p8_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2_2021-02-02.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2_2021-02-02.root",   "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p8_2021-02-02.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p5_correctedJetHadron_correctedDihadron_2021-03-12.root",  "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root",  "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018_fullStats_pfCsJets_dihadronFromCaloDijet_correctedJetHadron_correctedEventDihadron_2021-04-20.root", "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfcsJets_qVectorBelow2p5_dihadronFromCaloDijet_correctedJetHadron_correctedDihadron_2021-04-20.root", "flowGraphs_PbPb2018_smallStatsForDihadron_flowJets_correctedJetHadron_correctedDihadron_2021-04-16.root", "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_flowJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-04-16.root",   "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_flowJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-04-16.root",   "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfcsJets_qVectorBelow2p5_dihadronFromCaloDijet_correctedJetHadron_correctedDihadron_2021-04-20.root", "flowGraphs_PbPb2018_fullStats_flowJets_correctedJetHadron_correctedDihadronFromCaloDijets_2021-04-06.root",  "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p2_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p5_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p8_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_pfCsJets_fakeV2_noCentShift_subeNon0_correctedJetHadron_correctedDihadronFromRegularCalo_2021-05-03.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p5_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p8_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2_2021-02-02.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2_2021-02-02.root",   "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p8_2021-02-02.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p5_correctedJetHadron_correctedDihadron_2021-03-12.root",  "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root",  "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"Gen jets, fake v_{2}, HiForest EP", "Gen jets, fake v_{2}, manual EP", "Flow jet, include calo dijet", "Flow MC", "MC+5%, Q < 2.2",  "MC+5%, Q < 2.5", "MC+5% Q < 2.8"};
+  TString fileLegend[] = {"Calo jets", "Calo jets", "PfCs jets (calo hh)", "PfCs MC", "Flow jets",  "Flow MC", "MC+5% Q < 2.8"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -88,16 +88,16 @@ void longRangeGraphPlotter(){
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   const bool drawAtlasV2 = false;                     // Draw a line showing the v2 result from ATLAS
   const bool fitJetVn = true;                         // Fit a constant line to jet vn points
-  const bool doSummaryCorrection = false;              // Correct the jet vn summary plots based on fits
-  const bool manualSummaryCorrection = false;          // Do the correction manially based on tabulated values
-  const bool drawSummaryPlot = false;
+  const bool doSummaryCorrection = true;              // Correct the jet vn summary plots based on fits
+  const bool manualSummaryCorrection = true;          // Do the correction manially based on tabulated values
+  const bool drawSummaryPlot = true;
   
   // Pre-defined points to be drawn to the summary plot
-  const bool drawPreviousResults = false;              // Draw ATLAS jet v2 and CMS high pT v2 results to the summary plot
+  const bool drawPreviousResults = true;              // Draw ATLAS jet v2 and CMS high pT v2 results to the summary plot
   const bool drawFlowJetResults = true;              // Draw flow subtracted results using default Q-vector configuration
-  const bool drawPfCsJetResults = false;              // Draw PfCs jet results using defualt Q-vector configuration
-  const bool drawFlowDoubleDijetResults = true;       // Draw flow jet results requiring also calo dijet in the event
-  const bool drawCaloDoubleDijetResults = true;      // Draw calo jet results requiring also flow dijet in the event
+  const bool drawPfCsJetResults = true;              // Draw PfCs jet results using defualt Q-vector configuration
+  const bool drawFlowDoubleDijetResults = false;       // Draw flow jet results requiring also calo dijet in the event
+  const bool drawCaloDoubleDijetResults = false;      // Draw calo jet results requiring also flow dijet in the event
   
   // Plots to be compared between files
   const bool drawJetHadronVnFileComparison = false;
@@ -112,8 +112,12 @@ void longRangeGraphPlotter(){
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
+  const bool drawRatios = false;              // Draw ratio plots for file comparison
+  const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
+  const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
+  
   const bool saveFigures = true;                     // Save the figures in a file
-  TString saveComment = "_fakeV2EventPlaneComparisonGenJets";              // String to be added to saved file names
+  TString saveComment = "_final";              // String to be added to saved file names
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -170,6 +174,7 @@ void longRangeGraphPlotter(){
  
   TGraphErrors *ratioGraphJetHadron[maxFiles][nAsymmetryBins+1][nCentralityBins];
   TGraphErrors *ratioGraphHadron[maxFiles][nAsymmetryBins+1][nCentralityBins];
+  TGraphErrors *ratioGraphJet[maxFiles][nAsymmetryBins+1][nCentralityBins];
   double defaultAxis[4] = {1,2,3,4};
   
   // Graph comparing hadron v2 to jet v2
@@ -315,6 +320,7 @@ void longRangeGraphPlotter(){
       for(int iAsymmetry = 0; iAsymmetry < nAsymmetryBins+1; iAsymmetry++){
         ratioGraphJetHadron[iFile][iAsymmetry][iCentrality] = new TGraphErrors(maxPtBin, defaultAxis, defaultAxis);
         ratioGraphHadron[iFile][iAsymmetry][iCentrality] = new TGraphErrors(maxPtBin, defaultAxis, defaultAxis);
+        ratioGraphJet[iFile][iAsymmetry][iCentrality] = new TGraphErrors(maxPtBin, defaultAxis, defaultAxis);
         for(int iFlow = 0; iFlow < nFlowComponents; iFlow++){
           summaryYaxis[iFile][iAsymmetry][iFlow][iCentrality] = 0;
           summaryYaxisError[iFile][iAsymmetry][iFlow][iCentrality] = 0;
@@ -416,7 +422,6 @@ void longRangeGraphPlotter(){
   // Helper variables for drawing figures
   TLegend *legend;
   TLegend *vLegend;
-  int markers[] = {kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar};
   int fullMarkers[] = {kFullSquare, kFullCircle, kFullDiamond, kFullCross, kFullStar, kFullFourTrianglesPlus, kFullDoubleDiamond};
   int secondMarkers[] = {kFullCircle, kFullCross, kFullSquare, kFullCircle, kFullFourTrianglesPlus};
   int colors[] = {kBlue,kRed,kGreen+2,kBlack, kMagenta};
@@ -426,6 +431,15 @@ void longRangeGraphPlotter(){
   TString asymmetryLegend[] = {"0.0 < x_{j} < 0.6", "0.6 < x_{j} < 0.8", "0.8 < x_{j} < 1.0", "x_{j} integrated"};
   TString compactAsymmetryString[] = {"_A=0v0-0v6", "_A=0v6-0v8", "_A=0v8-1v0", ""};
   double normalizationValue[2]; // Normalizer for yields
+  
+  if(useAlternativeMarkerSet){
+    int alternativeMarkers[] = {kFullSquare, kOpenSquare, kFullCircle, kOpenCircle, kFullDiamond, kOpenDiamond, kFullDoubleDiamond};
+    int alternativeColors[] = {kBlack, kBlack, kBlue, kBlue, kRed, kRed, kViolet};
+    for(int i = 0; i < maxFiles; i++){
+      fullMarkers[i] = alternativeMarkers[i];
+      fileColors[i] = alternativeColors[i];
+    }
+  }
 
   
   // After all the graphs have been loaded from the input files, combine information from these graphs to a new one
@@ -570,7 +584,7 @@ void longRangeGraphPlotter(){
                              {    0.1,  0.1,  0.1,  0.1,  0.1}}; // v4
   
   // How to zoom vn plots    //    v1,   v2,   v3,   v4
-  double jetHadronZoomTable[4] = {0.1, 0.035, 0.005, 0.01};
+  double jetHadronZoomTable[4] = {0.1, 0.05, 0.005, 0.01};
   double dihadronZoomTable[4]  = {0.08, 0.08, 0.03, 0.03};
 
   // Numbers from HP2020 conference presentation
@@ -621,8 +635,8 @@ void longRangeGraphPlotter(){
   //double minZoomJetVn[] = {0.085, 0.11, 0.075, 0.05};  // Nominal
   //double maxZoomJetVn[] = {0.135, 0.16, 0.125, 0.15};  // Nominal
   
-  double minZoomJetVn[] = {-0.05, -0.05, -0.05, 0};
-  double maxZoomJetVn[] = {0.25, 0.25, 0.25, 0.15};
+  double minZoomJetVn[] = {0, 0, 0, 0};
+  double maxZoomJetVn[] = {0.4, 0.4, 0.4, 0.15};
   
   // Draw graph with all the stages leading to final jet vn visible
   if(drawGraphStages){
@@ -827,6 +841,7 @@ void longRangeGraphPlotter(){
   
   double xPoint1, xPoint2, yPoint1, yPoint2, yError1, yError2, combinedError, ratioValue, crossingPoint;
   int lowPoint;
+  int maxFileIndex, baseIndex, comparisonIndex;
   
   // Compare graphs from different files
   if(drawFileComparison){
@@ -838,7 +853,7 @@ void longRangeGraphPlotter(){
           if(drawJetHadronVnFileComparison){
           
             sprintf(namerY,"Jet-hadron V_{%d}",iFlow+1);
-            legend = new TLegend(0.2,0.65,0.5,0.9);
+            legend = new TLegend(0.2,0.6,0.5,0.9);
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
@@ -863,47 +878,56 @@ void longRangeGraphPlotter(){
                 gPad->GetCanvas()->SaveAs(Form("figures/jetHadronV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
             }
             
-            // Point by point ratio to the first graph
-            
-            legend = new TLegend(0.2,0.7,0.5,0.9);
-            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-            legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
-            
-            for(int iFile = 0; iFile < nComparisonFiles; iFile++){
-              for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
-                flowGraphJetHadron[0][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
-                yError1 = flowGraphJetHadron[0][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
-                flowGraphJetHadron[iFile+1][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint2, yPoint2);
-                yError2 = flowGraphJetHadron[iFile+1][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
-                
-                ratioValue = yPoint2 / yPoint1;
-                combinedError = TMath::Sqrt(TMath::Power(yError2/yPoint1,2) + TMath::Power((yPoint2*yError1)/(yPoint1*yPoint1),2));
-                
-                ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetPoint(iPoint,xPoint1,ratioValue);
-                ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetPointError(iPoint, 0, combinedError);
-                
-              } // Point loop
+            // Point by point ratio to the first graph or to the previous graph
+            if(drawRatios){
               
-              ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[iFile+1]);
-              ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
-              ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[iFile+1]);
+              legend = new TLegend(0.23,0.7,0.53,0.9); // 0.23,0.19,0.53,0.39
+              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
               
-              legend->AddEntry(ratioGraphJetHadron[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[iFile+1].Data(), fileLegend[0].Data()), "p");
+              maxFileIndex = ratioToPrevious ? (nComparisonFiles+1)/2 : nComparisonFiles;
               
-              if(iFile == 0){
-                drawer->DrawGraph(ratioGraphJetHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0, 2, "Track p_{T} (GeV)", "Ratio", " ", "p");
-              } else {
-                ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
+              for(int iFile = 0; iFile < maxFileIndex; iFile++){
+                for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+                  
+                  baseIndex = ratioToPrevious ? iFile*2 : 0;
+                  comparisonIndex = ratioToPrevious ? iFile*2+1 : iFile+1;
+                  
+                  flowGraphJetHadron[baseIndex][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
+                  yError1 = flowGraphJetHadron[baseIndex][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
+                  flowGraphJetHadron[comparisonIndex][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint2, yPoint2);
+                  yError2 = flowGraphJetHadron[comparisonIndex][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
+                  
+                  ratioValue = yPoint2 / yPoint1;
+                  combinedError = TMath::Sqrt(TMath::Power(yError2/yPoint1,2) + TMath::Power((yPoint2*yError1)/(yPoint1*yPoint1),2));
+                  
+                  ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetPoint(iPoint,xPoint1,ratioValue);
+                  ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetPointError(iPoint, 0, combinedError);
+                  
+                } // Point loop
+                
+                ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[ratioToPrevious ? baseIndex : comparisonIndex]);
+                ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
+                ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[ratioToPrevious ? baseIndex : comparisonIndex]);
+                
+                legend->AddEntry(ratioGraphJetHadron[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
+                
+                if(iFile == 0){
+                  drawer->DrawGraph(ratioGraphJetHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0, 2, "Track p_{T} (GeV)", "Ratio", " ", "p");
+                } else {
+                  ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
+                }
+                
+              } // File loop
+              
+              oneLine->Draw();
+              legend->Draw();
+              
+              // Save the figures to file
+              if(saveFigures){
+                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronV%dRatio%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
               }
               
-            } // File loop
-            
-            oneLine->Draw();
-            legend->Draw();
-            
-            // Save the figures to file
-            if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronV%dRatio%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
             }
             
             // Plots as a function of Q-vector
@@ -990,7 +1014,7 @@ void longRangeGraphPlotter(){
           if(drawHadronVnFileComparison){
           
             sprintf(namerY,"Hadron v_{%d}",iFlow+1);
-            legend = new TLegend(0.2,0.55,0.5,0.9);
+            legend = new TLegend(0.2,0.6,0.5,0.9);
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
@@ -1015,46 +1039,56 @@ void longRangeGraphPlotter(){
                 gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
             }
             
-            // Point by point ratio to the first graph
-            
-            legend = new TLegend(0.2,0.7,0.5,0.9);
-            legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-            legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
-            
-            for(int iFile = 0; iFile < nComparisonFiles; iFile++){
-              for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
-                flowGraphHadron[0][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
-                yError1 = flowGraphHadron[0][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
-                flowGraphHadron[iFile+1][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint2, yPoint2);
-                yError2 = flowGraphHadron[iFile+1][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
-                
-                ratioValue = yPoint2 / yPoint1;
-                combinedError = TMath::Sqrt(TMath::Power(yError2/yPoint1,2) + TMath::Power((yPoint2*yError1)/(yPoint1*yPoint1),2));
-                
-                ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetPoint(iPoint,xPoint1,ratioValue);
-                ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetPointError(iPoint, 0, combinedError);
-                
-              } // Point loop
+            // Point by point ratio
+            if(drawRatios){
               
-              ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[iFile+1]);
-              ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
-              ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[iFile+1]);
+              legend = new TLegend(0.23,0.7,0.53,0.9); // 0.23,0.19,0.53,0.39
+              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
               
-              legend->AddEntry(ratioGraphHadron[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[iFile+1].Data(), fileLegend[0].Data()), "p");
+              // Select ratio either to the first graph or to the previous on the list
+              maxFileIndex = ratioToPrevious ? (nComparisonFiles+1)/2 : nComparisonFiles;
               
-              if(iFile == 0){
-                drawer->DrawGraph(ratioGraphHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.85, 1.15, "Track p_{T} (GeV)", "Ratio", " ", "p");
-              } else {
-                ratioGraphHadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
-              }
-            } // File loop
-            
-            oneLine->Draw();
-            legend->Draw();
-            
-            // Save the figures to file
-            if(saveFigures){
+              for(int iFile = 0; iFile < maxFileIndex; iFile++){
+                for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+                  
+                  baseIndex = ratioToPrevious ? iFile*2 : 0;
+                  comparisonIndex = ratioToPrevious ? iFile*2+1 : iFile+1;
+                  
+                  flowGraphHadron[baseIndex][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
+                  yError1 = flowGraphHadron[baseIndex][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
+                  flowGraphHadron[comparisonIndex][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint2, yPoint2);
+                  yError2 = flowGraphHadron[comparisonIndex][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
+                  
+                  ratioValue = yPoint2 / yPoint1;
+                  combinedError = TMath::Sqrt(TMath::Power(yError2/yPoint1,2) + TMath::Power((yPoint2*yError1)/(yPoint1*yPoint1),2));
+                  
+                  ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetPoint(iPoint,xPoint1,ratioValue);
+                  ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetPointError(iPoint, 0, combinedError);
+                  
+                } // Point loop
+                
+                ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[ratioToPrevious ? baseIndex : comparisonIndex]);
+                ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
+                ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[ratioToPrevious ? baseIndex : comparisonIndex]);
+                
+                legend->AddEntry(ratioGraphHadron[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
+                
+                if(iFile == 0){
+                  drawer->DrawGraph(ratioGraphHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.5, 1.5, "Track p_{T} (GeV)", "Ratio", " ", "p");
+                } else {
+                  ratioGraphHadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
+                }
+              } // File loop
+              
+              oneLine->Draw();
+              legend->Draw();
+              
+              // Save the figures to file
+              if(saveFigures){
                 gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dRatio%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+              }
+              
             }
             
             // Plots as a function of Q-vector
@@ -1100,7 +1134,7 @@ void longRangeGraphPlotter(){
           if(drawJetVnFileComparison){
           
             sprintf(namerY,"Jet v_{%d}",iFlow+1);
-            legend = new TLegend(0.2,0.7,0.5,0.9);
+            legend = new TLegend(0.22,0.65,0.52,0.98); // 0.2,0.7,0.5,0.9
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
@@ -1162,6 +1196,58 @@ void longRangeGraphPlotter(){
             // Save the figures to file
             if(saveFigures){
                 gPad->GetCanvas()->SaveAs(Form("figures/jetV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+            }
+            
+            // Point by point ratio
+            if(drawRatios){
+              
+              legend = new TLegend(0.23,0.7,0.53,0.9); // 0.23,0.19,0.53,0.39
+              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
+              
+              // Select ratio either to the first graph or to the previous on the list
+              maxFileIndex = ratioToPrevious ? (nComparisonFiles+1)/2 : nComparisonFiles;
+              
+              for(int iFile = 0; iFile < maxFileIndex; iFile++){
+                for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+                  
+                  baseIndex = ratioToPrevious ? iFile*2 : 0;
+                  comparisonIndex = ratioToPrevious ? iFile*2+1 : iFile+1;
+                  
+                  flowGraphJet[baseIndex][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
+                  yError1 = flowGraphJet[baseIndex][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
+                  flowGraphJet[comparisonIndex][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint2, yPoint2);
+                  yError2 = flowGraphJet[comparisonIndex][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
+                  
+                  ratioValue = yPoint2 / yPoint1;
+                  combinedError = TMath::Sqrt(TMath::Power(yError2/yPoint1,2) + TMath::Power((yPoint2*yError1)/(yPoint1*yPoint1),2));
+                  
+                  ratioGraphJet[iFile][iAsymmetry][iCentrality]->SetPoint(iPoint,xPoint1,ratioValue);
+                  ratioGraphJet[iFile][iAsymmetry][iCentrality]->SetPointError(iPoint, 0, combinedError);
+                  
+                } // Point loop
+                
+                ratioGraphJet[iFile][iAsymmetry][iCentrality]->SetMarkerStyle(fullMarkers[ratioToPrevious ? baseIndex : comparisonIndex]);
+                ratioGraphJet[iFile][iAsymmetry][iCentrality]->SetMarkerSize(1.3);
+                ratioGraphJet[iFile][iAsymmetry][iCentrality]->SetMarkerColor(fileColors[ratioToPrevious ? baseIndex : comparisonIndex]);
+                
+                legend->AddEntry(ratioGraphJet[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
+                
+                if(iFile == 0){
+                  drawer->DrawGraph(ratioGraphJet[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.2, 1.5, "Track p_{T} (GeV)", "Ratio", " ", "p");
+                } else {
+                  ratioGraphJet[iFile][iAsymmetry][iCentrality]->Draw("p,same");
+                }
+              } // File loop
+              
+              oneLine->Draw();
+              legend->Draw();
+              
+              // Save the figures to file
+              if(saveFigures){
+                gPad->GetCanvas()->SaveAs(Form("figures/jetV%dRatio%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+              }
+              
             }
             
             // Plots as a function of Q-vector
