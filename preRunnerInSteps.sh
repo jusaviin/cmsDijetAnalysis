@@ -6,7 +6,9 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_GenGen_akCaloJet_onlyRegular_noCentShift_subeNon0_improvisedMixing_manualEP_fakeV2_preprocessed_2021-05-04.root" "data/PbPbMC2018_GenGen_akCaloJet_onlyRegular_noCentShift_subeNon0_improvisedMixing_manualEP_fakeV2_noCorrections_processed_2021-05-04.root" false false -1 "data/"
+./processHistogramsInStepsManual.sh "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_JECv6_2021-05-11.root" "data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_jetWeight_JECv6_processed_2021-05-11.root" false false -1 "data/"
+./processHistogramsInStepsManual.sh "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_triggered_jetWeight_JECv6_2021-05-11.root" "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_triggered_jetWeight_JECv6_processed_2021-05-11.root" false false -1 "data/"
+./processHistogramsInStepsManual.sh "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_triggered_noJetWeight_JECv6_2021-05-11.root" "data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_onlyJets_triggered_noJetWeight_JECv6_processed_2021-05-11.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_noQcut_doubleDijet_preprocessed_2021-04-28.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_noQcut_doubleDijet_noCorrections_processed_2021-04-28.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_qVectorAbove1p8_doubleDijet_preprocessed_2021-04-28.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_qVectorAbove1p8_doubleDijet_noCorrections_processed_2021-04-28.root" false false -1 "data/"
