@@ -6,7 +6,8 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_GenGen_akCaloJet_dihadron_noCentShift_improvisedMixing_subeNon0_noXj_preprocessed_2021-04-27.root" "data/PbPbMC2018_GenGen_akCaloJet_dihadron_noCentShift_improvisedMixing_subeNon0_noXj_wideDeltaEta_noCorrections_processed_2021-04-27.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akPfCsJet_dihadron_4pCentShift_improvisedMixing_subeNon0_noXj_qVectorAbove2p5_preprocessed_2021-05-10_part0.root" "data/PbPbMC2018_RecoGen_akPfCsJet_dihadron_4pCentShift_improvisedMixing_subeNon0_noXj_qVectorAbove2p5_noCorrections_processed_2021-05-10_part0.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akPfCsJet_dihadron_4pCentShift_improvisedMixing_subeNon0_noXj_qVectorBelow2p5_preprocessed_2021-05-10_part0.root" "data/PbPbMC2018_RecoGen_akPfCsJet_dihadron_4pCentShift_improvisedMixing_subeNon0_noXj_qVectorBelow2p5_noCorrections_processed_2021-05-10_part0.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_preprocessed_2021-04-08.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_noCorrections_processed_2021-04-08.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorBelow1p5_preprocessed_2021-04-08.root" "data/PbPbMC2018_RecoGen_akFlowJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_qVectorBelow1p5_noCorrections_processed_2021-04-08.root" false false -1 "data/"
