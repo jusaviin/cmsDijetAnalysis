@@ -197,13 +197,15 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Asymmetry binning
   fAsymmetryBinType = fCard->Get("AsymmetryBinType");   // 0 = AJ, 1 = xJ
   
-  // pT weight function for Pythia to match 2017 MC and data pT spectra
+  // pT weight function for Pythia to match 2017 MC and data pT spectra. Derived from all jets above 120 GeV
   fPtWeightFunction = new TF1("fPtWeightFunction","pol3",0,500);
-  fPtWeightFunction->SetParameters(0.699073,0.00287672,-6.35568e-06,5.02292e-09);
+  //fPtWeightFunction->SetParameters(0.699073,0.00287672,-6.35568e-06,5.02292e-09);
+  fPtWeightFunction->SetParameters(0.708008,0.0032891,-1.05716e-05,1.16656e-08);
   
   // Weight function derived for leading jet
   fDijetWeightFunction = new TF1("fDijetWeightFunction","pol3",0,500);
-  fDijetWeightFunction->SetParameters(0.723161,0.00236126,-3.90984e-06,3.10631e-09);
+  //fDijetWeightFunction->SetParameters(0.723161,0.00236126,-3.90984e-06,3.10631e-09);
+  fDijetWeightFunction->SetParameters(0.851883,0.00162576,-5.05312e-06,5.72018e-09);
   
   // Function for smearing the jet pT for systemtic uncertainties
   fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
@@ -1133,7 +1135,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Normalize the Q-vector with multiplicity
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
         
-        //if(eventPlaneQ < 3.3) continue;  // 2.222 2.778 3.333
+        //if(eventPlaneQ > 2.5) continue;  // 2.222 2.778 3.333
         
       }
       
