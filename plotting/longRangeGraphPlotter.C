@@ -52,6 +52,8 @@ void longRangeGraphPlotter(){
   const int maxFiles = 7;
   TString directoryName = "flowGraphs/";
   TString graphFileName = "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root";
+  // flowGraphs_PbPb2018_akCaloJets_highSubleadingJet_correctedJetHadron_correctedDihadronFromRegularDijet_2021-05-20.root
+  // flowGraphs_PbPb2018_akFlowJets_highSubleadingJet_smallStats_correctedJetHadron_correctedDihadronFromRegularDijet_2021-05-20.root
   // flowGraphs_PbPb2018_flowJets_doubleDijet_correctedJetHadron_correctedDihadronFromCaloJets_2021-04-27.root
   // flowGraphs_PbPb2018_fullStats_pfCsJets_dihadronFromCaloDijet_correctedJetHadron_correctedEventDihadron_2021-04-20.root
   // flowGraphs_PbPb2018_fullStats_flowJets_correctedJetHadron_correctedDihadronFromCaloDijets_2021-04-06.root
@@ -65,14 +67,14 @@ void longRangeGraphPlotter(){
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 1;
-  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018_fullStats_pfCsJets_dihadronFromCaloDijet_correctedJetHadron_correctedEventDihadron_2021-04-20.root", "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfcsJets_qVectorBelow2p5_dihadronFromCaloDijet_correctedJetHadron_correctedDihadron_2021-04-20.root", "flowGraphs_PbPb2018_smallStatsForDihadron_flowJets_correctedJetHadron_correctedDihadron_2021-04-16.root", "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_flowJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-04-16.root",   "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_flowJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-04-16.root",   "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfcsJets_qVectorBelow2p5_dihadronFromCaloDijet_correctedJetHadron_correctedDihadron_2021-04-20.root", "flowGraphs_PbPb2018_fullStats_flowJets_correctedJetHadron_correctedDihadronFromCaloDijets_2021-04-06.root",  "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p2_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p5_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p8_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_pfCsJets_fakeV2_noCentShift_subeNon0_correctedJetHadron_correctedDihadronFromRegularCalo_2021-05-03.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p5_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p8_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2_2021-02-02.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2_2021-02-02.root",   "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p8_2021-02-02.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p5_correctedJetHadron_correctedDihadron_2021-03-12.root",  "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root",  "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
+  int nComparisonFiles = 3;
+  TString comparisonFileName[] = { "flowGraphs_PbPb2018_akCaloJets_highSubleadingJet_correctedJetHadron_correctedDihadronFromRegularDijet_2021-05-20.root", "flowGraphs_PbPb2018_smallStatsForDihadron_flowJets_correctedJetHadron_correctedDihadron_2021-04-16.root", "flowGraphs_PbPb2018_akFlowJets_highSubleadingJet_smallStats_correctedJetHadron_correctedDihadronFromRegularDijet_2021-05-20.root", "flowGraphs_PbPbMC2018_akCaloJets_highSubleadingJet_4pCentShift_qVectorAbove2p5_subeNon0_correctedJetHadron_correctedDihadronFromRegularDijet_2021-05-20.root", "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_flowJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-04-16.root", "flowGraphs_PbPbMC2018_akFlowJets_highSubleadingJet_4pCentShift_qVectorAbove2p5_subeNon0_correctedJetHadron_correctedDihadronFromRegularDijet_2021-05-20.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-03-04.root",  "flowGraphs_PbPbMC2018_akPfCsJets_subeNon0_qVectorAbove2p5_correctedJetHadron_correctedDihadronSmallStats_2021-05-13.root",   "flowGraphs_PbPb2018_fullStats_flowJets_correctedJetHadron_correctedDihadronFromCaloDijets_2021-04-06.root",  "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p2_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p5_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_4pCentShift_caloJets_qVectorBelow2p8_doubleDijet_correctedJetHadron_correctedDihadronFromCaloSubeNon0_2021-05-03.root", "flowGraphs_PbPbMC2018_pfCsJets_fakeV2_noCentShift_subeNon0_correctedJetHadron_correctedDihadronFromRegularCalo_2021-05-03.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p5_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow1p8_2021-02-02.root", "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2_2021-02-02.root",  "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p2_2021-02-02.root",   "flowGraphs_PbPbMC2018_caloJets_correctedJetHadron_correctedDihadron_4pCentShift_qVectorBelow2p8_2021-02-02.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p5_correctedJetHadron_correctedDihadron_2021-03-12.root",  "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow1p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_3pCentShift_subeNon0_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-12.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove1p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p2_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove2p8_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_5pCentShift_caloJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_caloJets_improvisedMixingJetHadron_sameEventDihadron_2020-11-13.root", "flowGraphs_PbPbMC2018_caloJets_5pCentShift_correctedJetHadron_sameEventDihadron_2020-11-18.root", "flowGraphs_PbPb2018_caloJets_improvisedMixingJetHadron_correctedDihadron_noJetCorrections_2020-11-05.root",  "flowGraphs_PbPbData_noJetReconstructionCorrection_fullDihadronStats.root", "finalGraphTestNew.root", ""};
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"Calo jets", "Calo jets", "PfCs jets (calo hh)", "PfCs MC", "Flow jets",  "Flow MC", "MC+5% Q < 2.8"};
+  TString fileLegend[] = {"Calo jets", "Calo high sub", "Flow jets", "Flow high sub", "Calo MC", "PfCs MC", "Flow MC", "MC+5% Q < 2.8"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -88,22 +90,22 @@ void longRangeGraphPlotter(){
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   const bool drawAtlasV2 = false;                     // Draw a line showing the v2 result from ATLAS
   const bool fitJetVn = true;                         // Fit a constant line to jet vn points
-  const bool doSummaryCorrection = true;              // Correct the jet vn summary plots based on fits
-  const bool manualSummaryCorrection = true;          // Do the correction manially based on tabulated values
-  const bool drawSummaryPlot = true;
+  const bool doSummaryCorrection = false;              // Correct the jet vn summary plots based on fits
+  const bool manualSummaryCorrection = false;          // Do the correction manially based on tabulated values
+  const bool drawSummaryPlot = false;
   
   // Pre-defined points to be drawn to the summary plot
-  const bool drawPreviousResults = true;              // Draw ATLAS jet v2 and CMS high pT v2 results to the summary plot
-  const bool drawFlowJetResults = true;              // Draw flow subtracted results using default Q-vector configuration
-  const bool drawPfCsJetResults = true;              // Draw PfCs jet results using defualt Q-vector configuration
+  const bool drawPreviousResults = false;              // Draw ATLAS jet v2 and CMS high pT v2 results to the summary plot
+  const bool drawFlowJetResults = false;              // Draw flow subtracted results using default Q-vector configuration
+  const bool drawPfCsJetResults = false;              // Draw PfCs jet results using defualt Q-vector configuration
   const bool drawFlowDoubleDijetResults = false;       // Draw flow jet results requiring also calo dijet in the event
   const bool drawCaloDoubleDijetResults = false;      // Draw calo jet results requiring also flow dijet in the event
   
   // Plots to be compared between files
-  const bool drawJetHadronVnFileComparison = false;
+  const bool drawJetHadronVnFileComparison = true;
   const bool drawDihadronVnFileComparison = false;
   const bool drawHadronVnFileComparison = false;
-  const bool drawJetVnFileComparison = true;
+  const bool drawJetVnFileComparison = false;
   const bool drawJetHadronYieldFileComparison = false;
   const bool drawDihadronYieldFileComparison = false;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison || drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison;
@@ -112,12 +114,16 @@ void longRangeGraphPlotter(){
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool drawRatios = false;              // Draw ratio plots for file comparison
-  const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
-  const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
+  const bool drawRatios = true;              // Draw ratio plots for file comparison
+  const bool ratioToPrevious = true;         // Instead of taking ratio to the first file, take ratio to previous file in the list
+  const bool useAlternativeMarkerSet = true; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
   const bool saveFigures = true;                     // Save the figures in a file
-  TString saveComment = "_final";              // String to be added to saved file names
+  TString saveComment = "_jetCollectionComparisonHighSubleading";              // String to be added to saved file names
+  
+  // Saving summaru plots for final plotter macro
+  const bool saveSummaryPlot = false;
+  const char* outputFileName = "flowGraphs/summaryPlot_akPfCsJet_correctionOnlyQcut2p5_2021-05-20.root";
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -231,10 +237,10 @@ void longRangeGraphPlotter(){
 //                                   {0.0886, 0.0923, 0.0957, 0.1160},
 //                                   {0.0546, 0.0556, 0.0475, 0.05}};
   
-  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and calo jets
-  double manualCorrection[3][4] = {{0.0845, 0.0828, 0.0795, 0.0642},
-                                   {0.0802, 0.0834, 0.0919, 0.0979},
-                                   {0.0512, 0.0492, 0.0490, 0.0479}};
+//  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and calo jets
+//  double manualCorrection[3][4] = {{0.0845, 0.0828, 0.0795, 0.0642},
+//                                   {0.0802, 0.0834, 0.0919, 0.0979},
+//                                   {0.0512, 0.0492, 0.0490, 0.0479}};
   
 //  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and flow jets
 //  double manualCorrection[3][4] = {{0.1087, 0.1128, 0.1180, 0.1022},
@@ -245,6 +251,11 @@ void longRangeGraphPlotter(){
 //    double manualCorrection[3][4] = {{0.1805, 0.1731, 0.1784, 0.1408},
 //                                     {0.1909, 0.1975, 0.2028, 0.2006},
 //                                     {0.1178, 0.1215, 0.1232, 0.1238}};
+  
+      // Manual corrections directly from 2.5 Q-cuts. Done with 4 % cenality shift and pfcs jets
+      double manualCorrection[3][4] = {{0.1784, 0.1716, 0.1811, 0.1528},
+                                       {0.1883, 0.1946, 0.1982, 0.2010},
+                                       {0.1182, 0.1190, 0.1209, 0.1257}};
   
 //    // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and flow jets requiring also calo dijet
 //    double manualCorrection[3][4] = {{0.0722, 0.0743, 0.0855, 0.1055},
@@ -596,18 +607,28 @@ void longRangeGraphPlotter(){
   double cmsHighPtV2Error[] = {0.0019, 0.0016, 0.0027, 0.04};
   
   // Numbers from flow jets
-  double flowJetV2Number[] = {0.0277755, 0.0614633, 0.0550086, 0.02}; // 4 % centrality shift
-  double flowJetV2Error[] = {0.00177884, 0.00111697, 0.0014466, 0.02}; // 4 % centrality shift
+  //double flowJetV2Number[] = {0.0277755, 0.0614633, 0.0550086, 0.02}; // 4 % centrality shift
+  //double flowJetV2Error[] = {0.00177884, 0.00111697, 0.0014466, 0.02}; // 4 % centrality shift
   //double flowJetV2Number[] = {0.029474, 0.0645204, 0.0598835, 0.02}; // 5 % centrality shift (4.5 % for 0-10 bin)
   //double flowJetV2Error[] = {0.00177884, 0.00111697, 0.0014466, 0.02}; // 5 % centrality shift (4.5 % for 0-10 bin)
-  double pfCsJetV2Number[] = {0.0278213, 0.0490602, 0.0456264, 0.02}; // 4 % centrality shift
-  double pfCsJetV2Error[] = {0.00141872, 0.00082865, 0.00101112, 0.02}; // 4 % centrality shift
+  double flowJetV2Number[] = {0.025417000, 0.062135500, 0.055488200, 0.02}; // 4 % centrality shift  (no fit MC, just 2.5 Q cut)
+  double flowJetV2Error[] = {0.0021964265, 0.0011193279, 0.0016713376, 0.02}; // 4 % centrality shift  (no fit MC, just 2.5 Q cut)
+  //double pfCsJetV2Number[] = {0.0278213, 0.0490602, 0.0456264, 0.02}; // 4 % centrality shift  (calo dihadron)
+  //double pfCsJetV2Error[] = {0.00141872, 0.00082865, 0.00101112, 0.02}; // 4 % centrality shift  (calo dihadron)
+  double pfCsJetV2Number[] = {0.022202000, 0.044828000, 0.043780000, 0.02}; // 4 % centrality shift  (no fit MC, just 2.5 Q cut)
+  double pfCsJetV2Error[] = {0.0022051142, 0.0011051714, 0.0016032137, 0.02}; // 4 % centrality shift  (no fit MC, just 2.5 Q cut)
   
-  double doubleDijetCaloJetNumber[] = {0.0149655, 0.038518, 0.0416287, 0.02}; // 4 % centrality shift
-  double doubleDijetCaloJetError[] = {0.00156909, 0.000762696, 0.000767619, 0.02}; // 4 % centrality shift
   
-  double doubleDijetFlowJetNumber[] = {0.0106847, 0.034092, 0.0331465, 0.02}; // 4 % centrality shift
-  double doubleDijetFlowJetError[] = {0.00156909, 0.000762696, 0.000767619, 0.02}; // 4 % centrality shift
+  
+  //double doubleDijetCaloJetNumber[] = {0.0149655, 0.038518, 0.0416287, 0.02}; // 4 % centrality shift
+  //double doubleDijetCaloJetError[] = {0.00156909, 0.000762696, 0.000767619, 0.02}; // 4 % centrality shift
+  double doubleDijetCaloJetNumber[] = {0.035750000, 0.0086330000, -0.0050535000, 0.02}; // 4 % centrality shift, high subleading jet
+  double doubleDijetCaloJetError[] = {0.00156909, 0.000762696, 0.000767619, 0.02}; // 4 % centrality shift, high subleading jet
+  
+  //double doubleDijetFlowJetNumber[] = {0.0106847, 0.034092, 0.0331465, 0.02}; // 4 % centrality shift
+  //double doubleDijetFlowJetError[] = {0.00156909, 0.000762696, 0.000767619, 0.02}; // 4 % centrality shift
+  double doubleDijetFlowJetNumber[] = {0.059872800, 0.029541000, 0.0026188000, 0.02}; // 4 % centrality shift, high subleading jet
+  double doubleDijetFlowJetError[] = {0.00156909, 0.000762696, 0.000767619, 0.02}; // 4 % centrality shift, high subleading jet
 
   
   TString legendString;
@@ -635,8 +656,8 @@ void longRangeGraphPlotter(){
   //double minZoomJetVn[] = {0.085, 0.11, 0.075, 0.05};  // Nominal
   //double maxZoomJetVn[] = {0.135, 0.16, 0.125, 0.15};  // Nominal
   
-  double minZoomJetVn[] = {0, 0, 0, 0};
-  double maxZoomJetVn[] = {0.4, 0.4, 0.4, 0.15};
+  double minZoomJetVn[] = {-0.05, -0.05, -0.05, 0};
+  double maxZoomJetVn[] = {0.28, 0.28, 0.28, 0.15};
   
   // Draw graph with all the stages leading to final jet vn visible
   if(drawGraphStages){
@@ -913,7 +934,7 @@ void longRangeGraphPlotter(){
                 legend->AddEntry(ratioGraphJetHadron[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
                 
                 if(iFile == 0){
-                  drawer->DrawGraph(ratioGraphJetHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0, 2, "Track p_{T} (GeV)", "Ratio", " ", "p");
+                  drawer->DrawGraph(ratioGraphJetHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0, 2.5, "Track p_{T} (GeV)", "Ratio", " ", "p");
                 } else {
                   ratioGraphJetHadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
                 }
@@ -1042,7 +1063,7 @@ void longRangeGraphPlotter(){
             // Point by point ratio
             if(drawRatios){
               
-              legend = new TLegend(0.23,0.7,0.53,0.9); // 0.23,0.19,0.53,0.39
+              legend = new TLegend(0.23,0.7,0.53,0.9); // 0.23,0.19,0.53,0.39  //  0.23,0.7,0.53,0.9
               legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
               legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
               
@@ -1134,9 +1155,23 @@ void longRangeGraphPlotter(){
           if(drawJetVnFileComparison){
           
             sprintf(namerY,"Jet v_{%d}",iFlow+1);
-            legend = new TLegend(0.22,0.65,0.52,0.98); // 0.2,0.7,0.5,0.9
+            legend = new TLegend(0.22,0.19,0.52,0.39); // 0.2,0.7,0.5,0.9  //  0.22,0.65,0.52,0.98
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
+            
+//            // TODO: Remove these
+//            cout << "Points below Q" << endl;
+//            for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+//              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
+//              cout << yPoint1 << endl;
+//
+//            }
+//            cout << "Points above Q" << endl;
+//            for(int iPoint = 0; iPoint < maxPtBin; iPoint++){
+//              flowGraphJet[1][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
+//              cout << yPoint1 << endl;
+//
+//            }
             
             // Do manual correction for jet v2
             if(manualSummaryCorrection){
@@ -1201,7 +1236,7 @@ void longRangeGraphPlotter(){
             // Point by point ratio
             if(drawRatios){
               
-              legend = new TLegend(0.23,0.7,0.53,0.9); // 0.23,0.19,0.53,0.39
+              legend = new TLegend(0.23,0.19,0.53,0.39); // 0.23,0.19,0.53,0.39 // 0.23,0.7,0.53,0.9
               legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
               legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
               
@@ -1234,7 +1269,7 @@ void longRangeGraphPlotter(){
                 legend->AddEntry(ratioGraphJet[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
                 
                 if(iFile == 0){
-                  drawer->DrawGraph(ratioGraphJet[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.2, 1.5, "Track p_{T} (GeV)", "Ratio", " ", "p");
+                  drawer->DrawGraph(ratioGraphJet[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0, 3, "Track p_{T} (GeV)", "Ratio", " ", "p");
                 } else {
                   ratioGraphJet[iFile][iAsymmetry][iCentrality]->Draw("p,same");
                 }
@@ -1601,10 +1636,22 @@ void longRangeGraphPlotter(){
       } // Asymmetry loop
     } // Flow component loop
     
-    // For testing porposes, just draw something
-    //drawer->DrawGraph(flowSummaryJet[0][nAsymmetryBins][1], 0, 4, 0, 0.3, "Centrality", "Jet v2", " ", "p");
-    //drawer->DrawGraphCustomAxes(flowSummaryJet[0][nAsymmetryBins][1], 0, 4, 0, 0.3, "Centrality", "Jet v2", " ", "ap");
-
+    // Save the summary plots so that they can be used with the final graph plotter
+    if(saveSummaryPlot){
+      
+      // Create the output file
+      TFile *outputFile = new TFile(outputFileName,"UPDATE");
+      char histogramNamer[100];
+      
+      for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+          flowSummaryJet[1][iAsymmetry][iFlow]->Write(Form("summaryV%d%s", iFlow+1, compactAsymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+        }
+      }
+      
+      outputFile->Close();
+    } // Saving the summary plots
+    
   }
   
 }
