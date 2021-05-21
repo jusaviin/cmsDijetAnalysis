@@ -1135,7 +1135,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Normalize the Q-vector with multiplicity
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
         
-        //if(eventPlaneQ > 2.5) continue;  // 2.222 2.778 3.333
+        //if(eventPlaneQ < 2.5) continue;  // 2.222 2.778 3.333
         
       }
       
