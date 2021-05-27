@@ -1,3 +1,4 @@
+#include "LongRangeSystematicOrganizer.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "JDrawer.h"
 
 /*
@@ -12,6 +13,7 @@ void finalLongRangePlotter(){
   // Input file name for data
   TString directoryName = "flowGraphs/";
   TString inputFileName = "summaryPlot_akCaloJet_nominalCorrection_2021-05-20.root";
+  TString uncertaintyFileName = "systematicUncertainties_justTestingTwo.root";
   
   // Text to be put into legend for the input graphs
   const char* legendText = "Nominal calo jets";
@@ -28,7 +30,7 @@ void finalLongRangePlotter(){
   const bool drawCmsHigtPtV2 = true;
   
   // Save the final plots
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "";
   
   // =========== //
@@ -36,10 +38,12 @@ void finalLongRangePlotter(){
   // =========== //
   
   TGraphErrors *jetVnGraph[maxVn];
+  TGraphErrors *jetVnUncertainty[maxVn];
   
   // Initialize the graphs to NULL
   for(int iFlow = 0; iFlow < maxVn; iFlow++){
     jetVnGraph[iFlow] = NULL;
+    jetVnUncertainty[iFlow] = NULL;
   }
   
   // Open input file for reading and read graphs from it
@@ -55,6 +59,19 @@ void finalLongRangePlotter(){
     }
   }
   
+  // Read the systematic uncertainty graphs
+  TFile *uncertaintyFile = TFile::Open(directoryName+uncertaintyFileName);
+  LongRangeSystematicOrganizer *uncertaintyOrganizer = new LongRangeSystematicOrganizer(uncertaintyFile);
+  
+  for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+    jetVnUncertainty[iFlow] = uncertaintyOrganizer->GetLongRangeSystematicUncertainty(iFlow);
+    
+    // If the graph we wanted to load does not exist, inform the user and end program
+    if(jetVnUncertainty[iFlow] == NULL){
+      cout << "Hey dude! The file: " << directoryName.Data() << uncertaintyFileName.Data() << " does not contain uncertainties for " << Form("v%d", iFlow+1) <<  "." << endl;
+      cout << "No uncertainties can be plotted." << endl;
+    }
+  }
   
   // ===================== //
   // Previous measurements //
@@ -100,12 +117,31 @@ void finalLongRangePlotter(){
   
   // Draw the graphs for selected flow components
   TLegend *legend;
+  double errorY;
   
   for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
     legend = new TLegend(0.2,0.7,0.5,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
     
-    drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, 0, 0.1, "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
+    // Set the style for the jet vn values
+    jetVnGraph[iFlow]->SetMarkerStyle(kFullCircle);
+    jetVnGraph[iFlow]->SetMarkerColor(kBlue);
+    
+    if(jetVnUncertainty[iFlow] != NULL){
+      
+      // Set the style for uncertainties
+      for(int iCentrality; iCentrality < jetVnUncertainty[iFlow]->GetN(); iCentrality++){
+        errorY = jetVnUncertainty[iFlow]->GetErrorY(iCentrality);
+        jetVnUncertainty[iFlow]->SetPointError(iCentrality, 0.1, errorY);
+      }
+      jetVnUncertainty[iFlow]->SetFillColorAlpha(kBlue, 0.3);
+      drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, 0, 0.1, "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "a,e2");
+      
+      jetVnGraph[iFlow]->Draw("p,same");
+    } else {
+      drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, 0, 0.1, "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
+    }
+    
     legend->AddEntry(jetVnGraph[iFlow], legendText, "p");
     
     if(iFlow == 1 && drawAtlasJetV2){
