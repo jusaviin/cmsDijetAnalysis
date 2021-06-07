@@ -12,26 +12,32 @@ void finalLongRangePlotter(){
   
   // Input file name for data
   TString directoryName = "flowGraphs/";
-  TString inputFileName = "summaryPlot_akCaloJet_nominalCorrection_2021-05-20.root";
-  TString uncertaintyFileName = "systematicUncertainties_justTestingTwo.root";
+  TString inputFileName = "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root";
+  // summaryPlot_akCaloJet_nominalCorrection_2021-05-20.root
+  // summaryPlot_akCaloJet_averageCorrection_2021-06-01.root
+  // summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root
+  TString uncertaintyFileName = "systematicUncertainties_justTesting_finalCorrection.root";
+  // systematicUncertainties_justTesting.root
+  // systematicUncertainties_justTesting_averageCorrection.root
+  // systematicUncertainties_justTesting_finalCorrection.root
   
   // Text to be put into legend for the input graphs
-  const char* legendText = "Nominal calo jets";
+  const char* legendText = "This analysis";
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 2;     // First drawn flow component
-  const int lastDrawnVn = 2;      // Last drawn flow component
+  const int firstDrawnVn = 3;     // First drawn flow component
+  const int lastDrawnVn = 3;      // Last drawn flow component
   
   // Define if previous results should be included in the plot
   const bool drawAtlasJetV2 = true;
   const bool drawCmsHigtPtV2 = true;
   
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "";
+  const bool saveFigures = true;
+  TString saveComment = "_initialUncertainties";
   
   // =========== //
   // Read graphs //
@@ -119,6 +125,12 @@ void finalLongRangePlotter(){
   TLegend *legend;
   double errorY;
   
+  double minZoom[] = {0,0,-0.03,0};
+  double maxZoom[] = {0.1,0.1,0.03,0.1};
+  
+  TLine *zeroLine = new TLine(0.75,0,3.25,0);
+  zeroLine->SetLineStyle(2);
+  
   for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
     legend = new TLegend(0.2,0.7,0.5,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
@@ -135,12 +147,14 @@ void finalLongRangePlotter(){
         jetVnUncertainty[iFlow]->SetPointError(iCentrality, 0.1, errorY);
       }
       jetVnUncertainty[iFlow]->SetFillColorAlpha(kBlue, 0.3);
-      drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, 0, 0.1, "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "a,e2");
+      drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "a,e2");
       
       jetVnGraph[iFlow]->Draw("p,same");
     } else {
-      drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, 0, 0.1, "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
+      drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
     }
+    
+    zeroLine->Draw();
     
     legend->AddEntry(jetVnGraph[iFlow], legendText, "p");
     
