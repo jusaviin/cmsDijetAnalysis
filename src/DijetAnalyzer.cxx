@@ -1109,11 +1109,11 @@ void DijetAnalyzer::RunAnalysis(){
             trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
             //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
             
-            //if(TMath::Abs(trackEta) > 0.75) continue;
-            if(TMath::Abs(trackEta) > 2) continue;
+            if(TMath::Abs(trackEta) > 0.75) continue;
+            //if(TMath::Abs(trackEta) > 2) continue;
             if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
-            //if(trackPt > 3) continue;
-            if(trackPt > 5) continue;
+            if(trackPt > 3) continue;
+            //if(trackPt > 5) continue;
             
             eventPlaneQx += TMath::Cos(2*(trackPhi));
             eventPlaneQy += TMath::Sin(2*(trackPhi));
@@ -1135,7 +1135,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Normalize the Q-vector with multiplicity
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
         
-        //if(eventPlaneQ < 2.5) continue;  // 2.222 2.778 3.333
+        if(eventPlaneQ > 2) continue;  // 2.222 2.778 3.333
         
       }
       

@@ -16,11 +16,11 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_qVectorBelow2p8";
+  const char* qVectorTag = "_qVectorAbove3p3";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root";
+  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akPfCsJet_onlyRegular_4pCentShift_improvisedMixing_subeNon0_noQcut_noCorrections_processed_2021-04-14.root";
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
@@ -39,7 +39,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_minBias_5eventMixedFromCaloDijet_noCorrections_processed_2021-04-07.root";
+  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_noCorrections_processed_2021-02-26.root";
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
@@ -126,9 +126,9 @@ void prepareFinalLongRangeGraphs(){
   
   // Correlation type is kTrackInclusiveJet for minimum bias and kTrackLeadingJet for all else
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
-  const int correlationTypeDihadron = DijetHistogramManager::kTrackInclusiveJet; // kTrackLeadingJet kTrackInclusiveJet
+  const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_fixedJEC_minBiasDihadron_correctedJetHadron_correctedDihadron_2021-05-26.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root";
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
