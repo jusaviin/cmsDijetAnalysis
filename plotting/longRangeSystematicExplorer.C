@@ -12,7 +12,7 @@ void longRangeSystematicExplorer(){
   
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
-  TString uncertaintyFileName = "systematicUncertainties_justTesting.root";
+  TString uncertaintyFileName = "systematicUncertainties_justTestingWithFun_finalCorrection.root";
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
@@ -28,7 +28,7 @@ void longRangeSystematicExplorer(){
   
   // Save the final plots
   const bool saveFigures = false;
-  TString saveComment = "";
+  TString saveComment = "_initialCheck";
   
   // =========== //
   // Read graphs //
@@ -83,8 +83,8 @@ void longRangeSystematicExplorer(){
       for(int iUncertainty = 0; iUncertainty < LongRangeSystematicOrganizer::knUncertaintySources; iUncertainty++){
         
         // Change the bin labels to refer to different sources of uncertainty
-        systematicIllustrationAbsolute[iFlow][iCentrality]->GetXaxis()->ChangeLabel(iUncertainty+1, 315, -1, -1, -1, -1, uncertaintyOrganizer->GetLongRangeUncertaintyName(iUncertainty));
-        systematicIllustrationRelative[iFlow][iCentrality]->GetXaxis()->ChangeLabel(iUncertainty+1, 315, -1, -1, -1, -1, uncertaintyOrganizer->GetLongRangeUncertaintyName(iUncertainty));
+        systematicIllustrationAbsolute[iFlow][iCentrality]->GetXaxis()->ChangeLabel(iUncertainty+1, 315, -1, -1, -1, -1, uncertaintyOrganizer->GetUncertaintyAxisName(iUncertainty));
+        systematicIllustrationRelative[iFlow][iCentrality]->GetXaxis()->ChangeLabel(iUncertainty+1, 315, -1, -1, -1, -1, uncertaintyOrganizer->GetUncertaintyAxisName(iUncertainty));
         
       } // Uncertainty loop
     } // Flow component loop
@@ -116,7 +116,13 @@ void longRangeSystematicExplorer(){
   
   // Setup the drawer for the uncertainty sources
   JDrawer *drawer = new JDrawer();
-  drawer->SetCanvasSize(1000,500);
+  drawer->SetCanvasSize(1000,600);
+  drawer->SetLeftMargin(0.1);
+  drawer->SetRightMargin(0.01);
+  drawer->SetBottomMargin(0.3);
+  drawer->SetTitleOffsetY(0.8);
+  drawer->SetLabelOffsetX(0.09);
+  drawer->SetTitleOffsetX(2.8);
   drawer->SetNDivisionsX(100 + LongRangeSystematicOrganizer::knUncertaintySources);
   
   TLegend *legend;
