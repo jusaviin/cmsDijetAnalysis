@@ -87,8 +87,12 @@ TGraphErrors* LongRangeSystematicOrganizer::GetLongRangeSystematicUncertainty(co
   return fLongRangeUncertaintyGraph[iUncertainty][iFlow][iAsymmetry];
 }
 
-
 // Getter for a name for the source of long range uncertainty
 TString LongRangeSystematicOrganizer::GetLongRangeUncertaintyName(const int iUncertainty) const{
   return fLongRangeUncertaintyName[iUncertainty];
+}
+
+// Getter for an axis name for the source of long range uncertainty
+TString LongRangeSystematicOrganizer::GetUncertaintyAxisName(const int iUncertainty) const{
+  return fUncertaintyAxisName[iUncertainty];
 }
