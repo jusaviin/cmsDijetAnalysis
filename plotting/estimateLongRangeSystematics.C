@@ -1,210 +1,11 @@
 #include "LongRangeSystematicOrganizer.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "JDrawer.h"
 
-/*
- * Function for checking if two values are within statistical uncertainties
- *
- *  double nominalValue = Nominal jet vn value to be checked agains
- *  double comparisonValue = Jet vn value to be compared with the nominal
- *  double nominalError = Statistical uncertainty of the nominal vn value
- *  double comparisonError = Statistical uncertainty of the jet vn value compared with the nominal
- *
- *  return: True if the two values are within statistical uncertainties, false if not
- */
-bool isWithinStatisticalErrors(double nominalValue, double comparisonValue, double nominalError, double comparisonError){
-  return TMath::Abs(nominalValue-comparisonValue) - (nominalError + comparisonError) < 0;
-}
-
-/*
- * Function for finding the realtive and absolute difference of points in two graphs
- *
- *  TGraphErrors *nominalGraph = Graph containing nominal values
- *  TGraphErrors *comparisonGraph[] = Array of graphs containing comparison values
- *  const int nComparisonGraphs = Number of comparison graphs in the array
- *  const int iPoint = Index of the point that is compared
- *
- *  return: Tuple containing the absolute uncertainty, the relative uncertainty and information if the difference in within statistical uncertainites
- *
- */
-std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, const int iPoint){
-  
-  // Helper variables for reading points from graphs
-  double nominalX, nominalY, nominalYerror;
-  double comparisonX, comparisonY, comparisonYerror;
-  double currentUncertainty, relativeUncertainty;
-  double absoluteUncertainty = 0;
-  int maxErrorIndex;
-  bool isInsignificant;
-  
-  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
-    
-    nominalGraph->GetPoint(iPoint, nominalX, nominalY);
-    nominalYerror = nominalGraph->GetErrorY(iPoint);
-    comparisonGraph[iComparison]->GetPoint(iPoint, comparisonX, comparisonY);
-    comparisonYerror = comparisonGraph[iComparison]->GetErrorY(iPoint);
-    
-    currentUncertainty = TMath::Abs(nominalY-comparisonY);
-    
-    if(currentUncertainty > absoluteUncertainty){
-      absoluteUncertainty = currentUncertainty;
-      relativeUncertainty = TMath::Abs(1 - comparisonY/nominalY);
-      maxErrorIndex = iComparison;
-    }
-    
-  } // Comparison graph loop
-  
-  comparisonGraph[maxErrorIndex]->GetPoint(iPoint, comparisonX, comparisonY);
-  comparisonYerror = comparisonGraph[maxErrorIndex]->GetErrorY(iPoint);
-  
-  // Check if nominal and comparisonv2 are within statistical errors
-  isInsignificant = isWithinStatisticalErrors(nominalY, comparisonY, nominalYerror, comparisonYerror);
-  
-  // Return the uncertainties and the information whether the numbers are within statistical uncertainties
-  return std::make_tuple(absoluteUncertainty,relativeUncertainty,isInsignificant);
-  
-}
-
-/*
- * Function for finding the realtive and absolute difference of points in two graphs
- *
- *  TGraphErrors *nominalGraph = Graph containing nominal values
- *  TGraphErrors *comparisonGraph = Graph containing comparison values
- *  const int iPoint = Index of the point that is compared
- *
- *  return: Tuple containing the absolute uncertainty, the relative uncertainty and information if the difference in within statistical uncertainites
- *
- */
-std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, const int iPoint){
-  
-  // Enclose the single graph to an array and use the difference finder for graph array
-  TGraphErrors *comparisonArray[1] = {comparisonGraph};
-  return findTheDifference(nominalGraph, comparisonArray, 1, iPoint);
-  
-}
-
-/*
- * Draw plots illustrating how systematic uncertainties are estimated form a certain source
- *
- *  JDrawer *drawer = JDrawer doing the dirty work in drawing
- *  TGraphErrors *nominalGraph = Graph containing nominal results
- *  TGraphErrors *comparisonGraph[] = Array of graphs containing the graphs compared with the nominal
- *  const int nComparisonGraphs = Number of comparison graphs in the array
- *  TString comparisonLegend[] = An array of strings describing each comparison graphs
- *  const int iFlow = Index of the plotted flow component
- *  TString plotName = String added to saved plots. If left empty, the plots are not saved into files.
- */
-void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName = ""){
-  
-  TLegend *legend = new TLegend(0.23,0.84-nComparisonGraphs*0.06,0.53,0.9);
-  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-  const int markers[] = {kFullDiamond, kFullDoubleDiamond, kFullCross, kFullFourTrianglesPlus, kFullSquare, kFullStar};
-  const int colors[] = { kBlue, kRed, kGreen+3, kMagenta, kCyan, kBlack, kViolet};
-  
-  // Zooming ranges for different flow components
-  double minZoom[] = {0,0,-0.03,0};
-  double maxZoom[] = {0.1,0.1,0.03,0.1};
-  
-  TLine *zeroLine = new TLine(0.75,0,3.25,0);
-  zeroLine->SetLineStyle(2);
-  
-  // Draw the nominal graph to the canvas
-  nominalGraph->SetMarkerStyle(kFullCircle);
-  nominalGraph->SetMarkerSize(1.3);
-  nominalGraph->SetMarkerColor(kBlack);
-  drawer->DrawGraphCustomAxes(nominalGraph, 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
-  legend->AddEntry(nominalGraph, "Nominal result", "p");
-  
-  // Draw the comparison graphs to the same
-  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
-    comparisonGraph[iComparison]->SetMarkerStyle(markers[iComparison]);
-    comparisonGraph[iComparison]->SetMarkerSize(1.3);
-    comparisonGraph[iComparison]->SetMarkerColor(colors[iComparison]);
-    comparisonGraph[iComparison]->Draw("p,same");
-    legend->AddEntry(comparisonGraph[iComparison], comparisonLegend[iComparison], "p");
-  }
-  
-  if(iFlow == 2) zeroLine->Draw();
-  legend->Draw();
-  
-  // If a plot name is given, save the plot in a file
-  if(plotName != ""){
-    gPad->GetCanvas()->SaveAs(Form("figures/systematicUncertaintyJetV%d_%s.pdf", iFlow+1, plotName.Data()));
-  }
-  
-  // Calculate ratios between nominal and comparison graphs
-  TGraphErrors *ratioGraph[nComparisonGraphs];
-  double xPoint1, yPoint1, xPoint2, yPoint2, yError1, yError2, ratioValue, combinedError;
-  TString binLabels[] = {"0-10%"," ","10-30%"," ","30-50%"," ","50-90%"};
-  
-  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
-    ratioGraph[iComparison] = (TGraphErrors*) comparisonGraph[iComparison]->Clone(Form("ratio_%s", comparisonLegend[iComparison].Data()));
-    
-    for(int iPoint = 0; iPoint < nominalGraph->GetN(); iPoint++){
-      
-      nominalGraph->GetPoint(iPoint, xPoint1, yPoint1);
-      yError1 = nominalGraph->GetErrorY(iPoint);
-      comparisonGraph[iComparison]->GetPoint(iPoint, xPoint2, yPoint2);
-      yError2 = comparisonGraph[iComparison]->GetErrorY(iPoint);
-      
-      ratioValue = yPoint2 / yPoint1;
-      combinedError = TMath::Sqrt(TMath::Power(yError2/yPoint1,2) + TMath::Power((yPoint2*yError1)/(yPoint1*yPoint1),2));
-      ratioGraph[iComparison]->SetPoint(iPoint,xPoint1,ratioValue);
-      ratioGraph[iComparison]->SetPointError(iPoint, 0, combinedError);
-      
-    } // Point loop
-    
-    // Set the bin labels for x-axis
-    for(int iPoint = 0; iPoint < nominalGraph->GetN()*2; iPoint++){
-      ratioGraph[iComparison]->GetXaxis()->ChangeLabel(iPoint+1,-1,-1,-1,-1,-1,binLabels[iPoint]);
-    }
-    
-  } // Comparison graph loop
-    
-  // Draw the ratio plots
-  TLine *oneLine = new TLine(0.75,1,3.25,1);
-  oneLine->SetLineStyle(2);
-  
-  legend = new TLegend(0.25,0.9-nComparisonGraphs*0.06,0.55,0.9);
-  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-  
-  // Zooming options for different flow components
-  double minZoomRatio[] = {0,0.65,0,0};
-  double maxZoomRatio[] = {2,1.35,2,2};
-  
-  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
-    if(iComparison == 0){
-      drawer->DrawGraphCustomAxes(ratioGraph[iComparison], 0, 4, minZoomRatio[iFlow], maxZoomRatio[iFlow], "Centrality", Form("Jet v_{%d} ratio", iFlow+1), " ", "ap");
-    } else {
-      ratioGraph[iComparison]->Draw("p,same");
-    }
-    legend->AddEntry(ratioGraph[iComparison], Form("%s / Nominal",comparisonLegend[iComparison].Data()), "p");
-  }
-  
-  oneLine->Draw();
-  legend->Draw();
-  
-  // If a plot name is given, save the plot in a file
-  if(plotName != ""){
-    gPad->GetCanvas()->SaveAs(Form("figures/systematicUncertaintyJetV%dRatio_%s.pdf", iFlow+1, plotName.Data()));
-  }
-}
-
-/*
- * Draw plots illustrating how systematic uncertainties are estimated form a certain source
- *
- *  JDrawer *drawer = JDrawer doing the dirty work in drawing
- *  TGraphErrors *nominalGraph = Graph containing nominal results
- *  TGraphErrors *comparisonGraph = The graphs compared with the nominal one
- *  const int nComparisonGraphs = Number of comparison graphs in the array
- *  TString comparisonLegend = A strings describing the comparison graph
- *  const int iFlow = Index of the plotted flow component
- *  TString plotName = String added to saved plots. If left empty, the plots are not saved into files.
- */
-void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, TString comparisonLegend, const int iFlow, TString plotName = ""){
-  TGraphErrors *comparisonGraphArray[1] = {comparisonGraph};
-  TString comparisonLegendArray[1] = {comparisonLegend};
-  drawIllustratingPlots(drawer, nominalGraph, comparisonGraphArray, 1, comparisonLegendArray, iFlow, plotName);
-}
+// Function definitions. Implementations after the main macro.
+std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, const int iPoint);
+std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, const int iPoint);
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName = "");
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, TString comparisonLegend, const int iFlow, TString plotName = "");
 
 /*
  * Macro for estimating systematic uncertainties for long range correlation results
@@ -669,4 +470,209 @@ void estimateLongRangeSystematics(){
     } // vn loop
     
   } // Printing uncertainties
+}
+
+/*
+ * Function for checking if two values are within statistical uncertainties
+ *
+ *  double nominalValue = Nominal jet vn value to be checked agains
+ *  double comparisonValue = Jet vn value to be compared with the nominal
+ *  double nominalError = Statistical uncertainty of the nominal vn value
+ *  double comparisonError = Statistical uncertainty of the jet vn value compared with the nominal
+ *
+ *  return: True if the two values are within statistical uncertainties, false if not
+ */
+bool isWithinStatisticalErrors(double nominalValue, double comparisonValue, double nominalError, double comparisonError){
+  return TMath::Abs(nominalValue-comparisonValue) - (nominalError + comparisonError) < 0;
+}
+
+/*
+ * Function for finding the realtive and absolute difference of points in two graphs
+ *
+ *  TGraphErrors *nominalGraph = Graph containing nominal values
+ *  TGraphErrors *comparisonGraph[] = Array of graphs containing comparison values
+ *  const int nComparisonGraphs = Number of comparison graphs in the array
+ *  const int iPoint = Index of the point that is compared
+ *
+ *  return: Tuple containing the absolute uncertainty, the relative uncertainty and information if the difference in within statistical uncertainites
+ *
+ */
+std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, const int iPoint){
+  
+  // Helper variables for reading points from graphs
+  double nominalX, nominalY, nominalYerror;
+  double comparisonX, comparisonY, comparisonYerror;
+  double currentUncertainty, relativeUncertainty;
+  double absoluteUncertainty = 0;
+  int maxErrorIndex;
+  bool isInsignificant;
+  
+  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
+    
+    nominalGraph->GetPoint(iPoint, nominalX, nominalY);
+    nominalYerror = nominalGraph->GetErrorY(iPoint);
+    comparisonGraph[iComparison]->GetPoint(iPoint, comparisonX, comparisonY);
+    comparisonYerror = comparisonGraph[iComparison]->GetErrorY(iPoint);
+    
+    currentUncertainty = TMath::Abs(nominalY-comparisonY);
+    
+    if(currentUncertainty > absoluteUncertainty){
+      absoluteUncertainty = currentUncertainty;
+      relativeUncertainty = TMath::Abs(1 - comparisonY/nominalY);
+      maxErrorIndex = iComparison;
+    }
+    
+  } // Comparison graph loop
+  
+  comparisonGraph[maxErrorIndex]->GetPoint(iPoint, comparisonX, comparisonY);
+  comparisonYerror = comparisonGraph[maxErrorIndex]->GetErrorY(iPoint);
+  
+  // Check if nominal and comparisonv2 are within statistical errors
+  isInsignificant = isWithinStatisticalErrors(nominalY, comparisonY, nominalYerror, comparisonYerror);
+  
+  // Return the uncertainties and the information whether the numbers are within statistical uncertainties
+  return std::make_tuple(absoluteUncertainty,relativeUncertainty,isInsignificant);
+  
+}
+
+/*
+ * Function for finding the realtive and absolute difference of points in two graphs
+ *
+ *  TGraphErrors *nominalGraph = Graph containing nominal values
+ *  TGraphErrors *comparisonGraph = Graph containing comparison values
+ *  const int iPoint = Index of the point that is compared
+ *
+ *  return: Tuple containing the absolute uncertainty, the relative uncertainty and information if the difference in within statistical uncertainites
+ *
+ */
+std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, const int iPoint){
+  
+  // Enclose the single graph to an array and use the difference finder for graph array
+  TGraphErrors *comparisonArray[1] = {comparisonGraph};
+  return findTheDifference(nominalGraph, comparisonArray, 1, iPoint);
+  
+}
+
+/*
+ * Draw plots illustrating how systematic uncertainties are estimated form a certain source
+ *
+ *  JDrawer *drawer = JDrawer doing the dirty work in drawing
+ *  TGraphErrors *nominalGraph = Graph containing nominal results
+ *  TGraphErrors *comparisonGraph[] = Array of graphs containing the graphs compared with the nominal
+ *  const int nComparisonGraphs = Number of comparison graphs in the array
+ *  TString comparisonLegend[] = An array of strings describing each comparison graphs
+ *  const int iFlow = Index of the plotted flow component
+ *  TString plotName = String added to saved plots. If left empty, the plots are not saved into files.
+ */
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName = ""){
+  
+  TLegend *legend = new TLegend(0.23,0.84-nComparisonGraphs*0.06,0.53,0.9);
+  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+  const int markers[] = {kFullDiamond, kFullDoubleDiamond, kFullCross, kFullFourTrianglesPlus, kFullSquare, kFullStar};
+  const int colors[] = { kBlue, kRed, kGreen+3, kMagenta, kCyan, kBlack, kViolet};
+  
+  // Zooming ranges for different flow components
+  double minZoom[] = {0,0,-0.03,0};
+  double maxZoom[] = {0.1,0.1,0.03,0.1};
+  
+  TLine *zeroLine = new TLine(0.75,0,3.25,0);
+  zeroLine->SetLineStyle(2);
+  
+  // Draw the nominal graph to the canvas
+  nominalGraph->SetMarkerStyle(kFullCircle);
+  nominalGraph->SetMarkerSize(1.3);
+  nominalGraph->SetMarkerColor(kBlack);
+  drawer->DrawGraphCustomAxes(nominalGraph, 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
+  legend->AddEntry(nominalGraph, "Nominal result", "p");
+  
+  // Draw the comparison graphs to the same
+  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
+    comparisonGraph[iComparison]->SetMarkerStyle(markers[iComparison]);
+    comparisonGraph[iComparison]->SetMarkerSize(1.3);
+    comparisonGraph[iComparison]->SetMarkerColor(colors[iComparison]);
+    comparisonGraph[iComparison]->Draw("p,same");
+    legend->AddEntry(comparisonGraph[iComparison], comparisonLegend[iComparison], "p");
+  }
+  
+  if(iFlow == 2) zeroLine->Draw();
+  legend->Draw();
+  
+  // If a plot name is given, save the plot in a file
+  if(plotName != ""){
+    gPad->GetCanvas()->SaveAs(Form("figures/systematicUncertaintyJetV%d_%s.pdf", iFlow+1, plotName.Data()));
+  }
+  
+  // Calculate ratios between nominal and comparison graphs
+  TGraphErrors *ratioGraph[nComparisonGraphs];
+  double xPoint1, yPoint1, xPoint2, yPoint2, yError1, yError2, ratioValue, combinedError;
+  TString binLabels[] = {"0-10%"," ","10-30%"," ","30-50%"," ","50-90%"};
+  
+  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
+    ratioGraph[iComparison] = (TGraphErrors*) comparisonGraph[iComparison]->Clone(Form("ratio_%s", comparisonLegend[iComparison].Data()));
+    
+    for(int iPoint = 0; iPoint < nominalGraph->GetN(); iPoint++){
+      
+      nominalGraph->GetPoint(iPoint, xPoint1, yPoint1);
+      yError1 = nominalGraph->GetErrorY(iPoint);
+      comparisonGraph[iComparison]->GetPoint(iPoint, xPoint2, yPoint2);
+      yError2 = comparisonGraph[iComparison]->GetErrorY(iPoint);
+      
+      ratioValue = yPoint2 / yPoint1;
+      combinedError = TMath::Sqrt(TMath::Power(yError2/yPoint1,2) + TMath::Power((yPoint2*yError1)/(yPoint1*yPoint1),2));
+      ratioGraph[iComparison]->SetPoint(iPoint,xPoint1,ratioValue);
+      ratioGraph[iComparison]->SetPointError(iPoint, 0, combinedError);
+      
+    } // Point loop
+    
+    // Set the bin labels for x-axis
+    for(int iPoint = 0; iPoint < nominalGraph->GetN()*2; iPoint++){
+      ratioGraph[iComparison]->GetXaxis()->ChangeLabel(iPoint+1,-1,-1,-1,-1,-1,binLabels[iPoint]);
+    }
+    
+  } // Comparison graph loop
+    
+  // Draw the ratio plots
+  TLine *oneLine = new TLine(0.75,1,3.25,1);
+  oneLine->SetLineStyle(2);
+  
+  legend = new TLegend(0.25,0.9-nComparisonGraphs*0.06,0.55,0.9);
+  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+  
+  // Zooming options for different flow components
+  double minZoomRatio[] = {0,0.65,0,0};
+  double maxZoomRatio[] = {2,1.35,2,2};
+  
+  for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
+    if(iComparison == 0){
+      drawer->DrawGraphCustomAxes(ratioGraph[iComparison], 0, 4, minZoomRatio[iFlow], maxZoomRatio[iFlow], "Centrality", Form("Jet v_{%d} ratio", iFlow+1), " ", "ap");
+    } else {
+      ratioGraph[iComparison]->Draw("p,same");
+    }
+    legend->AddEntry(ratioGraph[iComparison], Form("%s / Nominal",comparisonLegend[iComparison].Data()), "p");
+  }
+  
+  oneLine->Draw();
+  legend->Draw();
+  
+  // If a plot name is given, save the plot in a file
+  if(plotName != ""){
+    gPad->GetCanvas()->SaveAs(Form("figures/systematicUncertaintyJetV%dRatio_%s.pdf", iFlow+1, plotName.Data()));
+  }
+}
+
+/*
+ * Draw plots illustrating how systematic uncertainties are estimated form a certain source
+ *
+ *  JDrawer *drawer = JDrawer doing the dirty work in drawing
+ *  TGraphErrors *nominalGraph = Graph containing nominal results
+ *  TGraphErrors *comparisonGraph = The graphs compared with the nominal one
+ *  const int nComparisonGraphs = Number of comparison graphs in the array
+ *  TString comparisonLegend = A strings describing the comparison graph
+ *  const int iFlow = Index of the plotted flow component
+ *  TString plotName = String added to saved plots. If left empty, the plots are not saved into files.
+ */
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, TString comparisonLegend, const int iFlow, TString plotName = ""){
+  TGraphErrors *comparisonGraphArray[1] = {comparisonGraph};
+  TString comparisonLegendArray[1] = {comparisonLegend};
+  drawIllustratingPlots(drawer, nominalGraph, comparisonGraphArray, 1, comparisonLegendArray, iFlow, plotName);
 }
