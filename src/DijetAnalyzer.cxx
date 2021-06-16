@@ -1056,49 +1056,53 @@ void DijetAnalyzer::RunAnalysis(){
         if(fDoEventPlane){ //
           
           centralityBin = 0;
-          if(centrality < 10){
+          if(centrality < fCard->Get("CentralityBinEdges",2)){
             centralityBin = 0;
-          } else if(centrality < 30) {
+          } else if(centrality < fCard->Get("CentralityBinEdges",3)) {
             centralityBin = 1;
-          } else if(centrality < 50){
+          } else if(centrality < fCard->Get("CentralityBinEdges",4)){
             centralityBin = 2;
           } else {
             centralityBin = 3;
           }
           
-          // Manual calculation for Q-vector
-          // Loop over all track in the event
-          nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
-          for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+          // Manual calculation for Q-vector in MC
+          if(fDataType == ForestReader::kPbPbMC || fDataType == ForestReader::kPpMC){
             
-            // Check that all the track cuts are passed
-            //if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
+            // Loop over all track in the event
+            nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+            for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+              
+              // Check that all the track cuts are passed
+              //if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
+              
+              // Get the track information
+              trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+              trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+              trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+              //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+              
+              if(TMath::Abs(trackEta) > 0.75) continue;
+              if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+              if(trackPt > 3) continue;
+              
+              eventPlaneQx += TMath::Cos(2*(trackPhi));
+              eventPlaneQy += TMath::Sin(2*(trackPhi));
+              eventPlaneMultiplicity += 1;
+              
+            }
             
-            // Get the track information
-            trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
-            trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
-            trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
-            //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+            if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
+            eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
             
-            if(TMath::Abs(trackEta) > 0.75) continue;
-            if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
-            if(trackPt > 3) continue;
-            
-            eventPlaneQx += TMath::Cos(2*(trackPhi));
-            eventPlaneQy += TMath::Sin(2*(trackPhi));
-            eventPlaneMultiplicity += 1;
-            
+            // For data, read Q-vector and multiplicity directly from the forest
+          } else {
+            eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
+            eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
           }
           
-          if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
-          eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
-
-          //eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
           fHistograms->fhQvector[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
-          
-          //eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
           fHistograms->fhEventPlaneMult[centralityBin]->Fill(eventPlaneMultiplicity,fTotalEventWeight);
-          
           fHistograms->fhQvectorNorm[centralityBin]->Fill(eventPlaneQ / TMath::Sqrt(eventPlaneMultiplicity),fTotalEventWeight);
         }
       }
@@ -1550,11 +1554,11 @@ void DijetAnalyzer::RunAnalysis(){
           if(fDoEventPlane){ //
             
             centralityBin = 0;
-            if(centrality < 10){
+            if(centrality < fCard->Get("CentralityBinEdges",2)){
               centralityBin = 0;
-            } else if(centrality < 30) {
+            } else if(centrality < fCard->Get("CentralityBinEdges",3)) {
               centralityBin = 1;
-            } else if(centrality < 50){
+            } else if(centrality < fCard->Get("CentralityBinEdges",4)){
               centralityBin = 2;
             } else {
               centralityBin = 3;
