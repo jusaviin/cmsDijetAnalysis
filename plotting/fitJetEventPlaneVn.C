@@ -4,27 +4,27 @@
 void fitJetEventPlaneVn(){
 
   // Open the data files
-  const int nFiles = 2;
+  const int nFiles = 4;
   TFile *inputFile[nFiles];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_dijetEvents_2021-05-05.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_fakeV2_dijetEvents_2021-05-05.root");
-  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_flowJets_genEventPlaneRecoDijet_2021-04-28.root");
-  if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbData2018_akFlowJet_wtaAxis_2021-04-12.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akCaloJet_dijetEvents_2021-04-19.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akPfCsJet_dijetEvents_2021-04-19.root");
+  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_akFlowJet_dijetEvents_2021-04-19.root");
+  if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_dijetEvents_2021-05-05.root");
   
-  TString jetTypeString[4] = {"Gen jets","Fake v_{2} for gen jets","PFCS flow jet","PFCS flow jet > 120 GeV"};
+  TString jetTypeString[4] = {"Calo jet","PFCS jet","PFCS flow jet","Gen jet"};
   
   double centralityBinBorders[] = {0,10,30,50,90};
   
   bool matchYields = true;  // For comparison purposes, match the average yields of different jet collections
   int referenceYield = 1;   // Choose which jet collection to use as basis for yield matching
   
-  bool drawEventPlaneDifference = true;  // Draw difference between manual event plane calculation to the one read from forest
+  bool drawEventPlaneDifference = false;  // Draw difference between manual event plane calculation to the one read from forest
   
   bool drawAllInSamePlot = true;  // True: Draw all three jet collection to the same plot. False: Use separate plots
   bool hideFit = true;
   
   bool saveFigures = true;
-  TString saveComment = "_genJetManualEventPlane";
+  TString saveComment = "_genRecoComparison";
   
   // Read the histograms from the data files
   const int nCentralityBins = 4;
@@ -139,13 +139,13 @@ void fitJetEventPlaneVn(){
     compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
     
     if(drawAllInSamePlot){
-      legend = new TLegend(0.2,0.8,0.4,1);
+      legend = new TLegend(0.2,0.68,0.4,1);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
       legend->AddEntry((TObject*)0, Form("%s, manual event plane calculation",centralityString.Data()), "");
     }
     
     maxYscale = jetEventPlaneMidRapidity[referenceYield][0][iCentrality]->GetMaximum();
-    maxYscale = maxYscale + 0.1*maxYscale;
+    maxYscale = maxYscale + 0.2*maxYscale; // 0.1
     minYscale = jetEventPlaneMidRapidity[referenceYield][0][iCentrality]->GetMinimum();
     minYscale = minYscale - 0.02*minYscale;
     

@@ -19,15 +19,15 @@ void longRangeSystematicExplorer(){
   const double centralityBinBorders[] = {0, 10, 30, 50, 90}; // Bin borders for centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 2;     // First drawn flow component
-  const int lastDrawnVn = 2;      // Last drawn flow component
+  const int firstDrawnVn = 3;     // First drawn flow component
+  const int lastDrawnVn = 3;      // Last drawn flow component
   
   // Choose which histograms to draw
-  const bool drawRelativeUncertainties = true;
-  const bool drawAbsoluteUncertainties = false;
+  const bool drawRelativeUncertainties = false;
+  const bool drawAbsoluteUncertainties = true;
   
   // Save the final plots
-  const bool saveFigures = false;
+  const bool saveFigures = true;
   TString saveComment = "_initialCheck";
   
   // =========== //
@@ -103,7 +103,7 @@ void longRangeSystematicExplorer(){
         
         // For the relative uncertainty, calculate the ratio between uncertainty and central value
         jetVnUncertainty[iUncertainty][iFlow]->GetPoint(iCentrality, ratioY, valueY);
-        ratioY = errorY / valueY;
+        ratioY = errorY / TMath::Abs(valueY);
         systematicIllustrationRelative[iFlow][iCentrality]->SetBinContent(iUncertainty+1,ratioY);
         
       } // Uncertainty loop
@@ -120,7 +120,7 @@ void longRangeSystematicExplorer(){
   drawer->SetLeftMargin(0.1);
   drawer->SetRightMargin(0.01);
   drawer->SetBottomMargin(0.3);
-  drawer->SetTitleOffsetY(0.8);
+  drawer->SetTitleOffsetY(0.9);
   drawer->SetLabelOffsetX(0.09);
   drawer->SetTitleOffsetX(2.8);
   drawer->SetNDivisionsX(100 + LongRangeSystematicOrganizer::knUncertaintySources);
