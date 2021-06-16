@@ -1089,7 +1089,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Variables for event plane
         eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
         eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
-        int iEventPlane = 9; // For event planes, see the big comment in ForestReader.h
+        int iEventPlane = 8; // For event planes, see the big comment in ForestReader.h
         eventPlaneQx = 0;
         eventPlaneQy = 0;
         
@@ -1135,7 +1135,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Normalize the Q-vector with multiplicity
         eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
         
-        if(eventPlaneQ > 2) continue;  // 2.222 2.778 3.333
+        //if(eventPlaneQ > 2) continue;  // 2.222 2.778 3.333
         
       }
       
@@ -1751,11 +1751,11 @@ void DijetAnalyzer::RunAnalysis(){
             //}
             
             
-            //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
-            //jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
+            jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
+            jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
             
-            jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - eventPlaneAngle;
-            jetEventPlaneDeltaPhiMidRap = eventPlaneAngle - fJetReader->GetEventPlaneAngle(8);  // Diff between manual and forest
+            //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - eventPlaneAngle;
+            //jetEventPlaneDeltaPhiMidRap = eventPlaneAngle - fJetReader->GetEventPlaneAngle(8);  // Diff between manual and forest
             
             // Transform deltaPhis to interval [-pi/2,3pi/2]
             while(jetEventPlaneDeltaPhiForwardRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += -2*TMath::Pi();}
@@ -1768,12 +1768,15 @@ void DijetAnalyzer::RunAnalysis(){
             
             // Fill the additional event plane histograms
             fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
-            fillerEventPlane[1] = eventPlaneQ;                      // Axis 1: Normalized event plane Q-vector
+            //fillerEventPlane[1] = eventPlaneQ;                      // Axis 1: Normalized event plane Q-vector
+            fillerEventPlane[1] = fJetReader->GetEventPlaneQ(8) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(8));                      // Axis 1: Normalized event plane Q-vector
             fillerEventPlane[2] = centrality;                       // Axis 2: centrality
             
             fHistograms->fhJetEventPlaneForwardRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
             
             fillerEventPlane[0] = jetEventPlaneDeltaPhiMidRap;  // Axis 0: DeltaPhi between jet and event plane
+            fillerEventPlane[1] = fJetReader->GetEventPlaneQ(9) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(9));  // Axis 1: Normalized event plane Q-vector
+
             
             fHistograms->fhJetEventPlaneMidRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
           }
