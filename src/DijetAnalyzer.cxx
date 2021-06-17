@@ -111,6 +111,11 @@ DijetAnalyzer::DijetAnalyzer() :
       fMixingPool[iVz][iHiBin].clear();
     }
   }
+  
+  // Initialize the Q-vector weight functions to NULL
+  for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
+    fQvectorWeightFunction[iCentrality] = NULL;
+  }
 }
 
 /*
@@ -218,6 +223,16 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
   //fDijetWeightFunction->SetParameters(0.683267,2.97273e-03,-6.71989e-06,6.26340e-09,1.81108,16.8066,84.4603);
+  
+  // Possibility to do Q-vector weighting
+  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol1",0,6);
+  fQvectorWeightFunction[0]->SetParameters(0.5,0.25);
+  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol1",0,6);
+  fQvectorWeightFunction[1]->SetParameters(2,-0.25);
+  fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol1",0,6);
+  fQvectorWeightFunction[2]->SetParameters(2,-0.25);
+  fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol1",0,6);
+  fQvectorWeightFunction[3]->SetParameters(2,-0.25);
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
@@ -391,6 +406,11 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
       fMixingPool[iVz][iHiBin] = in.fMixingPool[iVz][iHiBin];
     }
   }
+  
+  // Copy the Q-vector weight functions
+  for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
+    fQvectorWeightFunction[iCentrality] = in.fQvectorWeightFunction[iCentrality];
+  }
 }
 
 /*
@@ -470,6 +490,11 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
     }
   }
   
+  // Copy the Q-vector weight functions
+  for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
+    fQvectorWeightFunction[iCentrality] = in.fQvectorWeightFunction[iCentrality];
+  }
+  
   return *this;
 }
 
@@ -489,6 +514,9 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
   if(fFakeV2Function) delete fFakeV2Function;
+  for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
+    if(fQvectorWeightFunction[iCentrality]) delete fQvectorWeightFunction[iCentrality];
+  }
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
   if(fTrackReader[DijetHistograms::kMixedEvent]) delete fTrackReader[DijetHistograms::kMixedEvent];
@@ -747,6 +775,9 @@ void DijetAnalyzer::RunAnalysis(){
   // Fillers for THnSparses
   Double_t fillerJet[5];
   Double_t fillerDijet[6];
+  
+  // Q-vector weight
+  Double_t qWeight = 1;
   
   // For 2018 PbPb and 2017 pp data, we need to correct jet pT
   std::string correctionFileRelative[5] = {"jetEnergyCorrections/Spring18_ppRef5TeV_V6_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2Relative_AK4PF.txt", "jetEnergyCorrections/Spring18_ppRef5TeV_V6_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_MC_L2Relative_AK4PF.txt", "jetEnergyCorrections/Autumn18_HI_V8_DATA_L2Relative_AK4PF.txt"};
@@ -1100,6 +1131,10 @@ void DijetAnalyzer::RunAnalysis(){
             eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
             eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
           }
+          
+          // Apply Q-vector weight to the event
+          qWeight = GetQvectorWeight(eventPlaneQ, centrality);
+          fTotalEventWeight *= qWeight;
           
           fHistograms->fhQvector[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
           fHistograms->fhEventPlaneMult[centralityBin]->Fill(eventPlaneMultiplicity,fTotalEventWeight);
@@ -2362,6 +2397,61 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
   }
   return (crossSections[currentBin]-crossSections[currentBin+1])/PbPbMcEvents[currentBin];
 }
+
+/*
+ * Get a smearing factor corresponding to worsening the smearing resolution in MC by 20 %
+ * This is obtained by multiplying the MC smearing resolution by 0.666 and using this as additional
+ * smearing for the data. Smearing factor depends on jet pT and centrality.
+ *
+ *  Arguments:
+ *   Double_t qValue = Q-vector value for the event
+ *   const Double_t centrality = Centrality of the event
+ *
+ *  return: Additional smearing factor
+ */
+Double_t DijetAnalyzer::GetQvectorWeight(Double_t qValue, const Double_t centrality) const{
+  
+  // No weight for data or pp MC
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC || fDataType == ForestReader::kPbPb){
+    return 1;
+  }
+  
+  // If q-value is larger than 6, just use the weight for 6
+  if(qValue > 6) qValue = 6;
+  
+  // Find the correct centrality bin
+  Int_t centralityBin = 0;
+  if(centrality > fCard->Get("CentralityBinEdges",2)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",3)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",4)) centralityBin++;
+  
+  /*// Set the parameters to the smearing function. pp and PbPb have different smearing function parameters
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
+    // Settings for pp
+    fSmearingFunction->SetParameters(0.174881, -0.00091979, 3.50064e-06, -6.52541e-09, 4.64199e-12);
+    
+  } else {
+    
+    // Parameters for the smearing function
+    Double_t resolutionFit[4][5] = {
+      {0.451855, -0.00331992, 1.25897e-05, -2.26434e-08, 1.55081e-11},
+      {0.366326, -0.00266997, 1.04733e-05, -1.95302e-08, 1.38409e-11},
+      {0.268453, -0.00184878, 7.45201e-06, -1.43486e-08, 1.04726e-11},
+      {0.202255, -0.00114677, 4.2566e-06, -7.69286e-09, 5.32617e-12}
+    };
+    
+    for(int iParameter = 0; iParameter < 5; iParameter++){
+      // Settings for PbPb
+      
+      fSmearingFunction->SetParameter(iParameter, resolutionFit[centralityBin][iParameter]);
+    }
+  }*/
+  
+  // Read the value to return
+  return fQvectorWeightFunction[centralityBin]->Eval(qValue);
+  
+}
+
 
 /*
  * Check is a track passes the required subevent cut
