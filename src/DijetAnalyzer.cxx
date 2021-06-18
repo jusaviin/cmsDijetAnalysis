@@ -220,13 +220,13 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Possibility to do Q-vector weighting
   fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol1",0,6);
-  fQvectorWeightFunction[0]->SetParameters(0.5,0.25);
+  fQvectorWeightFunction[0]->SetParameters(2,-0.25);
   fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol1",0,6);
-  fQvectorWeightFunction[1]->SetParameters(2,-0.25);
+  fQvectorWeightFunction[1]->SetParameters(0.5,0.25);
   fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol1",0,6);
-  fQvectorWeightFunction[2]->SetParameters(2,-0.25);
+  fQvectorWeightFunction[2]->SetParameters(0.5,0.25);
   fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol1",0,6);
-  fQvectorWeightFunction[3]->SetParameters(2,-0.25);
+  fQvectorWeightFunction[3]->SetParameters(0.5,0.25);
   
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
