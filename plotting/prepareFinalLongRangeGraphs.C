@@ -39,7 +39,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_5pCentShift_improvisedMixing_noQvectorCut_onlySeagull_processed_2020-12-07.root";
+  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_newQweight_noCorrections_processed_2021-06-18_smallStats.root";
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root
@@ -89,7 +89,7 @@ void prepareFinalLongRangeGraphs(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
-  const bool cumulativePtBins = false; // True = Combine pT bins from below, False = Separate pT bins
+  const bool cumulativePtBins = true; // True = Combine pT bins from below, False = Separate pT bins
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
@@ -128,7 +128,7 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_caloJets_simpleQweight_onlyJetHadron_correctedJetHadron_correctedDihadron_2021-06-18.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_caloJets_simpleQweight_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-06-21.root";
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
