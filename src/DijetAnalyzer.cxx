@@ -225,14 +225,16 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   //fDijetWeightFunction->SetParameters(0.683267,2.97273e-03,-6.71989e-06,6.26340e-09,1.81108,16.8066,84.4603);
   
   // Possibility to do Q-vector weighting
+  Double_t maxQWeight = fCard->Get("MaxQWeight");
+  Double_t minQWeight = fCard->Get("MinQWeight");
   fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol1",0,6);
-  fQvectorWeightFunction[0]->SetParameters(2,-0.25);
+  fQvectorWeightFunction[0]->SetParameters(maxQWeight,-1*(maxQWeight-minQWeight)/6.0);
   fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol1",0,6);
-  fQvectorWeightFunction[1]->SetParameters(0.5,0.25);
+  fQvectorWeightFunction[1]->SetParameters(minQWeight,(maxQWeight-minQWeight)/6.0);
   fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol1",0,6);
-  fQvectorWeightFunction[2]->SetParameters(0.5,0.25);
+  fQvectorWeightFunction[2]->SetParameters(minQWeight,(maxQWeight-minQWeight)/6.0);
   fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol1",0,6);
-  fQvectorWeightFunction[3]->SetParameters(0.5,0.25);
+  fQvectorWeightFunction[3]->SetParameters(minQWeight,(maxQWeight-minQWeight)/6.0);
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
