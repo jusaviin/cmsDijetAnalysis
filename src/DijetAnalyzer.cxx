@@ -1135,7 +1135,7 @@ void DijetAnalyzer::RunAnalysis(){
           }
           
           // Apply Q-vector weight to the event
-          qWeight = GetQvectorWeight(eventPlaneQ, centrality);
+          qWeight = GetQvectorWeight(eventPlaneQ / TMath::Sqrt(eventPlaneMultiplicity), centrality);
           fTotalEventWeight *= qWeight;
           
           fHistograms->fhQvector[centralityBin]->Fill(eventPlaneQ,fTotalEventWeight);
