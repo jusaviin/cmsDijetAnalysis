@@ -227,14 +227,22 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Possibility to do Q-vector weighting
   Double_t maxQWeight = fCard->Get("MaxQWeight");
   Double_t minQWeight = fCard->Get("MinQWeight");
-  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol1",0,6);
-  fQvectorWeightFunction[0]->SetParameters(maxQWeight,-1*(maxQWeight-minQWeight)/6.0);
-  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol1",0,6);
-  fQvectorWeightFunction[1]->SetParameters(minQWeight,(maxQWeight-minQWeight)/6.0);
-  fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol1",0,6);
-  fQvectorWeightFunction[2]->SetParameters(minQWeight,(maxQWeight-minQWeight)/6.0);
-  fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol1",0,6);
-  fQvectorWeightFunction[3]->SetParameters(minQWeight,(maxQWeight-minQWeight)/6.0);
+  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol1",0,5);
+  fQvectorWeightFunction[0]->SetParameters(maxQWeight,-1*(maxQWeight-minQWeight)/5.0);
+  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol1",0,5);
+  fQvectorWeightFunction[1]->SetParameters(minQWeight,(maxQWeight-minQWeight)/5.0);
+  fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol1",0,5);
+  fQvectorWeightFunction[2]->SetParameters(minQWeight,(maxQWeight-minQWeight)/5.0);
+  fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol1",0,5);
+  fQvectorWeightFunction[3]->SetParameters(minQWeight,(maxQWeight-minQWeight)/5.0);
+//  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol2",0,5);
+//  fQvectorWeightFunction[0]->SetParameters(maxQWeight,0,-1*(maxQWeight-minQWeight)/25.0);
+//  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol2",0,5);
+//  fQvectorWeightFunction[1]->SetParameters(minQWeight,0,(maxQWeight-minQWeight)/25.0);
+//  fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol2",0,5);
+//  fQvectorWeightFunction[2]->SetParameters(minQWeight,0,(maxQWeight-minQWeight)/25.0);
+//  fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol2",0,5);
+//  fQvectorWeightFunction[3]->SetParameters(minQWeight,0,(maxQWeight-minQWeight)/25.0);
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
@@ -1026,6 +1034,8 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
+    Int_t maxEvent = 10000;
+    if(nEvents < maxEvent) maxEvent = nEvents;
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
       
       //************************************************
@@ -2418,8 +2428,8 @@ Double_t DijetAnalyzer::GetQvectorWeight(Double_t qValue, const Double_t central
     return 1;
   }
   
-  // If q-value is larger than 6, just use the weight for 6
-  if(qValue > 6) qValue = 6;
+  // If q-value is larger than 5, just use the weight for 5
+  if(qValue > 5) qValue = 5;
   
   // Find the correct centrality bin
   Int_t centralityBin = 0;
