@@ -6,7 +6,6 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qWeight100Max5Pol2_preprocessed_2021-06-23_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qWeight100Max5Pol2_noCorrections_processed_2021-06-23_test.root" false false -1 "data/"
 ./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qWeight10Max5Pol1_preprocessed_2021-06-23_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qWeight10Max5Pol1_noCorrections_processed_2021-06-23_test.root" false false -1 "data/"
 ./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qWeight10Max5Pol2_preprocessed_2021-06-23_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qWeight10Max5Pol2_noCorrections_processed_2021-06-23_test.root" false false -1 "data/"
 
