@@ -225,16 +225,28 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   //fDijetWeightFunction->SetParameters(0.683267,2.97273e-03,-6.71989e-06,6.26340e-09,1.81108,16.8066,84.4603);
   
   // Possibility to do Q-vector weighting
-  Double_t maxQWeight = fCard->Get("MaxQWeight");
-  Double_t minQWeight = fCard->Get("MinQWeight");
-  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol1",0,5);
-  fQvectorWeightFunction[0]->SetParameters(maxQWeight,-1*(maxQWeight-minQWeight)/5.0);
-  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol1",0,5);
-  fQvectorWeightFunction[1]->SetParameters(minQWeight,(maxQWeight-minQWeight)/5.0);
-  fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol1",0,5);
-  fQvectorWeightFunction[2]->SetParameters(minQWeight,(maxQWeight-minQWeight)/5.0);
-  fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol1",0,5);
-  fQvectorWeightFunction[3]->SetParameters(minQWeight,(maxQWeight-minQWeight)/5.0);
+  Double_t maxQWeight = fCard->Get("MaxQWeight");  // Maximum weight given to any Q-vector
+  Double_t minQWeight = fCard->Get("MinQWeight");  // Minimum weight given to any Q-vector
+  Int_t qOrder = fCard->Get("QOrder");             // Order of polynomial function used for Q-weighing
+  const char *qFormula = Form("pol%d",qOrder);
+  fQvectorWeightFunction[0] = new TF1("qVectorFun0",qFormula,0,5);
+  fQvectorWeightFunction[0]->SetParameter(0,maxQWeight);
+  fQvectorWeightFunction[0]->SetParameter(qOrder,-1*(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
+  fQvectorWeightFunction[1] = new TF1("qVectorFun1",qFormula,0,5);
+  fQvectorWeightFunction[1]->SetParameter(0,minQWeight);
+  fQvectorWeightFunction[1]->SetParameter(qOrder,(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
+  fQvectorWeightFunction[2] = new TF1("qVectorFun2",qFormula,0,5);
+  fQvectorWeightFunction[2]->SetParameter(0,minQWeight);
+  fQvectorWeightFunction[2]->SetParameter(qOrder,(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
+  fQvectorWeightFunction[3] = new TF1("qVectorFun3",qFormula,0,5);
+  fQvectorWeightFunction[3]->SetParameter(0,minQWeight);
+  fQvectorWeightFunction[3]->SetParameter(qOrder,(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
+  for(int i = 0; i < 4; i++){
+    for(int iPar = 1; iPar < qOrder; iPar++){
+      fQvectorWeightFunction[i]->SetParameter(iPar,0);
+    }
+  }
+  
 //  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol2",0,5);
 //  fQvectorWeightFunction[0]->SetParameters(maxQWeight,0,-1*(maxQWeight-minQWeight)/25.0);
 //  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol2",0,5);
@@ -1036,7 +1048,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     Int_t maxEvent = 10000;
     if(nEvents < maxEvent) maxEvent = nEvents;
-    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
+    for(Int_t iEvent = 0; iEvent < maxEvent; iEvent++){ // nEvents TODO: For speedier testing, use less events
       
       //************************************************
       //         Read basic event information

@@ -28,6 +28,7 @@ FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
 MinBias 0   # Flag for minimum bias running
 MinQWeight 0.5 # Minimum weight for the Q-vector
 MaxQWeight 3   # Maximum weight for the Q-vector
+QOrder 3       # Order of polynomial function used to weight Q-vector
 
 # Cuts for dijets
 JetType 0                  # 0 = Calo jets, 1 = csPF jets, 2 = puPF jets, 3 = flowPuCsPF jets 
