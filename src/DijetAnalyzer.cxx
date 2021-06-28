@@ -1046,7 +1046,7 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
-    Int_t maxEvent = 10000;
+    Int_t maxEvent = 5000;
     if(nEvents < maxEvent) maxEvent = nEvents;
     for(Int_t iEvent = 0; iEvent < maxEvent; iEvent++){ // nEvents TODO: For speedier testing, use less events
       

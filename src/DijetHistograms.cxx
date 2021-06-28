@@ -263,6 +263,7 @@ void DijetHistograms::CreateHistograms(){
   const Double_t minCentrality = -0.75;   // Minimum centrality bin, is negative since hiBin is -1 for pp
   const Double_t maxCentrality = 100.25;  // Maximum centrality bin
   const Int_t nCentralityBins = 202;      // Number of centrality bins
+  const Int_t nCentralityBins2 = 101;      // Number of centrality bins
   
   // Jet pT
   const Double_t minPtJet = 0;     // Minimum jet pT
@@ -630,7 +631,8 @@ void DijetHistograms::CreateHistograms(){
   highBinBorder7D[3] = maxAsymmetry;   // high bin border for dijet asymmetry
   
   // Axis 4 for the track-jet correlation histogram: centrality
-  nBins7D[4] = nWideCentralityBins;     // nBins for centrality
+  //nBins7D[4] = nWideCentralityBins;     // nBins for centrality
+  nBins7D[4] = nCentralityBins2;     // nBins for centrality
   lowBinBorder7D[4] = minCentrality;    // low bin border for centrality
   highBinBorder7D[4] = maxCentrality;   // high bin border for centrality
   
@@ -664,8 +666,8 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJet->SetBinEdges(0,wideTrackPtBins);
   fhTrackLeadingJet->SetBinEdges(3,wideAsymmetryBins);
   fhTrackSubleadingJet->SetBinEdges(3,wideAsymmetryBins);
-  fhTrackLeadingJet->SetBinEdges(4,wideCentralityBins);
-  fhTrackSubleadingJet->SetBinEdges(4,wideCentralityBins);
+  //fhTrackLeadingJet->SetBinEdges(4,wideCentralityBins);
+  //fhTrackSubleadingJet->SetBinEdges(4,wideCentralityBins);
   if(doEventPlane){ //
     fhTrackLeadingJet->SetBinEdges(6,wideQvectorBins);
     fhTrackSubleadingJet->SetBinEdges(6,wideQvectorBins);
