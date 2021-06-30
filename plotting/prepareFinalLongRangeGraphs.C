@@ -16,7 +16,7 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_20pCentShift";
+  const char* qVectorTag = "_45pCentShift";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
