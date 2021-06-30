@@ -25,10 +25,11 @@ FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
                     # Regular and uncorrected correlation = 24
 
 # Dihadron mode
-MinBias 0   # Flag for minimum bias running
-MinQWeight 0.5 # Minimum weight for the Q-vector
-MaxQWeight 3   # Maximum weight for the Q-vector
-QOrder 3       # Order of polynomial function used to weight Q-vector
+MinBias 0         # Flag for minimum bias running
+MinQWeight 0.5    # Minimum weight for the Q-vector
+MaxQWeight 10     # Maximum weight for the Q-vector
+QWeightWidth 0.5  # Width parameter for generalized Gaussian
+QWeightShape 2    # Shape parameter for generalized Gaussian
 
 # Cuts for dijets
 JetType 0                  # 0 = Calo jets, 1 = csPF jets, 2 = puPF jets, 3 = flowPuCsPF jets 

@@ -19,6 +19,20 @@ double jetPolyGauss(double *x, double *par){
 }
 
 /*
+ * Generalized gauss function
+ *
+ *  Parameters:
+ *    par[0] = Center of the Gauss function
+ *    par[1] = Alpha, determines the width of the Gauss
+ *    par[2] = Beta, determines the shape of the Gauss
+ *    par[3] = Scale, determines the total normalization
+ *    par[4] = Baseline, determines the minimum value for the function
+ */
+double genGauss(double *x, double *par){
+  return par[4] + par[3] * (par[2] / (2.0*par[1]*TMath::Gamma(1.0/par[2]))) * TMath::Exp(-1*TMath::Power(TMath::Abs(x[0]-par[0])/par[1],par[2]));
+}
+
+/*
  * Default constructor
  */
 DijetAnalyzer::DijetAnalyzer() :
@@ -227,25 +241,16 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Possibility to do Q-vector weighting
   Double_t maxQWeight = fCard->Get("MaxQWeight");  // Maximum weight given to any Q-vector
   Double_t minQWeight = fCard->Get("MinQWeight");  // Minimum weight given to any Q-vector
-  Int_t qOrder = fCard->Get("QOrder");             // Order of polynomial function used for Q-weighing
-  const char *qFormula = Form("pol%d",qOrder);
-  fQvectorWeightFunction[0] = new TF1("qVectorFun0",qFormula,0,5);
-  fQvectorWeightFunction[0]->SetParameter(0,maxQWeight);
-  fQvectorWeightFunction[0]->SetParameter(qOrder,-1*(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
-  fQvectorWeightFunction[1] = new TF1("qVectorFun1",qFormula,0,5);
-  fQvectorWeightFunction[1]->SetParameter(0,minQWeight);
-  fQvectorWeightFunction[1]->SetParameter(qOrder,(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
-  fQvectorWeightFunction[2] = new TF1("qVectorFun2",qFormula,0,5);
-  fQvectorWeightFunction[2]->SetParameter(0,minQWeight);
-  fQvectorWeightFunction[2]->SetParameter(qOrder,(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
-  fQvectorWeightFunction[3] = new TF1("qVectorFun3",qFormula,0,5);
-  fQvectorWeightFunction[3]->SetParameter(0,minQWeight);
-  fQvectorWeightFunction[3]->SetParameter(qOrder,(maxQWeight-minQWeight)/TMath::Power(5,qOrder));
-  for(int i = 0; i < 4; i++){
-    for(int iPar = 1; iPar < qOrder; iPar++){
-      fQvectorWeightFunction[i]->SetParameter(iPar,0);
-    }
-  }
+  Double_t qWidth = fCard->Get("QWeightWidth");    // Width parameter for generalized Gaussian used for Q-weighing
+  Double_t qShape = fCard->Get("QWeightShape");    // Shape parameter for generalized Gaussian used for Q-weighing
+  fQvectorWeightFunction[0] = new TF1("qVectorFun0",genGauss,0,5,5);
+  fQvectorWeightFunction[0]->SetParameters(0,qWidth,qShape,maxQWeight,minQWeight);
+  fQvectorWeightFunction[1] = new TF1("qVectorFun1",genGauss,0,5,5);
+  fQvectorWeightFunction[1]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
+  fQvectorWeightFunction[2] = new TF1("qVectorFun2",genGauss,0,5,5);
+  fQvectorWeightFunction[2]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
+  fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
+  fQvectorWeightFunction[3]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
   
 //  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol2",0,5);
 //  fQvectorWeightFunction[0]->SetParameters(maxQWeight,0,-1*(maxQWeight-minQWeight)/25.0);
@@ -1048,7 +1053,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     Int_t maxEvent = 5000;
     if(nEvents < maxEvent) maxEvent = nEvents;
-    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
+    for(Int_t iEvent = 0; iEvent < maxEvent; iEvent++){ // nEvents
       
       //************************************************
       //         Read basic event information
