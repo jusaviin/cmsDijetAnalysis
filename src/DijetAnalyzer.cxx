@@ -18,6 +18,20 @@ double jetPolyGauss(double *x, double *par){
 }
 
 /*
+ * Generalized gauss function
+ *
+ *  Parameters:
+ *    par[0] = Center of the Gauss function
+ *    par[1] = Alpha, determines the width of the Gauss
+ *    par[2] = Beta, determines the shape of the Gauss
+ *    par[3] = Scale, determines the total normalization
+ *    par[4] = Baseline, determines the minimum value for the function
+ */
+double genGauss(double *x, double *par){
+  return par[4] + par[3] * (par[2] / (2.0*par[1]*TMath::Gamma(1.0/par[2]))) * TMath::Exp(-1*TMath::Power(TMath::Abs(x[0]-par[0])/par[1],par[2]));
+}
+
+/*
  * Default constructor
  */
 DijetAnalyzer::DijetAnalyzer() :
@@ -219,14 +233,14 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos(2*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
   
   // Possibility to do Q-vector weighting
-  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol1",0,6);
-  fQvectorWeightFunction[0]->SetParameters(2,-0.25);
-  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol1",0,6);
-  fQvectorWeightFunction[1]->SetParameters(0.5,0.25);
-  fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol1",0,6);
-  fQvectorWeightFunction[2]->SetParameters(0.5,0.25);
-  fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol1",0,6);
-  fQvectorWeightFunction[3]->SetParameters(0.5,0.25);
+  fQvectorWeightFunction[0] = new TF1("qVectorFun0",genGauss,0,5,5);
+  fQvectorWeightFunction[0]->SetParameters(0,2,2,100,0.5);  // This matches data and MC hadron v2
+  fQvectorWeightFunction[1] = new TF1("qVectorFun1",genGauss,0,5,5);
+  fQvectorWeightFunction[1]->SetParameters(5,2,2,100,0.5);  // Needs to be tuned
+  fQvectorWeightFunction[2] = new TF1("qVectorFun2",genGauss,0,5,5);
+  fQvectorWeightFunction[2]->SetParameters(5,2,2,100,0.5);  // Needs to be tuned
+  fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
+  fQvectorWeightFunction[3]->SetParameters(5,2,2,100,0.5);  // Nobody cares
   
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
@@ -2601,8 +2615,8 @@ Double_t DijetAnalyzer::GetQvectorWeight(Double_t qValue, const Double_t central
     return 1;
   }
   
-  // If q-value is larger than 6, just use the weight for 6
-  if(qValue > 6) qValue = 6;
+  // If q-value is larger than 5, just use the weight for 5
+  if(qValue > 5) qValue = 5;
   
   // Find the correct centrality bin
   Int_t centralityBin = 0;
