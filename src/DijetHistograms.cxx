@@ -459,7 +459,8 @@ void DijetHistograms::CreateHistograms(){
   highBinBorder6D[3] = maxAsymmetry;   // high bin border for asymmetry
   
   // Axis 4 for the jet histogram: centrality
-  nBins6D[4] = nWideCentralityBins;   // nBins for wide centrality bins
+  //nBins6D[4] = nWideCentralityBins;   // nBins for wide centrality bins
+  nBins6D[4] = nCentralityBins2;     // nBins for centrality
   lowBinBorder6D[4] = minCentrality;  // low bin border for centrality
   highBinBorder6D[4] = maxCentrality; // high bin border for centrality
   
@@ -488,8 +489,8 @@ void DijetHistograms::CreateHistograms(){
   fhSubleadingDijet->SetBinEdges(3,wideAsymmetryBins);
   
   // Set custom centrality bins for histograms
-  fhLeadingDijet->SetBinEdges(4,wideCentralityBins);
-  fhSubleadingDijet->SetBinEdges(4,wideCentralityBins);
+  //fhLeadingDijet->SetBinEdges(4,wideCentralityBins);
+  //fhSubleadingDijet->SetBinEdges(4,wideCentralityBins);
   
   if(doEventPlane){ //
     fhLeadingDijet->SetBinEdges(5,wideQvectorBins);
@@ -631,8 +632,8 @@ void DijetHistograms::CreateHistograms(){
   highBinBorder7D[3] = maxAsymmetry;   // high bin border for dijet asymmetry
   
   // Axis 4 for the track-jet correlation histogram: centrality
-  nBins7D[4] = nWideCentralityBins;     // nBins for centrality
-  //nBins7D[4] = nCentralityBins2;     // nBins for centrality
+  //nBins7D[4] = nWideCentralityBins;     // nBins for centrality
+  nBins7D[4] = nCentralityBins2;     // nBins for centrality
   lowBinBorder7D[4] = minCentrality;    // low bin border for centrality
   highBinBorder7D[4] = maxCentrality;   // high bin border for centrality
   
@@ -666,8 +667,8 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJet->SetBinEdges(0,wideTrackPtBins);
   fhTrackLeadingJet->SetBinEdges(3,wideAsymmetryBins);
   fhTrackSubleadingJet->SetBinEdges(3,wideAsymmetryBins);
-  fhTrackLeadingJet->SetBinEdges(4,wideCentralityBins);
-  fhTrackSubleadingJet->SetBinEdges(4,wideCentralityBins);
+  //fhTrackLeadingJet->SetBinEdges(4,wideCentralityBins);
+  //fhTrackSubleadingJet->SetBinEdges(4,wideCentralityBins);
   if(doEventPlane){ //
     fhTrackLeadingJet->SetBinEdges(6,wideQvectorBins);
     fhTrackSubleadingJet->SetBinEdges(6,wideQvectorBins);
@@ -682,8 +683,8 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJetUncorrected->SetBinEdges(0,wideTrackPtBins);
   fhTrackLeadingJetUncorrected->SetBinEdges(3,wideAsymmetryBins);
   fhTrackSubleadingJetUncorrected->SetBinEdges(3,wideAsymmetryBins);
-  fhTrackLeadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
-  fhTrackSubleadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
+  //fhTrackLeadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
+  //fhTrackSubleadingJetUncorrected->SetBinEdges(4,wideCentralityBins);
   if(doEventPlane){ //
     fhTrackLeadingJetUncorrected->SetBinEdges(6,wideQvectorBins);
     fhTrackSubleadingJetUncorrected->SetBinEdges(6,wideQvectorBins);
@@ -698,8 +699,8 @@ void DijetHistograms::CreateHistograms(){
   fhTrackSubleadingJetPtWeighted->SetBinEdges(0,wideTrackPtBins);
   fhTrackLeadingJetPtWeighted->SetBinEdges(3,wideAsymmetryBins);
   fhTrackSubleadingJetPtWeighted->SetBinEdges(3,wideAsymmetryBins);
-  fhTrackLeadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
-  fhTrackSubleadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
+  //fhTrackLeadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
+  //fhTrackSubleadingJetPtWeighted->SetBinEdges(4,wideCentralityBins);
   if(doEventPlane){ //
     fhTrackLeadingJetPtWeighted->SetBinEdges(6,wideQvectorBins);
     fhTrackSubleadingJetPtWeighted->SetBinEdges(6,wideQvectorBins);
