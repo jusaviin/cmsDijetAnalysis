@@ -16,7 +16,7 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_40pCentShift";
+  const char* qVectorTag = "_qGaussA095B2Max100";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
@@ -39,7 +39,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron%s_subeNon0_improvisedMixing_noCorrections_processed_2021-06-30_test.root",qVectorTag);
+  dihadronFileName[0] = Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing%s_noCorrections_processed_2021-06-29_test.root",qVectorTag);
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron%s_subeNon0_improvisedMixing_noCorrections_processed_2021-06-28_test.root",qVectorTag);
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
@@ -129,7 +129,7 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet  kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018%s_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root", qVectorTag);
+  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_4pCentShift%s_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-06-30.root", qVectorTag);
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
