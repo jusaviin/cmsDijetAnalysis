@@ -234,9 +234,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Possibility to do Q-vector weighting
   fQvectorWeightFunction[0] = new TF1("qVectorFun0",genGauss,0,5,5);
-  fQvectorWeightFunction[0]->SetParameters(0,2,2,100,0.5);  // This matches data and MC hadron v2
+  fQvectorWeightFunction[0]->SetParameters(0,2,2,100,0.5);      // This matches data and MC hadron v2
   fQvectorWeightFunction[1] = new TF1("qVectorFun1",genGauss,0,5,5);
-  fQvectorWeightFunction[1]->SetParameters(5,2,2,100,0.5);  // Needs to be tuned
+  fQvectorWeightFunction[1]->SetParameters(5,0.858,2,100,0.5);  // This matches data and MC hadron v2
   fQvectorWeightFunction[2] = new TF1("qVectorFun2",genGauss,0,5,5);
   fQvectorWeightFunction[2]->SetParameters(5,2,2,100,0.5);  // Needs to be tuned
   fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
@@ -1812,8 +1812,8 @@ void DijetAnalyzer::RunAnalysis(){
             while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
             while(jetEventPlaneDeltaPhiMidRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += 2*TMath::Pi();}
             
-            fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
-            fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
+            //fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
+            //fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
             
             // Fill the additional event plane histograms
             fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
