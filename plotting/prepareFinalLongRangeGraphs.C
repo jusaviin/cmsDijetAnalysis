@@ -16,11 +16,11 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_qGaussA085B2Max100";
+  const char* qVectorTag = "_qGaussA2B2Max100";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_improvisedMixing_subeNon0_qVectorWeightTune0-30_noCorrections_processed_2021-07-06_halfStats.root";
+  jetHadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_improvisedMixing_subeNon0_qVectorWeightTune0-30_noCorrections_processed_2021-07-06.root";
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
@@ -129,7 +129,7 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet  kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_4pCentShift%s_jetHadronTuneFor0-30_subeNon0_caloJets_correctedJetHadron_correctedDihadron_2021-07-07.root", qVectorTag);
+  TString outputFileName = Form("flowGraphs/flowGraphs_PbPbMC2018_4pCentShift%s_jetHadronTuneFor0-30_subeNon0_caloJets_correctedJetHadron_correctedDihadron_2021-07-08.root", qVectorTag);
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
   // testDijetAndHadron_sameEvent_midRapidity_highNormQ_cut6.root
