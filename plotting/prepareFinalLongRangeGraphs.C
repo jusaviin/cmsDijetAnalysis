@@ -16,7 +16,7 @@ void prepareFinalLongRangeGraphs(){
   // ==================================================================
   
   // Can be used for quick changing of file names
-  const char* qVectorTag = "_qGaussA1B5Max1000";
+  const char* qVectorTag = "_qGaussA096B5Max1000";
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];

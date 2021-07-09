@@ -238,7 +238,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fQvectorWeightFunction[1] = new TF1("qVectorFun1",genGauss,0,5,5);
   fQvectorWeightFunction[1]->SetParameters(5,0.858,2,100,0.5);  // This matches data and MC hadron v2
   fQvectorWeightFunction[2] = new TF1("qVectorFun2",genGauss,0,5,5);
-  fQvectorWeightFunction[2]->SetParameters(5,2,2,100,0.5);  // Needs to be tuned
+  fQvectorWeightFunction[2]->SetParameters(5,0.937,5,1000,0.5);  // This matches data and MC hadron v2
   fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
   fQvectorWeightFunction[3]->SetParameters(5,2,2,100,0.5);  // Nobody cares
   
