@@ -6,11 +6,12 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_1v5pCentShift_improvisedMixing_preprocessed_2021-07-09_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_1v5pCentShift_improvisedMixing_noCorrections_processed_2021-07-09_test.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_1v5pCentShift_subeNon0_improvisedMixing_preprocessed_2021-07-09_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_1v5pCentShift_subeNon0_improvisedMixing_noCorrections_processed_2021-07-09_test.root" false false -1 "data/"
+
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA092B5Max1000_preprocessed_2021-06-29_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA092B5Max1000_noCorrections_processed_2021-06-29_test.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA094B5Max1000_preprocessed_2021-06-29_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA094B5Max1000_noCorrections_processed_2021-06-29_test.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA096B5Max1000_preprocessed_2021-06-29_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA096B5Max1000_noCorrections_processed_2021-06-29_test.root" false false -1 "data/"
-
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_6pCentShift_subeNon0_improvisedMixing_preprocessed_2021-06-30_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_6pCentShift_subeNon0_improvisedMixing_noCorrections_processed_2021-06-30_test.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_noQcut_preprocessed_2021-03-29.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_noQcut_noCorrections_processed_2021-03-29.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_qVectorBelow1p5_preprocessed_2021-03-29.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_noCentShift_improvisedMixing_noXj_qVectorBelow1p5_noCorrections_processed_2021-03-29.root" false false -1 "data/"
