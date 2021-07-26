@@ -815,6 +815,16 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentFile;
   TString currentMixedEventFile;
   
+  // Test on trying to correct for flow contribution under jet
+  bool eventByEventEnergyDensity = false;
+  Double_t averageEnergyDensity;
+  Double_t averageEnergyInCone;
+  Double_t energyDifference;
+  Double_t trackJetDistance;
+  Double_t conePtSum;
+  Double_t stripPtSum;
+  Double_t stripWidth = 0.4;
+  
   // Fillers for THnSparses
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
   const Int_t nFillLeadingJet = 6;  // 6 is nominal, 9 used for smearing study
@@ -1164,7 +1174,7 @@ void DijetAnalyzer::RunAnalysis(){
             eventPlaneQy += TMath::Sin(2*(trackPhi));
             eventPlaneMultiplicity += 1;
             
-          }
+          } // Track loop
           
           if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
           eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
@@ -1183,11 +1193,10 @@ void DijetAnalyzer::RunAnalysis(){
         //if(eventPlaneQ > 2) continue;  // 2.222 2.778 3.333
         
         // Apply Q-vector weight to the event
-        qWeight = GetQvectorWeight(eventPlaneQ, centrality);
-        fTotalEventWeight *= qWeight;
+        //qWeight = GetQvectorWeight(eventPlaneQ, centrality);
+        //fTotalEventWeight *= qWeight;
         
       }
-      
       
       // ======================================
       // ===== Event quality cuts applied =====
@@ -1279,6 +1288,54 @@ void DijetAnalyzer::RunAnalysis(){
         fJetUncertainty2018->SetJetPhi(jetPhi);
         
         jetPtCorrected = fJetCorrector2018->GetCorrectedPT();
+        
+        // Calculate the energy density below jet
+        if(eventByEventEnergyDensity){
+          
+          // Loop over all tracks in the event
+          nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+          conePtSum = 0;
+          stripPtSum = 0;
+          for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+            
+            // Only look at HYDJET tracks for the first test
+            if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+            
+            // Get the track information
+            trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+            trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+            trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+            
+            // Look at all the tracks within jet cone radius
+            trackJetDistance = TMath::Sqrt(TMath::Power(trackEta-jetEta, 2) + TMath::Power(trackPhi-jetPhi, 2));
+            if(trackJetDistance < 0.4){
+              
+              // Sum the pT of all the tracks within the jet cone
+              conePtSum += trackPt;
+              
+            }
+            
+            // Look at average energy density in the eta strip around the jet
+            if(TMath::Abs(jetEta - trackEta) < stripWidth){
+              
+              // Sum the pT of all the tracks in the eta-strip around the jet cone
+              stripPtSum += trackPt;
+              
+            }
+            
+          } // Track loop
+          
+          // From the eta-strip, calculate average energy inside a jet cone
+          averageEnergyDensity = stripPtSum / (2 * TMath::Pi() * 2 * stripWidth);
+          averageEnergyInCone = averageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
+          
+          // Calculate the difference between average over the whole event and below jet cone
+          energyDifference = conePtSum - averageEnergyInCone;
+          
+          // Correct the jet energy with the difference with respect to average
+          jetPtCorrected = jetPtCorrected - energyDifference;
+          
+        }
         
 //        // Extra code for smearing study
 //
@@ -1800,11 +1857,11 @@ void DijetAnalyzer::RunAnalysis(){
             //}
             
             
-            jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
-            jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
+            //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
+            //jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
             
-            //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - eventPlaneAngle;
-            //jetEventPlaneDeltaPhiMidRap = eventPlaneAngle - fJetReader->GetEventPlaneAngle(8);  // Diff between manual and forest
+            jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - eventPlaneAngle;
+            jetEventPlaneDeltaPhiMidRap = eventPlaneAngle - fJetReader->GetEventPlaneAngle(8);  // Diff between manual and forest
             
             // Transform deltaPhis to interval [-pi/2,3pi/2]
             while(jetEventPlaneDeltaPhiForwardRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += -2*TMath::Pi();}
