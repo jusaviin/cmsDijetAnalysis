@@ -4,8 +4,8 @@
 // Function definitions. Implementations after the main macro.
 std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, const int iPoint);
 std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, const int iPoint);
-void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName = "");
-void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, TString comparisonLegend, const int iFlow, TString plotName = "");
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName);
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, TString comparisonLegend, const int iFlow, TString plotName);
 
 /*
  * Macro for estimating systematic uncertainties for long range correlation results
@@ -54,16 +54,22 @@ void estimateLongRangeSystematics(){
   TString shiftedResultFileName1 = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root";
   TString shiftedResultFileName2 = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root";
   
+  // Results without tracking efficiency correction
+  TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";
+  
+  // Results with varied quark/gluon fraction
+  TString quarkGluonFractionFileName = "flowGraphs/summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root";
+  
   // Flow component configuration
   const int maxVn = 4;      // Maximum number of flow components
-  const int firstFlow = 3;  // First analyzed flow component
+  const int firstFlow = 2;  // First analyzed flow component
   const int lastFlow = 3;   // Last analyzed flow component
   
   const bool printUncertainties = false;
   
-  bool plotExample = true;
+  bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_justTestingWithFun_finalCorrection.root";
+  TString outputFileName = "flowGraphs/systematicUncertainties_includeQuarkGluonFraction_finalCorrection_2021-07-26.root";
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -86,6 +92,8 @@ void estimateLongRangeSystematics(){
   TFile* finalResultFile = TFile::Open(finalResultFileName);
   TFile* shiftedResultFile1 = TFile::Open(shiftedResultFileName1);
   TFile* shiftedResultFile2 = TFile::Open(shiftedResultFileName2);
+  TFile* noTrackEfficiencyFile = TFile::Open(noTrackEfficiencyFileName);
+  TFile* quarkGluonFractionFile = TFile::Open(quarkGluonFractionFileName);
   
   // Result graphs
   TGraphErrors* nominalResultGraph[maxVn];
@@ -97,6 +105,8 @@ void estimateLongRangeSystematics(){
   TGraphErrors* minBiasDihadronResultGraph[maxVn];
   TGraphErrors* finalResultGraph[maxVn];
   TGraphErrors* shiftedResultGraph[maxVn][2];
+  TGraphErrors* noTrackEfficiencyGraph[maxVn];
+  TGraphErrors* quarkGluonFractionGraph[maxVn];
   
   TString graphName;
   
@@ -118,6 +128,8 @@ void estimateLongRangeSystematics(){
     finalResultGraph[iFlow] = (TGraphErrors*) finalResultFile->Get(graphName);
     shiftedResultGraph[iFlow][0] = (TGraphErrors*) shiftedResultFile1->Get(graphName);
     shiftedResultGraph[iFlow][1] = (TGraphErrors*) shiftedResultFile2->Get(graphName);
+    noTrackEfficiencyGraph[iFlow] = (TGraphErrors*) noTrackEfficiencyFile->Get(graphName);
+    quarkGluonFractionGraph[iFlow] = (TGraphErrors*) quarkGluonFractionFile->Get(graphName);
     
   }
   
@@ -329,6 +341,52 @@ void estimateLongRangeSystematics(){
     if(plotExample){
       legendNames[0] = "Minimum bias";
       drawIllustratingPlots(drawer, nominalResultGraph[iFlow], minBiasDihadronResultGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMinBias));
+    }
+    
+  } // Flow component loop
+  
+  // =========================================== //
+  // Uncertainty coming tracking related sources //
+  // =========================================== //
+  
+  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      
+      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], noTrackEfficiencyGraph[iFlow], iCentrality);
+      
+      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kTracking][iFlow][iCentrality] = absoluteUncertainty;
+      relativeUncertaintyTable[LongRangeSystematicOrganizer::kTracking][iFlow][iCentrality] = relativeUncertainty;
+      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kTracking);
+      
+    } // Centrality loop
+    
+    // Draw example plots on how the uncertainty is obtained
+    if(plotExample){
+      legendNames[0] = "No track efficiency";
+      drawIllustratingPlots(drawer, finalResultGraph[iFlow], noTrackEfficiencyGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kTracking));
+    }
+    
+  } // Flow component loop
+  
+  // ===================================================================== //
+  // Uncertainty coming uncertainty on quark/gluon fraction in Monte Carlo //
+  // ===================================================================== //
+  
+  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      
+      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], iCentrality);
+      
+      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = absoluteUncertainty;
+      relativeUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = relativeUncertainty;
+      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kQuarkGluonFraction);
+      
+    } // Centrality loop
+    
+    // Draw example plots on how the uncertainty is obtained
+    if(plotExample){
+      legendNames[0] = "Adjusted q/g fraction";
+      drawIllustratingPlots(drawer, finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kQuarkGluonFraction));
     }
     
   } // Flow component loop
@@ -564,7 +622,7 @@ std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGr
  *  const int iFlow = Index of the plotted flow component
  *  TString plotName = String added to saved plots. If left empty, the plots are not saved into files.
  */
-void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName = ""){
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName){
   
   TLegend *legend = new TLegend(0.23,0.84-nComparisonGraphs*0.06,0.53,0.9);
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
@@ -671,7 +729,7 @@ void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphEr
  *  const int iFlow = Index of the plotted flow component
  *  TString plotName = String added to saved plots. If left empty, the plots are not saved into files.
  */
-void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, TString comparisonLegend, const int iFlow, TString plotName = ""){
+void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, TString comparisonLegend, const int iFlow, TString plotName){
   TGraphErrors *comparisonGraphArray[1] = {comparisonGraph};
   TString comparisonLegendArray[1] = {comparisonLegend};
   drawIllustratingPlots(drawer, nominalGraph, comparisonGraphArray, 1, comparisonLegendArray, iFlow, plotName);

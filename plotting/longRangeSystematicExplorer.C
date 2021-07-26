@@ -12,7 +12,7 @@ void longRangeSystematicExplorer(){
   
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
-  TString uncertaintyFileName = "systematicUncertainties_justTestingWithFun_finalCorrection.root";
+  TString uncertaintyFileName = "systematicUncertainties_includeQuarkGluonFraction_finalCorrection_2021-07-26.root";
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
@@ -27,8 +27,8 @@ void longRangeSystematicExplorer(){
   const bool drawAbsoluteUncertainties = true;
   
   // Save the final plots
-  const bool saveFigures = true;
-  TString saveComment = "_initialCheck";
+  const bool saveFigures = false;
+  TString saveComment = "_includeTracking";
   
   // =========== //
   // Read graphs //

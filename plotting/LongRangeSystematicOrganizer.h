@@ -19,7 +19,7 @@ private:
   
 public:
   
-  enum enumLongRangeUncertaintySources{kDeltaEtaRegion, kDeltaEtaSide, kVz, kAngleSmear, kJetCollection, kMCTuning, kMinBias, kAll, knUncertaintySources};
+  enum enumLongRangeUncertaintySources{kDeltaEtaRegion, kDeltaEtaSide, kVz, kAngleSmear, kJetCollection, kMCTuning, kMinBias, kTracking, kQuarkGluonFraction, kAll, knUncertaintySources};
 
   
   LongRangeSystematicOrganizer();                       // Default constructor
@@ -37,11 +37,11 @@ public:
   
 private:
   
-  TString fLongRangeUncertaintyName[knUncertaintySources] = {"deltaEtaRegion", "deltaEtaSide", "vz", "angleSmear", "jetCollection", "mcTuning", "minBias", "all"};
-  TString fUncertaintyAxisName[knUncertaintySources] = {"#Delta#eta region", "#Delta#eta side", "v_{z}", "Angle smear", "Jet collection", "MC Tuning", "MinBias", "all"};
+  TString fLongRangeUncertaintyName[knUncertaintySources] = {"deltaEtaRegion", "deltaEtaSide", "vz", "angleSmear", "jetCollection", "mcTuning", "minBias", "tracking", "quarkGluonFraction", "all"};
+  TString fUncertaintyAxisName[knUncertaintySources] = {"#Delta#eta region", "#Delta#eta side", "v_{z}", "Angle smear", "Jet collection", "MC Tuning", "MinBias", "Tracking", "q/g fraction", "all"};
 
   // Systematic uncertainty for long range correlations
-  TGraphErrors * fLongRangeUncertaintyGraph[knUncertaintySources][knMaxFlow][knMaxXj+1];
+  TGraphErrors* fLongRangeUncertaintyGraph[knUncertaintySources][knMaxFlow][knMaxXj+1];
   
 };
 
