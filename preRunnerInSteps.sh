@@ -6,7 +6,9 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_tunedQvectorWeighs_preprocessed_2021-07-09.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_tunedQvectorWeighs_noCorrections_processed_2021-07-09.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_25pMoreQuark_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_25pMoreQuark_noCorrections_processed_2021-03-02.root" false false -1 "data/"
+#./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"
+#./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_subeNon0_improvisedMixing_noQcut_preprocessed_2021-06-03.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_subeNon0_improvisedMixing_noQcut_noCorrections_processed_2021-06-03.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_subeNon0_improvisedMixing_qVectorBelow1p5_preprocessed_2021-06-03.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_noCentShift_subeNon0_improvisedMixing_qVectorBelow1p5_noCorrections_processed_2021-06-03.root" false false -1 "data/"

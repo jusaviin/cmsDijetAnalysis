@@ -24,7 +24,7 @@ root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'"
 for i in `seq 0 3`;
 do
   root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",2,'$FIRSTWEIGHT','$SECONDWEIGHT',-1,'$i')' # Single jet and dijet histograms
-#  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",3,'$FIRSTWEIGHT','$SECONDWEIGHT',-1,'$i')' # Track histograms
+  root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",3,'$FIRSTWEIGHT','$SECONDWEIGHT',-1,'$i')' # Track histograms
 done 
 
 # Jet-track correlations have centrality and track pT binning
@@ -34,7 +34,7 @@ do
   do  
     root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",4,'$FIRSTWEIGHT','$SECONDWEIGHT','$j','$i',10)' # Regular jet-track correlations for leading and subleading jets
 #    root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",5,'$FIRSTWEIGHT','$SECONDWEIGHT','$j','$i',10)' # Uncorrected jet-track correlations for leading and subleading jets
-    root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",6,'$FIRSTWEIGHT','$SECONDWEIGHT','$j','$i',10)' # pT weighted jet-track correlations for leading and subleading jets
+#    root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",6,'$FIRSTWEIGHT','$SECONDWEIGHT','$j','$i',10)' # pT weighted jet-track correlations for leading and subleading jets
 #    root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",7,'$FIRSTWEIGHT','$SECONDWEIGHT','$j','$i',10)' # Regular jet-track correlations for inclusive jets
 #    root -l -b -q 'plotting/combineCorrelations.C("'${FIRSTFILE}'","'${SECONDFILE}'","'${OUTPUT}'",8,'$FIRSTWEIGHT','$SECONDWEIGHT','$j','$i',10)' # pT weighted jet-track correlations for inclusive jets
   done

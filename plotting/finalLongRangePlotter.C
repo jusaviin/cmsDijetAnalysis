@@ -16,7 +16,7 @@ void finalLongRangePlotter(){
   // summaryPlot_akCaloJet_nominalCorrection_2021-05-20.root
   // summaryPlot_akCaloJet_averageCorrection_2021-06-01.root
   // summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root
-  TString uncertaintyFileName = "systematicUncertainties_justTesting_finalCorrection.root";
+  TString uncertaintyFileName = "systematicUncertainties_includeQuarkGluonFraction_finalCorrection_2021-07-26.root";
   // systematicUncertainties_justTesting.root
   // systematicUncertainties_justTesting_averageCorrection.root
   // systematicUncertainties_justTesting_finalCorrection.root
@@ -28,15 +28,15 @@ void finalLongRangePlotter(){
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 2;     // First drawn flow component
-  const int lastDrawnVn = 2;      // Last drawn flow component
+  const int firstDrawnVn = 3;     // First drawn flow component
+  const int lastDrawnVn = 3;      // Last drawn flow component
   
   // Define if previous results should be included in the plot
   const bool drawAtlasJetV2 = false;
   const bool drawCmsHigtPtV2 = true;
   
   // Save the final plots
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "_initialUncertainties";
   
   // =========== //
