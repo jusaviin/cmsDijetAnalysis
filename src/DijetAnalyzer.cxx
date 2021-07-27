@@ -816,14 +816,14 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentMixedEventFile;
   
   // Test on trying to correct for flow contribution under jet
-  bool eventByEventEnergyDensity = false;
+  bool eventByEventEnergyDensity = true;
   Double_t averageEnergyDensity;
   Double_t averageEnergyInCone;
   Double_t energyDifference;
   Double_t trackJetDistance;
   Double_t conePtSum;
   Double_t stripPtSum;
-  Double_t stripWidth = 0.4;
+  Double_t stripWidth = 0.2;
   
   // Fillers for THnSparses
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
