@@ -816,7 +816,7 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentMixedEventFile;
   
   // Test on trying to correct for flow contribution under jet
-  bool eventByEventEnergyDensity = true;
+  bool eventByEventEnergyDensity = false;
   Double_t averageEnergyDensity;
   Double_t averageEnergyInCone;
   Double_t energyDifference;
