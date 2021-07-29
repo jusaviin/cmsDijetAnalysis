@@ -148,7 +148,8 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC2018_GenGen_akCaloJet_onlyJets_5pCentShift_jetPtClosure_processed_2021-02-05.root";  // File from which the RecoGen histograms are read for the correction
+  // data/PbPbMC2018_GenGen_akCaloJet_onlyJets_5pCentShift_jetPtClosure_processed_2021-02-05.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_smearCheck_jetPtClosure_processed_2020-05-14.root
   // data/PbPbMC2018_RecoReco_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
@@ -161,12 +162,12 @@ void constructJetPtClosures(){
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_jetPtClosure_JECv4_processed_2020-05-20.root
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_20pSmear_jetPtClosure_JECv4_processed_2020-05-20.root
   
-  bool drawLeadingClosure = false;       // Produce the closure plots for leading jet pT
-  bool drawSubleadingClosure = false;    // Produce the closure plots for subleading jet pT
-  bool drawInclusiveClosure = true;     // Produce the closure plots for inclusive jet pT
+  bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
+  bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
+  bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
   
-  bool drawPtClosure = true;
-  bool drawEtaClosure = false;
+  bool drawPtClosure = false;
+  bool drawEtaClosure = true;
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
@@ -342,9 +343,9 @@ void constructJetPtClosures(){
         }
         
         if(drawEtaClosure){
-          drawClosureHistogram(hJetPtClosureEta[iClosureType][iCentrality][iAsymmetry], "#eta", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 2, "EtaClosure", saveFigures);
+          drawClosureHistogram(hJetPtClosureEta[iClosureType][iCentrality][iAsymmetry], "#eta", "#mu(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 2, "EtaClosureGenDijet", saveFigures);
           
-          drawClosureHistogram(hJetPtClosureSigmaEta[iClosureType][iCentrality][iAsymmetry], "#eta", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 1, "EtaResolution", saveFigures);
+          drawClosureHistogram(hJetPtClosureSigmaEta[iClosureType][iCentrality][iAsymmetry], "#eta", "#sigma(reco p_{T} / gen p_{T})", ppData, iClosureType, iCentrality, iAsymmetry, 1, "EtaResolutionGenDijet", saveFigures);
           
         }
         
