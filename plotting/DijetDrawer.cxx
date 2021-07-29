@@ -743,6 +743,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
   double legendX2;
   double legendY2;
   const char* drawingStyle;
+  double maxYscale, minYscale, yDifference;
   
   // Helper variables for centrality naming in figures
   TString centralityString;
@@ -753,7 +754,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
   TString compactAsymmetryString;
   char namerX[100];
   char namerY[100];
-  TString zAxisName[] = { "S(#Delta#eta,#Delta#varphi)_{raw}", "ME(#Delta#eta,#Delta#varphi)", "ME(#Delta#eta,#Delta#varphi)", "S(#Delta#eta,#Delta#varphi)",  "S(#Delta#eta,#Delta#varphi) - B(#Delta#eta,#Delta#varphi)", "B(#Delta#eta,#Delta#varphi)", "B(#Delta#eta,#Delta#varphi)", "Map(#Delta#eta,#Delta#varphi)"};
+  TString zAxisName[] = { "S(#Delta#eta,#Delta#varphi)_{raw}", "ME(#Delta#eta,#Delta#varphi)", "ME(#Delta#eta,#Delta#varphi)", "S(#Delta#eta,#Delta#varphi)",  "S(#Delta#eta,#Delta#varphi) - B(#Delta#eta,#Delta#varphi)", "LR(#Delta#eta,#Delta#varphi)", "B(#Delta#eta,#Delta#varphi)", "Map(#Delta#eta,#Delta#varphi)"};
   
   // Temporary histograms for ratio plots
   TH1D *hRatio;
@@ -791,7 +792,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
           for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
             
             // Set the correct track pT bins
-            trackPtString = Form("Track pT: %.1f-%.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
+            trackPtString = Form("%.1f < p_{T} < %.1f GeV",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
             compactTrackPtString = Form("_pT=%.1f-%.1f",fHistograms->GetTrackPtBinBorder(iTrackPt),fHistograms->GetTrackPtBinBorder(iTrackPt+1));
             compactTrackPtString.ReplaceAll(".","v");
             
@@ -799,18 +800,18 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             if(fDrawJetTrackDeltaPhi){
               drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
               // TODO: Check only analysis region for now (kWholeEta removed) kSignalEtaRegion
-              drawnHistogram->Rebin(4); // XXXXXX Temporary rebin
-              drawnHistogram->Scale(1.0/4); // TODO: Remove temporary rebin
+              drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
+              drawnHistogram->Scale(1.0/2); // TODO: Remove temporary rebin
               //cout << "Integral of deltaPhi: " << drawnHistogram->Integral("width") << endl; // Can print integral for debug purposes
               
               // Move legend to different place for leading jet background figures
               legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
-              /*if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
+              if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
                 if(iCorrelationType == DijetHistogramManager::kBackground) { // Move legend to top left corner for leading jet-track background figures
                   if(fCompactSystemAndEnergy.Contains("PbPb")){
-                    legendX1 = 0.33; legendY1 = 0.75; legendX2 = 0.53; legendY2 = 0.9;
+                    legendX1 = 0.17; legendY1 = 0.7; legendX2 = 0.37; legendY2 = 0.9;
                   } else {
-                    legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
+                    legendX1 = 0.17; legendY1 = 0.7; legendX2 = 0.37; legendY2 = 0.9;
                   }
                 } else if (iCorrelationType == DijetHistogramManager::kCorrected || iCorrelationType == DijetHistogramManager::kBackgroundSubtracted){ // Move legend away from peaks
                   if(iTrackPt == 2 || iTrackPt == 3){
@@ -819,7 +820,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                     legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
                   }
                 }
-              }*/ // TODO: Temporarily comment out this section
+              }
               
               if(iCorrelationType == DijetHistogramManager::kBackground){
                 
@@ -835,11 +836,20 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 }
               }
               
+              // Set the y-axis scaling so that there is some room for legend
+              maxYscale = drawnHistogram->GetMaximum();
+              minYscale = drawnHistogram->GetMinimum();
+              yDifference = maxYscale - minYscale;
+              maxYscale = maxYscale + 0.5 * yDifference;
+              minYscale = minYscale - 0.12 * yDifference;
+              drawnHistogram->GetYaxis()->SetRangeUser(minYscale, maxYscale);
+              
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
-              fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
+              //fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
+              fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," ");
               legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
               SetupLegend(legend,centralityString,trackPtString,asymmetryString);
-              legend->Draw();
+              
               
               // In case of background histogram, draw the selected additional components
               if(iCorrelationType == DijetHistogramManager::kBackground){
@@ -854,6 +864,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 // If we want to draw a decomposition of the fourier fit, do it
                 if(fBackgroundDrawStyle[kDrawFitComposition]){
                   TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
+                  legend->AddEntry(fourierFit, "Fourier fit", "l");
                   
                   TF1 *fourierV1 = new TF1("fv1","[0]+[0]*[1]*2.0*TMath::Cos(1.0*x)",-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
                   fourierV1->SetParameter(0,fourierFit->GetParameter(0));
@@ -879,8 +890,19 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                   fourierV2->Draw("same");
                   fourierV3->Draw("same");
                   fourierV4->Draw("same");
+                  
+                  TLegend *vLegend = new TLegend(0.56,0.7,0.76,0.9);
+                  vLegend->SetFillStyle(0);vLegend->SetBorderSize(0);vLegend->SetTextSize(0.045);vLegend->SetTextFont(62);
+                  vLegend->AddEntry(fourierV1,"v_{1}","l");
+                  vLegend->AddEntry(fourierV2,"v_{2}","l");
+                  vLegend->AddEntry(fourierV3,"v_{3}","l");
+                  vLegend->AddEntry(fourierV4,"v_{4}","l");
+                  vLegend->Draw();
+                  
                 }
               }
+              
+              legend->Draw();
               
               // Save the figure to a file
               sprintf(namerX,"%sDeltaPhi",fHistograms->GetJetTrackHistogramName(iJetTrack));
@@ -900,6 +922,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               // Change the left margin better suited for 2D-drawing
               fDrawer->SetLeftMargin(0.18);
+              fDrawer->SetBottomMargin(0.05);
+              fDrawer->SetTopMargin(0.1);
               
               // Draw the z-axis in logarithmic scale
               fDrawer->SetLogZ(fLogCorrelation);
@@ -926,15 +950,16 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               sprintf(namerX, "#Delta#varphi");
               sprintf(namerY, "#Delta#eta");
-              drawnHistogram2D->GetZaxis()->SetTitle(Form("%s   (A.U.)",zAxisName[iCorrelationType].Data()));
+              //->GetZaxis()->SetTitle(Form("%s   (A.U.)",zAxisName[iCorrelationType].Data()));
+              drawnHistogram2D->GetZaxis()->SetTitle(Form("%s",zAxisName[iCorrelationType].Data()));
               fDrawer->DrawHistogram(drawnHistogram2D, namerX, namerY , " ", drawingStyle);
               
               
               // Draw legend, but not for jet shape bin map
               if(iCorrelationType != DijetHistogramManager::kJetShapeBinMap){
-                //legend = new TLegend(-0.05,0.85,0.30,0.99);
-                //SetupLegend(legend,centralityString,trackPtString);
-                //legend->Draw();
+                legend = new TLegend(-0.05,0.82,0.30,0.99);
+                SetupLegend(legend,centralityString,trackPtString);
+                legend->Draw();
               }
               
               // Save the figure to a file
@@ -1447,8 +1472,9 @@ void DijetDrawer::DrawJetShapeStack(){
  *  TString extraString = Additional line to be put into the legend
  */
 void DijetDrawer::SetupLegend(TLegend *legend, TString centralityString, TString trackString, TString extraString){
-  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-  legend->AddEntry((TObject*) 0, fSystemAndEnergy.Data(), "");
+  legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62); // Size: 0.05
+  //legend->AddEntry((TObject*) 0, fSystemAndEnergy.Data(), "");
+  legend->AddEntry((TObject*) 0, "Long range correlation", "");
   if(fSystemAndEnergy.Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
   if(extraString != "") legend->AddEntry((TObject*) 0,extraString.Data(),"");
