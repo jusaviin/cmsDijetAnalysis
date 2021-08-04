@@ -118,6 +118,9 @@ DijetHistogramManager::DijetHistogramManager() :
   fhPtHat = NULL;              // pT hat for MC events (only meaningful for MC)
   fhPtHatWeighted = NULL;      // Weighted pT hat distribution (only meaningful for MC)
   
+  fhMultiplicityMap = NULL;      // Multiplicity vs. centrality map
+  fhMultiplicityMapDijet = NULL; // Multiplicity vs. centrality map in dijet events
+  
   // Centrality loop
   for(int iCentrality = 0; iCentrality < kMaxCentralityBins; iCentrality++){
     fhDijetDphi[iCentrality] = NULL;                  // Dijet deltaPhi histograms
@@ -438,6 +441,10 @@ DijetHistogramManager::DijetHistogramManager(const DijetHistogramManager& in) :
     fAsymmetryBinName[iAsymmetry] = in.fAsymmetryBinName[iAsymmetry];
     fAsymmetryBinBorders[iAsymmetry] = in.fAsymmetryBinBorders[iAsymmetry];
   }
+  
+  // Multiplicity maps
+  fhMultiplicityMap = in.fhMultiplicityMap;
+  fhMultiplicityMapDijet = in.fhMultiplicityMapDijet;
   
   // Centrality loop
   for(int iCentrality = 0; iCentrality < kMaxCentralityBins; iCentrality++){
@@ -1472,6 +1479,11 @@ void DijetHistogramManager::LoadMultiplicityHistograms(){
     fhMultiplicityDijetWeighted[iCentralityBin] = FindHistogram(fInputFile, "multiplicityDijet", 1, 2, lowerCentralityBin, higherCentralityBin);
     
   } // Centrality loop
+  
+  int oneArray[1] = {1};
+  
+  fhMultiplicityMap = FindHistogram2D(fInputFile, "multiplicity", 0, 2, 1, oneArray, oneArray, oneArray);
+  fhMultiplicityMapDijet = FindHistogram2D(fInputFile, "multiplicityDijet", 0, 2, 1, oneArray, oneArray, oneArray);
 }
 
 
@@ -2212,6 +2224,13 @@ void DijetHistogramManager::Write(const char* fileName, const char* fileOption){
       if(fhMultiplicityDijetWeighted[iCentrality]) fhMultiplicityDijetWeighted[iCentrality]->Write(histogramNamer, TObject::kOverwrite);
     }
     
+    // Multiplicity vs. centrality maps
+    sprintf(histogramNamer, "multiplicityMap");
+    if(fhMultiplicityMap) fhMultiplicityMap->Write(histogramNamer, TObject::kOverwrite);
+    
+    sprintf(histogramNamer, "multiplicityMapDijet");
+    if(fhMultiplicityMapDijet) fhMultiplicityMapDijet->Write(histogramNamer, TObject::kOverwrite);
+    
     // Return back to main directory
     gDirectory->cd("../");
   }
@@ -2829,6 +2848,13 @@ void DijetHistogramManager::LoadProcessedHistograms(){
       fhMultiplicityDijetWeighted[iCentrality] = (TH1D*) fInputFile->Get(histogramNamer);
       
     }
+    
+    // Multiplicity vs. centrality maps
+    sprintf(histogramNamer, "multiplicityMap");
+    fhMultiplicityMap = (TH2D*) fInputFile->Get(histogramNamer);
+    
+    sprintf(histogramNamer, "multiplicityMapDijet");
+    fhMultiplicityMapDijet = (TH2D*) fInputFile->Get(histogramNamer);
   }
   
   // Load the single jet histograms from the input file
@@ -3896,10 +3922,20 @@ TH1D* DijetHistogramManager::GetHistogramMultiplicityDijet(int iCentrality) cons
   return fhMultiplicityDijet[iCentrality];
 }
 
-// Getter for track efficiency weighted  multiplicity histogram in dijet events
+// Getter for track efficiency weighted multiplicity histogram in dijet events
 TH1D* DijetHistogramManager::GetHistogramMultiplicityDijetWeighted(int iCentrality) const{
   if(fCard->GetDataType().Contains("pp",TString::kIgnoreCase)) iCentrality = 0;  // No centrality selection for pp
   return fhMultiplicityDijetWeighted[iCentrality];
+}
+
+// Getter for multiplicity vs. centrality map
+TH2D* DijetHistogramManager::GetHistogramMultiplicityMap() const{
+  return fhMultiplicityMap;
+}
+
+// Getter for multiplicity vs. centrality map in dijet events
+TH2D* DijetHistogramManager::GetHistogramMultiplicityMapDijet() const{
+  return fhMultiplicityMapDijet;
 }
 
 // Getters for single jet histograms
@@ -4201,6 +4237,8 @@ TH2D* DijetHistogramManager::GetTwoDimensionalHistogram(TString name, int bin1, 
   if(name.EqualTo("dijetxjmatrix",TString::kIgnoreCase) || name.EqualTo("fhdijetxjmatrix",TString::kIgnoreCase)) return GetHistogramDijetXjMatrix(bin1);
   if(name.EqualTo("tracketaphi",TString::kIgnoreCase) || name.EqualTo("fhtracketaphi",TString::kIgnoreCase)) return GetHistogramTrackEtaPhi(bin1,bin2,bin3,bin4);
   if(name.EqualTo("jettrackdeltaetadeltaphi",TString::kIgnoreCase) || name.EqualTo("fhjettrackdeltaetadeltaphi",TString::kIgnoreCase)) return GetHistogramJetTrackDeltaEtaDeltaPhi(bin1,bin2,bin3,bin4,bin5);
+  if(name.EqualTo("multiplicitymap",TString::kIgnoreCase) || name.EqualTo("fhmultiplicitymap",TString::kIgnoreCase)) return GetHistogramMultiplicityMap();
+  if(name.EqualTo("multiplicitymapdijet",TString::kIgnoreCase) || name.EqualTo("fhmultiplicitymapdijet",TString::kIgnoreCase)) return GetHistogramMultiplicityMapDijet();
   return NULL;
 }
 

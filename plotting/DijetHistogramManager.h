@@ -217,6 +217,8 @@ public:
   TH1D* GetHistogramMultiplicityWeighted(int iCentrality) const;       // Getter for efficiency weighted multiplicity from all events
   TH1D* GetHistogramMultiplicityDijet(int iCentrality) const;          // Getter for multiplicity from dijet events
   TH1D* GetHistogramMultiplicityDijetWeighted(int iCentrality) const;  // Getter for efficiency weighted multiplicity from dijet events
+  TH2D* GetHistogramMultiplicityMap() const;                           // Getter for multiplicity vs. centrality map
+  TH2D* GetHistogramMultiplicityMapDijet() const;                      // Getter for multiplicity vs. centrality map in dijet events
   
   // Getters for single jet histograms
   TH1D* GetHistogramJetPt(const int iJetType, int iCentrality, int iAsymmetry = kMaxAsymmetryBins) const;     // Jet pT histograms
@@ -385,6 +387,8 @@ private:
   TH1D *fhMultiplicityWeighted[kMaxCentralityBins];      // Efficiency weighted multiplicity form all events
   TH1D *fhMultiplicityDijet[kMaxCentralityBins];         // Multiplicity form dijet events
   TH1D *fhMultiplicityDijetWeighted[kMaxCentralityBins]; // Efficiency weighted multiplicity form dijet events
+  TH2D *fhMultiplicityMap;                               // Multiplicity vs. centrality map
+  TH2D *fhMultiplicityMapDijet;                          // Multiplicity vs. centrality map in dijet events
   
   // Histograms for single jets
   TH1D *fhJetPt[knSingleJetCategories][kMaxCentralityBins][kMaxAsymmetryBins+1];          // Jet pT histograms
