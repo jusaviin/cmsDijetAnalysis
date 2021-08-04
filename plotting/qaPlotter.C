@@ -448,11 +448,11 @@ void qaPlotter(){
   bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
-  bool useAsymmetryBinsForSeagull = true;  // Plot seagull fits in different asymmetry bins
+  bool useAsymmetryBinsForSeagull = false;  // Plot seagull fits in different asymmetry bins
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
-  bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
-  bool constantBigCanvasScale = true;        // Use same scale for all bins in big canvas
+  bool jetShapeCorrectionBigCanvas = false;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
+  bool constantBigCanvasScale = false;        // Use same scale for all bins in big canvas
   bool extraSpilloverComparison = false;      // Add constant fit deltaEta to spillover fit parameter comparison plots
   bool constantSpilloverScale = false;        // True = Draw spillover plots of one type all in the same scale, False = Zoom to fits
   
@@ -465,7 +465,7 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
 
-  TFile *seagullFile = TFile::Open("data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04_QA.root");
+  TFile *seagullFile = TFile::Open("data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11_QA.root");
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_20eveMix_jet80trig_xjBins_wtaAxis_allCorrections_jffAndSpillWithJet80_processed_2020-05-28_allButCombine1Job36_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04_QA.root
@@ -892,11 +892,13 @@ void qaPlotter(){
         // Create one big canvas with a pad for each centrality and track pT bin
         sprintf(histogramNamer,"seagullDeltaEta%d%d",iJetTrack,iAsymmetry);
         sprintf(padNamer,"Seagull deltaEta %s %s", uncorrectedDataManager->GetJetTrackHistogramName(iJetTrack), jffAsymmetryLegend[iAsymmetry].Data());
-        seagullCanvas[iJetTrack][iAsymmetry] = new TCanvas(histogramNamer,padNamer,1250,1800);
-        seagullCanvas[iJetTrack][iAsymmetry]->Divide(nCentralityBins+1,nTrackPtBins);
+        //seagullCanvas[iJetTrack][iAsymmetry] = new TCanvas(histogramNamer,padNamer,1250,1800);
+        //seagullCanvas[iJetTrack][iAsymmetry]->Divide(nCentralityBins+1,nTrackPtBins);
+        seagullCanvas[iJetTrack][iAsymmetry] = new TCanvas(histogramNamer,padNamer,1000,1440);
+        seagullCanvas[iJetTrack][iAsymmetry]->Divide(2+1,4);
         
-        for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-          for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iCentrality = 0; iCentrality <= 2; iCentrality++){  // nCentralityBins
+          for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++){ // nTrackPtBins
             
             if(iCentrality == nCentralityBins){
               titleString = Form("pp - Track pT: %.1f-%.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
@@ -905,8 +907,10 @@ void qaPlotter(){
             }
             
             // Find the correct pad inside the canvas
-            seagullCanvas[iJetTrack][iAsymmetry]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
+            //seagullCanvas[iJetTrack][iAsymmetry]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
+            seagullCanvas[iJetTrack][iAsymmetry]->cd(2-iCentrality+3*iTrackPt+1);
             gPad->SetTopMargin(0.1);
+            gPad->SetLeftMargin(0.15);
             gPad->SetBottomMargin(0.2);
             
             // Draw the histogram to canvas
