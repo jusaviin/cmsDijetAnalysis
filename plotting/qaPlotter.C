@@ -448,7 +448,7 @@ void qaPlotter(){
   bool ptWeightedJetTrack = false;    // Produce the correction for pT weighted jet-track correlations
   bool inclusiveJetTrack = false;     // Produce the correction for inclusive jet-track correlations
   
-  bool useAsymmetryBinsForSeagull = true;  // Plot seagull fits in different asymmetry bins
+  bool useAsymmetryBinsForSeagull = false;  // Plot seagull fits in different asymmetry bins
   
   bool jetShapeCorrectionComparison = false; // Draw the comparison plots between JFF and spillover corrections
   bool jetShapeCorrectionBigCanvas = true;   // Draw JFF and spillover corrections in all centrality on pT bins to big canvas
@@ -465,7 +465,7 @@ void qaPlotter(){
   
   // Open files containing the QA histograms
 
-  TFile *seagullFile = TFile::Open("data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11_QA.root");
+  TFile *seagullFile = TFile::Open("data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_seagullTuning_processed_2020-11-11_QA.root");
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_allCorrections_tuningForSeagull_wtaAxis_processed_2020-02-04_QA.root
   // data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_allCorrectionsWithShifterCentrality_trackDeltaRonlyInLowPt_processed_2019-10-17_QA.root
   // data/PbPbMC2018_RecoGen_akFlowPuCs4PFJet_noUncOrInc_5eveMix_quarkGluonCombined_wta_subeNon0_centShift5_seagullTuning_processed_2019-12-13_QA.root
@@ -874,6 +874,7 @@ void qaPlotter(){
     // Draw spillover corrections with the fit
     for(int iJetTrack = 0; iJetTrack < DijetHistogramManager::knJetTrackCorrelations; iJetTrack++){
       if(!correlationSelector[iJetTrack]) continue;  // Only do the correction for selected types
+      if(iJetTrack > 2) continue;  // Skip subleading
       
       // Loop over asymmetry bins
       for(int iAsymmetry = firstAsymmetry; iAsymmetry <= nAsymmetryBins; iAsymmetry++){
@@ -888,11 +889,13 @@ void qaPlotter(){
         // Create one big canvas with a pad for each centrality and track pT bin
         sprintf(histogramNamer,"seagullDeltaEta%d%d",iJetTrack,iAsymmetry);
         sprintf(padNamer,"Seagull deltaEta %s %s", uncorrectedDataManager->GetJetTrackHistogramName(iJetTrack), jffAsymmetryLegend[iAsymmetry].Data());
-        seagullCanvas[iJetTrack][iAsymmetry] = new TCanvas(histogramNamer,padNamer,1250,1800);
-        seagullCanvas[iJetTrack][iAsymmetry]->Divide(nCentralityBins+1,nTrackPtBins);
+        //seagullCanvas[iJetTrack][iAsymmetry] = new TCanvas(histogramNamer,padNamer,1250,1800);
+        //seagullCanvas[iJetTrack][iAsymmetry]->Divide(nCentralityBins+1,nTrackPtBins);
+        seagullCanvas[iJetTrack][iAsymmetry] = new TCanvas(histogramNamer,padNamer,1000,1440);
+        seagullCanvas[iJetTrack][iAsymmetry]->Divide(3,4);
         
-        for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
-          for(int iTrackPt = 0; iTrackPt < nTrackPtBins; iTrackPt++){
+        for(int iCentrality = 0; iCentrality <= 2; iCentrality++){  // nCentralityBins
+          for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++){  // nTrackPtBins
             
             if(iCentrality == nCentralityBins){
               titleString = Form("pp - Track pT: %.1f-%.1f GeV",trackPtBinBorders[iTrackPt],trackPtBinBorders[iTrackPt+1]);
@@ -901,8 +904,10 @@ void qaPlotter(){
             }
             
             // Find the correct pad inside the canvas
-            seagullCanvas[iJetTrack][iAsymmetry]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
+            //seagullCanvas[iJetTrack][iAsymmetry]->cd(nCentralityBins-iCentrality+(nCentralityBins+1)*iTrackPt+1);
+            seagullCanvas[iJetTrack][iAsymmetry]->cd(2-iCentrality+3*iTrackPt+1);
             gPad->SetTopMargin(0.1);
+            gPad->SetLeftMargin(0.15);
             gPad->SetBottomMargin(0.2);
             
             // Draw the histogram to canvas
@@ -910,7 +915,7 @@ void qaPlotter(){
               seagullDeltaEtaWings[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Rebin(seagullRebin);
               seagullDeltaEtaWings[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->Scale(1.0/seagullRebin);
             }
-            seagullDeltaEtaWings[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3);
+            seagullDeltaEtaWings[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3.5,3.5);
             setHistogramTitles(seagullDeltaEtaWings[iJetTrack][iAsymmetry][iCentrality][iTrackPt],titleString,"#Delta#eta");
             seagullDeltaEtaWings[iJetTrack][iAsymmetry][iCentrality][iTrackPt]->DrawCopy();
             

@@ -27,6 +27,16 @@ double seagullPoly2(double *x, double *par){
 }
 
 /*
+ * Fourth order polynomial for seagull correction
+ * Functional form: f(x) = c, if |x| < par[5]  <=> f(x) = a*x^2+b*x+c if |x| > par[5]
+ * Remember to fix par[5] before using this to fit!
+ */
+double seagullPoly4(double *x, double *par){
+  if(x[0] < par[5] && x[0] > (-1 * par[5])) return par[0];
+  return par[0]+par[1]*x[0]+par[2]*x[0]*x[0]+par[3]*x[0]*x[0]*x[0]+par[4]*x[0]*x[0]*x[0]*x[0];
+}
+
+/*
  * Exponential function for seagull correction
  * Functional form: f(x) = a + b*e^(c*x)
  */
@@ -495,7 +505,8 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
   //  4: Assume dip and falling tails of distribution and symmetrize deltaEta. Fit exponential function together with second order polynomial
   //  5: Same as 1, but do not symmetrize background deltaEta
   //  6: Same as 4, but do not symmetrize background deltaEta
-  int nFitParameters[] = {4,3,4,3,4,5,7};
+  //  7: Fit fourth order polynomial
+  int nFitParameters[] = {4,3,4,3,4,5,7,6};
   
   // Prepare the fit function
   fSeagullFit = new TF1("seagullFit",seagullPoly2,-3,3,4);
@@ -539,6 +550,15 @@ TH2D* DijetMethods::DoSeagullCorrection(const TH2D *mixedEventCorrectedHistogram
     fSeagullFit->SetParameters(initialLevel,0,0);
     fSeagullFit->FixParameter(3,middleArea);
     fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3,3);
+  }
+  
+  // Use fourth order polynomial for the fit function
+  if(normalizationMethod == 7){
+    fBackgroundEtaProjection->RecursiveRemove(fSeagullFit);
+    fSeagullFit = new TF1("seagullFitPoly4",seagullPoly4,-3.5,3.5,6);
+    fSeagullFit->SetParameters(initialLevel,0,0,0,0);
+    fSeagullFit->FixParameter(5,middleArea);
+    fBackgroundEtaProjection->Fit(fSeagullFit,"","",-3.5,3.5);
   }
   
   // Apply the correction to the input 2D histogram

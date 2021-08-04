@@ -903,6 +903,11 @@ void DijetHistogramManager::DoSeagullCorrection(){
           //if(iCentralityBin == 3 && iTrackPtBin == 3) seagullVeto = 1;
           //if(iCentralityBin == 3 && iTrackPtBin == 4) seagullVeto = 1;
           
+          // Try to use fourth order polynomial for dihadron correlations
+          seagullMethod = 7;
+          seagullConstantRegion = 0.5;
+          seagullVeto = 0;
+          
           fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin] = fMethods->DoSeagullCorrection(fhJetTrackDeltaEtaDeltaPhi[iJetTrack][kCorrected][iAsymmetry][iCentralityBin][iTrackPtBin], seagullMethod, seagullVeto, seagullConstantRegion);
           
           // Get the used background eta histogram and fitted function for QA purposes
