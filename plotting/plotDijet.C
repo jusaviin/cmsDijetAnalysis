@@ -112,12 +112,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
+  bool drawBackground = false;
   int backgroundStyle = 0; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -126,9 +126,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
                            // It follows that this number must be between 0 and 15.
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = true;
-  const char* figureFormat = "png";
-  TString figureNameSuffix = "_combination";
+  bool saveFigures = false;
+  const char* figureFormat = "pdf";
+  TString figureNameSuffix = "_regularCalo";
   
   // Normalization for jet shape plotting
   bool normalizeJetShapePlot = true;  // false = Draw P(DeltaR), true = Draw rho(DeltaR)
@@ -210,7 +210,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // corrections/trackingDeltaRCorrection_PbPb_eschemeAxis_centShift5.root
   
   // Define if you want to use seagull correction
-  bool applySeagullCorrection = false;
+  bool applySeagullCorrection = true;
   if(preprocess >= 0 && preprocess <= 2) applySeagullCorrection = false;  // No seagull correction is made for preprocessing
   
   // Bin borders
@@ -236,10 +236,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 0;
+  int lastDrawnCentralityBin = 2;
   
-  int firstDrawnTrackPtBin = 1;
-  int lastDrawnTrackPtBin = 1;
+  int firstDrawnTrackPtBin = 0;
+  int lastDrawnTrackPtBin = 3;
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -267,7 +267,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kAverage; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = false; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction

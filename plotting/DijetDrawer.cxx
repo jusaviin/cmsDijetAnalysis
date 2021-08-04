@@ -1473,8 +1473,8 @@ void DijetDrawer::DrawJetShapeStack(){
  */
 void DijetDrawer::SetupLegend(TLegend *legend, TString centralityString, TString trackString, TString extraString){
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62); // Size: 0.05
-  //legend->AddEntry((TObject*) 0, fSystemAndEnergy.Data(), "");
-  legend->AddEntry((TObject*) 0, "Long range correlation", "");
+  legend->AddEntry((TObject*) 0, fSystemAndEnergy.Data(), "");
+  //legend->AddEntry((TObject*) 0, "Leading jet-hadron correlation", "");
   if(fSystemAndEnergy.Contains("PbPb")) legend->AddEntry((TObject*) 0,centralityString.Data(),"");
   if(trackString != "") legend->AddEntry((TObject*) 0,trackString.Data(),"");
   if(extraString != "") legend->AddEntry((TObject*) 0,extraString.Data(),"");

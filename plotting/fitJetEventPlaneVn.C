@@ -6,13 +6,13 @@ void fitJetEventPlaneVn(){
   // Open the data files
   const int nFiles = 4;
   TFile *inputFile[nFiles];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_manualEventPlane_manualJetCorrection_2021-07-23.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_manualEventPlane_manualJECwithStrip02_2021-07-26.root");
-  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_manualEventPlane_manualJECwithNarrowEta_2021-07-27.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_manualEventPlane_manualJetCorrection_2021-07-23.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_manualEventPlane_manualJECwithStrip02_2021-07-26.root");
+  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_manualEventPlane_manualJECwithEtaReflect_2021-08-02.root");
   if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_dijetEvents_2021-05-05.root");
   
   //TString jetTypeString[4] = {"Calo jet","PFCS jet","PFCS flow jet","Gen jet"};
-  TString jetTypeString[4] = {"Whole #eta","#eta strip","#eta strip, |#eta_{jet}| < 1","Gen jet"};
+  TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
   
   double centralityBinBorders[] = {0,10,30,50,90};
   

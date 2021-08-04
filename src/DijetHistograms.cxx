@@ -325,10 +325,10 @@ void DijetHistograms::CreateHistograms(){
   
   // Binning for multiplicity
   const Double_t minMultiplicity = 0;
-  const Double_t maxMultiplicity = 2000;
+  const Double_t maxMultiplicity = 5000;
   const Double_t maxMultiplicityWeighted = 4000;
-  const Int_t nMultiplicityBins = 200;
-  const Int_t nMultiplicityBinsWeighted = 200;
+  const Int_t nMultiplicityBins = 500;
+  const Int_t nMultiplicityBinsWeighted = 1;
   
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
@@ -454,7 +454,7 @@ void DijetHistograms::CreateHistograms(){
   highBinBorderMultiplicity[1] = maxMultiplicityWeighted; // high bin border for weighted multiplicity
   
   // Axis 2 for the multiplicity histogram: centrality
-  nBinsMultiplicity[2] = nWideCentralityBins;     // nBins for wide centrality bins
+  nBinsMultiplicity[2] = nCentralityBins;     // nBins for wide centrality bins
   lowBinBorderMultiplicity[2] = minCentrality;    // low bin border for centrality
   highBinBorderMultiplicity[2] = maxCentrality;   // high bin border for centrality
   
@@ -463,8 +463,8 @@ void DijetHistograms::CreateHistograms(){
   fhMultiplicityDijet = new THnSparseF("multiplicityDijet", "multiplicityDijet", nAxesMultiplicity, nBinsMultiplicity, lowBinBorderMultiplicity, highBinBorderMultiplicity); fhMultiplicityDijet->Sumw2();
   
   // Set custom centrality bins for histograms
-  fhMultiplicity->SetBinEdges(2,wideCentralityBins);
-  fhMultiplicityDijet->SetBinEdges(2,wideCentralityBins);
+  //fhMultiplicity->SetBinEdges(2,wideCentralityBins);
+  //fhMultiplicityDijet->SetBinEdges(2,wideCentralityBins);
   
   
   // ======== THnSparses for leading and subleading jets ========

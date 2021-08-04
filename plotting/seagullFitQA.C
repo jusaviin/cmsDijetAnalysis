@@ -34,7 +34,7 @@ double seagullPolyExp(double *x, double *par){
 void seagullFitQA(){
   
   // Define the file used for fit testing
-  TString recoGenFileName = "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_noCorrections_processed_2020-01-15.root";
+  TString recoGenFileName = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root";
   // "data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_subeNon0_xj_2019-06-06_noCorrections_processed.root"
   TFile *recoGenFile = TFile::Open(recoGenFileName);
   
@@ -61,8 +61,8 @@ void seagullFitQA(){
   double initialLevel;
   
   // Read the histograms from the file
-  for(int iCentrality = 0; iCentrality < 1; iCentrality++){
-    for(int iTrackPt = 1; iTrackPt < 2; iTrackPt++){
+  for(int iCentrality = 0; iCentrality < 2; iCentrality++){
+    for(int iTrackPt = 0; iTrackPt < 2; iTrackPt++){
       
       // Read the deltaEta distribution to which seagull fit is made form the file
       seagullDeltaEta[iCentrality][iTrackPt] = histograms->GetHistogramJetTrackDeltaEta(DijetHistogramManager::kTrackLeadingJet, DijetHistogramManager::kCorrected, DijetHistogramManager::kMaxAsymmetryBins, iCentrality, iTrackPt, DijetHistogramManager::kBetweenPeaks);
@@ -105,10 +105,10 @@ void seagullFitQA(){
 
   // Draw the histograms from the file
   double constantChi2, polyChi2;
-  for(int iCentrality = 0; iCentrality < 1; iCentrality++){
+  for(int iCentrality = 0; iCentrality < 2; iCentrality++){
     cout << endl;
     cout << "Results for centrality " << iCentrality << endl;
-    for(int iTrackPt = 1; iTrackPt < 2; iTrackPt++){
+    for(int iTrackPt = 0; iTrackPt < 2; iTrackPt++){
       
       seagullDeltaEta[iCentrality][iTrackPt]->GetXaxis()->SetRangeUser(-3,3);
       drawer->DrawHistogram(seagullDeltaEta[iCentrality][iTrackPt],"#Delta#eta","counts",Form("C = %d, pT = %d",iCentrality,iTrackPt));
