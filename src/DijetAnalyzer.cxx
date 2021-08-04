@@ -824,6 +824,8 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t conePtSum;
   Double_t stripPtSum;
   Double_t stripWidth = 0.2;
+  Double_t centralEta;
+  bool trackFill = fFillTrackHistograms;
   
   // Fillers for THnSparses
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
@@ -1292,6 +1294,9 @@ void DijetAnalyzer::RunAnalysis(){
         // Calculate the energy density below jet
         if(eventByEventEnergyDensity){
           
+          // Set track histogram filling to false in order to not fill the track cut histograms several times
+          fFillTrackHistograms = false;
+          
           // Loop over all tracks in the event
           nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
           conePtSum = 0;
@@ -1299,27 +1304,47 @@ void DijetAnalyzer::RunAnalysis(){
           for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
             
             // Only look at HYDJET tracks for the first test
-            if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+            //if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+            
+            // Check that all the track cuts are passed
+            if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
             
             // Get the track information
             trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
             trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
             trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+            trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
             
             // Look at all the tracks within jet cone radius
             trackJetDistance = TMath::Sqrt(TMath::Power(trackEta-jetEta, 2) + TMath::Power(trackPhi-jetPhi, 2));
             if(trackJetDistance < 0.4){
               
               // Sum the pT of all the tracks within the jet cone
-              conePtSum += trackPt;
+              conePtSum += trackPt*trackEfficiencyCorrection;
               
             }
             
+            // Do an eta reflection. If we are at mid-rapidity, also shift the reflection a bit to get a good separation.
+            if(TMath::Abs(jetEta) > 0.4){
+              
+              // Large enough gap to do the reflection without shift
+              centralEta = -1 * jetEta;
+              
+            } else if(jetEta < 0){
+              // Small gap, eta on negative side
+              centralEta = jetEta + 0.8;
+              
+            } else {
+              
+              // Small gap, eta on posivite side
+              centralEta = jetEta - 0.8;
+            }
+            
             // Look at average energy density in the eta strip around the jet
-            if(TMath::Abs(jetEta - trackEta) < stripWidth){
+            if(TMath::Abs(centralEta - trackEta) < stripWidth){
               
               // Sum the pT of all the tracks in the eta-strip around the jet cone
-              stripPtSum += trackPt;
+              stripPtSum += trackPt*trackEfficiencyCorrection;
               
             }
             
@@ -1334,6 +1359,9 @@ void DijetAnalyzer::RunAnalysis(){
           
           // Correct the jet energy with the difference with respect to average
           jetPtCorrected = jetPtCorrected - energyDifference;
+          
+          // Return the track histogram filling flag to original value
+          fFillTrackHistograms = trackFill;
           
         }
         
