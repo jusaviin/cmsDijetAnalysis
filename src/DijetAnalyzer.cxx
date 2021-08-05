@@ -760,8 +760,8 @@ void DijetAnalyzer::RunAnalysis(){
   // Variables for smearing study
   Double_t smearingFactor = 0;       // Larger of the JEC uncertainties
 //  Double_t jetPtSmeared = 0;          // Smeared jet pT
-//  Double_t jetPtErrorUp = 0;          // Uncertainty to be added to the jet pT
-//  Double_t jetPtErrorDown = 0;        // Uncertainty to be subtracted from the jet pT
+  Double_t jetPtErrorUp = 0;          // Uncertainty to be added to the jet pT
+  Double_t jetPtErrorDown = 0;           // Uncertainty to be subtracted from the jet pT
 //  Double_t highestJetPtSmeared = 0;   // Smeared pT of the highest jet
 //  Double_t highestJetPtErrorUp = 0;   // Uncertainty to be added to the jet with highest pT
 //  Double_t highestJetPtErrorDown = 0; // Uncertainty to be subtracted from the jet with highest pT
@@ -1387,6 +1387,14 @@ void DijetAnalyzer::RunAnalysis(){
           // If we are using smearing scenario, modify the jet pT using gaussian smearing
           if(fJetUncertaintyMode == 3){
             smearingFactor = GetSmearingFactor(jetPt, centrality);
+            jetPt = jetPt * fRng->Gaus(1,smearingFactor);
+          }
+          
+          // Second smearing scenario, where we smear the jet energy based on the uncertainties
+          if(fJetUncertaintyMode == 5){
+            jetPtErrorUp = fJetUncertainty2018->GetUncertainty().second;
+            jetPtErrorDown = fJetUncertainty2018->GetUncertainty().first;
+            smearingFactor = jetPtErrorUp > jetPtErrorDown ? jetPtErrorUp : jetPtErrorDown;
             jetPt = jetPt * fRng->Gaus(1,smearingFactor);
           }
           
