@@ -60,6 +60,10 @@ void estimateLongRangeSystematics(){
   // Results with varied quark/gluon fraction
   TString quarkGluonFractionFileName = "flowGraphs/summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root";
   
+  // Results where jet energy correction is altered by its uncertainties
+  TString jecMinusFileName = "flowGraphs/summaryPlot_akCaloJet_JECminus_2021-08-05.root";
+  TString jecPlusFileName = "flowGraphs/summaryPlot_akCaloJet_JECplus_2021-08-05.root";
+  
   // Flow component configuration
   const int maxVn = 4;      // Maximum number of flow components
   const int firstFlow = 2;  // First analyzed flow component
@@ -69,7 +73,7 @@ void estimateLongRangeSystematics(){
   
   bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_includeQuarkGluonFraction_finalCorrection_2021-07-26.root";
+  TString outputFileName = "flowGraphs/systematicUncertainties_includeJEC_finalCorrection_2021-08-05.root";
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -94,6 +98,8 @@ void estimateLongRangeSystematics(){
   TFile* shiftedResultFile2 = TFile::Open(shiftedResultFileName2);
   TFile* noTrackEfficiencyFile = TFile::Open(noTrackEfficiencyFileName);
   TFile* quarkGluonFractionFile = TFile::Open(quarkGluonFractionFileName);
+  TFile* jecFile1 = TFile::Open(jecMinusFileName);
+  TFile* jecFile2 = TFile::Open(jecPlusFileName);
   
   // Result graphs
   TGraphErrors* nominalResultGraph[maxVn];
@@ -107,6 +113,7 @@ void estimateLongRangeSystematics(){
   TGraphErrors* shiftedResultGraph[maxVn][2];
   TGraphErrors* noTrackEfficiencyGraph[maxVn];
   TGraphErrors* quarkGluonFractionGraph[maxVn];
+  TGraphErrors* jecGraph[maxVn][2];
   
   TString graphName;
   
@@ -130,6 +137,8 @@ void estimateLongRangeSystematics(){
     shiftedResultGraph[iFlow][1] = (TGraphErrors*) shiftedResultFile2->Get(graphName);
     noTrackEfficiencyGraph[iFlow] = (TGraphErrors*) noTrackEfficiencyFile->Get(graphName);
     quarkGluonFractionGraph[iFlow] = (TGraphErrors*) quarkGluonFractionFile->Get(graphName);
+    jecGraph[iFlow][0] = (TGraphErrors*) jecFile1->Get(graphName);
+    jecGraph[iFlow][1] = (TGraphErrors*) jecFile2->Get(graphName);
     
   }
   
@@ -387,6 +396,30 @@ void estimateLongRangeSystematics(){
     if(plotExample){
       legendNames[0] = "Adjusted q/g fraction";
       drawIllustratingPlots(drawer, finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kQuarkGluonFraction));
+    }
+    
+  } // Flow component loop
+  
+  // ============================================= //
+  // Uncertainty coming from jet energy correction //
+  // ============================================= //
+  
+  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      
+      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jecGraph[iFlow], 2, iCentrality);
+      
+      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = absoluteUncertainty;
+      relativeUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = relativeUncertainty;
+      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJEC);
+      
+    } // Centrality loop
+    
+    // Draw example plots on how the uncertainty is obtained
+    if(plotExample){
+      legendNames[0] = "JEC minus";
+      legendNames[1] = "JEC plus";
+      drawIllustratingPlots(drawer, finalResultGraph[iFlow], jecGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJEC));
     }
     
   } // Flow component loop

@@ -12,7 +12,7 @@ void longRangeSystematicExplorer(){
   
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
-  TString uncertaintyFileName = "systematicUncertainties_includeQuarkGluonFraction_finalCorrection_2021-07-26.root";
+  TString uncertaintyFileName = "systematicUncertainties_includeJEC_finalCorrection_2021-08-05.root";
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
