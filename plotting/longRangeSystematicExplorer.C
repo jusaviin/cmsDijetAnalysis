@@ -12,14 +12,14 @@ void longRangeSystematicExplorer(){
   
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
-  TString uncertaintyFileName = "systematicUncertainties_includeJEC_finalCorrection_2021-08-05.root";
+  TString uncertaintyFileName = "systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   const double centralityBinBorders[] = {0, 10, 30, 50, 90}; // Bin borders for centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 3;     // First drawn flow component
+  const int firstDrawnVn = 2;     // First drawn flow component
   const int lastDrawnVn = 3;      // Last drawn flow component
   
   // Choose which histograms to draw
@@ -27,8 +27,8 @@ void longRangeSystematicExplorer(){
   const bool drawAbsoluteUncertainties = true;
   
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "_includeTracking";
+  const bool saveFigures = true;
+  TString saveComment = "_newSources";
   
   // =========== //
   // Read graphs //
@@ -133,7 +133,7 @@ void longRangeSystematicExplorer(){
     for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
                 
-        legend = new TLegend(0.2,0.7,0.5,0.9);
+        legend = new TLegend(0.11,0.7,0.41,0.9);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         
         maxValue = systematicIllustrationRelative[iFlow][iCentrality]->GetBinContent(LongRangeSystematicOrganizer::kAll+1);
@@ -158,7 +158,7 @@ void longRangeSystematicExplorer(){
     for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
                 
-        legend = new TLegend(0.2,0.7,0.5,0.9);
+        legend = new TLegend(0.11,0.7,0.41,0.9);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
         
         maxValue = systematicIllustrationAbsolute[iFlow][iCentrality]->GetBinContent(LongRangeSystematicOrganizer::kAll+1);

@@ -42,6 +42,10 @@ void estimateLongRangeSystematics(){
   TString negativeDeltaEtaJetHadronResultFileName = "flowGraphs/summaryPlot_akCaloJet_negativeDeltaEtaJetHadron_nominalCorrection_2021-05-26.root";
   TString positiveDeltaEtaJetHadronResultFileName = "flowGraphs/summaryPlot_akCaloJet_positiveDeltaEtaJetHadron_nominalCorrection_2021-05-26.root";
   
+  // Results with wide deltaEta region for dihadron long range definition
+  TString wideDeltaEtaDihadronFileName = "flowGraphs/summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root";
+  TString veryWideDeltaEtaDihadronFileName = "flowGraphs/summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root";
+  
   // Results from different vz regions
   TString negativeVzResultFileName = "flowGraphs/summaryPlot_akCaloJet_negativeVzJetHadron_nominalCorrection_2021-05-27.root";
   TString positiveVzResultFileName = "flowGraphs/summaryPlot_akCaloJet_positiveVzJetHadron_nominalCorrection_2021-05-27.root";
@@ -49,10 +53,13 @@ void estimateLongRangeSystematics(){
   // Results with minimum bias dihadron
   TString minBiasDihadronResultFileName = "flowGraphs/summaryPlot_akCaloJet_minBiasDihadron_nominalCorrection_2021-05-26.root";
   
-  // Results with final correction TODO: Check this is the actual nominal correction.
+  // Results with final correction TODO: This is the actual nominal correction.
   TString finalResultFileName = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root";
   TString shiftedResultFileName1 = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root";
   TString shiftedResultFileName2 = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root";
+  
+  // Results with Q-vector weight instead of cut
+  TString qVectorWeightedFileName = "flowGraphs/summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root";
   
   // Results without tracking efficiency correction
   TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";
@@ -60,9 +67,9 @@ void estimateLongRangeSystematics(){
   // Results with varied quark/gluon fraction
   TString quarkGluonFractionFileName = "flowGraphs/summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root";
   
-  // Results where jet energy correction is altered by its uncertainties
-  TString jecMinusFileName = "flowGraphs/summaryPlot_akCaloJet_JECminus_2021-08-05.root";
-  TString jecPlusFileName = "flowGraphs/summaryPlot_akCaloJet_JECplus_2021-08-05.root";
+  // Results where jet energy correction is altered by its uncertainties or by resolution
+  TString jecUncertaintySmearedFileName = "flowGraphs/summaryPlot_akCaloJet_smearedJECmostStats_2021-08-09.root";
+  TString jetResolutionSmearedFileName = "flowGraphs/summaryPlot_akCaloJet_smearedJER_2021-08-09.root";
   
   // Flow component configuration
   const int maxVn = 4;      // Maximum number of flow components
@@ -73,7 +80,7 @@ void estimateLongRangeSystematics(){
   
   bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_includeJEC_finalCorrection_2021-08-05.root";
+  TString outputFileName = "flowGraphs/systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -90,16 +97,19 @@ void estimateLongRangeSystematics(){
   TFile* wideDeltaEtaJetHadronResultFile = TFile::Open(wideDeltaEtaJetHadronResultFileName);
   TFile* negativeDeltaEtaJetHadronResultFile = TFile::Open(negativeDeltaEtaJetHadronResultFileName);
   TFile* positiveDeltaEtaJetHadronResultFile = TFile::Open(positiveDeltaEtaJetHadronResultFileName);
+  TFile* wideDeltaEtaDihadronFile = TFile::Open(wideDeltaEtaDihadronFileName);
+  TFile* veryWideDeltaEtaDihadronFile = TFile::Open(veryWideDeltaEtaDihadronFileName);
   TFile* negativeVzResultFile = TFile::Open(negativeVzResultFileName);
   TFile* positiveVzResultFile = TFile::Open(positiveVzResultFileName);
   TFile* minBiasDihadronResultFile = TFile::Open(minBiasDihadronResultFileName);
   TFile* finalResultFile = TFile::Open(finalResultFileName);
   TFile* shiftedResultFile1 = TFile::Open(shiftedResultFileName1);
   TFile* shiftedResultFile2 = TFile::Open(shiftedResultFileName2);
+  TFile* qVectorWeightedFile = TFile::Open(qVectorWeightedFileName);
   TFile* noTrackEfficiencyFile = TFile::Open(noTrackEfficiencyFileName);
   TFile* quarkGluonFractionFile = TFile::Open(quarkGluonFractionFileName);
-  TFile* jecFile1 = TFile::Open(jecMinusFileName);
-  TFile* jecFile2 = TFile::Open(jecPlusFileName);
+  TFile* jecUncertaintySmearedFile = TFile::Open(jecUncertaintySmearedFileName);
+  TFile* jetResolutionSmearedFile = TFile::Open(jetResolutionSmearedFileName);
   
   // Result graphs
   TGraphErrors* nominalResultGraph[maxVn];
@@ -107,13 +117,16 @@ void estimateLongRangeSystematics(){
   TGraphErrors* angleSmearResultGraph[maxVn];
   TGraphErrors* deltaEtaRegionJetHadronGraph[maxVn][2];
   TGraphErrors* deltaEtaSideJetHadronGraph[maxVn][2];
+  TGraphErrors* wideDeltaEtaDihadronGraph[maxVn][2];
   TGraphErrors* vzRegionJetHadronGraph[maxVn][2];
   TGraphErrors* minBiasDihadronResultGraph[maxVn];
   TGraphErrors* finalResultGraph[maxVn];
   TGraphErrors* shiftedResultGraph[maxVn][2];
+  TGraphErrors* qVectorWeightedGraph[maxVn];
   TGraphErrors* noTrackEfficiencyGraph[maxVn];
   TGraphErrors* quarkGluonFractionGraph[maxVn];
-  TGraphErrors* jecGraph[maxVn][2];
+  TGraphErrors* jecUncertaintySmearedGraph[maxVn];
+  TGraphErrors* jetResolutionSmearedGraph[maxVn];
   
   TString graphName;
   
@@ -129,16 +142,19 @@ void estimateLongRangeSystematics(){
     deltaEtaRegionJetHadronGraph[iFlow][1] = (TGraphErrors*) wideDeltaEtaJetHadronResultFile->Get(graphName);
     deltaEtaSideJetHadronGraph[iFlow][0] = (TGraphErrors*) negativeDeltaEtaJetHadronResultFile->Get(graphName);
     deltaEtaSideJetHadronGraph[iFlow][1] = (TGraphErrors*) positiveDeltaEtaJetHadronResultFile->Get(graphName);
+    wideDeltaEtaDihadronGraph[iFlow][0] = (TGraphErrors*) wideDeltaEtaDihadronFile->Get(graphName);
+    wideDeltaEtaDihadronGraph[iFlow][1] = (TGraphErrors*) veryWideDeltaEtaDihadronFile->Get(graphName);
     vzRegionJetHadronGraph[iFlow][0] = (TGraphErrors*) negativeVzResultFile->Get(graphName);
     vzRegionJetHadronGraph[iFlow][1] = (TGraphErrors*) positiveVzResultFile->Get(graphName);
     minBiasDihadronResultGraph[iFlow] = (TGraphErrors*) minBiasDihadronResultFile->Get(graphName);
     finalResultGraph[iFlow] = (TGraphErrors*) finalResultFile->Get(graphName);
     shiftedResultGraph[iFlow][0] = (TGraphErrors*) shiftedResultFile1->Get(graphName);
     shiftedResultGraph[iFlow][1] = (TGraphErrors*) shiftedResultFile2->Get(graphName);
+    qVectorWeightedGraph[iFlow] = (TGraphErrors*) qVectorWeightedFile->Get(graphName);
     noTrackEfficiencyGraph[iFlow] = (TGraphErrors*) noTrackEfficiencyFile->Get(graphName);
     quarkGluonFractionGraph[iFlow] = (TGraphErrors*) quarkGluonFractionFile->Get(graphName);
-    jecGraph[iFlow][0] = (TGraphErrors*) jecFile1->Get(graphName);
-    jecGraph[iFlow][1] = (TGraphErrors*) jecFile2->Get(graphName);
+    jecUncertaintySmearedGraph[iFlow] = (TGraphErrors*) jecUncertaintySmearedFile->Get(graphName);
+    jetResolutionSmearedGraph[iFlow] = (TGraphErrors*) jetResolutionSmearedFile->Get(graphName);
     
   }
   
@@ -236,6 +252,30 @@ void estimateLongRangeSystematics(){
   } // Flow component loop
   
   // ============================================================================== //
+  // Uncertainty coming from different deltaEta regions in dihadron correlation fit //
+  // ============================================================================== //
+  
+  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      
+      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], wideDeltaEtaDihadronGraph[iFlow], 2, iCentrality);
+      
+      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron][iFlow][iCentrality] = absoluteUncertainty;
+      relativeUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron][iFlow][iCentrality] = relativeUncertainty;
+      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron);
+      
+    } // Centrality loop
+    
+    // Draw example plots on how the uncertainty is obtained
+    if(plotExample){
+      legendNames[0] = "2 < |#Delta#eta| < 3.5";
+      legendNames[1] = "2.5 < |#Delta#eta| < 4";
+      drawIllustratingPlots(drawer, finalResultGraph[iFlow], wideDeltaEtaDihadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron));
+    }
+    
+  } // Flow component loop
+  
+  // ============================================================================== //
   // Uncertainty coming from different deltaEta sides in jet-hadron correlation fit //
   // ============================================================================== //
   
@@ -307,9 +347,9 @@ void estimateLongRangeSystematics(){
     
   } // Flow component loop
   
-  // ========================================== //
-  // Uncertainty coming from Monte Carlo tuning //
-  // ========================================== //
+  // ============================================================== //
+  // Uncertainty coming from centrality shift in Monte Carlo tuning //
+  // ============================================================== //
   
   for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -327,6 +367,29 @@ void estimateLongRangeSystematics(){
       legendNames[0] = "MC + 3%";
       legendNames[1] = "MC + 5%";
       drawIllustratingPlots(drawer, finalResultGraph[iFlow], shiftedResultGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCTuning));
+    }
+    
+  } // Flow component loop
+  
+  // ========================================================================== //
+  // Uncertainty coming from difference between Q-vector weight and cut methods //
+  // ========================================================================== //
+  
+  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      
+      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], qVectorWeightedGraph[iFlow], iCentrality);
+      
+      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = absoluteUncertainty;
+      relativeUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = relativeUncertainty;
+      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMCMethod);
+      
+    } // Centrality loop
+    
+    // Draw example plots on how the uncertainty is obtained
+    if(plotExample){
+      legendNames[0] = "Q-vector weight";
+      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], qVectorWeightedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCMethod));
     }
     
   } // Flow component loop
@@ -407,7 +470,7 @@ void estimateLongRangeSystematics(){
   for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jecGraph[iFlow], 2, iCentrality);
+      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jecUncertaintySmearedGraph[iFlow], iCentrality);
       
       absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = absoluteUncertainty;
       relativeUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = relativeUncertainty;
@@ -417,9 +480,31 @@ void estimateLongRangeSystematics(){
     
     // Draw example plots on how the uncertainty is obtained
     if(plotExample){
-      legendNames[0] = "JEC minus";
-      legendNames[1] = "JEC plus";
-      drawIllustratingPlots(drawer, finalResultGraph[iFlow], jecGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJEC));
+      legendNames[0] = "Smeared JEC";
+      drawIllustratingPlots(drawer, finalResultGraph[iFlow], jecUncertaintySmearedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJEC));
+    }
+    
+  } // Flow component loop
+  
+  // ============================================= //
+  // Uncertainty coming from jet energy resolution //
+  // ============================================= //
+  
+  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      
+      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jetResolutionSmearedGraph[iFlow], iCentrality);
+      
+      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJER][iFlow][iCentrality] = absoluteUncertainty;
+      relativeUncertaintyTable[LongRangeSystematicOrganizer::kJER][iFlow][iCentrality] = relativeUncertainty;
+      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJER);
+      
+    } // Centrality loop
+    
+    // Draw example plots on how the uncertainty is obtained
+    if(plotExample){
+      legendNames[0] = "Smeared JER";
+      drawIllustratingPlots(drawer, finalResultGraph[iFlow], jetResolutionSmearedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJER));
     }
     
   } // Flow component loop
