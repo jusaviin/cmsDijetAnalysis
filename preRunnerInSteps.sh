@@ -6,8 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/dijetPbPb2018_akCaloJets_onlyRegular_JECminus_10eveMix_preprocessed_2021-07-27.root" "data/dijetPbPb2018_akCaloJets_onlyRegular_JECminus_10eveMix_noCorrections_processed_2021-07-27.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/dijetPbPb2018_akCaloJets_onlyRegular_JECplus_10eveMix_preprocessed_2021-07-27.root" "data/dijetPbPb2018_akCaloJets_onlyRegular_JECplus_10eveMix_noCorrections_processed_2021-07-27.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/dijetPbPb2018_akCaloJets_onlyRegular_smearedJEC_10eveMix_preprocessed_2021-08-05_part0-2.root" "data/dijetPbPb2018_akCaloJets_onlyRegular_smearedJEC_10eveMix_noCorrections_processed_2021-08-05_part0-2.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"

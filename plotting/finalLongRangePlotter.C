@@ -16,7 +16,7 @@ void finalLongRangePlotter(){
   // summaryPlot_akCaloJet_nominalCorrection_2021-05-20.root
   // summaryPlot_akCaloJet_averageCorrection_2021-06-01.root
   // summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root
-  TString uncertaintyFileName = "systematicUncertainties_includeQuarkGluonFraction_finalCorrection_2021-07-26.root";
+  TString uncertaintyFileName = "systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
   // systematicUncertainties_justTesting.root
   // systematicUncertainties_justTesting_averageCorrection.root
   // systematicUncertainties_justTesting_finalCorrection.root
@@ -28,16 +28,16 @@ void finalLongRangePlotter(){
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 3;     // First drawn flow component
+  const int firstDrawnVn = 2;     // First drawn flow component
   const int lastDrawnVn = 3;      // Last drawn flow component
   
   // Define if previous results should be included in the plot
-  const bool drawAtlasJetV2 = false;
+  const bool drawAtlasJetV2 = true;
   const bool drawCmsHigtPtV2 = true;
   
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "_initialUncertainties";
+  const bool saveFigures = true;
+  TString saveComment = "_allUncertainties";
   
   // =========== //
   // Read graphs //
@@ -132,7 +132,7 @@ void finalLongRangePlotter(){
   zeroLine->SetLineStyle(2);
   
   for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
-    legend = new TLegend(0.17,0.7,0.47,0.9);
+    legend = new TLegend(0.2,0.7,0.5,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
     
     // Set the style for the jet vn values
@@ -165,7 +165,7 @@ void finalLongRangePlotter(){
     
     if(iFlow == 1 && drawCmsHigtPtV2){
       cmsHighPtV2->Draw("p,same");
-      legend->AddEntry(cmsHighPtV2, "CMS high p_{T} v_{2} (#scale[0.8]{PLB 776 (2018) 195})", "p"); // )
+      legend->AddEntry(cmsHighPtV2, "CMS high p_{T} v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
     }
     
     legend->Draw();

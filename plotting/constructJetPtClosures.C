@@ -163,17 +163,17 @@ void constructJetPtClosures(){
   // data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_onlyJets_20pSmear_jetPtClosure_JECv4_processed_2020-05-20.root
   
   bool drawLeadingClosure = true;       // Produce the closure plots for leading jet pT
-  bool drawSubleadingClosure = true;    // Produce the closure plots for subleading jet pT
+  bool drawSubleadingClosure = false;    // Produce the closure plots for subleading jet pT
   bool drawInclusiveClosure = false;     // Produce the closure plots for inclusive jet pT
   
-  bool drawPtClosure = false;
-  bool drawEtaClosure = true;
+  bool drawPtClosure = true;
+  bool drawEtaClosure = false;
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
-  bool fitResolution = false;  // Fit the jet pT resolution histograms
+  bool fitResolution = true;  // Fit the jet pT resolution histograms
   
-  bool saveFigures = true;  // Save the figures to file
+  bool saveFigures = false;  // Save the figures to file
   
   // ==================================================================
   // =================== Configuration ready ==========================

@@ -20,7 +20,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/dijetPbPb2018_akCaloJets_onlyRegular_JECplus_10eveMix_noCorrections_processed_2021-07-27.root";
+  jetHadronFileName[0] = "data/dijetPbPb2018_akCaloJets_onlyRegular_smearedJEC_10eveMix_noCorrections_processed_2021-08-05_part0-2.root";
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
@@ -98,8 +98,8 @@ void prepareFinalLongRangeGraphs(){
   const bool useSameEventDihadron = false;  // True: Prepare final graphs from raw dihadron distribution. False: Use mixed event corrected distributions
   
   const bool projectManualCorrectedJetHadron = false;  // True: Manually do background projection from mixed event corrected distribution. Useful for systematic error estimation
-  const double minEtaProjection = 1.5;  // Minimum eta vaue used in the manual projection
-  const double maxEtaProjection = 2.5;  // Maximum eta value used in the manual projection
+  const double minEtaProjection = 2;  // Minimum eta vaue used in the manual projection
+  const double maxEtaProjection = 3.5;  // Maximum eta value used in the manual projection
   const bool oneSideProjection = false;  // True: Only project given eta range. False: Project also symmetric region from the opposite side
   
   const bool drawFourierFitJetHadron = true;   // Draw the fits done to the jet-hadron distributions
@@ -129,7 +129,7 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet  kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_jetHadronJECplus_correctedJetHadron_correctedDihadron_2021-08-05.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_smearedJECjetHadronMostStats_correctedJetHadron_correctedDihadron_2021-08-09.root";
   // flowGraphs/flowGraphs_PbPb2018MC_genJets_4pCentShift_subeNon0_dihadronFromRecoJets_correctedJetHadron_correctedDihadron_2021-07-27.root
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPb2018_fullStats_caloJets_correctedJetHadron_correctedEventDihadron_2020-11-19.root
