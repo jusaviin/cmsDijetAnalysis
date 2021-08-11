@@ -25,6 +25,8 @@ DijetHistograms::DijetHistograms() :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
+  fhEnergyCorrectionDifference(0),
+  fhEnergyCorrectionRatio(0),
   fhMultiplicity(0),
   fhMultiplicityDijet(0),
   fhLeadingJet(0),
@@ -67,6 +69,8 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fhCentralityDijet(0),
   fhPtHat(0),
   fhPtHatWeighted(0),
+  fhEnergyCorrectionDifference(0),
+  fhEnergyCorrectionRatio(0),
   fhMultiplicity(0),
   fhMultiplicityDijet(0),
   fhLeadingJet(0),
@@ -109,6 +113,8 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fhCentralityDijet(in.fhCentralityDijet),
   fhPtHat(in.fhPtHat),
   fhPtHatWeighted(in.fhPtHatWeighted),
+  fhEnergyCorrectionDifference(in.fhEnergyCorrectionDifference),
+  fhEnergyCorrectionRatio(in.fhEnergyCorrectionRatio),
   fhMultiplicity(in.fhMultiplicity),
   fhMultiplicityDijet(in.fhMultiplicityDijet),
   fhLeadingJet(in.fhLeadingJet),
@@ -155,6 +161,8 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhCentralityDijet = in.fhCentralityDijet;
   fhPtHat = in.fhPtHat;
   fhPtHatWeighted = in.fhPtHatWeighted;
+  fhEnergyCorrectionDifference = in.fhEnergyCorrectionDifference;
+  fhEnergyCorrectionRatio = in.fhEnergyCorrectionRatio;
   fhMultiplicity = in.fhMultiplicity;
   fhMultiplicityDijet = in.fhMultiplicityDijet;
   fhLeadingJet = in.fhLeadingJet;
@@ -198,6 +206,8 @@ DijetHistograms::~DijetHistograms(){
   delete fhCentralityDijet;
   delete fhPtHat;
   delete fhPtHatWeighted;
+  delete fhEnergyCorrectionDifference;
+  delete fhEnergyCorrectionRatio;
   delete fhMultiplicity;
   delete fhMultiplicityDijet;
   delete fhLeadingJet;
@@ -426,6 +436,8 @@ void DijetHistograms::CreateHistograms(){
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
+  fhEnergyCorrectionDifference = new TH1F("energyCorrectionDifference","energyCorrectionDifference",120,-30,30); fhEnergyCorrectionDifference->Sumw2();
+  fhEnergyCorrectionRatio = new TH1F("energyCorrectionRatio","energyCorrectionRatio",120,-0.3,0.3); fhEnergyCorrectionRatio->Sumw2();
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -905,6 +917,8 @@ void DijetHistograms::Write() const{
   fhCentralityDijet->Write();
   fhPtHat->Write();
   fhPtHatWeighted->Write();
+  fhEnergyCorrectionDifference->Write();
+  fhEnergyCorrectionRatio->Write();
   fhMultiplicity->Write();
   fhMultiplicityDijet->Write();
   fhLeadingJet->Write();

@@ -816,13 +816,17 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentMixedEventFile;
   
   // Test on trying to correct for flow contribution under jet
-  bool eventByEventEnergyDensity = false;
+  bool eventByEventEnergyDensity = true;
   Double_t averageEnergyDensity;
   Double_t averageEnergyInCone;
+  Double_t anotherAverageEnergyDensity;
+  Double_t anotherAverageEnergyInCone;
   Double_t energyDifference;
+  Double_t anotherEnergyDifference;
   Double_t trackJetDistance;
   Double_t conePtSum;
   Double_t stripPtSum;
+  Double_t anotherStripPtSum;
   Double_t stripWidth = 0.2;
   Double_t centralEta;
   bool trackFill = fFillTrackHistograms;
@@ -1301,6 +1305,7 @@ void DijetAnalyzer::RunAnalysis(){
           nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
           conePtSum = 0;
           stripPtSum = 0;
+          anotherStripPtSum = 0;
           for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
             
             // Only look at HYDJET tracks for the first test
@@ -1340,11 +1345,19 @@ void DijetAnalyzer::RunAnalysis(){
               centralEta = jetEta - 0.8;
             }
             
-            // Look at average energy density in the eta strip around the jet
+            // Look at average energy density in the eta strip around the eta reflected jet axis
             if(TMath::Abs(centralEta - trackEta) < stripWidth){
               
               // Sum the pT of all the tracks in the eta-strip around the jet cone
               stripPtSum += trackPt*trackEfficiencyCorrection;
+              
+            }
+            
+            // Look at average energy density in the eta strip around the jet axis
+            if(TMath::Abs(jetEta - trackEta) < stripWidth){
+              
+              // Sum the pT of all the tracks in the eta-strip around the jet cone
+              anotherStripPtSum += trackPt*trackEfficiencyCorrection;
               
             }
             
@@ -1354,8 +1367,17 @@ void DijetAnalyzer::RunAnalysis(){
           averageEnergyDensity = stripPtSum / (2 * TMath::Pi() * 2 * stripWidth);
           averageEnergyInCone = averageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
           
+          anotherAverageEnergyDensity = anotherStripPtSum / (2 * TMath::Pi() * 2 * stripWidth);
+          anotherAverageEnergyInCone = anotherAverageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
+          
           // Calculate the difference between average over the whole event and below jet cone
           energyDifference = conePtSum - averageEnergyInCone;
+          
+          anotherEnergyDifference = conePtSum - anotherAverageEnergyInCone;
+          
+          // For debugging purposes, check the differences in strip values
+          fHistograms->fhEnergyCorrectionDifference->Fill(anotherAverageEnergyInCone-averageEnergyInCone,fTotalEventWeight);
+          fHistograms->fhEnergyCorrectionRatio->Fill(energyDifference/jetPtCorrected-anotherEnergyDifference/jetPtCorrected, fTotalEventWeight);
           
           // Correct the jet energy with the difference with respect to average
           jetPtCorrected = jetPtCorrected - energyDifference;
@@ -2539,12 +2561,20 @@ Double_t DijetAnalyzer::GetSmearingFactor(Double_t jetPt, const Double_t central
     
   } else {
     
-    // Parameters for the smearing function
+//    // Parameters for the smearing function for flow jets
+//    Double_t resolutionFit[4][5] = {
+//      {0.451855, -0.00331992, 1.25897e-05, -2.26434e-08, 1.55081e-11},
+//      {0.366326, -0.00266997, 1.04733e-05, -1.95302e-08, 1.38409e-11},
+//      {0.268453, -0.00184878, 7.45201e-06, -1.43486e-08, 1.04726e-11},
+//      {0.202255, -0.00114677, 4.2566e-06, -7.69286e-09, 5.32617e-12}
+//    };
+    
+    // Parameters for the smearing function for calo jets
     Double_t resolutionFit[4][5] = {
-      {0.451855, -0.00331992, 1.25897e-05, -2.26434e-08, 1.55081e-11},
-      {0.366326, -0.00266997, 1.04733e-05, -1.95302e-08, 1.38409e-11},
-      {0.268453, -0.00184878, 7.45201e-06, -1.43486e-08, 1.04726e-11},
-      {0.202255, -0.00114677, 4.2566e-06, -7.69286e-09, 5.32617e-12}
+      {0.268878, -0.00142952, 4.91294e-06, -8.43379e-09, 5.64202e-12},
+      {0.251296, -0.00130685, 4.51052e-06, -7.78237e-09, 5.21521e-12},
+      {0.246154, -0.00137711, 5.21775e-06, -9.76697e-09, 6.98133e-12},
+      {0.215341, -0.000966671, 3.06525e-06, -4.92523e-09, 3.08673e-12}
     };
     
     for(int iParameter = 0; iParameter < 5; iParameter++){

@@ -48,6 +48,8 @@ public:
   TH1F *fhCentralityDijet;         // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
   TH1F *fhPtHat;                   // pT hat for MC events (only meaningful for MC)
   TH1F *fhPtHatWeighted;           // Weighted pT hat distribution
+  TH1F *fhEnergyCorrectionDifference;  // Debug histogram for manual energy correction
+  TH1F *fhEnergyCorrectionRatio;       // Debug histogram for manual energy correction
   THnSparseF *fhMultiplicity;      // Track multiplicity from all events [multiplicity][centrality]
   THnSparseF *fhMultiplicityDijet; // Track multiplicity from dijet events [multiplicity][centrality]
   THnSparseF *fhLeadingJet;        // Leading jet without dijet requirement [l-pT][l-phi][l-eta][Ajj][cent]
