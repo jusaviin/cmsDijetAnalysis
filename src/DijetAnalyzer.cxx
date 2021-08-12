@@ -45,10 +45,12 @@ DijetAnalyzer::DijetAnalyzer() :
   fCentralityWeightFunction(0),
   fPtWeightFunction(0),
   fDijetWeightFunction(0),
+  fSmearingFunction(0),
   fFakeV2Function(0),
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
+  fRng(0),
   fDataType(-1),
   fForestType(0),
   fReadMode(0),
@@ -231,6 +233,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fDijetWeightFunction = new TF1("fDijetWeightFunction","pol3",0,500);
   fDijetWeightFunction->SetParameters(0.723161,0.00236126,-3.90984e-06,3.10631e-09);
   
+  // Function for smearing the jet pT for systemtic uncertainties
+  fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
+  
   // Function for generating fake v2. Currently set for 5 % v2
   fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos(2*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
   
@@ -357,6 +362,10 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     assert(0);
   }
   
+  // Initialize the random number generator with a random seed
+  fRng = new TRandom3();
+  fRng->SetSeed(0);
+  
 }
 
 /*
@@ -373,7 +382,9 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fCentralityWeightFunction(in.fCentralityWeightFunction),
   fPtWeightFunction(in.fPtWeightFunction),
   fDijetWeightFunction(in.fDijetWeightFunction),
+  fSmearingFunction(in.fSmearingFunction),
   fFakeV2Function(in.fFakeV2Function),
+  fRng(in.fRng),
   fDataType(in.fDataType),
   fForestType(in.fForestType),
   fReadMode(in.fReadMode),
@@ -460,7 +471,9 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fCentralityWeightFunction = in.fCentralityWeightFunction;
   fPtWeightFunction = in.fPtWeightFunction;
   fDijetWeightFunction = in.fDijetWeightFunction;
+  fSmearingFunction = in.fSmearingFunction;
   fFakeV2Function = in.fFakeV2Function;
+  fRng = in.fRng;
   fDataType = in.fDataType;
   fForestType = in.fForestType;
   fReadMode = in.fReadMode;
@@ -541,9 +554,11 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
   if(fFakeV2Function) delete fFakeV2Function;
+  if(fSmearingFunction) delete fSmearingFunction;
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     if(fQvectorWeightFunction[iCentrality]) delete fQvectorWeightFunction[iCentrality];
   }
+  if(fRng) delete fRng;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
   if(fTrackReader[DijetHistograms::kMixedEvent]) delete fTrackReader[DijetHistograms::kMixedEvent];
@@ -794,6 +809,11 @@ void DijetAnalyzer::RunAnalysis(){
   Int_t centralityBin;
   Int_t iEventPlane = 9; // 8 = forward rapidity. 9 = midrapidity;
   Double_t jetEventPlaneDeltaPhiForwardRap;
+  
+  // Variables for smearing
+  Double_t smearingFactor;
+  Double_t jetPtErrorUp;
+  Double_t jetPtErrorDown;
   
   // File name helper variables
   TString currentFile;
@@ -1051,7 +1071,7 @@ void DijetAnalyzer::RunAnalysis(){
     //         Main event loop for each file
     //************************************************
     
-    Int_t maxEvent = 5000;
+    Int_t maxEvent = 100;
     if(nEvents < maxEvent) maxEvent = nEvents;
     for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
       
@@ -1253,6 +1273,20 @@ void DijetAnalyzer::RunAnalysis(){
           // If we are making runs using variation of jet pT within uncertainties, modify the jet pT here
           if(fJetUncertaintyMode == 1) jetPt = jetPt * (1 - fJetUncertainty2018->GetUncertainty().first);
           if(fJetUncertaintyMode == 2) jetPt = jetPt * (1 + fJetUncertainty2018->GetUncertainty().second);
+          
+          // If we are using smearing scenario, modify the jet pT using gaussian smearing
+          if(fJetUncertaintyMode == 3){
+            smearingFactor = GetSmearingFactor(jetPt, centrality);
+            jetPt = jetPt * fRng->Gaus(1,smearingFactor);
+          }
+          
+          // Second smearing scenario, where we smear the jet energy based on the uncertainties
+          if(fJetUncertaintyMode == 5){
+            jetPtErrorUp = fJetUncertainty2018->GetUncertainty().second;
+            jetPtErrorDown = fJetUncertainty2018->GetUncertainty().first;
+            smearingFactor = jetPtErrorUp > jetPtErrorDown ? jetPtErrorUp : jetPtErrorDown;
+            jetPt = jetPt * fRng->Gaus(1,smearingFactor);
+          }
           
         }
         
@@ -2425,6 +2459,63 @@ Double_t DijetAnalyzer::GetPtHatWeight(const Double_t ptHat) const{
     return 0;
   }
   return (crossSections[currentBin]-crossSections[currentBin+1])/PbPbMcEvents[currentBin];
+}
+
+/*
+ * Get a smearing factor corresponding to worsening the smearing resolution in MC by 20 %
+ * This is obtained by multiplying the MC smearing resolution by 0.666 and using this as additional
+ * smearing for the data. Smearing factor depends on jet pT and centrality.
+ *
+ *  Arguments:
+ *   Double_t jetPt = Jet pT
+ *   const Double_t centrality = Centrality of the event
+ *
+ *  return: Additional smearing factor
+ */
+Double_t DijetAnalyzer::GetSmearingFactor(Double_t jetPt, const Double_t centrality) {
+  
+  // For all the jets above 500 GeV, use the resolution for 500 GeV jet
+  if(jetPt > 500) jetPt = 500;
+  
+  // Find the correct centrality bin
+  Int_t centralityBin = 0;
+  if(centrality > fCard->Get("CentralityBinEdges",2)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",3)) centralityBin++;
+  if(centrality > fCard->Get("CentralityBinEdges",4)) centralityBin++;
+  
+  // Set the parameters to the smearing function. pp and PbPb have different smearing function parameters
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
+    // Settings for pp
+    fSmearingFunction->SetParameters(0.174881, -0.00091979, 3.50064e-06, -6.52541e-09, 4.64199e-12);
+    
+  } else {
+    
+//    // Parameters for the smearing function for flow jets
+//    Double_t resolutionFit[4][5] = {
+//      {0.451855, -0.00331992, 1.25897e-05, -2.26434e-08, 1.55081e-11},
+//      {0.366326, -0.00266997, 1.04733e-05, -1.95302e-08, 1.38409e-11},
+//      {0.268453, -0.00184878, 7.45201e-06, -1.43486e-08, 1.04726e-11},
+//      {0.202255, -0.00114677, 4.2566e-06, -7.69286e-09, 5.32617e-12}
+//    };
+    
+    // Parameters for the smearing function for calo jets
+    Double_t resolutionFit[4][5] = {
+      {0.268878, -0.00142952, 4.91294e-06, -8.43379e-09, 5.64202e-12},
+      {0.251296, -0.00130685, 4.51052e-06, -7.78237e-09, 5.21521e-12},
+      {0.246154, -0.00137711, 5.21775e-06, -9.76697e-09, 6.98133e-12},
+      {0.215341, -0.000966671, 3.06525e-06, -4.92523e-09, 3.08673e-12}
+    };
+    
+    for(int iParameter = 0; iParameter < 5; iParameter++){
+      // Settings for PbPb
+      
+      fSmearingFunction->SetParameter(iParameter, resolutionFit[centralityBin][iParameter]);
+    }
+  }
+  
+  // After the smearing function is set, read the value to return
+  return fSmearingFunction->Eval(jetPt)*0.666;
+  
 }
 
 /*

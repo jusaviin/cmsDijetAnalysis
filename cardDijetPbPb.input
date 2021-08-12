@@ -27,7 +27,8 @@ FilledHistograms 3 # Bit 0 = Event information histograms      (to set: 1)
 MinBias 1      # Flag for minimum bias running
 MinQWeight 0.5 # Minimum weight for the Q-vector
 MaxQWeight 3   # Maximum weight for the Q-vector
-QOrder 3       # Order of polynomial function used to weight Q-vector
+QWeightWidth 0.5  # Width parameter for generalized Gaussian
+QWeightShape 2    # Shape parameter for generalized Gaussian
 
 # Cuts for dijets
 JetType 0                  # 0 = Calo jets, 1 = PF CS jets, 2 = PF PU jets, 3 = PF flow CS jets
@@ -40,7 +41,7 @@ SubleadingPtCut 50         # Minimum pT of a subleading jet accepted in the anal
 DeltaPhiCut 2.6179939      # Minimum deltaPhi between leading and subleading jet, 5 Pi / 6
 MinMaxTrackPtFraction 0.01 # Minimum fraction of jet pT taken by the highest pT track in jet
 MaxMaxTrackPtFraction 0.98 # Maximum fraction of jet pT taken by the highest pT track in jet
-JetUncertainty 0           # 0 = Nominal jet pT, 1 = Minus uncertainty, 2 = Plus uncertainty
+JetUncertainty 3           # 0 = Nominal jet pT, 1 = Minus uncertainty, 2 = Plus uncertainty, 3 = Smear with resolution, 5 = Smear with uncertainty
 
 # Cuts for tracks
 TrackEtaCut 2.4             # Region in eta around midrapidity from which tracks are accepted
@@ -57,7 +58,7 @@ SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
 ZVertexCut 15       # Maximum vz value for accepted tracks
 LowPtHatCut -1      # Minimum accepted pT hat
 HighPtHatCut 1      # Maximum accepted pT hat
-IncludeEventPlane 1 # 0 = Nominal. 1 = Add q-vector as one histogram axis
+IncludeEventPlane 0 # 0 = Nominal. 1 = Add q-vector as one histogram axis
 
 # Binning for THnSparses
 AsymmetryBinType    1 # 0 = AJ, 1 = xJ
