@@ -50,6 +50,7 @@ public:
   TH1F *fhPtHatWeighted;           // Weighted pT hat distribution
   TH1F *fhEnergyCorrectionDifference;  // Debug histogram for manual energy correction
   TH1F *fhEnergyCorrectionRatio;       // Debug histogram for manual energy correction
+  TH2F *fhMatchedPtExcessYield[4]; // Matched pT versus excess yield. For manual energy correction study
   THnSparseF *fhMultiplicity;      // Track multiplicity from all events [multiplicity][centrality]
   THnSparseF *fhMultiplicityDijet; // Track multiplicity from dijet events [multiplicity][centrality]
   THnSparseF *fhLeadingJet;        // Leading jet without dijet requirement [l-pT][l-phi][l-eta][Ajj][cent]

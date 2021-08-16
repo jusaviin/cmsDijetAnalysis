@@ -219,12 +219,14 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // pT weight function for Pythia to match 2017 MC and data pT spectra. Derived from all jets above 120 GeV
   fPtWeightFunction = new TF1("fPtWeightFunction","pol3",0,500);
   //fPtWeightFunction->SetParameters(0.699073,0.00287672,-6.35568e-06,5.02292e-09);
-  fPtWeightFunction->SetParameters(0.708008,0.0032891,-1.05716e-05,1.16656e-08);
+  //fPtWeightFunction->SetParameters(0.708008,0.0032891,-1.05716e-05,1.16656e-08); // From JECv4
+  fPtWeightFunction->SetParameters(0.79572,0.0021861,-6.35407e-06,6.66435e-09); // From JECv6
   
   // Weight function derived for leading jet
   fDijetWeightFunction = new TF1("fDijetWeightFunction","pol3",0,500);
   //fDijetWeightFunction->SetParameters(0.723161,0.00236126,-3.90984e-06,3.10631e-09);
-  fDijetWeightFunction->SetParameters(0.851883,0.00162576,-5.05312e-06,5.72018e-09);
+  //fDijetWeightFunction->SetParameters(0.851883,0.00162576,-5.05312e-06,5.72018e-09); // From JECv4
+  fDijetWeightFunction->SetParameters(0.876682,0.00131479,-3.90884e-06,4.40358e-09); // From JECv6
   
   // Function for smearing the jet pT for systemtic uncertainties
   fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
@@ -816,7 +818,7 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentMixedEventFile;
   
   // Test on trying to correct for flow contribution under jet
-  bool eventByEventEnergyDensity = true;
+  bool eventByEventEnergyDensity = false;
   Double_t averageEnergyDensity;
   Double_t averageEnergyInCone;
   Double_t anotherAverageEnergyDensity;
@@ -1320,15 +1322,6 @@ void DijetAnalyzer::RunAnalysis(){
             trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
             trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
             
-            // Look at all the tracks within jet cone radius
-            trackJetDistance = TMath::Sqrt(TMath::Power(trackEta-jetEta, 2) + TMath::Power(trackPhi-jetPhi, 2));
-            if(trackJetDistance < 0.4){
-              
-              // Sum the pT of all the tracks within the jet cone
-              conePtSum += trackPt*trackEfficiencyCorrection;
-              
-            }
-            
             // Do an eta reflection. If we are at mid-rapidity, also shift the reflection a bit to get a good separation.
             if(TMath::Abs(jetEta) > 0.4){
               
@@ -1361,6 +1354,15 @@ void DijetAnalyzer::RunAnalysis(){
               
             }
             
+            // Look at all the tracks within reflected jet cone radius
+            trackJetDistance = TMath::Sqrt(TMath::Power(trackEta-centralEta, 2) + TMath::Power(trackPhi-jetPhi, 2));
+            if(trackJetDistance < 0.4){
+              
+              // Sum the pT of all the tracks within the jet cone
+              conePtSum += trackPt*trackEfficiencyCorrection;
+              
+            }
+            
           } // Track loop
           
           // From the eta-strip, calculate average energy inside a jet cone
@@ -1379,8 +1381,13 @@ void DijetAnalyzer::RunAnalysis(){
           fHistograms->fhEnergyCorrectionDifference->Fill(anotherAverageEnergyInCone-averageEnergyInCone,fTotalEventWeight);
           fHistograms->fhEnergyCorrectionRatio->Fill(energyDifference/jetPtCorrected-anotherEnergyDifference/jetPtCorrected, fTotalEventWeight);
           
+          // Before applying the correction, check the difference to the matched generator level jet
+          if(fJetReader->GetMatchedPt(jetIndex) > 0){
+            fHistograms->fhMatchedPtExcessYield[centralityBin]->Fill(energyDifference, (jetPtCorrected - fJetReader->GetMatchedPt(jetIndex)) / fJetReader->GetMatchedPt(jetIndex), fTotalEventWeight);
+          }
+          
           // Correct the jet energy with the difference with respect to average
-          jetPtCorrected = jetPtCorrected - energyDifference;
+          jetPtCorrected = jetPtCorrected - energyDifference;   // Difference between reflected and non-reflected strip
           
           // Return the track histogram filling flag to original value
           fFillTrackHistograms = trackFill;

@@ -52,6 +52,9 @@ DijetHistograms::DijetHistograms() :
   fCard(0)
 {
   // Default constructor
+  for(int i = 0; i < 4; i++){
+    fhMatchedPtExcessYield[i] = NULL;
+  }
 }
 
 /*
@@ -96,6 +99,9 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fCard(newCard)
 {
   // Custom constructor
+  for(int i = 0; i < 4; i++){
+    fhMatchedPtExcessYield[i] = NULL;
+  }
 }
 
 /*
@@ -140,6 +146,9 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fCard(in.fCard)
 {
   // Copy constructor
+  for(int i = 0; i < 4; i++){
+    fhMatchedPtExcessYield[i] = in.fhMatchedPtExcessYield[i];
+  }
 }
 
 /*
@@ -187,6 +196,10 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhJetEventPlaneMidRap = in.fhJetEventPlaneMidRap;
   fCard = in.fCard;
   
+  for(int i = 0; i < 4; i++){
+    fhMatchedPtExcessYield[i] = in.fhMatchedPtExcessYield[i];
+  }
+  
   return *this;
 }
 
@@ -206,8 +219,6 @@ DijetHistograms::~DijetHistograms(){
   delete fhCentralityDijet;
   delete fhPtHat;
   delete fhPtHatWeighted;
-  delete fhEnergyCorrectionDifference;
-  delete fhEnergyCorrectionRatio;
   delete fhMultiplicity;
   delete fhMultiplicityDijet;
   delete fhLeadingJet;
@@ -232,6 +243,14 @@ DijetHistograms::~DijetHistograms(){
   // Additional histograms for event plane study
   delete fhJetEventPlaneForwardRap;
   delete fhJetEventPlaneMidRap;
+  
+  // Additional histogram for manual energy correction study
+  delete fhEnergyCorrectionDifference;
+  delete fhEnergyCorrectionRatio;
+  for(int i = 0; i < 4; i++){
+    delete fhMatchedPtExcessYield[i];
+  }
+  
 }
 
 /*
@@ -436,8 +455,13 @@ void DijetHistograms::CreateHistograms(){
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
+  
+  // Histograms for manual energy correction study
   fhEnergyCorrectionDifference = new TH1F("energyCorrectionDifference","energyCorrectionDifference",120,-30,30); fhEnergyCorrectionDifference->Sumw2();
   fhEnergyCorrectionRatio = new TH1F("energyCorrectionRatio","energyCorrectionRatio",120,-0.3,0.3); fhEnergyCorrectionRatio->Sumw2();
+  for(int i = 0; i < 4; i++){
+    fhMatchedPtExcessYield[i] = new TH2F(Form("matchedPtExcessYield_C%d",i), Form("matchedPtExcessYield_C%d",i), 160, -40, 40, 160, -0.4, 0.4); fhMatchedPtExcessYield[i]->Sumw2();
+  }
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -917,8 +941,6 @@ void DijetHistograms::Write() const{
   fhCentralityDijet->Write();
   fhPtHat->Write();
   fhPtHatWeighted->Write();
-  fhEnergyCorrectionDifference->Write();
-  fhEnergyCorrectionRatio->Write();
   fhMultiplicity->Write();
   fhMultiplicityDijet->Write();
   fhLeadingJet->Write();
@@ -940,9 +962,16 @@ void DijetHistograms::Write() const{
   fhTrackJetInclusivePtWeighted->Write();
   fhJetPtClosure->Write();
   
-  // Additional histgorams for the evgent plane study
+  // Additional histgorams for the event plane study
   fhJetEventPlaneForwardRap->Write();
   fhJetEventPlaneMidRap->Write();
+  
+  // Additional histograms for manual energy correction study
+  fhEnergyCorrectionDifference->Write();
+  fhEnergyCorrectionRatio->Write();
+  for(int i = 0; i < 4; i++){
+    fhMatchedPtExcessYield[i]->Write();
+  }
   
 }
 
