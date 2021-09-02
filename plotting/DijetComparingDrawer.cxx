@@ -30,7 +30,7 @@ DijetComparingDrawer::DijetComparingDrawer(DijetHistogramManager *fBaseHistogram
   fFigureFormat("pdf"),
   fFigureComment(""),
   fManualLegend(false),
-  fApplyScaling(false),
+  fApplyScaling(0),
   fLogPt(true),
   fLogCorrelation(true),
   fLogJetShape(true),
@@ -882,6 +882,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
   double legendY1;
   double legendX2;
   double legendY2;
+  double maxY, minY, diffY;
 
   // Helper variables for centrality naming in figures
   TString centralityString;
@@ -913,7 +914,11 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
         
         // Same and mixed event histograms are not scaled by the number of dijets in the histogram manager
         // For all the other histograms the scaling is already done
-        fApplyScaling = (iCorrelationType == DijetHistogramManager::kSameEvent || iCorrelationType == DijetHistogramManager::kMixedEvent);
+        if(iCorrelationType == DijetHistogramManager::kSameEvent || iCorrelationType == DijetHistogramManager::kMixedEvent){
+          fApplyScaling = 1;
+        } else if (iCorrelationType == DijetHistogramManager::kBackground){
+          fApplyScaling = 2;
+        }
         
         // Loop over track pT bins
         for(int iTrackPt = fFirstDrawnTrackPtBin; iTrackPt <= fLastDrawnTrackPtBin; iTrackPt++){
@@ -925,8 +930,15 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
 
           // ===== Jet-track deltaPhi =====
           if(fDrawJetTrackDeltaPhi){
-
+            
             PrepareRatio("jettrackdeltaphi", 1, iJetTrack, iCorrelationType, fAsymmetryBin, iCentrality, iTrackPt, DijetHistogramManager::kWholeEta); // TODO: Change deltaEta region kWholeEta kSignalEtaRegion
+            
+            if(iCorrelationType == DijetHistogramManager::kBackground){
+              maxY = fMainHistogram->GetMaximum();
+              minY = fMainHistogram->GetMinimum();
+              diffY = maxY-minY;
+              fMainHistogram->GetYaxis()->SetRangeUser(minY - 0.2*diffY, maxY + 0.2*diffY);
+            }
             
             // Draw the track phi distributions to the upper panel of a split canvas plot
             sprintf(namerX,"%s #Delta#varphi",fBaseHistograms->GetJetTrackAxisName(iJetTrack));
@@ -936,7 +948,7 @@ void DijetComparingDrawer::DrawJetTrackCorrelationHistograms(){
             legendX1 = 0.52; legendY1 = 0.75; legendX2 = 0.82; legendY2 = 0.9;
             if(iJetTrack < DijetHistogramManager::kTrackSubleadingJet){
               if(iCorrelationType == DijetHistogramManager::kBackground) { // Move legend to top left corner for leading jet-track background figures
-                legendX1 = 0.17; legendY1 = 0.75; legendX2 = 0.37; legendY2 = 0.9;
+                legendX1 = 0.24; legendY1 = 0.74; legendX2 = 0.44; legendY2 = 0.96;
               } else if (iCorrelationType == DijetHistogramManager::kCorrected || iCorrelationType == DijetHistogramManager::kBackgroundSubtracted){ // Move legend away from peaks
                 if(iTrackPt == 2 || iTrackPt == 3){
                   legendX1 = 0.31; legendY1 = 0.75; legendX2 = 0.61; legendY2 = 0.9;
@@ -1490,6 +1502,20 @@ void DijetComparingDrawer::DrawJetShapeMCComparison(){
   
 }
 
+/*
+ * Remove Fourier fits from the histograms
+ */
+void DijetComparingDrawer::RemoveFourierFit(){
+    
+  TF1* fourierFit;
+  fourierFit = fMainHistogram->GetFunction("fourier");
+  fourierFit->SetLineWidth(0);
+
+  for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
+    fourierFit = fComparisonHistogram[iAdditional]->GetFunction("fourier");
+    fourierFit->SetLineWidth(0);
+  }
+}
 
 /*
  * Prepare histograms for ratio plots
@@ -1534,7 +1560,11 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
     
   }
   if(maxRange > minRange) fMainHistogram->GetXaxis()->SetRangeUser(minRange,maxRange);
-  if(fApplyScaling) fMainHistogram->Scale(1.0/fScalingFactors[0]);
+  if(fApplyScaling == 1) fMainHistogram->Scale(1.0/fScalingFactors[0]);
+  if(fApplyScaling == 2){
+    fMainHistogram->Fit("pol0","Q0");
+    fMainHistogram->Scale(1/fMainHistogram->GetFunction("pol0")->GetParameter(0));
+  }
   //fMainHistogram->Scale(lulFactor[bin4][bin5]); // TODO: Remove this argitrary scaling!!!
   //if(bin1 == 1) bin1 = 0;  // TODO: This was needed in some cases, but breaks some other cases
   for(int iAdditional = 0; iAdditional < fnAddedHistograms; iAdditional++){
@@ -1546,7 +1576,11 @@ void DijetComparingDrawer::PrepareRatio(TString name, int rebin, int bin1, int b
       fComparisonHistogram[iAdditional]->Scale(1.0/rebin);
     }
     if(maxRange > minRange) fComparisonHistogram[iAdditional]->GetXaxis()->SetRangeUser(minRange,maxRange);
-    if(fApplyScaling) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
+    if(fApplyScaling == 1) fComparisonHistogram[iAdditional]->Scale(1.0/fScalingFactors[1+iAdditional]);
+    if(fApplyScaling == 2){
+      fComparisonHistogram[iAdditional]->Fit("pol0","Q0");
+      fComparisonHistogram[iAdditional]->Scale(1/fComparisonHistogram[iAdditional]->GetFunction("pol0")->GetParameter(0));
+    }
     //fComparisonHistogram[iAdditional]->Scale(lulFactor[bin4][bin5]); // TODO: Temporary hack
     sprintf(namer,"%sRatio%d",fMainHistogram->GetName(),iAdditional);
     
@@ -2064,7 +2098,7 @@ void DijetComparingDrawer::SetSaveFigures(const bool saveOrNot, const char *form
 }
 
 // Set if we should scale the histograms with their integral before comparing them
-void DijetComparingDrawer::SetApplyScaling(const bool applyScaling){
+void DijetComparingDrawer::SetApplyScaling(const int applyScaling){
   fApplyScaling = applyScaling;
 }
 

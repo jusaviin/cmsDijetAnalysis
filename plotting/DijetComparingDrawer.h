@@ -112,7 +112,7 @@ public:
   void SetManualLegend(const bool manualLegend);  // Setter for manual legend setting
   
   // Setter for scaling and rebinning the histograms
-  void SetApplyScaling(const bool applyScaling); // Set if we should scale the histograms with their integral before comparing them
+  void SetApplyScaling(const int applyScaling); // Set if we should scale the histograms with their integral before comparing them
   void SetJetPtRebin(const bool doRebin);  // Tell if we want to rebin the jet pT histograms
   
   // Setters for ratio plots
@@ -184,7 +184,7 @@ private:
   bool fManualLegend;          // Flag for using manual instead of automatic legend
   
   // Choose if we should scale the histograms before comparing them
-  bool fApplyScaling;
+  int fApplyScaling;
   double fScalingFactors[knMaxRatios+1];
   
   // Logarithmic scales for figures
@@ -236,6 +236,7 @@ private:
   void SetupLegend(TLegend *legend, TString centralityString = "", TString trackString = "", TString asymmetryString = ""); // Common legend style setup for figures
   void SaveFigure(TString figureName, TString centralityString = "", TString trackPtString = "", TString correlationTypeString = "", TString deltaPhiString = ""); // Save the figure from current canvas to file
   void PrepareRatio(TString name, int rebin, int bin1 = 0, int bin2 = 0, int bin3 = 0, int bin4 = 0, int bin5 = 0, int bin6 = 0, double minRange = 1000, double maxRange = -1000); // Prepare the ratio histograms out of input histograms
+  void RemoveFourierFit(); // Remove Fourier fits from background distributions
   void DrawToUpperPad(const char* xTitle, const char* yTitle, bool logAxis = false); // Draw the histograms to the same figure in the upper pad of JDrawer
   void DrawToLowerPad(const char* xTitle, const char* yTitle, const double zoomMin, const double zoomMax); // Draw the ratios to the lower pad of the JDrawer
   void ZoomToRegion(const double maxZoomValue, const int nZoomBins, const double scaleFactor, const bool bothSides, const bool asymmetricZoom);  // Zoom the y-axis scale to the specified region of the distribution
