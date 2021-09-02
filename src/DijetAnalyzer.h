@@ -88,6 +88,10 @@ private:
   Int_t FindMixingHiBin(const Int_t hiBin) const; // Find a centrality bin from the mixing table for a given hiBin value
   Bool_t CheckForSameEvent(const Int_t sameEventIndex, const Int_t mixedEventIndex) const; // Check if mixed event is tha same as regular event
   Int_t GetCentralityBin(const Double_t centrality) const; // Getter for centrality bin
+  Double_t GetManualEtaStripScale(Double_t etaStripValue, const Double_t centrality, const Int_t type) const;  // Getter for reflected eta strip scaling
+  Double_t GetManualJetConeScale(Double_t jetConeValue, const Double_t centrality, const Int_t type) const;  // Getter for reflected eta jet cone scaling
+  Double_t GetManualJecCorrection(const Double_t jecCorrection, const Double_t centrality) const;  // Getter for manual jet energy correction
+  Double_t GetManualJetPtCorrected(const Int_t jetIndex, const Double_t jetPt, const Double_t centrality, const Int_t jetType);  // Getter for manual jet energy correction
   
   // Private data members
   ForestReader *fJetReader;            // Reader for jets in the event
@@ -104,6 +108,9 @@ private:
   TF1 *fSmearingFunction;              // Additional smearing for jets. Needed in systematic uncertainty study.
   TF1 *fFakeV2Function;                // Function that can be used to fake v2
   TF1 *fQvectorWeightFunction[4];      // Weighting function for Q-vector
+  TF1 *fGenericPol6;                   // Generic pol6 function
+  TF1 *fGenericPol1;                   // Generic pol2 function
+  TH2D *fhManualCorrectionScale[4];    // Scaling histogram for manual correction
   TrackingEfficiencyInterface *fTrackEfficiencyCorrector2018;  // Tracking efficiency corrector for 2018 PbPb and 2017 pp data.
   JetCorrector *fJetCorrector2018;     // Class for making jet energy correction for 2018 data
   JetUncertainty *fJetUncertainty2018; // Class for finding uncertainty for jet pT for 2018 data

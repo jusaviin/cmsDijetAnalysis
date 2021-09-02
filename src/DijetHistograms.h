@@ -16,7 +16,7 @@ class DijetHistograms{
 public:
   
   // Enumeration for event types to event histogram and track cuts for track cut histogram
-  enum enumEventTypes {kAll, kPrimaryVertex, kHBHENoise, kCollisionEventSelection, kBeamScraping, kHfCoincidence, kClusterCompatibility, kCaloJet, kVzCut, kDijet, knEventTypes};
+  enum enumEventTypes {kAll, kPrimaryVertex, kCollisionEventSelection, kHBHENoise, kBeamScraping, kHfCoincidence, kClusterCompatibility, kCaloJet, kVzCut, kDijet, knEventTypes};
   enum enumTrackCuts {kAllTracks, kMcCharge, kMcSube, kMcStatus, kPtCuts, kEtaCut, kTrackAlgorithm, kHighPurity, kPtError, kVertexDistance, kCaloSignal, kReconstructionQuality, knTrackCuts};
   enum enumCorrelationType {kSameEvent, kMixedEvent, knCorrelationTypes};
   enum enumClosureType {kLeadingClosure, kSubleadingClosure, kInclusiveClosure, knClosureTypes};
@@ -48,9 +48,18 @@ public:
   TH1F *fhCentralityDijet;         // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
   TH1F *fhPtHat;                   // pT hat for MC events (only meaningful for MC)
   TH1F *fhPtHatWeighted;           // Weighted pT hat distribution
-  TH1F *fhEnergyCorrectionDifference;  // Debug histogram for manual energy correction
-  TH1F *fhEnergyCorrectionRatio;       // Debug histogram for manual energy correction
-  TH2F *fhMatchedPtExcessYield[4]; // Matched pT versus excess yield. For manual energy correction study
+  TH2F *fhEnergyInEtaStrip[3][4];     // Energy in reflected eta strip versus eta strip
+  TH2F *fhEnergyInCone[3][4];         // Energy in reflected jet cone versus jet cone
+  TH2F *fhManualJetCorrection[3][4];  // Manual jet energy correction from reflected cone versus jet cone
+  TH2F *fhManualJetCorrectionRatio[3][4];  // Manual jet energy correction from reflected cone versus jet cone
+  TH2F *fhEnergyInEtaStripAbove100GeV[4];     // Energy in reflected eta strip versus eta strip for jets > 100 GeV
+  TH2F *fhEnergyInConeAbove100GeV[4];         // Energy in reflected jet cone versus jet cone for jets > 100 GeV
+  TH2F *fhManualJetCorrectionAbove100GeV[4];  // Manual jet energy correction from reflected cone versus jet cone for jets > 100 GeV
+  TH2F *fhManualJetCorrectionRatioAbove100GeV[4];  // Manual jet energy correction from reflected cone versus jet cone for jets > 100 GeV
+  TH2F *fhEnergyInEtaStripFlipped[4];     // Energy in reflected eta strip versus eta strip flipping 120 GeV
+  TH2F *fhEnergyInConeFlipped[4];         // Energy in reflected jet cone versus jet cone flipping 120 GeV
+  TH2F *fhManualJetCorrectionFlipped[4];  // Manual jet energy correction from reflected cone versus jet cone flipping 120 GeV
+  TH2F *fhManualJetCorrectionRatioFlipped[4];  // Manual jet energy correction from reflected cone versus jet cone flipping 120 GeV
   THnSparseF *fhMultiplicity;      // Track multiplicity from all events [multiplicity][centrality]
   THnSparseF *fhMultiplicityDijet; // Track multiplicity from dijet events [multiplicity][centrality]
   THnSparseF *fhLeadingJet;        // Leading jet without dijet requirement [l-pT][l-phi][l-eta][Ajj][cent]
@@ -79,7 +88,7 @@ public:
 private:
   
   ConfigurationCard *fCard;    // Card for binning info
-  const TString kEventTypeStrings[knEventTypes] = {"All", "PrimVertex", "HBHENoise", "CollEvtSel", "BeamScrape", "HfCoin3", "ClustCompt", "CaloJet", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
+  const TString kEventTypeStrings[knEventTypes] = {"All", "PrimVertex", "CollEvtSel", "HBHENoise", "BeamScrape", "HfCoin3", "ClustCompt", "CaloJet", "v_{z} cut", "Dijet"}; // Strings corresponding to event types
   const TString kTrackCutStrings[knTrackCuts] = {"All", "MC Charge", "MC sube", "MC status", "p_{T} cut", "#eta cut", "Track algo", "HighPurity", "p_{T} error", "vertexDist", "caloSignal", "RecoQuality"}; // String corresponding to track cuts
   
 };

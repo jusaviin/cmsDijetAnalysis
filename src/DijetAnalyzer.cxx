@@ -46,6 +46,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fDijetWeightFunction(0),
   fSmearingFunction(0),
   fFakeV2Function(0),
+  fGenericPol6(0),
+  fGenericPol1(0),
   fTrackEfficiencyCorrector2018(),
   fJetCorrector2018(),
   fJetUncertainty2018(),
@@ -128,6 +130,7 @@ DijetAnalyzer::DijetAnalyzer() :
   // Initialize the Q-vector weight functions to NULL
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     fQvectorWeightFunction[iCentrality] = NULL;
+    fhManualCorrectionScale[iCentrality] = NULL;
   }
 }
 
@@ -234,6 +237,10 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Function for generating fake v2. Currently set for 5 % v2
   fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos(2*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
   
+  // Generic polynomial functions
+  fGenericPol6 = new TF1("genericPol6","pol6",0,200);
+  fGenericPol1 = new TF1("genericPol1","pol1",0,200);
+  
   // Possibility to do Q-vector weighting
   fQvectorWeightFunction[0] = new TF1("qVectorFun0",genGauss,0,5,5);
   fQvectorWeightFunction[0]->SetParameters(0,2,2,100,0.5);      // This matches data and MC hadron v2
@@ -243,6 +250,14 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fQvectorWeightFunction[2]->SetParameters(5,0.937,5,1000,0.5);  // This matches data and MC hadron v2
   fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
   fQvectorWeightFunction[3]->SetParameters(5,2,2,100,0.5);  // Nobody cares
+  
+  // TODO TODO TODO: Only for manual JEC debugging test
+  TFile *manualJecCorrectionFile = TFile::Open("manualJecCorrection.root");
+  fhManualCorrectionScale[0] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C0");
+  fhManualCorrectionScale[1] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C1");
+  fhManualCorrectionScale[2] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C2");
+  fhManualCorrectionScale[3] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C3");
+  gRandom->SetSeed(0);
   
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
@@ -362,6 +377,8 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fDijetWeightFunction(in.fDijetWeightFunction),
   fSmearingFunction(in.fSmearingFunction),
   fFakeV2Function(in.fFakeV2Function),
+  fGenericPol6(in.fGenericPol6),
+  fGenericPol1(in.fGenericPol1),
   fRng(in.fRng),
   fDataType(in.fDataType),
   fForestType(in.fForestType),
@@ -425,6 +442,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   // Copy the Q-vector weight functions
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     fQvectorWeightFunction[iCentrality] = in.fQvectorWeightFunction[iCentrality];
+    fhManualCorrectionScale[iCentrality] = in.fhManualCorrectionScale[iCentrality];
   }
 }
 
@@ -450,6 +468,8 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fDijetWeightFunction = in.fDijetWeightFunction;
   fSmearingFunction = in.fSmearingFunction;
   fFakeV2Function = in.fFakeV2Function;
+  fGenericPol6 = in.fGenericPol6;
+  fGenericPol1 = in.fGenericPol1;
   fRng = in.fRng;
   fDataType = in.fDataType;
   fForestType = in.fForestType;
@@ -509,6 +529,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   // Copy the Q-vector weight functions
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     fQvectorWeightFunction[iCentrality] = in.fQvectorWeightFunction[iCentrality];
+    fhManualCorrectionScale[iCentrality] = in.fhManualCorrectionScale[iCentrality];
   }
   
   return *this;
@@ -533,7 +554,10 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fFakeV2Function) delete fFakeV2Function;
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     if(fQvectorWeightFunction[iCentrality]) delete fQvectorWeightFunction[iCentrality];
+    if(fhManualCorrectionScale[iCentrality]) delete fhManualCorrectionScale[iCentrality];
   }
+  if(fGenericPol6) delete fGenericPol6;
+  if(fGenericPol1) delete fGenericPol1;
   if(fRng) delete fRng;
   if(fJetReader) delete fJetReader;
   if(fTrackReader[DijetHistograms::kSameEvent] && (fMcCorrelationType == kGenReco || fMcCorrelationType == kRecoGen)) delete fTrackReader[DijetHistograms::kSameEvent];
@@ -819,19 +843,6 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Test on trying to correct for flow contribution under jet
   bool eventByEventEnergyDensity = false;
-  Double_t averageEnergyDensity;
-  Double_t averageEnergyInCone;
-  Double_t anotherAverageEnergyDensity;
-  Double_t anotherAverageEnergyInCone;
-  Double_t energyDifference;
-  Double_t anotherEnergyDifference;
-  Double_t trackJetDistance;
-  Double_t conePtSum;
-  Double_t stripPtSum;
-  Double_t anotherStripPtSum;
-  Double_t stripWidth = 0.2;
-  Double_t centralEta;
-  bool trackFill = fFillTrackHistograms;
   
   // Fillers for THnSparses
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
@@ -1300,97 +1311,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Calculate the energy density below jet
         if(eventByEventEnergyDensity){
           
-          // Set track histogram filling to false in order to not fill the track cut histograms several times
-          fFillTrackHistograms = false;
-          
-          // Loop over all tracks in the event
-          nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
-          conePtSum = 0;
-          stripPtSum = 0;
-          anotherStripPtSum = 0;
-          for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
-            
-            // Only look at HYDJET tracks for the first test
-            //if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
-            
-            // Check that all the track cuts are passed
-            if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent)) continue;
-            
-            // Get the track information
-            trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
-            trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
-            trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
-            trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
-            
-            // Do an eta reflection. If we are at mid-rapidity, also shift the reflection a bit to get a good separation.
-            if(TMath::Abs(jetEta) > 0.4){
-              
-              // Large enough gap to do the reflection without shift
-              centralEta = -1 * jetEta;
-              
-            } else if(jetEta < 0){
-              // Small gap, eta on negative side
-              centralEta = jetEta + 0.8;
-              
-            } else {
-              
-              // Small gap, eta on posivite side
-              centralEta = jetEta - 0.8;
-            }
-            
-            // Look at average energy density in the eta strip around the eta reflected jet axis
-            if(TMath::Abs(centralEta - trackEta) < stripWidth){
-              
-              // Sum the pT of all the tracks in the eta-strip around the jet cone
-              stripPtSum += trackPt*trackEfficiencyCorrection;
-              
-            }
-            
-            // Look at average energy density in the eta strip around the jet axis
-            if(TMath::Abs(jetEta - trackEta) < stripWidth){
-              
-              // Sum the pT of all the tracks in the eta-strip around the jet cone
-              anotherStripPtSum += trackPt*trackEfficiencyCorrection;
-              
-            }
-            
-            // Look at all the tracks within reflected jet cone radius
-            trackJetDistance = TMath::Sqrt(TMath::Power(trackEta-centralEta, 2) + TMath::Power(trackPhi-jetPhi, 2));
-            if(trackJetDistance < 0.4){
-              
-              // Sum the pT of all the tracks within the jet cone
-              conePtSum += trackPt*trackEfficiencyCorrection;
-              
-            }
-            
-          } // Track loop
-          
-          // From the eta-strip, calculate average energy inside a jet cone
-          averageEnergyDensity = stripPtSum / (2 * TMath::Pi() * 2 * stripWidth);
-          averageEnergyInCone = averageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
-          
-          anotherAverageEnergyDensity = anotherStripPtSum / (2 * TMath::Pi() * 2 * stripWidth);
-          anotherAverageEnergyInCone = anotherAverageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
-          
-          // Calculate the difference between average over the whole event and below jet cone
-          energyDifference = conePtSum - averageEnergyInCone;
-          
-          anotherEnergyDifference = conePtSum - anotherAverageEnergyInCone;
-          
-          // For debugging purposes, check the differences in strip values
-          fHistograms->fhEnergyCorrectionDifference->Fill(anotherAverageEnergyInCone-averageEnergyInCone,fTotalEventWeight);
-          fHistograms->fhEnergyCorrectionRatio->Fill(energyDifference/jetPtCorrected-anotherEnergyDifference/jetPtCorrected, fTotalEventWeight);
-          
-          // Before applying the correction, check the difference to the matched generator level jet
-          if(fJetReader->GetMatchedPt(jetIndex) > 0){
-            fHistograms->fhMatchedPtExcessYield[centralityBin]->Fill(energyDifference, (jetPtCorrected - fJetReader->GetMatchedPt(jetIndex)) / fJetReader->GetMatchedPt(jetIndex), fTotalEventWeight);
-          }
-          
-          // Correct the jet energy with the difference with respect to average
-          jetPtCorrected = jetPtCorrected - energyDifference;   // Difference between reflected and non-reflected strip
-          
-          // Return the track histogram filling flag to original value
-          fFillTrackHistograms = trackFill;
+          jetPtCorrected = GetManualJetPtCorrected(jetIndex, jetPtCorrected, centrality, 5);
           
         }
         
@@ -1666,6 +1587,14 @@ void DijetAnalyzer::RunAnalysis(){
           if(fJetType == 0 && fReadMode < 2000) subleadingJetPt =  fJffCorrection->GetCorrection(nParticleFlowCandidatesInThisJet,hiBin,subleadingJetPt,subleadingJetEta);
         }
         
+        // Do manual jet energy correction for leading and subleading jets
+        if(eventByEventEnergyDensity){
+          
+          GetManualJetPtCorrected(highestIndex, leadingJetPt, centrality, 3);
+          GetManualJetPtCorrected(secondHighestIndex, subleadingJetPt, centrality, 4);
+
+        } // Manual jet energy correction
+        
         // If after the correction subleading jet becomes leading jet and vice versa, swap the leading/subleading info
         if(subleadingJetPt > leadingJetPt){
           swapJetPt = leadingJetPt;   leadingJetPt = subleadingJetPt;    subleadingJetPt = swapJetPt;
@@ -1699,7 +1628,17 @@ void DijetAnalyzer::RunAnalysis(){
           dijetFound = false;
         }
         
-        if(dijetFound) dijetCounter++;
+        if(dijetFound) {
+          dijetCounter++;
+          
+          // Calculate the energy density below jet
+          if(eventByEventEnergyDensity){
+            
+            //GetManualJetPtCorrected(highestIndex, leadingJetPt, centrality, 3);
+            //GetManualJetPtCorrected(secondHighestIndex, subleadingJetPt, centrality, 4);
+
+          } // Manual jet energy correction
+        } // Dijet found if
       } // End of dijet cuts (two jets found if)
       
       // TODO: Debuggery
@@ -2782,6 +2721,368 @@ Double_t DijetAnalyzer::GetQvectorWeight(Double_t qValue, const Double_t central
 }
 
 /*
+ * Get a scaling factor for reflected eta strip energy
+ *
+ *  Arguments:
+ *   Double_t etaStripValue = Average energy in a cone from reflected eta strip
+ *   const Double_t centrality = Centrality of the event
+ *   const Int_t type = Type of the jet for the correction. 0 = PfCs leading, 1 = PfCs subleading, 2 = PfCs inclusive, 3 = Calo leading, 4 = Calo subleading, 5 = Calo inclusive
+ *
+ *  return: Scaling factor for reflected eta strip energy
+ */
+Double_t DijetAnalyzer::GetManualEtaStripScale(Double_t etaStripValue, const Double_t centrality, const int type) const{
+  
+  // No weight for pp
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
+    return 1;
+  }
+  
+  Int_t centralityBin = GetCentralityBin(centrality);
+  
+//  // Parameters for the reflected eta strip energy scaling function
+//  Double_t scalingParameters[4][7] = {
+//    {4.71995, -0.152927, 0.000339267, 7.37637e-05, -1.43605e-06, 1.06066e-08, -2.81699e-11},
+//    {4.57888, -0.458972, 0.0231303, -0.000569384, 7.05734e-06, -4.07554e-08, 7.88333e-11},
+//    {4.13477, -1.17735, 0.184971, -0.0149697, 0.000656793, -1.49994e-05, 1.40317e-07},
+//    {1.71291, -0.220909, 0.0295439, -0.00536867, 0.000647406, -3.80514e-05, 8.39223e-07}
+//  };
+  
+  // Parameters for the reflected eta strip energy scaling function
+  Double_t scalingParameters[6][4][2] = {
+    // Leading PfCs
+    {{11.717,  1.48087},   // 0-10 %
+     {5.86883, 1.51433},   // 10-30 %
+     {4.86321, 1.40533},   // 30-50 %
+     {3.70409, 0.947304}}, // 50-90 % Not optimized, bin not used in analysis
+    // Subleading PfCs
+    {{10.417, 1.48734},   // 0-10 %
+     {4.86568, 1.53205},   // 10-30 %
+     {4.52241, 1.4123},    // 30-50 %
+     {3.70409, 0.947304}}, // 50-90 % Not optimized, bin not used in analysis
+    // Inclusive PfCs
+    {{11.3836, 1.48324},   // 0-10 %
+     {5.99366, 1.50729},   // 10-30 %
+     {4.79953, 1.4024},    // 30-50 %
+     {3.70409, 0.947304}}, // 50-90 % Not optimized, bin not used in analysis
+    // Leading calo
+    {{10.8806, 1.48673},   // 0-10 %
+     {6.10269, 1.50015},   // 10-30 %
+     {4.76207, 1.40618},   // 30-50 %
+     {3.67604, 0.954755}}, // 50-90 % Not optimized, bin not used in analysis
+    // Subleading calo
+    {{10.4418, 1.48786},   // 0-10 %
+     {5.25504, 1.51993},   // 10-30 %
+     {4.54753, 1.41311},   // 30-50 %
+     {3.36393, 1.04682}},  // 50-90 % Not optimized, bin not used in analysis
+    // Inclusive calo
+    {{11.3836, 1.48324},   // 0-10 %
+     {5.99366, 1.50729},   // 10-30 %
+     {4.79953, 1.4024},    // 30-50 %
+     {3.70409, 0.947304}}  // 50-90 % Not optimized, bin not used in analysis
+  };
+  
+  // Set parameters for a generic pol6 function
+  for(int iParameter = 0; iParameter < 2; iParameter++){
+    fGenericPol1->SetParameter(iParameter, scalingParameters[type][centralityBin][iParameter]);
+  }
+  
+//  // Set the limits where the fit is valid
+//  Double_t minValue[4] = {40,16,8,1};      // Original: {35,12,2,1};
+//  Double_t maxValue[4] = {89,45,19,16};   // Original: {105,62,28,16};
+//
+//  if(etaStripValue < minValue[centralityBin]) etaStripValue = minValue[centralityBin];
+//  if(etaStripValue > maxValue[centralityBin]) etaStripValue = maxValue[centralityBin];
+  
+  // Read the value to return
+  return fGenericPol1->Eval(etaStripValue);
+  
+}
+
+/*
+* Get a scaling factor for reflected jet cone energy
+*
+*  Arguments:
+*   Double_t jetConeValue = Energy in the reflected jet cone
+*   const Double_t centrality = Centrality of the event
+*
+*  return: Scaling factor for reflected jet cone energy
+*/
+Double_t DijetAnalyzer::GetManualJetConeScale(Double_t jetConeValue, const Double_t centrality, const int type) const{
+  
+  // No weight for pp
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
+    return 1;
+  }
+  
+  Int_t centralityBin = GetCentralityBin(centrality);
+ 
+//  // Parameters for the reflected eta strip energy scaling function
+//  Double_t scalingParameters[4][7] = {
+//    {1.07673, 0.0832176, -0.00478883, 0.000111891, -1.31807e-06, 7.69191e-09, -1.77035e-11},
+//    {3.51895, -0.279125, 0.013873, -0.000371671, 5.44811e-06, -4.14168e-08, 1.27711e-10},
+//    {4.05827, -0.853254, 0.103633, -0.00665053, 0.000228852, -3.99375e-06, 2.76925e-08},
+//    {2.33836, -1.33917, 0.400801, -0.0586964, 0.00438532, -0.000160872, 2.29772e-06}
+//  };
+//
+//  // Parameters for the reflected eta strip energy scaling function
+//  Double_t scalingParameters[4][2] = {
+//    {36.3701, 1.1377},
+//    {14.9187, 1.29401},
+//    {9.97584, 1.01787},
+//    {5.1585, 0.391895} // Not optimized, bin not used in analysis
+//  };
+  
+  // Parameters for the reflected eta cone energy scaling function
+  Double_t scalingParameters[6][4][2] = {
+    // Leading PfCs
+    {{36.4466, 1.14756},   // 0-10 %
+     {18.0031, 1.21101},   // 10-30 %
+     {10.1327, 1.0471},    // 30-50 %
+     {3.70409, 0.947304}}, // 50-90 % Not optimized, bin not used in analysis
+    // Subleading PfCs
+    {{34.7134, 1.11439},   // 0-10 %
+     {15.7475, 1.19043},   // 10-30 %
+     {9.39952, 0.994552},  // 30-50 %
+     {3.70409, 0.947304}}, // 50-90 % Not optimized, bin not used in analysis
+    // Inclusive PfCs
+    {{36.3701, 1.1377},    // 0-10 %
+     {14.9187, 1.29401},   // 10-30 %
+     {9.97584, 1.01787},   // 30-50 %
+     {5.1585, 0.391895}},  // 50-90 % Not optimized, bin not used in analysis
+    // Leading calo
+    {{36.453,  1.11798},   // 0-10 %
+     {17.527,  1.18841},   // 10-30 %
+     {9.77277, 1.01683},   // 30-50 %
+     {3.70409, 0.947304}}, // 50-90 % Not optimized, bin not used in analysis
+    // Subleading calo
+    {{33.5659, 1.14464},   // 0-10 %
+     {16.74,   1.18367},   // 10-30 %
+     {9.49046, 1.00817},   // 30-50 %
+     {4.91326, 0.371077}}, // 50-90 % Not optimized, bin not used in analysis
+    // Inclusive calo
+    {{36.3701, 1.1377},    // 0-10 %
+     {14.9187, 1.29401},   // 10-30 %
+     {9.97584, 1.01787},   // 30-50 %
+     {5.1585, 0.391895}}   // 50-90 % Not optimized, bin not used in analysis
+  };
+  
+  // Set parameters for a generic pol1 function
+  for(int iParameter = 0; iParameter < 2; iParameter++){
+    fGenericPol1->SetParameter(iParameter, scalingParameters[type][centralityBin][iParameter]);
+  }
+  
+//  // Set the limits where the fit is valid
+//  Double_t minValue[4] = {29,17,6,3};    // Original: {20,10,1,3};
+//  Double_t maxValue[4] = {83,48,19,22};  // Original: {120,80,45,22};
+//
+//  if(jetConeValue < minValue[centralityBin]) jetConeValue = minValue[centralityBin];
+//  if(jetConeValue > maxValue[centralityBin]) jetConeValue = maxValue[centralityBin];
+  
+  // Read the value to return
+  return fGenericPol1->Eval(jetConeValue);
+}
+
+/*
+ * Get a manual jet energy correction from an eta reflected calculation
+ *
+ *  Arguments:
+ *   Double_t jetConeValue = Energy in the reflected jet cone
+ *   const Double_t centrality = Centrality of the event
+ *
+ *  return: Manual jet energy correction
+ */
+Double_t DijetAnalyzer::GetManualJecCorrection(const Double_t jecCorrection, const Double_t centrality) const{
+  
+  // No weight for pp
+  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
+    return 1;
+  }
+  
+  Int_t centralityBin = GetCentralityBin(centrality);
+  
+  Int_t xBin = fhManualCorrectionScale[centralityBin]->GetXaxis()->FindBin(jecCorrection);
+  
+  return fhManualCorrectionScale[centralityBin]->ProjectionY("tempProj",xBin,xBin)->GetRandom();
+  
+}
+
+/*
+ * Get manual event-by-event corrected jet pT
+ *
+ *
+ */
+Double_t DijetAnalyzer::GetManualJetPtCorrected(const Int_t jetIndex, const Double_t jetPt, const Double_t centrality, const Int_t jetType){
+  
+  // Variables used in the manual correction
+  Double_t averageEnergyDensity = 0;
+  Double_t averageEnergyInCone = 0;
+  Double_t anotherAverageEnergyDensity = 0;
+  Double_t anotherAverageEnergyInCone = 0;
+  Double_t energyDifference = 0;
+  Double_t anotherEnergyDifference = 0;
+  Double_t trackJetDistance = 0;
+  Double_t conePtSum = 0;
+  Double_t anotherConePtSum = 0;
+  Double_t stripPtSum = 0;
+  Double_t anotherStripPtSum = 0;
+  Double_t stripWidth = 0.2;
+  Double_t centralEta = 0;
+  Double_t jetPtStrip = 0;
+  Double_t stripScaleFactor = 0;
+  Int_t typeIndex = 0;
+  Double_t trackPt = 0;
+  Double_t trackPhi = 0;
+  Double_t trackEta = 0;
+  Double_t deltaPhi = 0;
+  Double_t trackEfficiencyCorrection = 1;
+  bool passTrackCutsManualJEC = false;
+  Int_t centralityBin = GetCentralityBin(centrality);
+  bool trackFill = fFillTrackHistograms;
+  
+  // Set track histogram filling to false in order to not fill the track cut histograms several times
+  fFillTrackHistograms = false;
+  
+  // Read the jet information
+  Double_t jetPtCorrected = jetPt;
+  Double_t jetPhi = fJetReader->GetJetPhi(jetIndex);
+  Double_t jetEta = fJetReader->GetJetEta(jetIndex);
+  
+  // Loop over all tracks in the event
+  Double_t nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+  for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+    
+    // Only look at HYDJET tracks for the first test
+    //if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+    
+    // Check that all the track cuts are passed
+    passTrackCutsManualJEC = PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent);
+    if(!passTrackCutsManualJEC) continue;
+    
+    // Get the track information
+    trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
+    trackEta = fTrackReader[DijetHistograms::kSameEvent]->GetTrackEta(iTrack);
+    trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+    trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+    
+    // The away side jet peak is prolenged, and could disturb the flow estimation. Thus, only look at the near side particles.
+    deltaPhi = jetPhi - trackPhi;
+    while(deltaPhi > (TMath::Pi())){deltaPhi += -2*TMath::Pi();}
+    while(deltaPhi < (-1.0*TMath::Pi())){deltaPhi += 2*TMath::Pi();}
+    
+    if(TMath::Abs(deltaPhi) > TMath::Pi()/2) continue;
+    
+    // Do an eta reflection. If we are at mid-rapidity, also shift the reflection a bit to get a good separation.
+    if(TMath::Abs(jetEta) > 0.4){
+      
+      // Large enough gap to do the reflection without shift
+      centralEta = -1 * jetEta;
+      
+    } else if(jetEta < 0){
+      // Small gap, eta on negative side
+      centralEta = jetEta + 0.8;
+      
+    } else {
+      
+      // Small gap, eta on posivite side
+      centralEta = jetEta - 0.8;
+    }
+    
+    // Look at average energy density in the eta strip around the eta reflected jet axis
+    if(passTrackCutsManualJEC && (TMath::Abs(centralEta - trackEta) < stripWidth)){
+      
+      // Sum the pT of all the tracks in the eta-strip around the jet cone
+      stripPtSum += trackPt*trackEfficiencyCorrection;
+      
+    }
+    
+    // Look at average energy density in the eta strip around the jet axis
+    if(TMath::Abs(jetEta - trackEta) < stripWidth){
+      
+      // Sum the pT of all the tracks in the eta-strip around the jet cone
+      anotherStripPtSum += trackPt*trackEfficiencyCorrection;
+      
+    }
+    
+    // Look at all the tracks within reflected jet cone radius
+    trackJetDistance = TMath::Sqrt(TMath::Power(trackEta-centralEta, 2) + TMath::Power(trackPhi-jetPhi, 2));
+    if(passTrackCutsManualJEC && trackJetDistance < 0.4){
+      
+      // Sum the pT of all the tracks within the jet cone
+      conePtSum += trackPt*trackEfficiencyCorrection;
+      
+    }
+    
+    // Look at all the tracks within jet cone radius
+    trackJetDistance = TMath::Sqrt(TMath::Power(trackEta-jetEta, 2) + TMath::Power(trackPhi-jetPhi, 2));
+    if(trackJetDistance < 0.4){
+      
+      // Sum the pT of all the tracks within the jet cone
+      anotherConePtSum += trackPt*trackEfficiencyCorrection;
+      
+    }
+    
+  } // Track loop
+  
+  // Scale the energy inside the reflected jet cone
+  stripScaleFactor = GetManualJetConeScale(conePtSum, centrality, typeIndex);
+  conePtSum = stripScaleFactor;
+  
+  // Type index for the jets.
+  typeIndex = fJetType + jetType;
+  if(typeIndex > jetType) typeIndex = jetType-3;
+  
+  // From the eta-strip, calculate average energy inside a jet cone
+  averageEnergyDensity = stripPtSum / (TMath::Pi() * 2 * stripWidth);
+  averageEnergyInCone = averageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
+  stripScaleFactor = GetManualEtaStripScale(averageEnergyInCone, centrality, typeIndex);
+  averageEnergyInCone = stripScaleFactor;
+  
+  anotherAverageEnergyDensity = anotherStripPtSum / (TMath::Pi() * 2 * stripWidth);
+  anotherAverageEnergyInCone = anotherAverageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
+  
+  // Calculate the difference between average over the whole event and below jet cone
+  energyDifference = conePtSum - averageEnergyInCone;
+  //stripScaleFactor = GetManualJecCorrection(energyDifference, centrality, typeIndex);
+  //energyDifference = stripScaleFactor;
+  
+  anotherEnergyDifference = anotherConePtSum - anotherAverageEnergyInCone;
+  
+  // More debugging histograms to see if we can find a weight for reflected cone to match the correction from jet cone
+  fHistograms->fhEnergyInEtaStrip[typeIndex%3][centralityBin]->Fill(averageEnergyInCone, anotherAverageEnergyInCone, fTotalEventWeight);
+  fHistograms->fhEnergyInCone[typeIndex%3][centralityBin]->Fill(conePtSum, anotherConePtSum, fTotalEventWeight);
+  fHistograms->fhManualJetCorrection[typeIndex%3][centralityBin]->Fill(energyDifference, anotherEnergyDifference, fTotalEventWeight);
+  fHistograms->fhManualJetCorrectionRatio[typeIndex%3][centralityBin]->Fill(energyDifference/jetPtCorrected, anotherEnergyDifference/jetPtCorrected, fTotalEventWeight);
+  
+  // Only fill the jet pT > 100 GeV histograms for inclusive jets
+  if(jetPtCorrected > 100 && (typeIndex%3 == 2)){
+    fHistograms->fhEnergyInEtaStripAbove100GeV[centralityBin]->Fill(averageEnergyInCone, anotherAverageEnergyInCone, fTotalEventWeight);
+    fHistograms->fhEnergyInConeAbove100GeV[centralityBin]->Fill(conePtSum, anotherConePtSum, fTotalEventWeight);
+    fHistograms->fhManualJetCorrectionAbove100GeV[centralityBin]->Fill(energyDifference, anotherEnergyDifference, fTotalEventWeight);
+    fHistograms->fhManualJetCorrectionRatioAbove100GeV[centralityBin]->Fill(energyDifference/jetPtCorrected, anotherEnergyDifference/jetPtCorrected, fTotalEventWeight);
+  }
+  
+  // Correct the jet energy with the difference with respect to average using strip
+  jetPtStrip = jetPt - anotherEnergyDifference;
+  
+  // If we flip 120 GeV with the correction, save the same histograms. Only for inclusive jets.
+  if(((jetPtStrip > 120 && jetPtCorrected < 120) || (jetPtStrip < 120 && jetPtCorrected > 120)) && (typeIndex%3 == 2)){
+    fHistograms->fhEnergyInEtaStripFlipped[centralityBin]->Fill(averageEnergyInCone, anotherAverageEnergyInCone, fTotalEventWeight);
+    fHistograms->fhEnergyInConeFlipped[centralityBin]->Fill(conePtSum, anotherConePtSum, fTotalEventWeight);
+    fHistograms->fhManualJetCorrectionFlipped[centralityBin]->Fill(energyDifference, anotherEnergyDifference, fTotalEventWeight);
+    fHistograms->fhManualJetCorrectionRatioFlipped[centralityBin]->Fill(energyDifference/jetPtCorrected, anotherEnergyDifference/jetPtCorrected, fTotalEventWeight);
+  }
+  
+  // Correct the jet energy with the difference with respect to average
+  jetPtCorrected = jetPtCorrected - energyDifference;
+  
+  // Return the track histogram filling flag to original value
+  fFillTrackHistograms = trackFill;
+  
+  return jetPtCorrected;
+  
+}
+
+/*
  * Check is a track passes the required subevent cut
  *
  *  Arguments:
@@ -2812,13 +3113,13 @@ Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fill
   if(eventReader->GetPrimaryVertexFilterBit() == 0) return false;
   if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kPrimaryVertex);
   
-  // Cut for HB/HE noise. Only applied for data.
-  if(eventReader->GetHBHENoiseFilterBit() == 0) return false;
-  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
-  
   // Cut for collision event selection. Only applied for PbPb data.
   if(eventReader->GetCollisionEventSelectionFilterBit() == 0) return false;
   if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kCollisionEventSelection);
+  
+  // Cut for HB/HE noise. Only applied for data.
+  if(eventReader->GetHBHENoiseFilterBit() == 0) return false;
+  if(fillHistograms) fHistograms->fhEvents->Fill(DijetHistograms::kHBHENoise);
   
   // Cut for beam scraping. Only applied for pp data.
   if(eventReader->GetBeamScrapingFilterBit() == 0) return false;
