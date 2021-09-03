@@ -842,7 +842,7 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentMixedEventFile;
   
   // Test on trying to correct for flow contribution under jet
-  bool eventByEventEnergyDensity = false;
+  bool eventByEventEnergyDensity = true;
   
   // Fillers for THnSparses
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
@@ -1311,7 +1311,7 @@ void DijetAnalyzer::RunAnalysis(){
         // Calculate the energy density below jet
         if(eventByEventEnergyDensity){
           
-          jetPtCorrected = GetManualJetPtCorrected(jetIndex, jetPtCorrected, centrality, 5);
+          GetManualJetPtCorrected(jetIndex, jetPtCorrected, centrality, 5);
           
         }
         
@@ -1590,8 +1590,8 @@ void DijetAnalyzer::RunAnalysis(){
         // Do manual jet energy correction for leading and subleading jets
         if(eventByEventEnergyDensity){
           
-          GetManualJetPtCorrected(highestIndex, leadingJetPt, centrality, 3);
-          GetManualJetPtCorrected(secondHighestIndex, subleadingJetPt, centrality, 4);
+          //GetManualJetPtCorrected(highestIndex, leadingJetPt, centrality, 3);
+          //GetManualJetPtCorrected(secondHighestIndex, subleadingJetPt, centrality, 4);
 
         } // Manual jet energy correction
         
@@ -1628,14 +1628,17 @@ void DijetAnalyzer::RunAnalysis(){
           dijetFound = false;
         }
         
+        // TODO: DEBUG Extra cut for testing purposes
+        if(subleadingJetPt > 200) dijetFound = false;
+        
         if(dijetFound) {
           dijetCounter++;
           
           // Calculate the energy density below jet
           if(eventByEventEnergyDensity){
             
-            //GetManualJetPtCorrected(highestIndex, leadingJetPt, centrality, 3);
-            //GetManualJetPtCorrected(secondHighestIndex, subleadingJetPt, centrality, 4);
+            GetManualJetPtCorrected(highestIndex, leadingJetPt, centrality, 3);
+            GetManualJetPtCorrected(secondHighestIndex, subleadingJetPt, centrality, 4);
 
           } // Manual jet energy correction
         } // Dijet found if
@@ -2952,11 +2955,11 @@ Double_t DijetAnalyzer::GetManualJetPtCorrected(const Int_t jetIndex, const Doub
   for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
     
     // Only look at HYDJET tracks for the first test
-    //if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
+    if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
     
     // Check that all the track cuts are passed
     passTrackCutsManualJEC = PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent);
-    if(!passTrackCutsManualJEC) continue;
+    //if(!passTrackCutsManualJEC) continue;
     
     // Get the track information
     trackPt = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack);
@@ -3024,8 +3027,8 @@ Double_t DijetAnalyzer::GetManualJetPtCorrected(const Int_t jetIndex, const Doub
   } // Track loop
   
   // Scale the energy inside the reflected jet cone
-  stripScaleFactor = GetManualJetConeScale(conePtSum, centrality, typeIndex);
-  conePtSum = stripScaleFactor;
+  //stripScaleFactor = GetManualJetConeScale(conePtSum, centrality, typeIndex);
+  //conePtSum = stripScaleFactor;
   
   // Type index for the jets.
   typeIndex = fJetType + jetType;
@@ -3034,8 +3037,8 @@ Double_t DijetAnalyzer::GetManualJetPtCorrected(const Int_t jetIndex, const Doub
   // From the eta-strip, calculate average energy inside a jet cone
   averageEnergyDensity = stripPtSum / (TMath::Pi() * 2 * stripWidth);
   averageEnergyInCone = averageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
-  stripScaleFactor = GetManualEtaStripScale(averageEnergyInCone, centrality, typeIndex);
-  averageEnergyInCone = stripScaleFactor;
+  //stripScaleFactor = GetManualEtaStripScale(averageEnergyInCone, centrality, typeIndex);
+  //averageEnergyInCone = stripScaleFactor;
   
   anotherAverageEnergyDensity = anotherStripPtSum / (TMath::Pi() * 2 * stripWidth);
   anotherAverageEnergyInCone = anotherAverageEnergyDensity * TMath::Pi() * 0.4 * 0.4;
