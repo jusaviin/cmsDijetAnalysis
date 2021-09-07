@@ -207,9 +207,9 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int nCentralityBins = 4;
   const int nTrackPtBins = 7;
   const int nAsymmetryBins = 3;
-  double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
+  //double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
-  //double centralityBinBorders[nCentralityBins+1] = {1.5,11.5,31.5,51.5,91.5};  // Bin borders for centrality
+  double centralityBinBorders[nCentralityBins+1] = {4.5,14.5,34.5,54.5,94.5};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {4,14,34,54,94};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {3,13,33,53,93};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
@@ -257,7 +257,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
   const bool smoothenMixing = false; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
-  bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
+  bool improviseMixing = true; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
   
   // Background subtraction
