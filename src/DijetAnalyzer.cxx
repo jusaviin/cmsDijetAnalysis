@@ -130,7 +130,6 @@ DijetAnalyzer::DijetAnalyzer() :
   // Initialize the Q-vector weight functions to NULL
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     fQvectorWeightFunction[iCentrality] = NULL;
-    fhManualCorrectionScale[iCentrality] = NULL;
   }
 }
 
@@ -250,14 +249,6 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fQvectorWeightFunction[2]->SetParameters(5,0.937,5,1000,0.5);  // This matches data and MC hadron v2
   fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
   fQvectorWeightFunction[3]->SetParameters(5,2,2,100,0.5);  // Nobody cares
-  
-  // TODO TODO TODO: Only for manual JEC debugging test
-  TFile *manualJecCorrectionFile = TFile::Open("manualJecCorrection.root");
-  fhManualCorrectionScale[0] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C0");
-  fhManualCorrectionScale[1] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C1");
-  fhManualCorrectionScale[2] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C2");
-  fhManualCorrectionScale[3] = (TH2D*) manualJecCorrectionFile->Get("manualJetCorrectionAbove100GeV_C3");
-  gRandom->SetSeed(0);
   
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
@@ -442,7 +433,6 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   // Copy the Q-vector weight functions
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     fQvectorWeightFunction[iCentrality] = in.fQvectorWeightFunction[iCentrality];
-    fhManualCorrectionScale[iCentrality] = in.fhManualCorrectionScale[iCentrality];
   }
 }
 
@@ -529,7 +519,6 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   // Copy the Q-vector weight functions
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     fQvectorWeightFunction[iCentrality] = in.fQvectorWeightFunction[iCentrality];
-    fhManualCorrectionScale[iCentrality] = in.fhManualCorrectionScale[iCentrality];
   }
   
   return *this;
@@ -554,7 +543,6 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fFakeV2Function) delete fFakeV2Function;
   for(Int_t iCentrality = 0; iCentrality < 4; iCentrality++){
     if(fQvectorWeightFunction[iCentrality]) delete fQvectorWeightFunction[iCentrality];
-    if(fhManualCorrectionScale[iCentrality]) delete fhManualCorrectionScale[iCentrality];
   }
   if(fGenericPol6) delete fGenericPol6;
   if(fGenericPol1) delete fGenericPol1;
@@ -841,8 +829,16 @@ void DijetAnalyzer::RunAnalysis(){
   TString currentFile;
   TString currentMixedEventFile;
   
+  // Histograms that should be filled
+  Int_t filledHistograms = fCard->Get("FilledHistograms");
+  Bool_t readTrackTrees = true;
+  if(filledHistograms < 4) {
+    useDifferentReaderFotJetsAndTracks = false;
+    readTrackTrees = false;  // Do not read track trees if only jets are used. Makes things much faster in this case.
+  }
+  
   // Test on trying to correct for flow contribution under jet
-  bool eventByEventEnergyDensity = true;
+  bool eventByEventEnergyDensity = false;
   
   // Fillers for THnSparses
   const Int_t nFillJet = 5;         // 5 is nominal, 8 used for smearing study
@@ -892,13 +888,13 @@ void DijetAnalyzer::RunAnalysis(){
     if(fForestType == kSkimForest) {
       fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
     } else {
-      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
+      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane,readTrackTrees);
     }
   } else {
     if(fForestType == kSkimForest) {
       fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
     } else {
-      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
+      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane,readTrackTrees);
     }
   }
   
@@ -2886,30 +2882,6 @@ Double_t DijetAnalyzer::GetManualJetConeScale(Double_t jetConeValue, const Doubl
 }
 
 /*
- * Get a manual jet energy correction from an eta reflected calculation
- *
- *  Arguments:
- *   Double_t jetConeValue = Energy in the reflected jet cone
- *   const Double_t centrality = Centrality of the event
- *
- *  return: Manual jet energy correction
- */
-Double_t DijetAnalyzer::GetManualJecCorrection(const Double_t jecCorrection, const Double_t centrality) const{
-  
-  // No weight for pp
-  if(fDataType == ForestReader::kPp || fDataType == ForestReader::kPpMC){
-    return 1;
-  }
-  
-  Int_t centralityBin = GetCentralityBin(centrality);
-  
-  Int_t xBin = fhManualCorrectionScale[centralityBin]->GetXaxis()->FindBin(jecCorrection);
-  
-  return fhManualCorrectionScale[centralityBin]->ProjectionY("tempProj",xBin,xBin)->GetRandom();
-  
-}
-
-/*
  * Get manual event-by-event corrected jet pT
  *
  *
@@ -3045,8 +3017,6 @@ Double_t DijetAnalyzer::GetManualJetPtCorrected(const Int_t jetIndex, const Doub
   
   // Calculate the difference between average over the whole event and below jet cone
   energyDifference = conePtSum - averageEnergyInCone;
-  //stripScaleFactor = GetManualJecCorrection(energyDifference, centrality, typeIndex);
-  //energyDifference = stripScaleFactor;
   
   anotherEnergyDifference = anotherConePtSum - anotherAverageEnergyInCone;
   

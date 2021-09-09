@@ -13,6 +13,7 @@ ForestReader::ForestReader() :
   fJetAxis(0),
   fMatchJets(false),
   fDoEventPlane(false),
+  fReadTrackTree(true),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fPtHatBranch(0),
@@ -105,14 +106,16 @@ ForestReader::ForestReader() :
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
+ *   Bool_t readTrackTree: Read the track tree from the forest. Optimizes speed if tracks are not needed
  */
-ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
+ForestReader::ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t readTrackTree) :
   fDataType(0),
   fReadMode(readMode),
   fJetType(jetType),
   fJetAxis(jetAxis),
   fMatchJets(matchJets),
   fDoEventPlane(doEventPlane),
+  fReadTrackTree(readTrackTree),
   fHiVzBranch(0),
   fHiBinBranch(0),
   fPtHatBranch(0),
@@ -207,6 +210,7 @@ ForestReader::ForestReader(const ForestReader& in) :
   fJetAxis(in.fJetAxis),
   fMatchJets(in.fMatchJets),
   fDoEventPlane(in.fDoEventPlane),
+  fReadTrackTree(in.fReadTrackTree),
   fHiVzBranch(in.fHiVzBranch),
   fHiBinBranch(in.fHiBinBranch),
   fPtHatBranch(in.fPtHatBranch),
@@ -308,6 +312,7 @@ ForestReader& ForestReader::operator=(const ForestReader& in){
   fJetAxis = in.fJetAxis;
   fMatchJets = in.fMatchJets;
   fDoEventPlane = in.fDoEventPlane;
+  fReadTrackTree = in.fReadTrackTree;
   fHiVzBranch = in.fHiVzBranch;
   fHiBinBranch = in.fHiBinBranch;
   fPtHatBranch = in.fPtHatBranch;

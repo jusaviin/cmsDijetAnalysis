@@ -36,9 +36,10 @@ GeneratorLevelForestReader::GeneratorLevelForestReader() :
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
+ *   Bool_t readTrackTree: Read the track trees from the forest. Optimizes speed if tracks are not needed
  */
-GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
-  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane),
+GeneratorLevelForestReader::GeneratorLevelForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t readTrackTree) :
+  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane,readTrackTree),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -285,21 +286,23 @@ void GeneratorLevelForestReader::Initialize(){
   }
   
   // Connect the branches to the track tree
-  fTrackTree->SetBranchStatus("*",0);
-  fTrackTree->SetBranchStatus("pt",1);
-  fTrackTree->SetBranchAddress("pt",&fTrackPtArray,&fTrackPtBranch);
-  fTrackTree->SetBranchStatus("phi",1);
-  fTrackTree->SetBranchAddress("phi",&fTrackPhiArray,&fTrackPhiBranch);
-  fTrackTree->SetBranchStatus("eta",1);
-  fTrackTree->SetBranchAddress("eta",&fTrackEtaArray,&fTrackEtaBranch);
-  fTrackTree->SetBranchStatus("chg",1);
-  fTrackTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch);  // Reuse a branch from ForestReader that is not otherwise needed here
-  fTrackTree->SetBranchStatus("sube",1);
-  fTrackTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch);  // Reuse a branch from ForestReader that is not otherwise needed here
-  /*if(fDataType != kLocalTest && fReadMode == 0) {
-    fTrackTree->SetBranchStatus("sta",1);
-    fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test or PYTHIA8 forest
-  } */ // Quick test. New PbPb MC files do not have this branch
+  if(fReadTrackTree){
+    fTrackTree->SetBranchStatus("*",0);
+    fTrackTree->SetBranchStatus("pt",1);
+    fTrackTree->SetBranchAddress("pt",&fTrackPtArray,&fTrackPtBranch);
+    fTrackTree->SetBranchStatus("phi",1);
+    fTrackTree->SetBranchAddress("phi",&fTrackPhiArray,&fTrackPhiBranch);
+    fTrackTree->SetBranchStatus("eta",1);
+    fTrackTree->SetBranchAddress("eta",&fTrackEtaArray,&fTrackEtaBranch);
+    fTrackTree->SetBranchStatus("chg",1);
+    fTrackTree->SetBranchAddress("chg",&fTrackChargeArray,&fTrackPtErrorBranch);  // Reuse a branch from ForestReader that is not otherwise needed here
+    fTrackTree->SetBranchStatus("sube",1);
+    fTrackTree->SetBranchAddress("sube",&fTrackSubeventArray,&fTrackChi2Branch);  // Reuse a branch from ForestReader that is not otherwise needed here
+    /*if(fDataType != kLocalTest && fReadMode == 0) {
+     fTrackTree->SetBranchStatus("sta",1);
+     fTrackTree->SetBranchAddress("sta",&fTrackStatusArray,&fTrackEnergyEcalBranch); // Reuse a branch from ForestReader that is not otherwise needed here. Not available for local test or PYTHIA8 forest
+     } */ // Quick test. New PbPb MC files do not have this branch
+  } // Reading track trees
 
 }
 
@@ -332,7 +335,7 @@ void GeneratorLevelForestReader::ReadForestFromFile(TFile *inputFile){
   fJetTree = (TTree*)inputFile->Get(treeName[fJetType]);
   
   // The track tree is different than in other types of forests
-  fTrackTree = (TTree*)inputFile->Get("HiGenParticleAna/hi");
+  if(fReadTrackTree) fTrackTree = (TTree*)inputFile->Get("HiGenParticleAna/hi");
   
   // Connect branches to trees
   Initialize();

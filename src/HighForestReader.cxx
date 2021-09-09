@@ -56,9 +56,10 @@ HighForestReader::HighForestReader() :
  *   Int_t jetAxis: 0 = Anti-kT axis, 1 = Leading particle flow candidate axis, 2 = WTA axis
  *   Bool_t matchJets: True = Do matching for reco and gen jets. False = Do not require matching
  *   Bool_t doEventPlane: Read the event plane branches from the tree. Branches not included in older trees.
+ *   Bool_t readTrackTree: Read the track trees from the forest. Optimizes speed if tracks are not needed
  */
-HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane) :
-  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane),
+HighForestReader::HighForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t readTrackTree) :
+  ForestReader(dataType,readMode,jetType,jetAxis,matchJets,doEventPlane,readTrackTree),
   fHeavyIonTree(0),
   fJetTree(0),
   fHltTree(0),
@@ -319,7 +320,7 @@ void HighForestReader::Initialize(){
       
     }
     
-  }else if (fDataType == kPbPb || (fDataType == kPbPbMC && fReadMode == 2019)){ // PbPb data
+  }else if ((fDataType == kPbPb ||fDataType == kPbPbMC) && fReadMode == 2019){ // PbPb data
     
     // Trigger branch naming is different for 2018 and 2015 forests
     if(fReadMode > 2000){
@@ -395,51 +396,53 @@ void HighForestReader::Initialize(){
   }
   
   // Connect the branches to the track tree
-  fTrackTree->SetBranchStatus("*",0);
-  fTrackTree->SetBranchStatus("trkPt",1);
-  fTrackTree->SetBranchAddress("trkPt",&fTrackPtArray,&fTrackPtBranch);
-  fTrackTree->SetBranchStatus("trkPtError",1);
-  fTrackTree->SetBranchAddress("trkPtError",&fTrackPtErrorArray,&fTrackPtErrorBranch);
-  fTrackTree->SetBranchStatus("trkPhi",1);
-  fTrackTree->SetBranchAddress("trkPhi",&fTrackPhiArray,&fTrackPhiBranch);
-  fTrackTree->SetBranchStatus("trkEta",1);
-  fTrackTree->SetBranchAddress("trkEta",&fTrackEtaArray,&fTrackEtaBranch);
-  fTrackTree->SetBranchStatus("nTrk",1);
-  fTrackTree->SetBranchAddress("nTrk",&fnTracks,&fnTracksBranch);
-  fTrackTree->SetBranchStatus("highPurity",1);
-  fTrackTree->SetBranchAddress("highPurity",&fHighPurityTrackArray,&fHighPurityTrackBranch);
-  fTrackTree->SetBranchStatus("trkDz1",1);
-  fTrackTree->SetBranchAddress("trkDz1",&fTrackVertexDistanceZArray,&fTrackVertexDistanceZBranch);
-  fTrackTree->SetBranchStatus("trkDzError1",1);
-  fTrackTree->SetBranchAddress("trkDzError1",&fTrackVertexDistanceZErrorArray,&fTrackVertexDistanceZErrorBranch);
-  fTrackTree->SetBranchStatus("trkDxy1",1);
-  fTrackTree->SetBranchAddress("trkDxy1",&fTrackVertexDistanceXYArray,&fTrackVertexDistanceXYBranch);
-  fTrackTree->SetBranchStatus("trkDxyError1",1);
-  fTrackTree->SetBranchAddress("trkDxyError1",&fTrackVertexDistanceXYErrorArray,&fTrackVertexDistanceXYErrorBranch);
-  fTrackTree->SetBranchStatus("trkChi2",1);
-  fTrackTree->SetBranchAddress("trkChi2",&fTrackChi2Array,&fTrackChi2Branch);
-  fTrackTree->SetBranchStatus("trkNdof",1);
-  fTrackTree->SetBranchAddress("trkNdof",&fnTrackDegreesOfFreedomArray,&fnTrackDegreesOfFreedomBranch);
-  fTrackTree->SetBranchStatus("trkNlayer",1);
-  fTrackTree->SetBranchAddress("trkNlayer",&fnHitsTrackerLayerArray,&fnHitsTrackerLayerBranch);
-  fTrackTree->SetBranchStatus("trkNHit",1);
-  fTrackTree->SetBranchAddress("trkNHit",&fnHitsTrackArray,&fnHitsTrackBranch);
-  fTrackTree->SetBranchStatus("pfEcal",1);
-  fTrackTree->SetBranchAddress("pfEcal",&fTrackEnergyEcalArray,&fTrackEnergyEcalBranch);
-  fTrackTree->SetBranchStatus("pfHcal",1);
-  fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
-  
-  // Additional information needed for 2018 track cuts
-  fTrackTree->SetBranchStatus("trkAlgo",1);
-  fTrackTree->SetBranchAddress("trkAlgo",&fTrackAlgorithmArray,&fTrackAlgorithmBranch);
-  fTrackTree->SetBranchStatus("trkOriginalAlgo",1);
-  fTrackTree->SetBranchAddress("trkOriginalAlgo",&fTrackOriginalAlgorithmArray,&fTrackOriginalAlgorithmBranch);
-  
-  // Track MVA only in 2018 PbPb trees
-  if(fReadMode > 2000 && (fDataType == kPbPb || fDataType == kPbPbMC)){
-    fTrackTree->SetBranchStatus("trkMVA",1);
-    fTrackTree->SetBranchAddress("trkMVA",&fTrackMVAArray,&fTrackMVABranch);
-  }
+  if(fReadTrackTree){
+    fTrackTree->SetBranchStatus("*",0);
+    fTrackTree->SetBranchStatus("trkPt",1);
+    fTrackTree->SetBranchAddress("trkPt",&fTrackPtArray,&fTrackPtBranch);
+    fTrackTree->SetBranchStatus("trkPtError",1);
+    fTrackTree->SetBranchAddress("trkPtError",&fTrackPtErrorArray,&fTrackPtErrorBranch);
+    fTrackTree->SetBranchStatus("trkPhi",1);
+    fTrackTree->SetBranchAddress("trkPhi",&fTrackPhiArray,&fTrackPhiBranch);
+    fTrackTree->SetBranchStatus("trkEta",1);
+    fTrackTree->SetBranchAddress("trkEta",&fTrackEtaArray,&fTrackEtaBranch);
+    fTrackTree->SetBranchStatus("nTrk",1);
+    fTrackTree->SetBranchAddress("nTrk",&fnTracks,&fnTracksBranch);
+    fTrackTree->SetBranchStatus("highPurity",1);
+    fTrackTree->SetBranchAddress("highPurity",&fHighPurityTrackArray,&fHighPurityTrackBranch);
+    fTrackTree->SetBranchStatus("trkDz1",1);
+    fTrackTree->SetBranchAddress("trkDz1",&fTrackVertexDistanceZArray,&fTrackVertexDistanceZBranch);
+    fTrackTree->SetBranchStatus("trkDzError1",1);
+    fTrackTree->SetBranchAddress("trkDzError1",&fTrackVertexDistanceZErrorArray,&fTrackVertexDistanceZErrorBranch);
+    fTrackTree->SetBranchStatus("trkDxy1",1);
+    fTrackTree->SetBranchAddress("trkDxy1",&fTrackVertexDistanceXYArray,&fTrackVertexDistanceXYBranch);
+    fTrackTree->SetBranchStatus("trkDxyError1",1);
+    fTrackTree->SetBranchAddress("trkDxyError1",&fTrackVertexDistanceXYErrorArray,&fTrackVertexDistanceXYErrorBranch);
+    fTrackTree->SetBranchStatus("trkChi2",1);
+    fTrackTree->SetBranchAddress("trkChi2",&fTrackChi2Array,&fTrackChi2Branch);
+    fTrackTree->SetBranchStatus("trkNdof",1);
+    fTrackTree->SetBranchAddress("trkNdof",&fnTrackDegreesOfFreedomArray,&fnTrackDegreesOfFreedomBranch);
+    fTrackTree->SetBranchStatus("trkNlayer",1);
+    fTrackTree->SetBranchAddress("trkNlayer",&fnHitsTrackerLayerArray,&fnHitsTrackerLayerBranch);
+    fTrackTree->SetBranchStatus("trkNHit",1);
+    fTrackTree->SetBranchAddress("trkNHit",&fnHitsTrackArray,&fnHitsTrackBranch);
+    fTrackTree->SetBranchStatus("pfEcal",1);
+    fTrackTree->SetBranchAddress("pfEcal",&fTrackEnergyEcalArray,&fTrackEnergyEcalBranch);
+    fTrackTree->SetBranchStatus("pfHcal",1);
+    fTrackTree->SetBranchAddress("pfHcal",&fTrackEnergyHcalArray,&fTrackEnergyHcalBranch);
+    
+    // Additional information needed for 2018 track cuts
+    fTrackTree->SetBranchStatus("trkAlgo",1);
+    fTrackTree->SetBranchAddress("trkAlgo",&fTrackAlgorithmArray,&fTrackAlgorithmBranch);
+    fTrackTree->SetBranchStatus("trkOriginalAlgo",1);
+    fTrackTree->SetBranchAddress("trkOriginalAlgo",&fTrackOriginalAlgorithmArray,&fTrackOriginalAlgorithmBranch);
+    
+    // Track MVA only in 2018 PbPb trees
+    if(fReadMode > 2000 && (fDataType == kPbPb || fDataType == kPbPbMC)){
+      fTrackTree->SetBranchStatus("trkMVA",1);
+      fTrackTree->SetBranchAddress("trkMVA",&fTrackMVAArray,&fTrackMVABranch);
+    }
+  } // Reading track trees
   
   // Do not read the particle flow candidate tree for 2018 data
   if(fReadMode < 2000){
@@ -469,7 +472,6 @@ void HighForestReader::Initialize(){
       fParticleFlowCandidateTree->SetBranchAddress("pfEta",&fParticleFlowCandidateEtaArray,&fParticleFlowCandidateEtaBranch);
     }
   } // Not 2018 data
-  
 }
 
 /*
@@ -502,7 +504,7 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
   
   // The track tree and the particle flow candidate tree have different names for differant datasets
   if(fDataType == kPp || fDataType == kPpMC || fDataType == kLocalTest){
-    fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree");
+    if(fReadTrackTree) fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree");
     
     // No particle flow candidate tree for 2017 pp
     if(fReadMode < 2000){
@@ -512,9 +514,9 @@ void HighForestReader::ReadForestFromFile(TFile *inputFile){
     
     // Track tree has different name in 2018 data
     if(fReadMode > 2000){
-      fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree"); // 2018 syntax
+      if(fReadTrackTree) fTrackTree = (TTree*)inputFile->Get("ppTrack/trackTree"); // 2018 syntax
     } else {
-      fTrackTree = (TTree*)inputFile->Get("anaTrack/trackTree"); // 2015 syntax
+      if(fReadTrackTree) fTrackTree = (TTree*)inputFile->Get("anaTrack/trackTree"); // 2015 syntax
       
       // Do not read the PF candidate tree for 2018 data, information is not needed
       if(fReadMode == 1){
@@ -557,7 +559,7 @@ void HighForestReader::GetEvent(Int_t nEvent){
   fJetTree->GetEntry(nEvent);
   fHltTree->GetEntry(nEvent);
   fSkimTree->GetEntry(nEvent);
-  fTrackTree->GetEntry(nEvent);
+  if(fReadTrackTree) fTrackTree->GetEntry(nEvent);
   
   // No particle flow candidate tree for 2018 data
   if(fReadMode < 2000) fParticleFlowCandidateTree->GetEntry(nEvent);

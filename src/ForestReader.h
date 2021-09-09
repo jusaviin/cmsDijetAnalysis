@@ -72,7 +72,7 @@ public:
   
   // Constructors and destructors
   ForestReader();                                          // Default constructor
-  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane); // Custom constructor
+  ForestReader(Int_t dataType, Int_t readMode, Int_t jetType, Int_t jetAxis, Bool_t matchJets, Bool_t doEventPlane, Bool_t readTrackTree = true); // Custom constructor
   ForestReader(const ForestReader& in);                    // Copy constructor
   virtual ~ForestReader();                                 // Destructor
   ForestReader& operator=(const ForestReader& obj);        // Equal sign operator
@@ -164,12 +164,13 @@ protected:
   // Methods
   virtual void Initialize() = 0;  // Connect the branches to the tree
   
-  Int_t fDataType;     // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
-  Int_t fReadMode;     // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
-  Int_t fJetType;      // Choose the type of jets usedfor analysis. 0 = Calo jets, 1 = PF jets
-  Int_t fJetAxis;      // Jet axis used for the jets. 0 = Anti-kT, 1 = Leading particle flow candidate, 2 = WTA
-  Bool_t fMatchJets;   // Match generator and reconstructed level jets
-  Bool_t fDoEventPlane; // Include event plane branches in the tree
+  Int_t fDataType;        // Type of data read with the tree. 0 = pp, 1 = PbPb, 2 = ppMC, 3 = PbPbMC, 4 = LocalTest
+  Int_t fReadMode;        // Different forests have different naming conventions. 0 = General forests, 1 = PYTHIA8 forest
+  Int_t fJetType;         // Choose the type of jets usedfor analysis. 0 = Calo jets, 1 = PF jets
+  Int_t fJetAxis;         // Jet axis used for the jets. 0 = Anti-kT, 1 = Leading particle flow candidate, 2 = WTA
+  Bool_t fMatchJets;      // Match generator and reconstructed level jets
+  Bool_t fDoEventPlane;   // Include event plane branches in the tree
+  Bool_t fReadTrackTree; // Read the track trees from the forest
   
   // Branches for heavy ion tree
   TBranch *fHiVzBranch;                   // Branch for vertex z-position
