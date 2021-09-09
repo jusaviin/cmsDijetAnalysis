@@ -1686,9 +1686,9 @@ void DijetComparingDrawer::DrawToLowerPad(const char* xTitle, const char* yTitle
     fRatioHistogram[iAdditional]->SetLineColor(fColors[iAdditional]);
     fRatioHistogram[iAdditional]->Draw("same");
   }
-  /*TLine *oneLine = new TLine(40,1,160,1);
-  oneLine->SetLineStyle(2);
-  oneLine->Draw();*/
+  //TLine *oneLine = new TLine(0,1,500,1);
+  //oneLine->SetLineStyle(2);
+  //oneLine->Draw();
 }
 
 /*

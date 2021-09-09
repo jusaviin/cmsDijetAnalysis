@@ -50,7 +50,9 @@ std::tuple<double,double,double,double> fitGauss(TH1* histogram, double lowFitRa
 void getAndPlotJecDebug(){
 
   // Open the data file
-  TFile *inputFile = TFile::Open("data/PbPbMC2018_RecoGen_akPfCsJet_onlyJets_4pCentShift_subeNon0_manualJecHalfStrip_2021-08-26_mostStats.root");
+  TFile *inputFile = TFile::Open("data/PbPbMC2018_RecoGen_akPfCsJet_onlyJets_4pCentShift_subeNon0_manualJecMax200SubJetHS_2021-09-03.root");
+  // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_4pCentShift_subeNon0_manualJecMax200SubJet_2021-09-03.root
+  // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_4pCentShift_subeNon0_manualJecMax200SubJetHS_2021-09-03.root
   // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_4pCentShift_subeNon0_manualJecHalfStrip_2021-08-26_mostStats.root
   // PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_manualJecDijetScale_2021-08-25.root
   // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_4pCentShift_subeNon0_sAndLJecDebug_lowPtDijet_2021-08-24.root
@@ -70,20 +72,20 @@ void getAndPlotJecDebug(){
   
   // Figure saving flag
   const bool drawAllJets = false;
-  const bool drawLeadingJets = false;
+  const bool drawLeadingJets = true;
   const bool drawSubleadingJets = false;
   const bool drawJetsAbove100GeV = false;
   const bool drawFlippedJets = false;
   const bool saveFigures = false;
   const char* saveComment = "_scaledReflection";
-  const bool drawStripIllustration = true;
+  const bool drawStripIllustration = false;
   
   // Gauss fit flags
   const bool fitEtaStrip = false;
-  const bool fitJetCone = false;
+  const bool fitJetCone = true;
   const bool fitManualCorrection = false;
   
-  const bool fitLeading = false;
+  const bool fitLeading = true;
   const bool fitSubleading = false;
   
   // Possibility to save histograms into an output file

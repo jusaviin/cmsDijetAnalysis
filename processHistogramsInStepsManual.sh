@@ -23,7 +23,7 @@ MIXING=$6          # Flag for preprocessing
 root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",1,'$JFFCORRECTION','$SPILLOVERCORRECTION')' # Event information
 
 # Single jet and track histograms have centrality binning
-for i in `seq 0 0`;
+for i in `seq 0 3`;
 do
   root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",2,'$JFFCORRECTION','$SPILLOVERCORRECTION',-1,'$i')' # Single jet and dijet histograms
 #  root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",3,'$JFFCORRECTION','$SPILLOVERCORRECTION',-1,'$i',-1,-1,"'${MIXING}'")' # Track histograms
