@@ -5,6 +5,7 @@
 # Ignore data files and figures
 data
 *.root
+!hepdata/*.root
 *.pdf
 *.png
 
