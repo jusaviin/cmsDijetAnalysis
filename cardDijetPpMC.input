@@ -5,11 +5,11 @@ DataType 2  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
 
 # Select correlation type for Monte Carlo runs (Jet-Track)
 McCorrelationType 3 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
-MatchJets 0 # 1 = Match generator level jets with reconstructed jets, 0 = Do not do that
+MatchJets 1 # 1 = Match generator level jets with reconstructed jets, 0 = Do not do that
 
 # Specify the forest type in the selected data files and choose forest readers based on this
 ForestType 0   # 0 = High Forest, 1 = Skim Forest
-ReadMode 2018  # 0 = Regular forest, 1 = PYTHIA8 forest
+ReadMode 2017  # 0 = Regular forest, 1 = PYTHIA8 forest
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
 FilledHistograms 3 # Bit 0 = Event information histograms      (to set: 1)
@@ -27,8 +27,8 @@ FilledHistograms 3 # Bit 0 = Event information histograms      (to set: 1)
 # Cuts for dijets
 JetType 1                  # 0 = Calo jets, 1 = PF jets
 JetAxis 2                  # 0 = Escheme axis, 1 = Leading PF candidate axis, 2 = WTA
-JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
-SearchEtaCut 2.0           # Region accepted when searching for dijet events
+JetEtaCut 3.0              # Region in eta around midrapidity taken into account in analysis
+SearchEtaCut 3.0           # Region accepted when searching for dijet events
 MaxPtCut 5020              # Maximum pT of a leading jet accepted in the analysis
 MinPtCut 120               # Minimum pT of a leading jet accepted in the analysis
 SubleadingPtCut 50         # Minimum pT of a subleading jet accepted in the analysis
