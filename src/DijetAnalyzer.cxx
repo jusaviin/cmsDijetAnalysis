@@ -831,10 +831,10 @@ void DijetAnalyzer::RunAnalysis(){
   
   // Histograms that should be filled
   Int_t filledHistograms = fCard->Get("FilledHistograms");
-  Bool_t readTrackTrees = true;
+  Bool_t readTrackTree = true;
   if(filledHistograms < 4) {
     useDifferentReaderFotJetsAndTracks = false;
-    readTrackTrees = false;  // Do not read track trees if only jets are used. Makes things much faster in this case.
+    readTrackTree = false;  // Do not read track trees if only jets are used. Makes things much faster in this case.
   }
   
   // Test on trying to correct for flow contribution under jet
@@ -888,13 +888,13 @@ void DijetAnalyzer::RunAnalysis(){
     if(fForestType == kSkimForest) {
       fJetReader = new GeneratorLevelSkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
     } else {
-      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane,readTrackTrees);
+      fJetReader = new GeneratorLevelForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane,readTrackTree);
     }
   } else {
     if(fForestType == kSkimForest) {
       fJetReader = new SkimForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane);
     } else {
-      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane,readTrackTrees);
+      fJetReader = new HighForestReader(fDataType,fReadMode,fJetType,fJetAxis,fMatchJets,doEventPlane,readTrackTree);
     }
   }
   

@@ -368,10 +368,10 @@ void GeneratorLevelForestReader::GetEvent(Int_t nEvent){
   fJetTree->GetEntry(nEvent);
   fHltTree->GetEntry(nEvent);
   fSkimTree->GetEntry(nEvent);
-  fTrackTree->GetEntry(nEvent);
+  if(fReadTrackTree) fTrackTree->GetEntry(nEvent);
   
   // Read the numbers of tracks for this event
-  fnTracks = fTrackPtArray->size();
+  if(fReadTrackTree) fnTracks = fTrackPtArray->size();
 }
 
 // Getter for jet pT
