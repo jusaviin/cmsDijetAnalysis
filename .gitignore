@@ -6,6 +6,8 @@
 data
 *.root
 !hepdata/*.root
+!trackCorrectionTables/PbPb2018/*.root
+!trackCorrectionTables/pp2017/*.root
 *.pdf
 *.png
 
