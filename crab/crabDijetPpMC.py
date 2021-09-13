@@ -2,7 +2,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 correlationType = 'GenGen'
-infoString = 'Pythia6_pfCsJets_wtaAxis_matchJets_2019-07-21'
+infoString = 'Pythia6_caloJets_eschemeAxis_20EventMixed_2019-10-12'
 inputFile='ppMC_Pythia6_wtaForest.txt'
 card='cardDijetPpMCwta.input'
 output='dijet_ppMC_'+correlationType+'_'+infoString+'.root'
@@ -19,13 +19,13 @@ config.JobType.scriptExe = 'compileAndRun.sh'
 config.JobType.scriptArgs = ['card='+card,'output='+output,'location='+fileLocation]
 config.JobType.inputFiles = ['FrameworkJobReport.xml','dijet5TeV.tar.gz',card]
 config.JobType.outputFiles = [output]
-config.JobType.maxJobRuntimeMin = 800
-config.JobType.maxMemoryMB = 1800
+config.JobType.maxJobRuntimeMin = 1200
+config.JobType.maxMemoryMB = 2000
 
 config.section_("Data")
 config.Data.userInputFiles = open(inputFile).readlines() 
 config.Data.splitting = 'FileBased'
-config.Data.unitsPerJob = 2
+config.Data.unitsPerJob = 1
 config.Data.totalUnits = len(config.Data.userInputFiles)
 config.Data.outputPrimaryDataset = 'diJetTestPpMCHistograms'
 config.Data.outLFNDirBase = '/store/user/jviinika/'+config.General.requestName

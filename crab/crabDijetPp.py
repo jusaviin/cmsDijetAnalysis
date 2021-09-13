@@ -2,7 +2,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 card = 'cardDijetPp.input'
-infoString = 'dijet_pp_highForest_pfJets_highJetLimit_noUncorr_wtaAxis_2019-07-13'
+infoString = 'dijet_pp2015_caloJets_noUncorr_eschemeAxis_2019-10-12'
 output = infoString + '.root'
 inputFile = 'ppData_HIHardProbes-Run2015E-PromptReco-v1.txt'
 fileLocation='2'  # Locations: 0 = Purdue, 1 = CERN, 2 = Search with xrootd
@@ -19,7 +19,7 @@ config.JobType.scriptArgs = ['card='+card,'output='+output,'location='+fileLocat
 config.JobType.inputFiles = ['FrameworkJobReport.xml','dijet5TeV.tar.gz',card]
 config.JobType.outputFiles = [output]
 config.JobType.maxJobRuntimeMin = 600
-config.JobType.maxMemoryMB = 1600
+config.JobType.maxMemoryMB = 2000
 
 config.section_("Data")
 config.Data.userInputFiles = open(inputFile).readlines() 

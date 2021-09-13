@@ -24,12 +24,12 @@ FilledHistograms 111 # Bit 0 = Event information histograms      (to set: 1)
                     # Regular and uncorrected correlation = 24
 
 # Cuts for dijets
-JetType 1                  # 0 = Calo jets, 1 = PF jets
-JetAxis 2                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate, 2 = WTA
+JetType 0                  # 0 = Calo jets, 1 = PF jets
+JetAxis 0                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate, 2 = WTA
 JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
 MaxPtCut 5020              # Maximum pT of a leading jet accepted in the analysis
-MinPtCut 126               # Minimum pT of a leading jet accepted in the analysis
+MinPtCut 120               # Minimum pT of a leading jet accepted in the analysis
 SubleadingPtCut 50         # Minimum pT of a subleading jet accepted in the analysis
 DeltaPhiCut 2.6179939      # Minimum deltaPhi between leading and subleading jet, 5 Pi / 6
 MinMaxTrackPtFraction 0.01 # Minimum fraction of jet pT taken by the highest pT track in jet

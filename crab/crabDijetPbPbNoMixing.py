@@ -2,7 +2,8 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 card='cardDijetPbPbNoMixing.input'
-jobTag='dijetPbPb_pfCsJets_lowLeadingJetCut_xj_wtaAxis_noUncorr_noMixing_2019-07-05'
+jobTag='dijetPbPb2015_akPu4CaloJets_noJetCorrections_noPtWeight_noMixing_eschemeAxis_2019-09-23'
+#inputList='PbPbData2015_MinBiasSkim.txt'
 inputList='PbPbData2015_highForestWithWTA.txt'
 outputFile=jobTag+'.root'
 fileLocation = '1'  # 0 = Purdue, 1 = CERN, 2 = Search with xrootd
@@ -19,7 +20,7 @@ config.JobType.scriptArgs = ['card='+card,'output='+outputFile,'location='+fileL
 config.JobType.inputFiles = ['FrameworkJobReport.xml','dijet5TeV.tar.gz',card]
 config.JobType.outputFiles = [outputFile]
 config.JobType.maxJobRuntimeMin = 600
-config.JobType.maxMemoryMB = 1500
+config.JobType.maxMemoryMB = 2200
 
 config.section_("Data")
 config.Data.userInputFiles = open(inputList).readlines() 
@@ -31,7 +32,7 @@ config.Data.outLFNDirBase = '/store/user/jviinika/'+config.General.requestName
 config.Data.publication = False
 
 config.section_("Site")
-config.Site.whitelist = ['T2_US_*']
+config.Site.whitelist = ['T2_CH_*']
 config.Site.storageSite = 'T3_US_FNALLPC'
 
 #"really" force crab to only run at whitelisted sites

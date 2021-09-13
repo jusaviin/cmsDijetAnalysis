@@ -2,7 +2,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 correlationType = 'GenGen'
-infoString = 'Pythia8_pfJets_wtaAxis_jetsNtracks_jetClosures_JECv3_2019-09-03'
+infoString = 'Pythia8_pfJets_wtaAxis_onlyJets_quarkGluonUpToEta3_JECv6_2021-09-09'
 inputFile='ppMC2017_mergedFiles.txt'
 card='cardDijetPpMC2017.input'
 output='ppMC2017_'+correlationType+'_'+infoString+'.root'
@@ -19,8 +19,8 @@ config.JobType.scriptExe = 'compileAndRun.sh'
 config.JobType.scriptArgs = ['card='+card,'output='+output,'location='+fileLocation]
 config.JobType.inputFiles = ['FrameworkJobReport.xml','dijet5TeV.tar.gz',card]
 config.JobType.outputFiles = [output]
-config.JobType.maxJobRuntimeMin = 180
-config.JobType.maxMemoryMB = 1500
+config.JobType.maxJobRuntimeMin = 200
+config.JobType.maxMemoryMB = 800
 
 config.section_("Data")
 config.Data.userInputFiles = open(inputFile).readlines() 

@@ -1,9 +1,9 @@
 from WMCore.Configuration import Configuration
 config = Configuration()
 
-correlationType = 'RecoReco'
-filledHistograms = 'noUncorr'
-infoString = 'pfCsJets_' + filledHistograms + '_sube0_matchJets_noMixing_wtaAxis_2019-07-20'
+correlationType = 'RecoGen'
+filledHistograms = 'noUncOrInc'
+infoString = 'flowJets_' + filledHistograms + '_noMixing_wtaAxis_2020-07-20'
 card='cardDijetPbPbMCNoMixing.input'
 output='PbPbMC_' + correlationType + '_' + infoString + '.root'
 inputFile='PbPbMC_Pythia6Hydjet_wtaForest.txt'
