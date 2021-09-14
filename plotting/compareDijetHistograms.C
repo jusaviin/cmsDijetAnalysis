@@ -16,10 +16,10 @@ void compareDijetHistograms(){
   // Choose which figure sets to draw
   bool drawEventInformation = false;
   bool drawDijetHistograms = false;  // Note: Dijet asymmetry drawing requires two files, first for pp and second for PbPb
-  bool drawLeadingJetHistograms = true;
+  bool drawLeadingJetHistograms = false;
   bool drawSubleadingJetHistograms = false;
   bool drawAnyJetHistograms = false;
-  bool drawAnyLeadingJetHistograms = false;
+  bool drawAnyLeadingJetHistograms = true;
   bool drawTracks = false;
   bool drawUncorrectedTracks = false;
   bool drawInclusiveTracks = false;
@@ -62,7 +62,7 @@ void compareDijetHistograms(){
   int eventMixingDistribution = DijetHistogramManager::kCorrected; // kCorrected kBackgroundSubtracted
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   const char* figureFormat = "pdf";
   const char* figureComment = "_triggerEfficiency";
   
