@@ -2,7 +2,7 @@
 
 ## Overview of the repository
 
-The code is organized in folders, with different functionality in different folders.
+The code is organized in folders, with different functionality in different folders. Notice that this branch is for jet-hadron analysis. There is a branch called dihadron that uses the same structure, but does dihadron analysis. You should use that one if you need to create or process dihadron correlations.
 
 **Home folder**
 
