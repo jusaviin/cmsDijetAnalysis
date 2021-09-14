@@ -1,0 +1,84 @@
+# Configuration card for leading-subleading jet analysis
+
+# Data type for the analysis
+DataType 1  # 0 = pp, 1 = PbPb, 2 = pp MC, 3 = PbPb MC, 4 = LocalTest
+
+# Select correlation type for Monte Carlo runs (Jet-Track)
+McCorrelationType 0 # 0 = RecoReco, 1 = RecoGen, 2 = GenReco, 3 = GenGen
+MatchJets 0 # 1 = Match generator level jets with reconstructed jets, 0 = Do not do that
+
+# Specify the forest type in the selected data files and choose forest readers based on this
+ForestType 0 # 0 = High Forest, 1 = Skim Forest
+ReadMode 2018   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 = 2018 syntax
+
+# Select which histograms to save. Checked bit by bit. Needed for memory issues.
+FilledHistograms 3  # Bit 0 = Event information histograms      (to set: 1)
+                    # Bit 1 = Jet histograms                    (to set: 2)
+                    # Bit 2 = Track histograms                  (to set: 4)
+                    # Bit 3 = Regular jet-track correlation     (to set: 8)
+                    # Bit 4 = Uncorrected jet-track correlation (to set: 16)
+                    # Bit 5 = pT weighted jet track correlation (to set: 32)
+                    # Bit 6 = Inclusive jet-track correlation   (to set: 64)
+                    # Examples: All = 127, All but inclusive jet-track = 63
+                    # Event info and pT weighted correlation = 39
+                    # Regular and uncorrected correlation = 24
+
+# Dihadron configuration
+MinBias 1      # Flag for minimum bias data
+MinQWeight 0.5 # Minimum weight for the Q-vector
+MaxQWeight 3   # Maximum weight for the Q-vector
+QOrder 3       # Order of polynomial function used to weight Q-vector
+
+# Cuts for dijets
+JetType 0                  # 0 = Calo jets, 1 = PF CS jets, 2 = PF PU jets, 3 = Flow PF CS jets
+JetAxis 0                  # 0 = Anti-kT axis, 1 = Axis from leading PF candidate, 2 = WTA
+JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
+SearchEtaCut 2.0           # Region accepted when searching for dijet events
+MaxPtCut 5020              # Maximum pT of a leading jet accepted in the analysis
+MinPtCut 120               # Minimum pT of a leading jet accepted in the analysis
+SubleadingPtCut 50         # Minimum pT of a subleading jet accepted in the analysis
+DeltaPhiCut 2.6179939      # Minimum deltaPhi between leading and subleading jet, 5 Pi / 6
+MinMaxTrackPtFraction 0.01 # Minimum fraction of jet pT taken by the highest pT track in jet
+MaxMaxTrackPtFraction 0.98 # Maximum fraction of jet pT taken by the highest pT track in jet
+JetUncertainty 0           # 0 = Nominal jet pT, 1 = Minus uncertainty, 2 = Plus uncertainty
+
+# Cuts for tracks
+TrackEtaCut 2.4             # Region in eta around midrapidity from which tracks are accepted
+MinTrackPtCut 0.7           # Minimum track pT considered in the analysis
+MaxTrackPtRelativeError 0.1 # Maximum relative error allowed for track pT
+VertexMaxDistance 3         # TODO: Understand what this cut means
+CalorimeterSignalLimitPt 20 # Require signal in calorimeters for all track above this pT
+HighPtEtFraction 0.5        # For high pT tracks, require Et to be at least this fraction of pT
+Chi2QualityCut 0.18         # Maximum accepted chi2/(nDof*nHits) for tracks
+MinimumTrackHits 11         # Require this many hits for each track
+SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
+
+# Cuts for event selection
+ZVertexCut 15       # Maximum vz value for accepted tracks
+LowPtHatCut -1      # Minimum accepted pT hat
+HighPtHatCut 1      # Maximum accepted pT hat
+IncludeEventPlane 1 # 0 = Nominal 1 = Add q-vector as one histogram axis
+
+# Binning for THnSparses
+AsymmetryBinType    1  # 0 = Do binning in AJ, 1 = Do binning in xJ
+CentralityBinEdges -0.75 -0.25 9.75 29.75 49.75 89.75        # Centrality binning
+#CentralityBinEdges -0.75 -0.25 4.75 9.75 14.75 19.75 89.75    # Centrality binning
+TrackPtBinEdges     0.7 1 2 3 4 8 12 300                     # Track pT binning
+#TrackPtBinEdges     1 1.5 2 2.5 3 3.5 4 4.5 5 8 12 300        # Track pT binning
+AsymmetryBinEdges   0 0.6 0.8 1                               # Dijet asymmetry binning
+PtHatBinEdges       0 30 50 80 120 170 220 280 370 460        # pT hat binning
+QvectorBinEdges     0 1.8 2 2.1 2.2 2.3 2.4 2.5 2.8 3.3 5     # Q-vector binning
+
+# Event mixing
+DoEventMixing 0          # 0 = Do not mix events. 1 = Generate mixed events
+OnlyMix 0                # 0 = Fill mixed and same event histograms. 1 = Only fill mixed event histograms
+MixWithPool 0            # 0 = Do mixing without pool. 1 = Do mixing with pool
+NMixedEventsPerDijet 5  # Number of events mixed with each dijet event
+VzTolerance 0.5          # Maximum vz distance for event to be accepted in mixing
+MixingVzBinWidth 1       # Width of vz bins used for mixing in cm
+MixingHiBinWidth 1       # Number of centrality bins combined in a single mixing bin
+MixingPoolDepth 400      # Number of events selected for mixing for each vz and centrality bin
+MixingFileIndex 1        # Choose location of mixing file for PbPb (0-1) or PbPbMC (0-2)
+
+# Debug
+DebugLevel 2   # 0 = No debug messages, 1 = Some debug messages, 2 = All debug messages
