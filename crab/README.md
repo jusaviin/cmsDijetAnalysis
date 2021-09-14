@@ -62,6 +62,15 @@ Configuration file for running over the Pythia+Hydjet or Pythia8 samples while g
 
 Configuration file for running over the Pythia+Hydjet sample without generating mixed event histograms.
 
+**crabDijetPbPbDihadron.py** /
+**crabDijetPbPbNoMixingDihadron.py**
+
+Configuration file for running dihadron analysis over 2018 PbPb data with or without mixing. Be sure to use a tar ball created from dihadron branch with these files.
+
+**crabDijetPbPbMCNoMixingDihadron.py**
+
+Configuration file for running dihadron analysis over Pythia+Hydjet simulation without mixing. Be sure to use a tar ball created from dihadron branch with this file.
+
 **Others**
 
 Examples of specific usage cases and files that can be used with old data.
@@ -87,6 +96,15 @@ Configuration for running over the Pythia+Hydjet or Pythia8 samples while genera
 **cardDijetPbPbMCNoMixing.input**
 
 Configuration for running over the Pythia+Hydjet samples without generating mixed event histograms.
+
+**cardDijetPbPbDihadron.input** /
+**cardDijetPbPbNoMixingDihadron.input**
+
+Configuration for running dihadron analysis over 2018 PbPb data with or without mixing. Be sure to use a tar ball created from dihadron branch with these files.
+
+**cardDijetPbPbMCNoMixingDihadron.input**
+
+Configuration for running dihadron analysis over Pythia+Hydjet simulation without mixing. Be sure to use a tar ball created from dihadron branch with this file.
 
 ## File lists
 
