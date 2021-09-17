@@ -190,6 +190,10 @@ If you have included manual event-by-event jet energy correction in the files, t
 
 Macro for deriving weighting functions for vertex z position and centrality such that the values from MC match those in data.
 
+### deriveJetScalingFactor.C
+
+Macro for deriving jet pT scaling factor between data and Pythia8.
+
 ### combineCorrelations.C
 
 Macro for combining two processed analysis files.
@@ -329,6 +333,10 @@ Obsolete plotting macro. Contains hadron v2 values from previous CMS analyses.
 ### trackRatioMaker.C
 
 Class comparing tracking efficiency between 2015 and 2018 data. Obsolete.
+
+### xjSmearingExplorer.C
+
+Macro for studying xj smearing
 
 ## Helper classes
 

@@ -27,7 +27,7 @@ void longRangeSystematicExplorer(){
   const bool drawAbsoluteUncertainties = true;
   
   // Save the final plots
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "_newSources";
   
   // =========== //

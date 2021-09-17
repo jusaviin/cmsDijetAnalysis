@@ -44,6 +44,10 @@ If the jet energy corrections are applied manually, they are read from this fold
 
 This contain old correction histograms that are only used with 2015 PbPb data to make a proper energy correction for the calorimeter jets.
 
+**toySimulations**
+
+Toy simulations to understand the effect of an inefficiency in the tracker to the mixed event distribution.
+
 ## Overview of basic workflow
 
 1. Compilation:
