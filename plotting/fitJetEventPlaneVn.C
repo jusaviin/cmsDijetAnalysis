@@ -108,6 +108,7 @@ void fitJetEventPlaneVn(){
     } // Q-vector loop
   } // Jet type loop
   
+  // Print values of vn components to console
   if(printVs){
     
     for(int iJetType = 0; iJetType < nFiles; iJetType++){
@@ -123,27 +124,7 @@ void fitJetEventPlaneVn(){
       
     } // Jet type loop
     
-  }
-  
-// cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Cent 0-10: " << fitFunctionMidRapidity[0][0][0]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[0][0][1]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[0][0][2]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[1][0][0]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[1][0][1]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[1][0][2]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[2][0][0]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[2][0][1]->GetParameter(2) << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[2][0][2]->GetParameter(2) << endl;
-//
-//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[0][0][0]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[0][0][1]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[0][0][2]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[1][0][0]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[1][0][1]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[1][0][2]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 0-10: " << jetEventPlaneMidRapidity[2][0][0]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 10-30: " << jetEventPlaneMidRapidity[2][0][1]->Integral() << endl;
-//  cout << "Jet-event plane v2. " << jetTypeString[2].Data() << ". Integral. Cent 30-50: " << jetEventPlaneMidRapidity[2][0][2]->Integral() << endl;
+  } // Printing values of vn components
     
   JDrawer *drawer = new JDrawer();
   

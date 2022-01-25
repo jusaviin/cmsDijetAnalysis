@@ -19,7 +19,7 @@ void longRangeSystematicExplorer(){
   const double centralityBinBorders[] = {0, 10, 30, 50, 90}; // Bin borders for centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 2;     // First drawn flow component
+  const int firstDrawnVn = 3;     // First drawn flow component
   const int lastDrawnVn = 3;      // Last drawn flow component
   
   // Choose which histograms to draw

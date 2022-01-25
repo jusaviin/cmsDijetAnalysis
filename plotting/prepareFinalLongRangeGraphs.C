@@ -20,7 +20,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from jet-hadron correlations
   TString jetHadronFileName[4];
-  jetHadronFileName[0] = "data/dijetPbPb2018_akCaloJets_onlyRegular_eta1v3_10eveMix_noCorrections_processed_2021-09-08.root";
+  jetHadronFileName[0] = "data/PbPbMC2018_GenGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_noCorrections_noHoles_processed_2022-01-17.root";
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_3pCentShift%s_subeNon0_improvisedMixing_noCorrections_processed_2021-03-11.root", qVectorTag)
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_fixedJEC_eschemeAxis_noCorrections_processed_2021-02-16.root
   // data/dijetPbPb2018_akPu4CaloJets_onlyRegular_20eveMix_angleSmear_eschemeAxis_noCorrections_processed_2021-02-12.root
@@ -39,7 +39,7 @@ void prepareFinalLongRangeGraphs(){
   
   // File for Vn from dihadron correlations
   TString dihadronFileName[4];
-  dihadronFileName[0] = "data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_onlySeagull_processed_2020-11-11.root";
+  dihadronFileName[0] = "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_noXj_noQcut_noCorrections_processed_2021-02-26.root";
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron%s_subeNon0_improvisedMixing_noCorrections_processed_2021-06-28_test.root",qVectorTag);
   // Form("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_3pCentShift_improvisedMixing_noXj%s_noCorrections_processed_2021-02-26.root", qVectorTag)
   // data/dihadronPbPb2018_sameTriggerAssoc_caloDijet_5eventMixed_xjBins_onlySeagull_processed_2020-11-11.root
@@ -129,7 +129,7 @@ void prepareFinalLongRangeGraphs(){
   const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet  kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2021-09-14.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018MC_genJets_4pCentShift_subeNon0_generatorLevelHoleCheck_noHolesJetHadron_2022-01-17.root";
   // flowGraphs/flowGraphs_PbPb2018MC_genJets_4pCentShift_subeNon0_dihadronFromRecoJets_correctedJetHadron_correctedDihadron_2021-07-27.root
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectNeutralScaled_correctedJetHadron_correctedDihadron_2021-08-23.root
@@ -207,7 +207,7 @@ void prepareFinalLongRangeGraphs(){
     jetHadronReader[iCentrality]->SetLoadTrackLeadingJetCorrelations(true);
     jetHadronReader[iCentrality]->SetLoadTrackLeadingJetCorrelationsUncorrected(true);  // For track efficiency study
     if(useSameEventJetHadron || projectManualCorrectedJetHadron) jetHadronReader[iCentrality]->SetLoadTrackSubleadingJetCorrelations(true);
-    dihadronReader[iCentrality]->SetLoadTrackInclusiveJetCorrelations(correlationTypeJetHadron == DijetHistogramManager::kTrackInclusiveJet);
+    jetHadronReader[iCentrality]->SetLoadTrackInclusiveJetCorrelations(correlationTypeJetHadron == DijetHistogramManager::kTrackInclusiveJet);
     jetHadronReader[iCentrality]->SetAsymmetryBinRange(0,nAsymmetryBins);
     jetHadronReader[iCentrality]->SetLoad2DHistograms(useSameEventJetHadron || projectManualCorrectedJetHadron);
     jetHadronReader[iCentrality]->LoadProcessedHistograms();

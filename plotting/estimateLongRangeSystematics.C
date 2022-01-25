@@ -31,7 +31,7 @@ void estimateLongRangeSystematics(){
   TString nominalResultFileName = "flowGraphs/summaryPlot_akCaloJet_nominalCorrection_2021-05-20.root";
   
   // Results using pfCs jets instead of calo jets
-  TString pfcsResultFileName = "flowGraphs/summaryPlot_akPfCsJet_correctionOnlyQcut2p5_2021-05-20.root";
+  TString pfcsResultFileName = "flowGraphs/summaryPlot_akPfCsJet_correctionOnlyQcut2p5_2021-05-20.root"; // problem with v4, bad statistics in MC!!!
   
   // Results with smeared jet axis
   TString angleSmearResultFileName = "flowGraphs/summaryPlot_akCaloJet_angleSmear_nominalCorrection_2021-05-24.root";
@@ -59,7 +59,7 @@ void estimateLongRangeSystematics(){
   TString shiftedResultFileName2 = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root";
   
   // Results with Q-vector weight instead of cut
-  TString qVectorWeightedFileName = "flowGraphs/summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root";
+  TString qVectorWeightedFileName = "flowGraphs/summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root"; // Need to find the correct file to reproduce this file in order to add v4!!!
   
   // Results without tracking efficiency correction
   TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";

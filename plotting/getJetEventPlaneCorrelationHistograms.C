@@ -1,7 +1,7 @@
 void getJetEventPlaneCorrelationHistograms(){
 
   // Open the data file
-  TFile *inputFile = TFile::Open("data/PbPbMC2018_RecoGen_akPfCsJet_onlyRegular_4pCentShift_subeNon0_manualJECreflectCone_2021-08-12.root");
+  TFile *inputFile = TFile::Open("data/PbPbMC2018_RecoGen_akCaloJet_jetEventPlane_4pCentShift_tunedQweights_manualEP_jetEta1v3_2022-01-21.root");
   
   // Read the histogram with the given name from the file
   THnSparseD *histogramArray[2];
@@ -40,7 +40,7 @@ void getJetEventPlaneCorrelationHistograms(){
   }
   
   // Save the histogram to a file
-  TFile *outputFile = new TFile("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_manualEventPlane_manualJECwithConeReflect_2021-08-13.root","UPDATE");
+  TFile *outputFile = new TFile("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_4pCentShift_tunedQweights_manualEventPlane_jetEta1v3_2022-01-21.root","UPDATE");
   for(int iType = 0; iType < 2; iType++){
     for(int iQvector = 0; iQvector < 1; iQvector++){ // nQvectorBins
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
