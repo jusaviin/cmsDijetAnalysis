@@ -60,7 +60,7 @@ ZVertexCut 15       # Maximum vz value for accepted tracks
 LowPtHatCut 50      # Minimum accepted pT hat
 HighPtHatCut 1000   # Maximum accepted pT hat
 IncludeEventPlane 0 # 0 = Nominal. 1 = Add q-vector as one histogram axis
-MultiplicityMode 0 # 0 = Weight MC centrality to match data. 1 = Weight multiplicity to match
+MultiplicityMode 1 # 0 = Weight MC centrality to match data. 1 = Weight multiplicity to match
 
 # Binning for THnSparses
 AsymmetryBinType    1  # 0 = Do binning in AJ, 1 = Do binning in xJ
