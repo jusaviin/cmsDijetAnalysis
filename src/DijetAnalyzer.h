@@ -72,11 +72,12 @@ private:
   void FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType, const Double_t xj = 0); // Fill jet pT closure histograms
   
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
-  Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
+  Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType, const Bool_t bypassFill = false); // Check if a track passes all the track cuts
   Bool_t PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms, const Int_t correlationType); // Check if the event passes the event cuts
   Double_t GetTrackEfficiencyCorrection(const Int_t correlationType, const Int_t iTrack); // Get the track efficiency correction for a given track
   Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
+  Double_t GetMultiplicityWeight(const Double_t multiplicity) const; // Get the proper multiplicity weight for MC
   Double_t GetJetPtWeight(const Double_t jetPt) const; // Get the proper jet pT weighting for 2017 and 2018 MC
   Double_t GetTriggerEfficiencyWeight(const Double_t jetPt, const Double_t centrality) const; // Get a trigger efficiency weight
   Double_t GetSmearingFactor(Double_t jetPt, const Double_t centrality); // Getter for jet pT smearing factor
@@ -90,6 +91,9 @@ private:
   Double_t GetManualEtaStripScale(Double_t etaStripValue, const Double_t centrality, const Int_t type) const;  // Getter for reflected eta strip scaling
   Double_t GetManualJetConeScale(Double_t jetConeValue, const Double_t centrality, const Int_t type) const;  // Getter for reflected eta jet cone scaling
   Double_t GetManualJetPtCorrected(const Int_t jetIndex, const Double_t jetPt, const Double_t centrality, const Int_t jetType);  // Getter for manual jet energy correction
+  Bool_t IsInHole(const Double_t eta, const Double_t phi, const Double_t minHoleEta = -1.8, const Double_t maxHoleEta = -0.9, const Double_t minHolePhi = 2.3, const Double_t maxHolePhi = 2.7) const; // TEST TEST Function checking if something hits a hole
+  Double_t GetMultiplicity(); // Get the track multiplicity in the current event
+  Double_t GetCentralityFromMultiplicity(const Double_t multiplicity) const; // Get the analysis centrality bin corresponding to the given multiplicity
   
   // Private data members
   ForestReader *fJetReader;            // Reader for jets in the event
@@ -101,6 +105,7 @@ private:
   JffCorrection *fJffCorrection;       // Jet fragmentation function correction for jet pT
   TF1 *fVzWeightFunction;              // Weighting function for vz. Needed for MC.
   TF1 *fCentralityWeightFunction;      // Weighting function for centrality. Needed for MC.
+  TF1 *fMultiplicityWeightFunction;    // Track multiplicity based weighting function. Can be done instead of centrality weight.
   TF1 *fPtWeightFunction;              // Weighting function for jet pT. Needed for MC.
   TF1 *fDijetWeightFunction;           // Weighting function for leading jet pT. Needed for MC.
   TF1 *fSmearingFunction;              // Additional smearing for jets. Needed in systematic uncertainty study.
@@ -185,6 +190,9 @@ private:
   Bool_t fFillInclusiveJetTrackCorrelation;   // Fill inclusive jet-track correlation histograms
   Bool_t fFillJetPtClosure;                   // Fill jet pT closure histograms
   Bool_t fFillDijetJetTrackCorrelation;       // Fill dijet jet-track correlation histograms
+  
+  // Weighting mode flag for MC
+  Bool_t fMultiplicityMode;       // True: Weight multiplicity to match the data. False: Weight centrality to match the data
 
 };
 

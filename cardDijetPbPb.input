@@ -12,7 +12,7 @@ ForestType 0 # 0 = High Forest, 1 = Skim Forest
 ReadMode 2019   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 = 2018 High forest syntax, no trigger 2019 = 2018 High forest syntax using trigger
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
-FilledHistograms 3 # Bit 0 = Event information histograms      (to set: 1)
+FilledHistograms 7 # Bit 0 = Event information histograms      (to set: 1)
                     # Bit 1 = Jet histograms                    (to set: 2)
                     # Bit 2 = Track histograms                  (to set: 4)
                     # Bit 3 = Regular jet-track correlation     (to set: 8)
@@ -52,6 +52,7 @@ ZVertexCut 15       # Maximum vz value for accepted tracks
 LowPtHatCut -1      # Minimum accepted pT hat
 HighPtHatCut 1      # Maximum accepted pT hat
 IncludeEventPlane 0 # 0 = No event plane info. 1 = Read event plane branches.
+MultiplicityMode 0 # 0 = Weight MC centrality to match data. 1 = Weight multiplicity to match
 
 # Binning for THnSparses
 AsymmetryBinType    1 # 0 = AJ, 1 = xJ
