@@ -73,11 +73,12 @@ private:
   void FillJetPtClosureHistograms(const Int_t jetIndex, const Int_t closureType); // Fill jet pT closure histograms
   
   Bool_t PassSubeventCut(const Int_t subeventIndex) const;  // Check if the track passes the set subevent cut
-  Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType); // Check if a track passes all the track cuts
+  Bool_t PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType, const Bool_t bypassFill = false); // Check if a track passes all the track cuts
   Bool_t PassEventCuts(ForestReader *eventReader, const Bool_t fillHistograms, const Int_t correlationType); // Check if the event passes the event cuts
   Double_t GetTrackEfficiencyCorrection(const Int_t correlationType, const Int_t iTrack); // Get the track efficiency correction for a given track
   Double_t GetVzWeight(const Double_t vz) const;  // Get the proper vz weighting depending on analyzed system
   Double_t GetCentralityWeight(const Int_t hiBin) const; // Get the proper centrality weighting depending on analyzed system
+  Double_t GetMultiplicityWeight(const Double_t multiplicity) const; // Get the proper multiplicity weight for MC
   Double_t GetJetPtWeight(const Double_t jetPt) const; // Get the proper jet pT weighting for 2017 and 2018 MC
   Double_t GetDijetWeight(const Double_t jetPt) const; // Get a jet pT weight for the leading jet
   Double_t GetPtHatWeight(const Double_t ptHat) const; // Get the proper pT hat weighting for MC
@@ -86,6 +87,8 @@ private:
   Int_t FindMixingVzBin(const Double_t vz) const; // Find a vz bin from mixing table for a given vz value
   Int_t FindMixingHiBin(const Int_t hiBin) const; // Find a centrality bin from the mixing table for a given hiBin value
   Bool_t CheckForSameEvent(const Int_t sameEventIndex, const Int_t mixedEventIndex) const; // Check if mixed event is tha same as regular event
+  Double_t GetMultiplicity(); // Get the track multiplicity in the current event
+  Double_t GetCentralityFromMultiplicity(const Double_t multiplicity) const; // Get the analysis centrality bin corresponding to the given multiplicity
   
   // Private data members
   ForestReader *fJetReader;            // Reader for jets in the event
@@ -97,6 +100,7 @@ private:
   JffCorrection *fJffCorrection;       // Jet fragmentation function correction for jet pT
   TF1 *fVzWeightFunction;              // Weighting function for vz. Needed for MC.
   TF1 *fCentralityWeightFunction;      // Weighting function for centrality. Needed for MC.
+  TF1 *fMultiplicityWeightFunction;    // Track multiplicity based weighting function. Can be done instead of centrality weight.
   TF1 *fPtWeightFunction;              // Weighting function for jet pT. Needed for MC.
   TF1 *fDijetWeightFunction;           // Weighting function for leading jet pT. Needed for MC.
   TF1 *fSmearingFunction;              // Additional smearing for jets. Needed in systematic uncertainty study.
@@ -182,7 +186,8 @@ private:
   Bool_t fFillDijetJetTrackCorrelation;       // Fill dijet jet-track correlation histograms
   
   // Miscellanous variables
-  Bool_t fMinimumBiasMode;                     // Run mode for minimum bias data
+  Bool_t fMinimumBiasMode;        // Run mode for minimum bias data
+  Bool_t fMultiplicityMode;       // True: Weight multiplicity to match the data. False: Weight centrality to match the data
 
 };
 

@@ -13,8 +13,9 @@ list*.txt
 # Ignore test macros
 test*.C
 
-# Ignore the figures folder
+# Ignore the figure and data folders
 figures
+flowGraphs
 
 # Ignore .DS_Store, if mac for some reason makes this file
 .DS_Store
@@ -25,3 +26,6 @@ dijetAnalysis.dSYM
 
 # Ignore track correction tables, as those are available online
 trackCorrectionTables
+
+# Ignore the analysis tar ball
+dijet5TeV.tar.gz

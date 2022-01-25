@@ -51,6 +51,8 @@ SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
 ZVertexCut 15      # Maximum vz value for accepted tracks
 LowPtHatCut -1     # Minimum accepted pT hat
 HighPtHatCut 1    # Maximum accepted pT hat
+IncludeEventPlane 0 # 0 = No event plane info. 1 = Read event plane branches.
+MultiplicityMode 0 # 0 = Weight MC centrality to match data. 1 = Weight multiplicity to match
 
 # Binning for THnSparses
 AsymmetryBinType    1 # 0 = AJ, 1 = xJ

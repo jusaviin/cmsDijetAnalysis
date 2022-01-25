@@ -33,6 +33,43 @@ double genGauss(double *x, double *par){
 }
 
 /*
+ * Total weight function to match multiplicity in MC to that in data.
+ *
+ * Derived using the multiplicityPlotter macro. First the shape of the multiplicity distribution is determined
+ * from the non-efficiency corrected distribution. Then the multiplicity boundaries are obtained from the
+ * efficiency corrected distribution. This gives the base value below. The weight comes from the difference
+ * between the multiplicity distribution in MC from a flat line.
+ *
+ * The used data files:
+ *  dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root
+ *  PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_noCentWeight_jetEta1v3_processed_2022-01-21.root
+ */
+double totalMultiplicityWeight(double *x, double *par){
+  
+  double weight = 0;
+  double base = 0;
+  
+  if(x[0] < 600){
+    weight = ((0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0685758+0.374178*TMath::Exp(x[0]*(-0.00550382)))) * 1.05;
+  } else {
+    weight = (0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0309424+0.110670*TMath::Exp(x[0]*(-0.00138397)));
+  }
+  
+  // Gauss function, if multiplicity > 3000
+  if(x[0] > 3000) {
+    base = TMath::Exp(-0.5*TMath::Power((3000-x[0])/215,2));
+  } else if(x[0] < 300) {
+    // Second order polynomial, if multiplicity < 300
+    base = (-10.5233 + 1.47193 * x[0] -0.0024 * x[0] * x[0]) / 503.0;
+  } else {
+    base = (0.10665541 * x[0] + 183.00338) / 503.0;
+  }
+  
+  return base * weight;
+  
+}
+
+/*
  * Default constructor
  */
 DijetAnalyzer::DijetAnalyzer() :
@@ -43,6 +80,7 @@ DijetAnalyzer::DijetAnalyzer() :
   fJffCorrection(),
   fVzWeightFunction(0),
   fCentralityWeightFunction(0),
+  fMultiplicityWeightFunction(0),
   fPtWeightFunction(0),
   fDijetWeightFunction(0),
   fSmearingFunction(0),
@@ -110,7 +148,8 @@ DijetAnalyzer::DijetAnalyzer() :
   fFillInclusiveJetTrackCorrelation(false),
   fFillJetPtClosure(false),
   fFillDijetJetTrackCorrelation(false),
-  fMinimumBiasMode(false)
+  fMinimumBiasMode(false),
+  fMultiplicityMode(false)
 {
   // Default constructor
   fHistograms = new DijetHistograms();
@@ -290,6 +329,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       fVzWeightFunction->SetParameters(0.973805, 0.00339418, 0.000757544, -1.37331e-06, -2.82953e-07, -3.06778e-10, 3.48615e-09);
     }
     fCentralityWeightFunction = NULL;
+    fMultiplicityWeightFunction = NULL;
     
   } else if (fDataType == ForestReader::kPbPb || fDataType == ForestReader::kPbPbMC){
     
@@ -326,6 +366,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
       }
     }
     
+    // Multiplicity based weight function
+    fMultiplicityWeightFunction = new TF1("fMultiWeight", totalMultiplicityWeight, 0, 5000, 0);
+    
     // Set the number of HiBins for mixing pool
     fMaximumMixingHiBin = FindMixingHiBin(200);  // 200 is the maximum number for HiBin in the forests
     
@@ -333,6 +376,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
     fTrackCorrection = NULL; // Bad data type, no corrections initialized
     fVzWeightFunction = NULL;
     fCentralityWeightFunction = NULL;
+    fMultiplicityWeightFunction = NULL;
   }
   
   // Initialize the class for JFF correction
@@ -380,6 +424,7 @@ DijetAnalyzer::DijetAnalyzer(const DijetAnalyzer& in) :
   fJffCorrection(in.fJffCorrection),
   fVzWeightFunction(in.fVzWeightFunction),
   fCentralityWeightFunction(in.fCentralityWeightFunction),
+  fMultiplicityWeightFunction(in.fMultiplicityWeightFunction),
   fPtWeightFunction(in.fPtWeightFunction),
   fDijetWeightFunction(in.fDijetWeightFunction),
   fSmearingFunction(in.fSmearingFunction),
@@ -469,6 +514,7 @@ DijetAnalyzer& DijetAnalyzer::operator=(const DijetAnalyzer& in){
   fJffCorrection = in.fJffCorrection;
   fVzWeightFunction = in.fVzWeightFunction;
   fCentralityWeightFunction = in.fCentralityWeightFunction;
+  fMultiplicityWeightFunction = in.fMultiplicityWeightFunction;
   fPtWeightFunction = in.fPtWeightFunction;
   fDijetWeightFunction = in.fDijetWeightFunction;
   fSmearingFunction = in.fSmearingFunction;
@@ -551,6 +597,7 @@ DijetAnalyzer::~DijetAnalyzer(){
   if(fJetCorrector2018) delete fJetCorrector2018;
   if(fJetUncertainty2018) delete fJetUncertainty2018;
   if(fCentralityWeightFunction) delete fCentralityWeightFunction;
+  if(fMultiplicityWeightFunction) delete fMultiplicityWeightFunction;
   if(fPtWeightFunction) delete fPtWeightFunction;
   if(fDijetWeightFunction) delete fDijetWeightFunction;
   if(fFakeV2Function) delete fFakeV2Function;
@@ -682,6 +729,7 @@ void DijetAnalyzer::RunAnalysis(){
     fMcCorrelationType = fCard->Get("McCorrelationType");         // Correlation type for Monte Carlo
   }
   Int_t mixingFileIndex = fCard->Get("MixingFileIndex");        // Select the used mixing file for PbPb MC
+  fMultiplicityMode = (fCard->Get("MultiplicityMode") == 1);    // Centrality/multiplicity weighting mode
 
   //****************************************
   //       Jet selection and matching
@@ -797,6 +845,7 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t trackPt = 0;               // Track pT
   Double_t trackEta = 0;              // Track eta
   Double_t trackPhi = 0;              // Track phi
+  Double_t trackMultiplicity = 0;         // Multiplicity
   
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
@@ -1100,7 +1149,15 @@ void DijetAnalyzer::RunAnalysis(){
       
       // Get the weighting for the event
       fVzWeight = GetVzWeight(vz);
-      fCentralityWeight = GetCentralityWeight(hiBin);
+      if(fMultiplicityMode){
+        // TEST TEST TEST Multiplicity based event weighting
+        trackMultiplicity = GetMultiplicity();
+        fCentralityWeight = GetMultiplicityWeight(trackMultiplicity);
+        centrality = GetCentralityFromMultiplicity(trackMultiplicity);
+      } else {
+        // Regular centrality based weight
+        fCentralityWeight = GetCentralityWeight(hiBin);
+      }
       
       // Event weight is different for 2015 and 2018 MC
       if(fReadMode < 2000){
@@ -1802,6 +1859,7 @@ void DijetAnalyzer::CorrelateTracksAndJets(const Double_t leadingJetInfo[4], con
   
   // Event information
   Double_t centrality = fTrackReader[correlationType]->GetCentrality();
+  if(fMultiplicityMode) centrality = GetCentralityFromMultiplicity(GetMultiplicity());
   Double_t jetPtWeight = 1;
   
   // Variables for tracks
@@ -2312,6 +2370,20 @@ Double_t DijetAnalyzer::GetCentralityWeight(const Int_t hiBin) const{
 }
 
 /*
+ *  Get the proper multiplicity weight for MC
+ *
+ *  Arguments:
+ *   const Double_t multiplicity = Track multiplicity in the event
+ *
+ *   return: Multiplicative correction factor for the given multiplicity value
+ */
+Double_t DijetAnalyzer::GetMultiplicityWeight(const Double_t multiplicity) const{
+  if(fDataType != ForestReader::kPbPbMC) return 1;
+  
+  return fMultiplicityWeightFunction->Eval(multiplicity);
+}
+
+/*
  * Get the proper jet pT weighting depending on analyzed system
  *
  *  Arguments:
@@ -2645,23 +2717,24 @@ Bool_t DijetAnalyzer::PassEventCuts(ForestReader *eventReader, const Bool_t fill
  *   const Int_t iTrack = Index of the checked track in reader
  *   TH1F *trackCutHistogram = Histogram to which the track cut performance is filled
  *   const Int_t correlationType = Same or mixed event. Histograms filled only for same event
+ *   const Bool_t bypassFill = Pass filling the track cut histograms
  *
  *   return: True if all track cuts are passed, false otherwise
  */
-Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType){
+Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram, const Int_t correlationType, const Bool_t bypassFill){
   
   // Only fill the track cut histograms for same event data
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kAllTracks);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kAllTracks);
   
   // Cuts specific to generator level MC tracks
   if(fTrackReader[correlationType]->GetTrackCharge(iTrack) == 0) return false;  // Require that the track is charged
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kMcCharge);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kMcCharge);
   
   if(!PassSubeventCut(fTrackReader[correlationType]->GetTrackSubevent(iTrack))) return false;  // Require desired subevent
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kMcSube);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kMcSube);
   
   if(fTrackReader[correlationType]->GetTrackMCStatus(iTrack) != 1) return false;  // Require final state particles
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kMcStatus);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kMcStatus);
   
   Double_t trackPt = fTrackReader[correlationType]->GetTrackPt(iTrack);
   Double_t trackEta = fTrackReader[correlationType]->GetTrackEta(iTrack);
@@ -2672,33 +2745,33 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
   // Cut for track pT
   if(trackPt <= fTrackMinPtCut) return false;                     // Minimum pT cut
   if(trackPt >= fJetMaximumPtCut) return false;                   // Maximum pT cut (same as for leading jets)
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kPtCuts);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kPtCuts);
   
   // Cut for track eta
   if(TMath::Abs(trackEta) >= fTrackEtaCut) return false;          // Eta cut
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kEtaCut);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kEtaCut);
   
   // New cut for 2018 data based on track algorithm and MVA
   //if(fTrackReader[correlationType]->GetTrackOriginalAlgorithm(iTrack) == 14) return false; // Test a cut from Matt TODO TODO TEST TEST
   if(fTrackReader[correlationType]->GetTrackAlgorithm(iTrack) == 6 && fTrackReader[correlationType]->GetTrackMVA(iTrack) < 0.98 && fReadMode > 2017) return false; // Only apply this cut to 2018 PbPb
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kTrackAlgorithm);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kTrackAlgorithm);
   
   // Cut for high purity
   if(!fTrackReader[correlationType]->GetTrackHighPurity(iTrack)) return false;     // High purity cut
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kHighPurity);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kHighPurity);
   
   // Cut for relative error for track pT
   if(fTrackReader[correlationType]->GetTrackPtError(iTrack)/trackPt >= fMaxTrackPtRelativeError) return false; // Cut for track pT relative error
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kPtError);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kPtError);
   
   // Cut for track distance from primary vertex
   if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceZ(iTrack) / fTrackReader[correlationType]->GetTrackVertexDistanceZError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in z-direction
   if(TMath::Abs(fTrackReader[correlationType]->GetTrackVertexDistanceXY(iTrack) / fTrackReader[correlationType]->GetTrackVertexDistanceXYError(iTrack)) >= fMaxTrackDistanceToVertex) return false; // Mysterious cut about track proximity to vertex in xy-direction
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kVertexDistance);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kVertexDistance);
   
   // Cut for energy deposition in calorimeters for high pT tracks
   if(!(trackPt < fCalorimeterSignalLimitPt || (trackEt >= fHighPtEtFraction*trackPt))) return false;  // For high pT tracks, require signal also in calorimeters
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kCaloSignal);
   
   // Cuts for track reconstruction quality
   // TODO: Track layer hit number is missing from MC forests. Estimate it from NHits in this case. This should be removed after MC forests are rerun
@@ -2708,7 +2781,7 @@ Bool_t DijetAnalyzer::PassTrackCuts(const Int_t iTrack, TH1F *trackCutHistogram,
     if( fTrackReader[correlationType]->GetTrackChi2(iTrack) / (1.0*fTrackReader[correlationType]->GetNTrackDegreesOfFreedom(iTrack)) / (1.0*fTrackReader[correlationType]->GetNHitsTrackerLayer(iTrack)) >= fChi2QualityCut) return false; // Track reconstruction quality cut
   }
   if(fTrackReader[correlationType]->GetNHitsTrack(iTrack) < fMinimumTrackHits) return false; // Cut for minimum number of hits per track
-  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
+  if(correlationType == DijetHistograms::kSameEvent && fFillTrackHistograms && !bypassFill) trackCutHistogram->Fill(DijetHistograms::kReconstructionQuality);
   
   // If passed all checks, return true
   return true;
@@ -2985,4 +3058,61 @@ Bool_t DijetAnalyzer::CheckForSameEvent(const Int_t sameEventIndex, const Int_t 
   cout << "Attention!" << endl;
   cout << "Attention!" << endl;
   return true;
+}
+
+/*
+ * Get the track multiplicity in the current event
+ */
+Double_t DijetAnalyzer::GetMultiplicity(){
+
+  // Loop over all track in the event
+  Int_t nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+  Double_t trackMultiplicity = 0;
+  //trackMultiplicityWeighted = 0;
+  
+  // Disable subevent cut while determining the total multiplicity
+  Int_t originalCut = fSubeventCut;
+  fSubeventCut = kSubeventAny;
+  
+  for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+    
+    // Check that all the track cuts are passed
+    if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent,true)) continue;
+    
+    // Get the efficiency correction
+    //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+    
+    trackMultiplicity += 1;
+    //trackMultiplicityWeighted += trackEfficiencyCorrection;
+    
+  } // Track loop
+  
+  fSubeventCut = originalCut;
+
+  return trackMultiplicity;
+  
+}
+
+/*
+ * Get the analysis centrality bin corresponding to the given multiplicity value
+ *
+ *  Arguments:
+ *   const Double_t multiplicity = Multiplicity in MC
+ *
+ *   return: Centrality corresponding to this value of multiplicity
+ */
+Double_t DijetAnalyzer::GetCentralityFromMultiplicity(const Double_t multiplicity) const{
+  
+  // Centrality bin 0-10
+  if(multiplicity > 2225) return 7;
+  
+  // Centrality bin 10-30
+  if(multiplicity > 980) return 17;
+  
+  // Centrality bin 30-50
+  if(multiplicity > 340) return 37;
+  
+  // Centrality bin 50-90
+  return 57;
+  
 }
