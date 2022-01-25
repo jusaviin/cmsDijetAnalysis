@@ -412,7 +412,7 @@ void DijetHistograms::CreateHistograms(){
   const Double_t maxMultiplicity = 5000;
   const Double_t maxMultiplicityWeighted = 4000;
   const Int_t nMultiplicityBins = 500;
-  const Int_t nMultiplicityBinsWeighted = 1;
+  const Int_t nMultiplicityBinsWeighted = 400;
   
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
