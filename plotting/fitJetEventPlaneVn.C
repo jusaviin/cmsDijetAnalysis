@@ -4,27 +4,29 @@
 void fitJetEventPlaneVn(){
 
   // Open the data files
-  const int nFiles = 4;
+  const int nFiles = 3;
   TFile *inputFile[nFiles];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_manualEventPlane_manualJetCorrection_2021-07-23.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_manualEventPlane_manualJECwithStrip02_2021-07-26.root");
-  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_manualEventPlane_manualJECwithEtaReflect_2021-08-02.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_4pCentShift_manualEventPlane_jetEta1v3_2022-01-21.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_4pCentShift_manualEventPlane_jetEta1v3_2022-01-21.root");
+  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_4pCentShift_tunedQweights_manualEventPlane_jetEta1v3_2022-01-21.root");
   if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_dijetEvents_2021-05-05.root");
   
-  //TString jetTypeString[4] = {"Calo jet","PFCS jet","PFCS flow jet","Gen jet"};
-  TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
+  TString jetTypeString[4] = {"Calo jet","PFCS jet","Calo tuned Q","Gen jet"};
+  //TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
   
   double centralityBinBorders[] = {0,10,30,50,90};
   
   bool matchYields = true;  // For comparison purposes, match the average yields of different jet collections
-  int referenceYield = 0;   // Choose which jet collection to use as basis for yield matching
+  int referenceYield = 1;   // Choose which jet collection to use as basis for yield matching
   
   bool drawEventPlaneDifference = false;  // Draw difference between manual event plane calculation to the one read from forest
   
   bool drawAllInSamePlot = true;  // True: Draw all three jet collection to the same plot. False: Use separate plots
-  bool hideFit = true;
+  bool hideFit = false;
   
-  bool saveFigures = true;
+  bool printVs = true; // True = Print the jet vn values to the console. False = Do not do that
+  
+  bool saveFigures = false;
   TString saveComment = "_manualJECpfCs";
   
   // Read the histograms from the data files
@@ -106,7 +108,24 @@ void fitJetEventPlaneVn(){
     } // Q-vector loop
   } // Jet type loop
   
-//  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[0][0][0]->GetParameter(2) << endl;
+  if(printVs){
+    
+    for(int iJetType = 0; iJetType < nFiles; iJetType++){
+      
+      for(int iFlow = 2; iFlow < 5; iFlow++){
+        
+        for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          
+          cout << Form("Jet-event plane v%d. ", iFlow) << jetTypeString[iJetType].Data() << Form(". Cent %.1f-%.1f: ", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]) << fitFunctionMidRapidity[iJetType][0][iCentrality]->GetParameter(iFlow) << endl;
+          
+        } // Centrality loop
+      } // Flow component loop
+      
+    } // Jet type loop
+    
+  }
+  
+// cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". Cent 0-10: " << fitFunctionMidRapidity[0][0][0]->GetParameter(2) << endl;
 //  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 10-30: " << fitFunctionMidRapidity[0][0][1]->GetParameter(2) << endl;
 //  cout << "Jet-event plane v2. " << jetTypeString[0].Data() << ". No Q-selection. Cent 30-50: " << fitFunctionMidRapidity[0][0][2]->GetParameter(2) << endl;
 //  cout << "Jet-event plane v2. " << jetTypeString[1].Data() << ". No Q-selection. Cent 0-10: " << fitFunctionMidRapidity[1][0][0]->GetParameter(2) << endl;
