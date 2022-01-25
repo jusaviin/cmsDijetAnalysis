@@ -2284,3 +2284,42 @@ double DijetMethods::GetBackgroundSubtractionInnerMean(){
 double DijetMethods::GetBackgroundSubtractionOuterMean(){
   return fBackgroundSubtractionOuterMean;
 }
+
+/*
+ * Method for rotating a two dimensional histogram. Assumes constant bin size.
+ *
+ *  Arguments:
+ *   TH2D *originalHistogram = Histogram to be rotated
+ *
+ *   return: Histogram where x and y axes have been switched
+ */
+TH2D* DijetMethods::RotateHistogram(TH2D *originalHistogram){
+  
+  // Find the binning information
+  double nBinsX = originalHistogram->GetNbinsX();
+  double nBinsY = originalHistogram->GetNbinsY();
+  double lowBinX = originalHistogram->GetXaxis()->GetBinLowEdge(1);
+  double highBinX = originalHistogram->GetXaxis()->GetBinUpEdge(nBinsX);
+  double lowBinY = originalHistogram->GetYaxis()->GetBinLowEdge(1);
+  double highBinY = originalHistogram->GetYaxis()->GetBinUpEdge(nBinsY);
+  
+  // Create a new histogram with inverted axes
+  TString newName = Form("%sRotated", originalHistogram->GetName());
+  TString newTitle = Form("%sRotated", originalHistogram->GetTitle());
+  TH2D *rotatedHistogram = new TH2D(newName, newTitle, nBinsY, lowBinY, highBinY, nBinsX, lowBinX, highBinX);
+  
+  // Fill the new histogram
+  double binValue, binError;
+  for(int iX = 1; iX <= nBinsX; iX++){
+    for(int iY = 1; iY <= nBinsY; iY++){
+      binValue = originalHistogram->GetBinContent(iX, iY);
+      binError = originalHistogram->GetBinError(iX, iY);
+      rotatedHistogram->SetBinContent(iY, iX, binValue);
+      rotatedHistogram->SetBinError(iY, iX, binError);
+    }
+  }
+  
+  // Return the new histogram
+  return rotatedHistogram;
+  
+}
