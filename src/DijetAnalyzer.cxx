@@ -1937,14 +1937,14 @@ void DijetAnalyzer::RunAnalysis(){
             
             // Fill the additional event plane histograms
             fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
-            fillerEventPlane[1] = eventPlaneQ;                      // Axis 1: Normalized event plane Q-vector
+            fillerEventPlane[1] = trackMultiplicity;                      // Axis 1: Normalized event plane Q-vector
             //fillerEventPlane[1] = fJetReader->GetEventPlaneQ(8) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(8));                      // Axis 1: Normalized event plane Q-vector
             fillerEventPlane[2] = centrality;                       // Axis 2: centrality
             
             fHistograms->fhJetEventPlaneForwardRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
             
             fillerEventPlane[0] = jetEventPlaneDeltaPhiMidRap;  // Axis 0: DeltaPhi between jet and event plane
-            fillerEventPlane[1] = fJetReader->GetEventPlaneQ(9) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(9));  // Axis 1: Normalized event plane Q-vector
+            fillerEventPlane[1] = trackMultiplicity;  // Axis 1: Normalized event plane Q-vector
 
             
             fHistograms->fhJetEventPlaneMidRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);

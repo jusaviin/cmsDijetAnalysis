@@ -414,6 +414,8 @@ void DijetHistograms::CreateHistograms(){
   const Int_t nMultiplicityBins = 500;
   const Int_t nMultiplicityBinsWeighted = 400;
   
+  const Double_t wideMultiplicityBins[10] = {0,1600,1800,2000,2200,2400,2600,2800,3000,5000};
+  
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
   Double_t wideCentralityBins[nWideCentralityBins+1];
@@ -972,10 +974,10 @@ void DijetHistograms::CreateHistograms(){
   lowBinBorderAdditional[0] = minDeltaPhiJetTrack;    // low bin border for deltaPhi between jet and event plane
   highBinBorderAdditional[0] = maxDeltaPhiJetTrack;   // high bin border for deltaPhi between jet and event plane
   
-  // Axis 2 for the additional histogram: Normalized Q-vector from mid rapidity event plane
+  // Axis 2 for the additional histogram: Multiplicity
   nBinsAdditional[1] = nBinsQvector;                  // nBins for deltaPhi between jet and event plane
-  lowBinBorderAdditional[1] = minQvector;             // low bin border for deltaPhi between jet and event plane
-  highBinBorderAdditional[1] = maxQvector;            // high bin border for deltaPhi between jet and event plane
+  lowBinBorderAdditional[1] = 0;             // low bin border for deltaPhi between jet and event plane
+  highBinBorderAdditional[1] = 5000;            // high bin border for deltaPhi between jet and event plane
   
   // Axis 3 for the additional histogram: Centrality
   nBinsAdditional[2] = nWideCentralityBins;           // nBins for centrality
@@ -987,6 +989,8 @@ void DijetHistograms::CreateHistograms(){
   fhJetEventPlaneMidRap = new THnSparseF("jetEventPlaneMidRap", "jetEventPlaneMidRap", nAxesAdditional, nBinsAdditional, lowBinBorderAdditional, highBinBorderAdditional); fhJetEventPlaneMidRap->Sumw2();
   
   // Set custom centrality bins for histograms
+  fhJetEventPlaneForwardRap->SetBinEdges(1,wideMultiplicityBins);
+  fhJetEventPlaneMidRap->SetBinEdges(1,wideMultiplicityBins);
   fhJetEventPlaneForwardRap->SetBinEdges(2,wideCentralityBins);
   fhJetEventPlaneMidRap->SetBinEdges(2,wideCentralityBins);
 }
