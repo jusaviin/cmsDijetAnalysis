@@ -60,6 +60,7 @@ void estimateLongRangeSystematics(){
   
   // Results with Q-vector weight instead of cut
   TString qVectorWeightedFileName = "flowGraphs/summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root"; // Need to find the correct file to reproduce this file in order to add v4!!!
+  TString multiplicitySchemeFileName = "flowGraphs/summaryPlot_multiplicityScheme_2022-01-26.root";
   
   // Results without tracking efficiency correction
   TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";
@@ -73,14 +74,23 @@ void estimateLongRangeSystematics(){
   
   // Flow component configuration
   const int maxVn = 4;      // Maximum number of flow components
-  const int firstFlow = 2;  // First analyzed flow component
+  const int firstFlow = 3;  // First analyzed flow component
   const int lastFlow = 3;   // Last analyzed flow component
   
   const bool printUncertainties = false;
   
   bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
+  TString outputFileName = "";
+  // flowGraphs/systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
+  
+  // At the moment, the centrality shift uncertainty is not applied but instead a comparison with multiplicity matched results is used
+  bool skipUncertaintySource[LongRangeSystematicOrganizer::knUncertaintySources];
+  for(int iUncertainty = 0; iUncertainty < LongRangeSystematicOrganizer::knUncertaintySources; iUncertainty++){
+    skipUncertaintySource[iUncertainty] = false;
+  }
+  skipUncertaintySource[LongRangeSystematicOrganizer::kMCTuning] = true;
+  
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -106,6 +116,7 @@ void estimateLongRangeSystematics(){
   TFile* shiftedResultFile1 = TFile::Open(shiftedResultFileName1);
   TFile* shiftedResultFile2 = TFile::Open(shiftedResultFileName2);
   TFile* qVectorWeightedFile = TFile::Open(qVectorWeightedFileName);
+  TFile* multiplicitySchemeFile = TFile::Open(multiplicitySchemeFileName);
   TFile* noTrackEfficiencyFile = TFile::Open(noTrackEfficiencyFileName);
   TFile* quarkGluonFractionFile = TFile::Open(quarkGluonFractionFileName);
   TFile* jecUncertaintySmearedFile = TFile::Open(jecUncertaintySmearedFileName);
@@ -122,7 +133,7 @@ void estimateLongRangeSystematics(){
   TGraphErrors* minBiasDihadronResultGraph[maxVn];
   TGraphErrors* finalResultGraph[maxVn];
   TGraphErrors* shiftedResultGraph[maxVn][2];
-  TGraphErrors* qVectorWeightedGraph[maxVn];
+  TGraphErrors* correctionMethodGraph[maxVn][2];
   TGraphErrors* noTrackEfficiencyGraph[maxVn];
   TGraphErrors* quarkGluonFractionGraph[maxVn];
   TGraphErrors* jecUncertaintySmearedGraph[maxVn];
@@ -150,7 +161,8 @@ void estimateLongRangeSystematics(){
     finalResultGraph[iFlow] = (TGraphErrors*) finalResultFile->Get(graphName);
     shiftedResultGraph[iFlow][0] = (TGraphErrors*) shiftedResultFile1->Get(graphName);
     shiftedResultGraph[iFlow][1] = (TGraphErrors*) shiftedResultFile2->Get(graphName);
-    qVectorWeightedGraph[iFlow] = (TGraphErrors*) qVectorWeightedFile->Get(graphName);
+    correctionMethodGraph[iFlow][0] = (TGraphErrors*) qVectorWeightedFile->Get(graphName);
+    correctionMethodGraph[iFlow][1] = (TGraphErrors*) multiplicitySchemeFile->Get(graphName);
     noTrackEfficiencyGraph[iFlow] = (TGraphErrors*) noTrackEfficiencyFile->Get(graphName);
     quarkGluonFractionGraph[iFlow] = (TGraphErrors*) quarkGluonFractionFile->Get(graphName);
     jecUncertaintySmearedGraph[iFlow] = (TGraphErrors*) jecUncertaintySmearedFile->Get(graphName);
@@ -208,306 +220,333 @@ void estimateLongRangeSystematics(){
   // Uncertainty coming from jet axis smearing //
   // ========================================= //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kAngleSmear]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], angleSmearResultGraph[iFlow], iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kAngleSmear][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kAngleSmear][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kAngleSmear);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], angleSmearResultGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "Smeared axis";
+        drawIllustratingPlots(drawer, nominalResultGraph[iFlow], angleSmearResultGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kAngleSmear));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kAngleSmear][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kAngleSmear][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kAngleSmear);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "Smeared axis";
-      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], angleSmearResultGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kAngleSmear));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ================================================================================ //
   // Uncertainty coming from different deltaEta regions in jet-hadron correlation fit //
   // ================================================================================ //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kDeltaEtaRegion]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], deltaEtaRegionJetHadronGraph[iFlow], 2, iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegion][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegion][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kDeltaEtaRegion);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], deltaEtaRegionJetHadronGraph[iFlow], 2, iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "1.5 < |#Delta#eta| < 2.0";
+        legendNames[1] = "2.0 < |#Delta#eta| < 2.5";
+        drawIllustratingPlots(drawer, nominalResultGraph[iFlow], deltaEtaRegionJetHadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kDeltaEtaRegion));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegion][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegion][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kDeltaEtaRegion);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "1.5 < |#Delta#eta| < 2.0";
-      legendNames[1] = "2.0 < |#Delta#eta| < 2.5";
-      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], deltaEtaRegionJetHadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kDeltaEtaRegion));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ============================================================================== //
   // Uncertainty coming from different deltaEta regions in dihadron correlation fit //
   // ============================================================================== //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], wideDeltaEtaDihadronGraph[iFlow], 2, iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], wideDeltaEtaDihadronGraph[iFlow], 2, iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "2 < |#Delta#eta| < 3.5";
+        legendNames[1] = "2.5 < |#Delta#eta| < 4";
+        drawIllustratingPlots(drawer, finalResultGraph[iFlow], wideDeltaEtaDihadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "2 < |#Delta#eta| < 3.5";
-      legendNames[1] = "2.5 < |#Delta#eta| < 4";
-      drawIllustratingPlots(drawer, finalResultGraph[iFlow], wideDeltaEtaDihadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kDeltaEtaRegionDihadron));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ============================================================================== //
   // Uncertainty coming from different deltaEta sides in jet-hadron correlation fit //
   // ============================================================================== //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kDeltaEtaSide]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], deltaEtaSideJetHadronGraph[iFlow], 2, iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaSide][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaSide][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kDeltaEtaSide);
+        
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], deltaEtaSideJetHadronGraph[iFlow], 2, iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "-2.5 < #Delta#eta < -1.5";
+        legendNames[1] = "1.5 < #Delta#eta < 2.5";
+        drawIllustratingPlots(drawer, nominalResultGraph[iFlow], deltaEtaSideJetHadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kDeltaEtaSide));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaSide][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kDeltaEtaSide][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kDeltaEtaSide);
-
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "-2.5 < #Delta#eta < -1.5";
-      legendNames[1] = "1.5 < #Delta#eta < 2.5";
-      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], deltaEtaSideJetHadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kDeltaEtaSide));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ======================================================================== //
   // Uncertainty coming from different vz sides in jet-hadron correlation fit //
   // ======================================================================== //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kVz]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], vzRegionJetHadronGraph[iFlow], 2, iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kVz][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kVz][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kVz);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], vzRegionJetHadronGraph[iFlow], 2, iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "v_{z} < 0";
+        legendNames[1] = "v_{z} > 0";
+        drawIllustratingPlots(drawer, nominalResultGraph[iFlow], vzRegionJetHadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kVz));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kVz][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kVz][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kVz);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "v_{z} < 0";
-      legendNames[1] = "v_{z} > 0";
-      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], vzRegionJetHadronGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kVz));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ================================================ //
   // Uncertainty coming from jet collection selection //
   // ================================================ //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kJetCollection]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], pfcsResultGraph[iFlow], iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJetCollection][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kJetCollection][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJetCollection);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], pfcsResultGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "akCs4PFJet";
+        drawIllustratingPlots(drawer, nominalResultGraph[iFlow], pfcsResultGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJetCollection));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJetCollection][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kJetCollection][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJetCollection);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "akCs4PFJet";
-      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], pfcsResultGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJetCollection));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ============================================================== //
   // Uncertainty coming from centrality shift in Monte Carlo tuning //
   // ============================================================== //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kMCTuning]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], shiftedResultGraph[iFlow], 2, iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMCTuning][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kMCTuning][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMCTuning);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], shiftedResultGraph[iFlow], 2, iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "MC + 3%";
+        legendNames[1] = "MC + 5%";
+        drawIllustratingPlots(drawer, finalResultGraph[iFlow], shiftedResultGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCTuning));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMCTuning][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kMCTuning][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMCTuning);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "MC + 3%";
-      legendNames[1] = "MC + 5%";
-      drawIllustratingPlots(drawer, finalResultGraph[iFlow], shiftedResultGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCTuning));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
-  // ========================================================================== //
-  // Uncertainty coming from difference between Q-vector weight and cut methods //
-  // ========================================================================== //
+  // ============================================================================================= //
+  // Uncertainty coming from difference between Q-vector weight, cut and multiplcity match methods //
+  // ============================================================================================= //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kMCMethod]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], correctionMethodGraph[iFlow], 2, iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMCMethod);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], qVectorWeightedGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "Q-vector weight";
+        legendNames[1] = "Multiplicity match";
+        drawIllustratingPlots(drawer, finalResultGraph[iFlow], correctionMethodGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCMethod));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMCMethod);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "Q-vector weight";
-      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], qVectorWeightedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCMethod));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ======================================================================================= //
   // Uncertainty coming from dihadron correlation selection (dijet events / min bias events) //
   // ======================================================================================= //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kMinBias]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], minBiasDihadronResultGraph[iFlow], iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMinBias][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kMinBias][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMinBias);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(nominalResultGraph[iFlow], minBiasDihadronResultGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "Minimum bias";
+        drawIllustratingPlots(drawer, nominalResultGraph[iFlow], minBiasDihadronResultGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMinBias));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMinBias][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kMinBias][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMinBias);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "Minimum bias";
-      drawIllustratingPlots(drawer, nominalResultGraph[iFlow], minBiasDihadronResultGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMinBias));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // =========================================== //
   // Uncertainty coming tracking related sources //
   // =========================================== //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kTracking]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], noTrackEfficiencyGraph[iFlow], iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kTracking][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kTracking][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kTracking);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], noTrackEfficiencyGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "No track efficiency";
+        drawIllustratingPlots(drawer, finalResultGraph[iFlow], noTrackEfficiencyGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kTracking));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kTracking][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kTracking][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kTracking);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "No track efficiency";
-      drawIllustratingPlots(drawer, finalResultGraph[iFlow], noTrackEfficiencyGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kTracking));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ===================================================================== //
   // Uncertainty coming uncertainty on quark/gluon fraction in Monte Carlo //
   // ===================================================================== //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kQuarkGluonFraction]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kQuarkGluonFraction);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "Adjusted q/g fraction";
+        drawIllustratingPlots(drawer, finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kQuarkGluonFraction));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kQuarkGluonFraction);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "Adjusted q/g fraction";
-      drawIllustratingPlots(drawer, finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kQuarkGluonFraction));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ============================================= //
   // Uncertainty coming from jet energy correction //
   // ============================================= //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kJEC]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jecUncertaintySmearedGraph[iFlow], iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJEC);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jecUncertaintySmearedGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "Smeared JEC";
+        drawIllustratingPlots(drawer, finalResultGraph[iFlow], jecUncertaintySmearedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJEC));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kJEC][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJEC);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "Smeared JEC";
-      drawIllustratingPlots(drawer, finalResultGraph[iFlow], jecUncertaintySmearedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJEC));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ============================================= //
   // Uncertainty coming from jet energy resolution //
   // ============================================= //
   
-  for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
-    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kJER]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jetResolutionSmearedGraph[iFlow], iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJER][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kJER][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJER);
+        
+      } // Centrality loop
       
-      std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], jetResolutionSmearedGraph[iFlow], iCentrality);
+      // Draw example plots on how the uncertainty is obtained
+      if(plotExample){
+        legendNames[0] = "Smeared JER";
+        drawIllustratingPlots(drawer, finalResultGraph[iFlow], jetResolutionSmearedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJER));
+      }
       
-      absoluteUncertaintyTable[LongRangeSystematicOrganizer::kJER][iFlow][iCentrality] = absoluteUncertainty;
-      relativeUncertaintyTable[LongRangeSystematicOrganizer::kJER][iFlow][iCentrality] = relativeUncertainty;
-      if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJER);
-      
-    } // Centrality loop
-    
-    // Draw example plots on how the uncertainty is obtained
-    if(plotExample){
-      legendNames[0] = "Smeared JER";
-      drawIllustratingPlots(drawer, finalResultGraph[iFlow], jetResolutionSmearedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJER));
-    }
-    
-  } // Flow component loop
+    } // Flow component loop
+  }
   
   // ========================================= //
   // Add all uncertainty sources in quadrature //
