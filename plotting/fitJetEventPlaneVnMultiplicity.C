@@ -6,13 +6,15 @@ void fitJetEventPlaneVnMultiplicity(){
   // Open the data files
   const int nFiles = 1;
   TFile *inputFile[nFiles];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlane_jetEta1v3_2022-01-25.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_4pCentShift_manualEventPlane_jetEta1v3_2022-01-21.root");
-  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_4pCentShift_tunedQweights_manualEventPlane_jetEta1v3_2022-01-21.root");
-  if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_dijetEvents_2021-05-05.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_subeNon0_multiplicityWeight_allEventPlanes_jetEta1v3_2022-01-30.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlane_jetEta1v3_2022-01-25.root");
+  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlaneV3_jetEta1v3_2022-01-26.root");
+  if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlaneV4_jetEta1v3_2022-01-26.root");
   
   TString jetTypeString[4] = {"Calo jet","PFCS jet","Calo tuned Q","Gen jet"};
   //TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
+  
+  int eventPlaneOrder = 2; // The vn component that is plotted
   
   double centralityBinBorders[] = {0,10,30,50,90};
   
@@ -27,40 +29,48 @@ void fitJetEventPlaneVnMultiplicity(){
   bool printVs = false; // True = Print the jet vn values to the console. False = Do not do that
   
   bool saveFigures = false;
-  TString saveComment = "_manualJECpfCs";
+  TString saveComment = "_eventPlane4";
   
   // Read the histograms from the data files
-  const int nMultiplicityBins = 9;
-  double multiplicityBinBorders[] = {0,1600,1800,2000,2200,2400,2600,2800,3000,5000};
+  const int nMultiplicityBins = 20;
+  const int firstPlottedBin = 1;
+  const int lastPlottedBin = 16;
+  double multiplicityBinBorders[] = {0,400,600,800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3400,3600,3800,4000,5000};
   TH1D *jetEventPlaneMidRapidity[nFiles][nMultiplicityBins];
   TF1 *fitFunctionMidRapidity[nFiles][nMultiplicityBins];
   TH1D *jetEventPlaneDifference[nMultiplicityBins];
   double averageYield[nFiles][nMultiplicityBins];
   double scaleFactor[nFiles][nMultiplicityBins];
   
-  double xValues[7] = {1700,1900,2100,2300,2500,2700,2900};
-  double xErrors[7] = {0,0,0,0,0,0,0};
-  double yValues[7];
-  double yErrors[7];
+  double xValues[16] = {500,700,900,1100,1300,1500,1700,1900,2100,2300,2500,2700,2900,3100,3300,3500};
+  double xErrors[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  double yValues[16];
+  double yErrors[16];
   
   for(int iJetType = 0; iJetType < nFiles; iJetType++){
     for(int iMultiplicity = 0; iMultiplicity < nMultiplicityBins; iMultiplicity++){  // nQvectorBins
-        
-        jetEventPlaneMidRapidity[iJetType][iMultiplicity] = (TH1D*) inputFile[iJetType]->Get(Form("jetEventPlaneDeltaPhiForwardRap_M%d", iMultiplicity));
-        
-        if(jetEventPlaneMidRapidity[iJetType][iMultiplicity] == NULL){
-          jetEventPlaneMidRapidity[iJetType][iMultiplicity] = (TH1D*) inputFile[iJetType]->Get(Form("jetEventPlaneDeltaPhiManual_M%d", iMultiplicity));
-        }
+      
+      jetEventPlaneMidRapidity[iJetType][iMultiplicity] = (TH1D*) inputFile[iJetType]->Get(Form("jetEventPlaneDeltaPhiManual_M%d", iMultiplicity));
+      
+      // If the histogram is not found, try different name
+      if(jetEventPlaneMidRapidity[iJetType][iMultiplicity] == NULL){
+        jetEventPlaneMidRapidity[iJetType][iMultiplicity] = (TH1D*) inputFile[iJetType]->Get(Form("jetEventPlaneOrder%d_M%d", eventPlaneOrder, iMultiplicity));
+      }
     } // Multiplicity loop
   } // Jet type loop
   
   // Difference between manual and HiForest event planes
   if(drawEventPlaneDifference){
     for(int iMultiplicity = 0; iMultiplicity < nMultiplicityBins; iMultiplicity++){  // nQvectorBins
-        
-        jetEventPlaneDifference[iMultiplicity] = (TH1D*) inputFile[0]->Get(Form("jetEventPlaneDeltaPhiDiff_M%d", iMultiplicity));
-        
-    } // Q-Multiplicity loop
+      
+      jetEventPlaneDifference[iMultiplicity] = (TH1D*) inputFile[0]->Get(Form("jetEventPlaneDeltaPhiDiff_M%d", iMultiplicity));
+      
+      // If the histogram is not found, try different name
+      if(jetEventPlaneDifference[iMultiplicity] == NULL){
+        jetEventPlaneDifference[iMultiplicity] = (TH1D*) inputFile[0]->Get(Form("jetEventPlaneDifferenceOrder%d_M%d", eventPlaneOrder, iMultiplicity));
+      }
+      
+    } // Multiplicity loop
   }
   
   // Scale the histograms such that yields between different jet collections match
@@ -121,22 +131,27 @@ void fitJetEventPlaneVnMultiplicity(){
     
   
   // Collect the values for the y-axis arrays to illustrate the multiplicity dependence
-  for(int iMultiplicity = 1; iMultiplicity < 8; iMultiplicity++){
-    yValues[iMultiplicity-1] = fitFunctionMidRapidity[0][iMultiplicity]->GetParameter(2);
-    yErrors[iMultiplicity-1] = fitFunctionMidRapidity[0][iMultiplicity]->GetParError(2);
+  for(int iMultiplicity = firstPlottedBin; iMultiplicity <= lastPlottedBin; iMultiplicity++){
+    yValues[iMultiplicity-firstPlottedBin] = fitFunctionMidRapidity[0][iMultiplicity]->GetParameter(eventPlaneOrder);
+    yErrors[iMultiplicity-firstPlottedBin] = fitFunctionMidRapidity[0][iMultiplicity]->GetParError(eventPlaneOrder);
   }
   
   
   // Draw a graph illustrating the multiplicity dependence of the jet v2
-  TGraphErrors *multiplicityGraph = new TGraphErrors(7, xValues, yValues, xErrors, yErrors);
+  TGraphErrors *multiplicityGraph = new TGraphErrors(lastPlottedBin-firstPlottedBin+1, xValues, yValues, xErrors, yErrors);
   multiplicityGraph->SetMarkerStyle(kFullSquare);
   multiplicityGraph->SetMarkerColor(kBlue);
   
   JDrawer *drawer = new JDrawer();
   drawer->SetDefaultAppearanceGraph();
   
-  drawer->DrawGraph(multiplicityGraph, 1600, 3000, 0.05, 0.15, "Multiplicity", "Jet v_{2}", " ", "p");
+  double highYrange[] = {0.2,0.2,0.14,0.06,0.03,0.02,0.02};
   
+  drawer->DrawGraph(multiplicityGraph, 400, 3600, 0.0, highYrange[eventPlaneOrder], "Multiplicity", Form("Jet v_{%d}", eventPlaneOrder), " ", "p");
+  
+  if(saveFigures){
+    gPad->GetCanvas()->SaveAs(Form("figures/jetV%dvsMultiplicity%s.pdf", eventPlaneOrder, saveComment.Data()));
+  }
   
   // Draw the jet-event plane fits
   drawer->Reset();
@@ -147,7 +162,7 @@ void fitJetEventPlaneVnMultiplicity(){
   int colors[] = {kBlack, kRed, kBlue, kGreen+3};
   double maxYscale, minYscale;
 
-  for(int iMultiplicity = 1; iMultiplicity < 8; iMultiplicity++){
+  for(int iMultiplicity = firstPlottedBin; iMultiplicity <= lastPlottedBin; iMultiplicity++){
 
     multiplicityString = Form("Multiplicity: %.0f-%.0f%%", multiplicityBinBorders[iMultiplicity], multiplicityBinBorders[iMultiplicity+1]);
     compactMultiplicityString = Form("_M=%.0f-%.0f", multiplicityBinBorders[iMultiplicity], multiplicityBinBorders[iMultiplicity+1]);
@@ -185,12 +200,12 @@ void fitJetEventPlaneVnMultiplicity(){
       if(!drawAllInSamePlot){
         legend = new TLegend(0.2,0.7,0.4,0.9);
         legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-        legend->AddEntry((TObject*)0, Form("%s, Leading jet > 180 GeV",multiplicityString.Data()), "");
+        legend->AddEntry((TObject*)0, Form("%s, #Psi_{%d}",multiplicityString.Data(), eventPlaneOrder), "");
         legend->AddEntry((TObject*)0, jetTypeString[iJetType], "");
         legend->Draw();
 
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/jetEventPlaneDeltaPhi%s_%s%s.pdf", saveComment.Data(), jetTypeString[iJetType].Data(), compactMultiplicityString.Data()));
+          gPad->GetCanvas()->SaveAs(Form("figures/jetEventPlaneDeltaPhi%s%s.pdf", saveComment.Data(), compactMultiplicityString.Data()));
         }
 
       } else {

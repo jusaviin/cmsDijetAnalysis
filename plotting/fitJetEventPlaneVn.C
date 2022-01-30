@@ -4,27 +4,27 @@
 void fitJetEventPlaneVn(){
 
   // Open the data files
-  const int nFiles = 3;
+  const int nFiles = 2;
   TFile *inputFile[nFiles];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_4pCentShift_manualEventPlane_jetEta1v3_2022-01-21.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_4pCentShift_manualEventPlane_jetEta1v3_2022-01-21.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_subeNon0_fakeV3_multiplicityWeight_allEventPlanes_jetEta1v3_2022-01-30.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_subeNon0_multiplicityWeight_allEventPlanes_jetEta1v3_2022-01-30.root");
   if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_4pCentShift_tunedQweights_manualEventPlane_jetEta1v3_2022-01-21.root");
   if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_dijetEvents_2021-05-05.root");
   
-  TString jetTypeString[4] = {"Calo jet","PFCS jet","Calo tuned Q","Gen jet"};
+  TString jetTypeString[4] = {"Fake V3","Gen jets","Calo tuned Q","Gen jet"};
   //TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
   
   double centralityBinBorders[] = {0,10,30,50,90};
   
   bool matchYields = true;  // For comparison purposes, match the average yields of different jet collections
-  int referenceYield = 1;   // Choose which jet collection to use as basis for yield matching
+  int referenceYield = 0;   // Choose which jet collection to use as basis for yield matching
   
   bool drawEventPlaneDifference = false;  // Draw difference between manual event plane calculation to the one read from forest
   
   bool drawAllInSamePlot = true;  // True: Draw all three jet collection to the same plot. False: Use separate plots
   bool hideFit = false;
   
-  bool printVs = true; // True = Print the jet vn values to the console. False = Do not do that
+  bool printVs = false; // True = Print the jet vn values to the console. False = Do not do that
   
   bool saveFigures = false;
   TString saveComment = "_manualJECpfCs";
@@ -32,6 +32,7 @@ void fitJetEventPlaneVn(){
   // Read the histograms from the data files
   const int nCentralityBins = 4;
   const int nQvectorBins = 4;
+  const int eventPlaneOrder = 3;
   TH1D *jetEventPlaneMidRapidity[nFiles][nQvectorBins][nCentralityBins];
   TF1 *fitFunctionMidRapidity[nFiles][nQvectorBins][nCentralityBins];
   TH1D *jetEventPlaneDifference[nQvectorBins][nCentralityBins];
@@ -44,8 +45,14 @@ void fitJetEventPlaneVn(){
         
         jetEventPlaneMidRapidity[iJetType][iQvector][iCentrality] = (TH1D*) inputFile[iJetType]->Get(Form("jetEventPlaneDeltaPhiForwardRap_Q%dC%d", iQvector, iCentrality));
         
+        // If the histogram is not found, try a different name
         if(jetEventPlaneMidRapidity[iJetType][iQvector][iCentrality] == NULL){
           jetEventPlaneMidRapidity[iJetType][iQvector][iCentrality] = (TH1D*) inputFile[iJetType]->Get(Form("jetEventPlaneDeltaPhiManual_Q%dC%d", iQvector, iCentrality));
+        }
+        
+        // If the histogram is still not found, try another name
+        if(jetEventPlaneMidRapidity[iJetType][iQvector][iCentrality] == NULL){
+          jetEventPlaneMidRapidity[iJetType][iQvector][iCentrality] = (TH1D*) inputFile[iJetType]->Get(Form("jetEventPlaneOrder%d_C%d", eventPlaneOrder, iCentrality));
         }
         
       } // Centrality loop
@@ -59,6 +66,10 @@ void fitJetEventPlaneVn(){
         
         jetEventPlaneDifference[iQvector][iCentrality] = (TH1D*) inputFile[0]->Get(Form("jetEventPlaneDeltaPhiDiff_Q%dC%d", iQvector, iCentrality));
         
+        // If the histogram is not found, try another name
+        if(jetEventPlaneDifference[iQvector][iCentrality] == NULL){
+          jetEventPlaneDifference[iQvector][iCentrality] = (TH1D*) inputFile[0]->Get(Form("jetEventPlaneDifferenceOrder%d_C%d", eventPlaneOrder, iCentrality));
+        }
         
       } // Centrality loop
     } // Q-vector loop
@@ -181,7 +192,7 @@ void fitJetEventPlaneVn(){
         }
         
       } else {
-        legend->AddEntry(jetEventPlaneMidRapidity[iJetType][0][iCentrality], Form("%s, v_{2} = %.3f", jetTypeString[iJetType].Data(), fitFunctionMidRapidity[iJetType][0][iCentrality]->GetParameter(2)) ,"l");
+        legend->AddEntry(jetEventPlaneMidRapidity[iJetType][0][iCentrality], Form("%s, v_{%d} = %.3f", jetTypeString[iJetType].Data(), eventPlaneOrder, fitFunctionMidRapidity[iJetType][0][iCentrality]->GetParameter(eventPlaneOrder)) ,"l");
       }
       
     } // Jet type loop

@@ -273,7 +273,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
   
   // Function for generating fake v2. Currently set for 5 % v2
-  fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos(2*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
+  fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos([0]*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
+  fFakeV2Function->SetParameter(0,2);
   
   // Generic polynomial functions
   fGenericPol6 = new TF1("genericPol6","pol6",0,200);
@@ -858,13 +859,14 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t trackMultiplicityWeighted = 0; // Weighted multiplicity
   
   // Event plane study related variables
-  Double_t eventPlaneQ = 0;                     // Magnitude of the event plane Q-vector
-  Double_t eventPlaneMultiplicity = 0;          // Particle multiplicity in the event plane
-  Double_t eventPlaneQx = 0;                    // x-component of the event plane vector
-  Double_t eventPlaneQy = 0;                    // y-component of the event plane vector
-  Double_t jetEventPlaneDeltaPhiForwardRap = 0; // DeltaPhi between jet and event plane angle determined from forward rapidity
-  Double_t jetEventPlaneDeltaPhiMidRap = 0;     // DeltaPhi between jet and event plane angle determined from midrapidity
-  Double_t eventPlaneAngle = 0;                 // Manually calculated event plane angle
+  const Int_t nFlowComponentsEP = 3;                  // Number of flow component to which the event plane is determined
+  Double_t eventPlaneQ[nFlowComponentsEP] = {0};      // Magnitude of the event plane Q-vector
+  Double_t eventPlaneMultiplicity = 0;                // Particle multiplicity in the event plane
+  Double_t eventPlaneQx[nFlowComponentsEP] = {0};     // x-component of the event plane vector
+  Double_t eventPlaneQy[nFlowComponentsEP] = {0};     // y-component of the event plane vector
+  Double_t jetEventPlaneDeltaPhi = 0;                 // DeltaPhi between jet and event plane angle determined from forward rapidity
+  Double_t jetEventPlaneDeltaPhiDifference = 0;       // DeltaPhi between jet and event plane angle determined from midrapidity
+  Double_t eventPlaneAngle[nFlowComponentsEP] = {0};  // Manually calculated event plane angle
   
   // Variables for particle flow candidates
   Int_t nParticleFlowCandidatesInThisJet = 0;  // Number of particle flow candidates in the current jet
@@ -1213,11 +1215,13 @@ void DijetAnalyzer::RunAnalysis(){
       if(doEventPlane){ // doEventPlane
         
         // Variables for event plane
-        eventPlaneQ = 0;            // Magnitude of the event plane Q-vector
         eventPlaneMultiplicity = 0; // Particle multiplicity in the event plane
-        int iEventPlane = 8; // For event planes, see the big comment in ForestReader.h
-        eventPlaneQx = 0;
-        eventPlaneQy = 0;
+        
+        for(Int_t iFlow = 0; iFlow < nFlowComponentsEP; iFlow++){
+          eventPlaneQ[iFlow] = 0;            // Magnitude of the event plane Q-vector
+          eventPlaneQx[iFlow] = 0;
+          eventPlaneQy[iFlow] = 0;
+        }
         
         // Manual calculation for Q-vector in MC
         if(fDataType == ForestReader::kPbPbMC || fDataType == ForestReader::kPpMC){
@@ -1241,25 +1245,34 @@ void DijetAnalyzer::RunAnalysis(){
             if(trackPt > 3) continue;
             //if(trackPt > 5) continue;
             
-            eventPlaneQx += TMath::Cos(2*(trackPhi));
-            eventPlaneQy += TMath::Sin(2*(trackPhi));
+            for(int iFlow = 0; iFlow < nFlowComponentsEP; iFlow++){
+              eventPlaneQx[iFlow] += TMath::Cos((iFlow+2.0)*(trackPhi));
+              eventPlaneQy[iFlow] += TMath::Sin((iFlow+2.0)*(trackPhi));
+            }
             eventPlaneMultiplicity += 1;
             
           } // Track loop
           
           if(eventPlaneMultiplicity == 0) eventPlaneMultiplicity += 1;
-          eventPlaneQ = TMath::Sqrt(eventPlaneQx*eventPlaneQx + eventPlaneQy*eventPlaneQy);
           
-          eventPlaneAngle = 0.5 * TMath::ATan2(eventPlaneQy, eventPlaneQx);
+          // Calculate the Q-vector magnitudes and event plane angles for orders 2, 3 and 4
+          for(int iFlow = 0; iFlow < nFlowComponentsEP; iFlow++){
+            eventPlaneQ[iFlow] = TMath::Sqrt(eventPlaneQx[iFlow]*eventPlaneQx[iFlow] + eventPlaneQy[iFlow]*eventPlaneQy[iFlow]);
+            eventPlaneAngle[iFlow] = (1.0/(iFlow+2.0)) * TMath::ATan2(eventPlaneQy[iFlow], eventPlaneQx[iFlow]);
+          }
           
         // For data, read Q-vector and multiplicity directly from the forest
         } else {
-          eventPlaneQ = fJetReader->GetEventPlaneQ(iEventPlane);  // 8 is second order event plane from both sides of HF
-          eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(iEventPlane);
+          eventPlaneQ[0] = fJetReader->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
+          eventPlaneQ[1] = fJetReader->GetEventPlaneQ(15); // 15 is third order event plane from both sides of HF
+          eventPlaneQ[2] = fJetReader->GetEventPlaneQ(21); // 21 is fourth order event plane from both sides of HF
+          eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(8);
         }
         
         // Normalize the Q-vector with multiplicity
-        eventPlaneQ /= TMath::Sqrt(eventPlaneMultiplicity);
+        for(int iFlow = 0; iFlow < nFlowComponentsEP; iFlow++){
+          eventPlaneQ[iFlow] /= TMath::Sqrt(eventPlaneMultiplicity);
+        }
         
         //if(eventPlaneQ > 2) continue;  // 2.222 2.778 3.333
         
@@ -1913,41 +1926,55 @@ void DijetAnalyzer::RunAnalysis(){
           if(doEventPlane){
             // Fill the additional histograms for event plane study
             
-            // Calculate deltaPhi between the jet and the event planes determined with different detectors
-            jetPhiForFakeV2 = leadingJetPhi;
-            //if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
-            //  jetPhiForFakeV2 = fJetReader->GetMatchedPhi(highestIndex);
-            //}
+            Int_t referencePlane[] = {8,15,21};
+            Int_t myOrder[] = {0,1,2};
             
+            // Get the track multiplicity from all tracks
+            trackMultiplicity = GetMultiplicity();
             
-            //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
-            //jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
-            
-            jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - eventPlaneAngle;
-            jetEventPlaneDeltaPhiMidRap = eventPlaneAngle - fJetReader->GetEventPlaneAngle(8);  // Diff between manual and forest
-            
-            // Transform deltaPhis to interval [-pi/2,3pi/2]
-            while(jetEventPlaneDeltaPhiForwardRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += -2*TMath::Pi();}
-            while(jetEventPlaneDeltaPhiMidRap > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += -2*TMath::Pi();}
-            while(jetEventPlaneDeltaPhiForwardRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiForwardRap += 2*TMath::Pi();}
-            while(jetEventPlaneDeltaPhiMidRap < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiMidRap += 2*TMath::Pi();}
-            
-            //fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhiForwardRap);  // Faking v2 for get jets
-            //fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;  // Include this number into total event weight
-            
-            // Fill the additional event plane histograms
-            fillerEventPlane[0] = jetEventPlaneDeltaPhiForwardRap;  // Axis 0: DeltaPhi between jet and event plane
-            fillerEventPlane[1] = trackMultiplicity;                      // Axis 1: Normalized event plane Q-vector
-            //fillerEventPlane[1] = fJetReader->GetEventPlaneQ(8) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(8));                      // Axis 1: Normalized event plane Q-vector
-            fillerEventPlane[2] = centrality;                       // Axis 2: centrality
-            
-            fHistograms->fhJetEventPlaneForwardRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
-            
-            fillerEventPlane[0] = jetEventPlaneDeltaPhiMidRap;  // Axis 0: DeltaPhi between jet and event plane
-            fillerEventPlane[1] = trackMultiplicity;  // Axis 1: Normalized event plane Q-vector
-
-            
-            fHistograms->fhJetEventPlaneMidRap->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
+            for(int iFloww = 0; iFloww < nFlowComponentsEP; iFloww++){
+              
+              Int_t iFlow = myOrder[iFloww];
+              
+              // Calculate deltaPhi between the jet and the event planes determined with different detectors
+              jetPhiForFakeV2 = leadingJetPhi;
+              //if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
+              //  jetPhiForFakeV2 = fJetReader->GetMatchedPhi(highestIndex);
+              //}
+              
+              
+              //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
+              //jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
+              
+              jetEventPlaneDeltaPhi = jetPhiForFakeV2 - eventPlaneAngle[iFlow];
+              jetEventPlaneDeltaPhiDifference = eventPlaneAngle[iFlow] - fJetReader->GetEventPlaneAngle(referencePlane[iFlow]);  // Diff between manual and forest
+              
+              // Transform deltaPhis to interval [-pi/2,3pi/2]
+              while(jetEventPlaneDeltaPhi > (1.5*TMath::Pi())){jetEventPlaneDeltaPhi += -2*TMath::Pi();}
+              while(jetEventPlaneDeltaPhiDifference > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += -2*TMath::Pi();}
+              while(jetEventPlaneDeltaPhi < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhi += 2*TMath::Pi();}
+              while(jetEventPlaneDeltaPhiDifference < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += 2*TMath::Pi();}
+              
+//              // Currently faking jet v2
+//              if(iFlow == 0){
+//                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
+//                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight
+//              }
+              
+              // Fill the additional event plane histograms
+              fillerEventPlane[0] = jetEventPlaneDeltaPhi;  // Axis 0: DeltaPhi between jet and event plane
+              fillerEventPlane[1] = trackMultiplicity;                      // Axis 1: Normalized event plane Q-vector
+              //fillerEventPlane[1] = fJetReader->GetEventPlaneQ(8) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(8));                      // Axis 1: Normalized event plane Q-vector
+              fillerEventPlane[2] = centrality;                       // Axis 2: centrality
+              
+              fHistograms->fhJetEventPlane[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
+              
+              fillerEventPlane[0] = jetEventPlaneDeltaPhiDifference;  // Axis 0: DeltaPhi between jet and event plane
+              fillerEventPlane[1] = trackMultiplicity;  // Axis 1: Normalized event plane Q-vector
+              
+              
+              fHistograms->fhJetEventPlaneDifference[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight*triggerEfficiencyWeight);
+            }
           }
           
         }

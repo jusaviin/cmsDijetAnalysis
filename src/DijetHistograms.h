@@ -21,6 +21,7 @@ public:
   enum enumCorrelationType {kSameEvent, kMixedEvent, knCorrelationTypes};
   enum enumClosureType {kLeadingClosure, kSubleadingClosure, kInclusiveClosure, knClosureTypes};
   enum enumClosureParticleType {kQuark,kGluon,knClosureParticleTypes};
+  enum enumEventPlaneOrder {kSecondOrderEventPlane,kThirdOrderEventPlane,kFourthOrderEventPlane,knEventPlanes};
   
   // Constructors and destructor
   DijetHistograms(); // Default constructor
@@ -82,8 +83,8 @@ public:
   THnSparseF *fhJetPtClosure; // Jet pT closure histograms [inclusive/leading/subleading][gen pT][centrality][q/g][reco/gen]
   
   // Extra histograms for additional event plane study
-  THnSparseF *fhJetEventPlaneForwardRap;  // Correlation between jets and event plane angle
-  THnSparseF *fhJetEventPlaneMidRap;  // Correlation between jets and event plane angle
+  THnSparseF *fhJetEventPlane[knEventPlanes];            // Correlation between jets and event plane angles
+  THnSparseF *fhJetEventPlaneDifference[knEventPlanes];  // Correlation between manually calculated and forest event plane angle
   
 private:
   

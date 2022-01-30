@@ -1,63 +1,90 @@
 void getJetEventPlaneCorrelationHistograms(){
 
   // Open the data file
-  TFile *inputFile = TFile::Open("data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_multEventPlane_multWeight_jetEta1v3_2022-01-25.root");
+  TFile *inputFile = TFile::Open("data/PbPbMC2018_GenGen_akCaloJet_onlyJets_eventPlanes_subeNon0_fakeV4_multWeight_jetEta1v3_2022-01-29.root");
+  
+  // Configuration
+  const int nEventPlaneOrder = 3;
   
   // Read the histogram with the given name from the file
-  THnSparseD *histogramArray[2];
-  histogramArray[0] = (THnSparseD*) inputFile->Get("jetEventPlaneForwardRap");
-  histogramArray[1] = (THnSparseD*) inputFile->Get("jetEventPlaneMidRap");
+  THnSparseD *jetEventPlaneArray[nEventPlaneOrder];
+  THnSparseD *jetEventPlaneDifferenceArray[nEventPlaneOrder];
+  for(int iOrder = 0; iOrder < nEventPlaneOrder; iOrder++){
+    jetEventPlaneArray[iOrder] = (THnSparseD*) inputFile->Get(Form("jetEventPlaneOrder%d", iOrder+2));
+    jetEventPlaneDifferenceArray[iOrder] = (THnSparseD*) inputFile->Get(Form("jetEventPlaneDifferenceOrder%d", iOrder+2));
+  }
   
   // If cannot find histogram, inform that it could not be found and return null
-  if(histogramArray[0] == nullptr || histogramArray[1] == nullptr){
-    cout << "Could not find histograms. Will not compute." << endl;
-    return;
+  for(int iOrder = 0; iOrder < nEventPlaneOrder; iOrder++){
+    if(jetEventPlaneArray[iOrder] == nullptr || jetEventPlaneDifferenceArray[iOrder] == nullptr){
+      cout << "Could not find histograms of order " << iOrder << ". Will not compute." << endl;
+      return;
+    }
   }
   
   // Apply the restrictions in the set of axes
   const int nCentralityBins = 4;
-  const int nQvectorBins = 9;
-  TH1D *jetEventPlane[2][nQvectorBins][nCentralityBins];
-  
-  const double lowQvectorBin[nQvectorBins] = {1,5,6,7};
-  const double highQvectorBin = 9;
-  
-  const char* eventString[2] = {"jetEventPlaneDeltaPhiManual","jetEventPlaneDeltaPhiDiff"};
+  const int nMultiplicityBins = 20;
+  TH1D *jetEventPlaneCentrality[nEventPlaneOrder][nCentralityBins];
+  TH1D *jetEventPlaneMultiplicity[nEventPlaneOrder][nMultiplicityBins];
+  TH1D *jetEventPlaneDifferenceCentrality[nEventPlaneOrder][nCentralityBins];
+  TH1D *jetEventPlaneDifferenceMultiplicity[nEventPlaneOrder][nMultiplicityBins];
   
   char newName[200];
+  
   // Regular centrality based binning
-//  for(int iType = 0; iType < 2; iType++){
-//    for(int iQvector = 0; iQvector < nQvectorBins; iQvector++){  // nQvectorBins
-//      histogramArray[iType]->GetAxis(1)->SetRange(iQvector+1,iQvector+1);
-//      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-//        histogramArray[iType]->GetAxis(2)->SetRange(iCentrality+2,iCentrality+2);
-//        sprintf(newName,"%s_Q%dC%d",eventString[iType], iQvector, iCentrality);
-//
-//        jetEventPlane[iType][iQvector][iCentrality] = (TH1D*) histogramArray[iType]->Projection(0);
-//        jetEventPlane[iType][iQvector][iCentrality]->SetName(newName);
-//
-//      }
-//    }
-//  }
+  for(int iOrder = 0; iOrder < nEventPlaneOrder; iOrder++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      jetEventPlaneArray[iOrder]->GetAxis(2)->SetRange(iCentrality+2,iCentrality+2);
+      sprintf(newName,"jetEventPlaneOrder%d_C%d", iOrder+2, iCentrality);
+      
+      jetEventPlaneCentrality[iOrder][iCentrality] = (TH1D*) jetEventPlaneArray[iOrder]->Projection(0);
+      jetEventPlaneCentrality[iOrder][iCentrality]->SetName(newName);
+      
+      jetEventPlaneDifferenceArray[iOrder]->GetAxis(2)->SetRange(iCentrality+2,iCentrality+2);
+      sprintf(newName,"jetEventPlaneDifferenceOrder%d_C%d", iOrder+2, iCentrality);
+      
+      jetEventPlaneDifferenceCentrality[iOrder][iCentrality] = (TH1D*) jetEventPlaneDifferenceArray[iOrder]->Projection(0);
+      jetEventPlaneDifferenceCentrality[iOrder][iCentrality]->SetName(newName);
+      
+    }
+  }
+  
+  // Reset the range in histogram arrays
+  for(int iOrder = 0; iOrder < nEventPlaneOrder; iOrder++){
+    jetEventPlaneArray[iOrder]->GetAxis(2)->SetRange(0,0);
+    jetEventPlaneDifferenceArray[iOrder]->GetAxis(2)->SetRange(0,0);
+  }
+  
   
   // Binning in multiplicity bins
-    for(int iType = 0; iType < 2; iType++){
-      for(int iQvector = 0; iQvector < nQvectorBins; iQvector++){  // nQvectorBins
-        histogramArray[iType]->GetAxis(1)->SetRange(iQvector+1,iQvector+1);
-          sprintf(newName,"%s_M%d",eventString[iType], iQvector);
-  
-          jetEventPlane[iType][iQvector][0] = (TH1D*) histogramArray[iType]->Projection(0);
-          jetEventPlane[iType][iQvector][0]->SetName(newName);
-      }
+  for(int iOrder = 0; iOrder < nEventPlaneOrder; iOrder++){
+    for(int iMultiplicity = 0; iMultiplicity < nMultiplicityBins; iMultiplicity++){
+      jetEventPlaneArray[iOrder]->GetAxis(1)->SetRange(iMultiplicity+1,iMultiplicity+1);
+      sprintf(newName,"jetEventPlaneOrder%d_M%d", iOrder+2, iMultiplicity);
+      
+      jetEventPlaneMultiplicity[iOrder][iMultiplicity] = (TH1D*) jetEventPlaneArray[iOrder]->Projection(0);
+      jetEventPlaneMultiplicity[iOrder][iMultiplicity]->SetName(newName);
+      
+      jetEventPlaneDifferenceArray[iOrder]->GetAxis(1)->SetRange(iMultiplicity+1,iMultiplicity+1);
+      sprintf(newName,"jetEventPlaneDifferenceOrder%d_M%d", iOrder+2, iMultiplicity);
+      
+      jetEventPlaneDifferenceMultiplicity[iOrder][iMultiplicity] = (TH1D*) jetEventPlaneDifferenceArray[iOrder]->Projection(0);
+      jetEventPlaneDifferenceMultiplicity[iOrder][iMultiplicity]->SetName(newName);
     }
+  }
   
   // Save the histogram to a file
-  TFile *outputFile = new TFile("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlane_jetEta1v3_2022-01-25.root","UPDATE");
-  for(int iType = 0; iType < 2; iType++){
-    for(int iQvector = 0; iQvector < nQvectorBins; iQvector++){ // nQvectorBins
-      for(int iCentrality = 0; iCentrality < 1; iCentrality++){
-        jetEventPlane[iType][iQvector][iCentrality]->Write("",TObject::kOverwrite);
-      }
+  TFile *outputFile = new TFile("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_subeNon0_fakeV4_multiplicityWeight_allEventPlanes_jetEta1v3_2022-01-30.root","UPDATE");
+  for(int iOrder = 0; iOrder < nEventPlaneOrder; iOrder++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      jetEventPlaneCentrality[iOrder][iCentrality]->Write("",TObject::kOverwrite);
+      jetEventPlaneDifferenceCentrality[iOrder][iCentrality]->Write("",TObject::kOverwrite);
+    }
+    
+    for(int iMultiplicity = 0; iMultiplicity < nMultiplicityBins; iMultiplicity++){
+      jetEventPlaneMultiplicity[iOrder][iMultiplicity]->Write("",TObject::kOverwrite);
+      jetEventPlaneDifferenceMultiplicity[iOrder][iMultiplicity]->Write("",TObject::kOverwrite);
     }
   }
   
