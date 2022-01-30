@@ -81,7 +81,7 @@ void longRangeGraphPlotter(){
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 1;
-  TString comparisonFileName[] = { "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root",  "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_cumulativeBins_2022-01-26.root",  "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root",   "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadronWithoutTwoCuts_correctedDihadron_2021-08-30.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflect_correctedJetHadron_correctedDihadron_2021-08-13.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectNeutralScaled_correctedJetHadron_correctedDihadron_2021-08-23.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectDijet_correctedJetHadron_correctedDihadron_2021-08-26.root",  "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2to3v5_correctedJetHadron_correctedDihadron_2021-08-06.root", "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2v5to4_correctedJetHadron_correctedDihadron_2021-08-06.root",  "flowGraphs_PbPb2018_caloJets_jetHadronJECminus_correctedJetHadron_correctedDihadron_2021-08-05.root", "flowGraphs_PbPb2018_caloJets_jetHadronJECplus_correctedJetHadron_correctedDihadron_2021-08-05.root",    "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018_JECplus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018_JECminus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_25pMoreQuark_correctedJetHadron_correctedDihadron_2021-07-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-22.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-22.root",  "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root",   "flowGraphs_PbPbMC2018_5pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root"
+  TString comparisonFileName[] = { "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_2021-07-12.root",  "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root", "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_cumulativeBins_2022-01-26.root",     "flowGraphs_PbPb2018MC_caloJets_4pCentShift_onlyDihadron_multiplicityWeight_cumulativeBins_2022-01-26.root",       "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadronWithoutTwoCuts_correctedDihadron_2021-08-30.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflect_correctedJetHadron_correctedDihadron_2021-08-13.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectNeutralScaled_correctedJetHadron_correctedDihadron_2021-08-23.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectDijet_correctedJetHadron_correctedDihadron_2021-08-26.root",  "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2to3v5_correctedJetHadron_correctedDihadron_2021-08-06.root", "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2v5to4_correctedJetHadron_correctedDihadron_2021-08-06.root",  "flowGraphs_PbPb2018_caloJets_jetHadronJECminus_correctedJetHadron_correctedDihadron_2021-08-05.root", "flowGraphs_PbPb2018_caloJets_jetHadronJECplus_correctedJetHadron_correctedDihadron_2021-08-05.root",    "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018_JECplus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018_JECminus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_25pMoreQuark_correctedJetHadron_correctedDihadron_2021-07-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-22.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-22.root",  "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root",   "flowGraphs_PbPbMC2018_5pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root"
   };
   
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
@@ -89,7 +89,7 @@ void longRangeGraphPlotter(){
   }
   
   // Legend text given to each compared file
-  TString fileLegend[] = {"Data", "MC, mult weight", "MC jet and track holes", "MC, PfCs jets, #eta reflect scale 2", "MC, calo",  "MC control", "MC control2", "MC 16%", "Flow MC", "MC+5% Q < 2.8"};
+  TString fileLegend[] = {"Data", "MC, 1.5% shift", "MC, 4% shift",  "MC, PfCs jets, #eta reflect scale 2", "MC, calo",  "MC control", "MC control2", "MC 16%", "Flow MC", "MC+5% Q < 2.8"};
   
   const int nCentralityBins = 3;
   const int nTrackPtBins = 7;
@@ -135,11 +135,12 @@ void longRangeGraphPlotter(){
   const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
   const bool saveFigures = false;                     // Save the figures in a file
-  TString saveComment = "_dataVsMc";              // String to be added to saved file names
+  TString saveComment = "_shiftCheck";              // String to be added to saved file names
+  TString figureFormat = "png";
   
   // Saving summary file for final plotter macro
-  const bool saveSummaryFile = false;
-  const char* outputFileName = "flowGraphs/summaryPlot_consistencyCheck_2022-01-13.root";
+  const bool saveSummaryFile = true;
+  const char* outputFileName = "flowGraphs/summaryPlot_shiftToMatchV2Check_2022-01-27.root";
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -170,8 +171,8 @@ void longRangeGraphPlotter(){
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
-  int firstDrawnVn = 2;
-  int lastDrawnVn = 2;
+  int firstDrawnVn = 3;
+  int lastDrawnVn = 3;
   
   double maxTrackPt = 4.5;
   int maxPtBin = 4;
@@ -305,10 +306,20 @@ void longRangeGraphPlotter(){
 //                                       {0.1, 0.1, 0.1, 0.1},
 //                                       {0.07, 0.07, 0.07, 0.07}};
   
-//  // Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Average between hadron v2 and yield roughly matches above 10 %
-//  double manualCorrection[3][4] = {{0.0773/0.02034, 0.0773/0.02034, 0.0773/0.02034, 0.0773/0.02034},
-//                                   {0.0780, 0.0780, 0.0780, 0.0780},
-//                                   {0.0405, 0.0405, 0.0405, 0.0405}};
+//  // Correctien for v2. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
+//  double manualCorrection[3][4] = {{0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444},
+//                                   {111, 111, 111, 111},
+//                                   {111, 111, 111, 111}};
+  
+  // Correctien for v3. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
+  double manualCorrection[3][4] = {{0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444},
+                                   {111, 111, 111, 111},
+                                   {111, 111, 111, 111}};
+  
+  // Correctien for v3. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
+  double manualCorrectionError[3][4] = {{0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444},
+                                   {0, 0, 0, 0},
+                                   {0, 0, 0, 0}};
   
 //  // Integrated pT bins. Done with 4 % centrality shift and calo jets. Correction from Q-weighted hadron v2, scale from all yield
 //  double manualCorrection[3][4] = {{0.0817/1.02034, 0.0766/1.02034, 0.0764/1.02034, 0.0678/1.02034},
@@ -395,10 +406,50 @@ void longRangeGraphPlotter(){
 //                                         {0, 0, 0, 0},
 //                                         {0, 0, 0, 0}};
   
-          // Correction for v2 using multiplicity matching scheme
-          double manualCorrection[3][4] = {{0.101546/1.17521, 0.101546/1.17521, 0.101546/1.17521, 0.101546/1.17521},
-                                           {0.0774229/0.814646, 0.0774229/0.814646, 0.0774229/0.814646, 0.0774229/0.814646},
-                                           {0.0340949/0.746073, 0.0340949/0.746073, 0.0340949/0.746073, 0.0340949/0.746073}};
+//  // Disable MC error
+//    double manualCorrectionError[3][4] = {{0, 0, 0, 0},
+//                                               {0, 0, 0, 0},
+//                                               {0, 0, 0, 0}};
+  
+//          // Correction for v2 using multiplicity matching scheme
+//          double manualCorrection[3][4] = {{0.101546/1.17521/0.977956, 0.101546/1.17521/0.977956, 0.101546/1.17521/0.977956, 0.101546/1.17521/0.977956},
+//                                           {0.0774229/0.814646/1.00629, 0.0774229/0.814646/1.00629, 0.0774229/0.814646/1.00629, 0.0774229/0.814646/1.00629},
+//                                           {0.0340949/0.746073/0.94224, 0.0340949/0.746073/0.94224, 0.0340949/0.746073/0.94224, 0.0340949/0.746073/0.94224}};
+  
+//   // Correction for v3 using multiplicity matching scheme
+//  double manualCorrection[3][4] = {{0.0327785/0.862352/0.977956, 0.0327785/0.862352/0.977956, 0.0327785/0.862352/0.977956, 0.0327785/0.862352/0.977956},
+//                                   {0.0215294/0.788551/1.00629, 0.0215294/0.788551/1.00629, 0.0215294/0.788551/1.00629, 0.0215294/0.788551/1.00629},
+//                                   {0.0128538/0.810996/0.94224, 0.0128538/0.810996/0.94224, 0.0128538/0.810996/0.94224, 0.0128538/0.810996/0.94224}};
+//
+//  // Correction errors for v3 using multiplicity matching scheme
+//    double manualCorrectionError[3][4] = {{0.00240578/0.862352/0.977956, 0.00240578/0.862352/0.977956, 0.00240578/0.862352/0.977956, 0.00240578/0.862352/0.977956},
+//                                     {0.00192973/0.788551/1.00629, 0.00192973/0.788551/1.00629, 0.00192973/0.788551/1.00629, 0.00192973/0.788551/1.00629},
+//                                     {0.00239374/0.810996/0.94224, 0.00239374/0.810996/0.94224, 0.00239374/0.810996/0.94224, 0.00239374/0.810996/0.94224}};
+  
+//    // Correction for v4 using multiplicity matching scheme
+//    double manualCorrection[3][4] = {{0.0321364/0.210888/0.977956, 0.0321364/0.210888/0.977956, 0.0321364/0.210888/0.977956, 0.0321364/0.210888/0.977956},
+//                                     {0.0188006/0.22906/1.00629, 0.0188006/0.22906/1.00629, 0.0188006/0.22906/1.00629, 0.0188006/0.22906/1.00629},
+//                                     {0.02082/0.325921/0.94224, 0.02082/0.325921/0.94224, 0.02082/0.325921/0.94224, 0.0128538/0.325921/0.94224}};
+//
+//  // Correction errors for v4 using multiplicity matching scheme
+//    double manualCorrectionError[3][4] = {{0.0162291/0.210888/0.977956, 0.0162291/0.210888/0.977956, 0.0162291/0.210888/0.977956, 0.0162291/0.210888/0.977956},
+//                                     {0.00982104/0.22906/1.00629, 0.00982104/0.22906/1.00629, 0.00982104/0.22906/1.00629, 0.00982104/0.22906/1.00629},
+//                                     {0.0084061/0.325921/0.94224, 0.0084061/0.325921/0.94224, 0.0084061/0.325921/0.94224, 0.0084061/0.325921/0.94224}};
+  
+//            // Correction for v4 using multiplicity matching scheme
+//  double manualCorrection[3][4] = {{0.0120075, 0.0120075, 0.0120075, 0.0120075},
+//                                   {0.0093932, 0.0093932, 0.0093932, 0.0093932},
+//                                   {0.00454397, 0.00454397, 0.00454397, 0.00454397}};
+  
+//  // Correction for v3 using 4% centrality shift and jet-event plane correlation
+//double manualCorrection[3][4] = {{0.0324425, 0.0324425, 0.0324425, 0.0324425},
+//                         {0.0224845, 0.0224845, 0.0224845, 0.0224845},
+//                         {0.010166, 0.010166, 0.010166, 0.010166}};
+  
+//  // Correction for v4 using 4% centrality shift and jet-event plane correlation
+//double manualCorrection[3][4] = {{0.0117986, 0.0117986, 0.0117986, 0.0117986},
+//                         {0.00936528, 0.00936528, 0.00936528, 0.00936528},
+//                         {0.00449385, 0.00449385, 0.00449385, 0.00449385}};
   
   // For x-axis, set the Q-vector value from the file. This can be decoded from the filename
   TObjArray *nameContents;
@@ -832,7 +883,7 @@ void longRangeGraphPlotter(){
           
           // Save the figures to file
           if(saveFigures){
-              gPad->GetCanvas()->SaveAs(Form("figures/flowStagesV%d%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+              gPad->GetCanvas()->SaveAs(Form("figures/flowStagesV%d%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
           } // Saving figures
           
         } // Asymmetry loop
@@ -882,7 +933,7 @@ void longRangeGraphPlotter(){
         
         // Save the figures to file
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/flowAsymmetryComparison%s%s_C=%.0f-%.0f.pdf", Form("V%d", iFlow+1), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+          gPad->GetCanvas()->SaveAs(Form("figures/flowAsymmetryComparison%s%s_C=%.0f-%.0f.%s", Form("V%d", iFlow+1), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
         } // Saving figures
         
         // Asymmetry comparison for jet-hadron Vn
@@ -903,7 +954,7 @@ void longRangeGraphPlotter(){
         
         // Save the figures to file
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/jetHadronAsymmetryComparison%s%s_C=%.0f-%.0f.pdf", Form("V%d", iFlow+1), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+          gPad->GetCanvas()->SaveAs(Form("figures/jetHadronAsymmetryComparison%s%s_C=%.0f-%.0f.%s", Form("V%d", iFlow+1), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
         }
         
         // Asymmetry comparison for dihadron Vn
@@ -924,7 +975,7 @@ void longRangeGraphPlotter(){
         
         // Save the figures to file
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/dihadronAsymmetryComparison%s%s_C=%.0f-%.0f.pdf", Form("V%d", iFlow+1), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+          gPad->GetCanvas()->SaveAs(Form("figures/dihadronAsymmetryComparison%s%s_C=%.0f-%.0f.%s", Form("V%d", iFlow+1), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
         }
         
       } // Flow component loop
@@ -972,7 +1023,7 @@ void longRangeGraphPlotter(){
         
         // Save the figures to file
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/flowVnComparison%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+          gPad->GetCanvas()->SaveAs(Form("figures/flowVnComparison%s%s_C=%.0f-%.0f.%s", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
           
         } // Saving figures
         
@@ -1023,7 +1074,7 @@ void longRangeGraphPlotter(){
             
             // Save the figures to file
             if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronV%dComparison%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
             }
             
             drawer->SetTitleOffsetY(1.1);
@@ -1075,7 +1126,7 @@ void longRangeGraphPlotter(){
               
               // Save the figures to file
               if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronV%dRatio%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronV%dRatio%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
               }
               
             }
@@ -1133,7 +1184,7 @@ void longRangeGraphPlotter(){
             
             // Save the figures to file
             if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/dihadronV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/dihadronV%dComparison%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
             }
             
             drawer->SetTitleOffsetY(1.1);
@@ -1190,7 +1241,7 @@ void longRangeGraphPlotter(){
             
             // Save the figures to file
             if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dComparison%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
             }
             
             // Point by point ratio
@@ -1220,7 +1271,7 @@ void longRangeGraphPlotter(){
                   ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetPoint(iPoint,xPoint1,ratioValue);
                   ratioGraphHadron[iFile][iAsymmetry][iCentrality]->SetPointError(iPoint, 0, combinedError);
                   
-                  //if(iPoint == 3) cout << ratioValue << endl; // Scaling value for multiplicity based correction
+                  if(iPoint == 3) cout << ratioValue << endl; // Scaling value for multiplicity based correction
                   
                 } // Point loop
                 
@@ -1231,7 +1282,7 @@ void longRangeGraphPlotter(){
                 legend->AddEntry(ratioGraphHadron[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
                 
                 if(iFile == 0){
-                  drawer->DrawGraph(ratioGraphHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.5, 1.5, "Track p_{T} (GeV)", "Hadron v_{2} ratio", " ", "p");
+                  drawer->DrawGraph(ratioGraphHadron[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.5, 1.5, "Track p_{T} (GeV)", Form("Hadron v_{%d} ratio", iFlow+1), " ", "p");
                 } else {
                   ratioGraphHadron[iFile][iAsymmetry][iCentrality]->Draw("p,same");
                 }
@@ -1244,7 +1295,7 @@ void longRangeGraphPlotter(){
               
               // Save the figures to file
               if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dRatio%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dRatio%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
               }
               
             }
@@ -1316,6 +1367,7 @@ void longRangeGraphPlotter(){
                 flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetPoint(iPoint, xPoint1, yPoint1);
                 flowGraphJet[1][iAsymmetry][iCentrality][iFlow]->SetPoint(iPoint, xPoint1, yPoint1-manualCorrection[iCentrality][iPoint]);
                 yError1 = flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
+                yError1 = TMath::Sqrt(yError1*yError1 + manualCorrectionError[iCentrality][iPoint]*manualCorrectionError[iCentrality][iPoint]);
                 flowGraphJet[1][iAsymmetry][iCentrality][iFlow]->SetPointError(iPoint, 0, yError1);
               }
             }
@@ -1384,7 +1436,7 @@ void longRangeGraphPlotter(){
             
             // Save the figures to file
             if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/jetV%dComparison%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/jetV%dComparison%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
             }
             
             // Point by point ratio
@@ -1434,7 +1486,7 @@ void longRangeGraphPlotter(){
               
               // Save the figures to file
               if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/jetV%dRatio%s%s_C=%.0f-%.0f.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/jetV%dRatio%s%s_C=%.0f-%.0f.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
               }
               
             }
@@ -1554,7 +1606,7 @@ void longRangeGraphPlotter(){
             
             // Save the figures to file
             if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronYieldComparison%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronYieldComparison%s%s_C=%.0f-%.0f.%s", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
             }
             
             // Point by point ratio
@@ -1594,7 +1646,7 @@ void longRangeGraphPlotter(){
                 legend->AddEntry(ratioGraphJetHadronYield[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
                 
                 if(iFile == 0){
-                  drawer->DrawGraph(ratioGraphJetHadronYield[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.99, 1.01, "Track p_{T} (GeV)", "Dihadron yield ratio", " ", "p");
+                  drawer->DrawGraph(ratioGraphJetHadronYield[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.6, 1.4, "Track p_{T} (GeV)", "Dihadron yield ratio", " ", "p");
                 } else {
                   ratioGraphJetHadronYield[iFile][iAsymmetry][iCentrality]->Draw("p,same");
                 }
@@ -1605,7 +1657,7 @@ void longRangeGraphPlotter(){
               
               // Save the figures to file
               if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronYieldRatio%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/jetHadronYieldRatio%s%s_C=%.0f-%.0f.%s", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
               }
               
             }
@@ -1668,7 +1720,7 @@ void longRangeGraphPlotter(){
             
             // Save the figures to file
             if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/dihadronYieldComparison%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/dihadronYieldComparison%s%s_C=%.0f-%.0f.%s", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
             }
             
             // Point by point ratio
@@ -1708,7 +1760,7 @@ void longRangeGraphPlotter(){
                 legend->AddEntry(ratioGraphDihadronYield[iFile][iAsymmetry][iCentrality], Form("%s / %s", fileLegend[comparisonIndex].Data(), fileLegend[baseIndex].Data()), "p");
                 
                 if(iFile == 0){
-                  drawer->DrawGraph(ratioGraphDihadronYield[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.95, 1.05, "Track p_{T} (GeV)", "Dihadron yield ratio", " ", "p");
+                  drawer->DrawGraph(ratioGraphDihadronYield[iFile][iAsymmetry][iCentrality], 0, maxTrackPt, 0.6, 1.4, "Track p_{T} (GeV)", "Dihadron yield ratio", " ", "p");
                 } else {
                   ratioGraphDihadronYield[iFile][iAsymmetry][iCentrality]->Draw("p,same");
                 }
@@ -1719,7 +1771,7 @@ void longRangeGraphPlotter(){
               
               // Save the figures to file
               if(saveFigures){
-                gPad->GetCanvas()->SaveAs(Form("figures/dihadronYieldRatio%s%s_C=%.0f-%.0f.pdf", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]));
+                gPad->GetCanvas()->SaveAs(Form("figures/dihadronYieldRatio%s%s_C=%.0f-%.0f.%s", saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], figureFormat.Data()));
               }
               
             }
@@ -1895,7 +1947,7 @@ void longRangeGraphPlotter(){
         
         // Save the figures to file
         if(saveFigures){
-          gPad->GetCanvas()->SaveAs(Form("figures/jetV%dSummary%s%s.pdf", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data()));
+          gPad->GetCanvas()->SaveAs(Form("figures/jetV%dSummary%s%s.%s", iFlow+1, saveComment.Data(), compactAsymmetryString[iAsymmetry].Data(), figureFormat.Data()));
         }
       } // Asymmetry loop
     } // Flow component loop
@@ -1947,10 +1999,10 @@ std::tuple<double,double> getFitRange(const int iFile, const int iFlow, const in
   if(iFile > 0 && iFlow == 3){
     
     // Only one reliable point in the most central bin
-    if(iCentrality == 0) return std::make_tuple(1.0,2.0);
+    if(iCentrality == 0 || iCentrality == 1) return std::make_tuple(1.0,4.0);
     
     // Two last points unreliable in the peripheral bin
-    if(iCentrality == 2) return std::make_tuple(0.0,2.0);
+    if(iCentrality == 2) return std::make_tuple(1.0,4.0);
     
     // Only one reliable point in the most central bin
     //if(iCentrality == 1) return std::make_tuple(1.0,4.0);
