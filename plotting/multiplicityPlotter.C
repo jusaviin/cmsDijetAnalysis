@@ -64,7 +64,7 @@ void multiplicityPlotter(){
   
   // File from which the long range distributions are plotted
   TString directoryName = "data/";
-  TString fileName = "PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_multiplicityWeight_jetEta1v3_processed_2022-01-24.root";
+  TString fileName = "dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root";
   // dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root
   // PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_jetEta1v3_reprocessed_2022-01-19.root
   // PbPbMC2018_RecoReco_akCaloJet_onlyJets_noCentShift_withTrackEff_jetEta1v3_processed_2022-01-20.root
@@ -97,10 +97,12 @@ void multiplicityPlotter(){
   const bool drawMultiplicityMap = false;          // Draw multiplicity vs. centrality map
   const bool drawMultiplicityMapWeighted = false;   // Draw efficiency weighted multiplicity vs. centrality map
   
-  const bool drawMultiplicityDijet = false;             // Draw multiplicity in each centrality bin in dijet events
-  const bool drawMultiplicityWeightedDijet = true;     // Draw efficiency weighted multiplicity in each centrality bin in dijet events
+  const bool drawMultiplicityDijet = true;             // Draw multiplicity in each centrality bin in dijet events
+  const bool drawMultiplicityWeightedDijet = false;     // Draw efficiency weighted multiplicity in each centrality bin in dijet events
   const bool drawMultiplicityMapDijet = false;          // Draw multiplicity vs. centrality map in dijet events
   const bool drawMultiplicityMapWeightedDijet = false;   // Draw efficiency weighted multiplicity vs. centrality map in dijet events
+  
+  const bool drawAllToSameFigure = true;
   
   const bool saveFigures = false;
   TString saveComment = "_data";
@@ -166,15 +168,56 @@ void multiplicityPlotter(){
       // Save the figures to file
       if(saveFigures){
         if(iCentrality == nCentralityBins){
-          saveName = Form("figures/trackMultiplicity%s%s.png", saveString[iType].Data(), saveComment.Data());
+          saveName = Form("trackMultiplicity%s%s", saveString[iType].Data(), saveComment.Data());
         } else {
-          saveName = Form("figures/trackMultiplicity%s%sC=%.0f-%.0f.png", saveString[iType].Data(), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
+          saveName = Form("trackMultiplicity%s%sC=%.0f-%.0f", saveString[iType].Data(), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]);
         }
         gPad->GetCanvas()->SaveAs(Form("figures/%s.%s", saveName.Data(), figureFormat.Data()));
       } // Saving figures
       
     } // Centrality loop
   } // Drawing track multiplicity
+  
+  // Draw all the centrality bins to the same figure
+  if(drawAllToSameFigure){
+    int centralityColors[] = {kBlue, kRed, kGreen+3, kCyan, kBlack};
+    for(int iType = 0; iType < 4; iType++){
+
+      if(!drawMultiplicityArray[iType]) continue;
+
+      for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+
+        multiplicity[iType][iCentrality]->SetLineColor(centralityColors[iCentrality]);
+
+        // Draw the histogram to the canvas
+        if(iCentrality == 0){
+          drawer->DrawHistogram(multiplicity[iType][iCentrality], "Track multiplicity", "counts", " ");
+          // Draw a legend for the histogram
+          legend = new TLegend(0.17,0.6,0.37,0.9);
+          legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+          if(legendString[iType] != "") legend->AddEntry((TObject*) 0, legendString[iType], "");
+        } else {
+          multiplicity[iType][iCentrality]->Draw("same");
+        }
+
+        if(iCentrality < nCentralityBins){
+          legend->AddEntry(multiplicity[iType][iCentrality], Form("C = %.0f-%.0f", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "l");
+        } else {
+          legend->AddEntry(multiplicity[iType][iCentrality], "Total", "l");
+        }
+
+      } // Centrality loop
+
+      legend->Draw();
+
+      // Save the figures to file
+      if(saveFigures){
+        saveName = Form("trackMultiplicity%sAllCentralities%s", saveString[iType].Data(), saveComment.Data());
+        gPad->GetCanvas()->SaveAs(Form("figures/%s.%s", saveName.Data(), figureFormat.Data()));
+      } // Saving figures
+      
+    } // Drawing track multiplicity
+  }
   
   // Change the left margin better suited for 2D-drawing
   drawer->SetLeftMargin(0.12);
@@ -211,16 +254,16 @@ void multiplicityPlotter(){
   
   // Try to fit an exponential function
   
-  TF1 *myExpFit = new TF1("expFit",expFit,200,3000,3);
-  myExpFit->SetParameters(1,1,0);
-  
-  drawer->CreateCanvas();
-  multiplicity[3][nCentralityBins]->Fit(myExpFit,"","",200,600);
-  
-  drawer->CreateCanvas();
-  TF1* myFit = new TF1("myFit",threePartFit,0,4000,0);
-  myFit->Draw();
- 
+//  TF1 *myExpFit = new TF1("expFit",expFit,200,3000,3);
+//  myExpFit->SetParameters(1,1,0);
+//
+//  drawer->CreateCanvas();
+//  multiplicity[3][nCentralityBins]->Fit(myExpFit,"","",200,600);
+//
+//  drawer->CreateCanvas();
+//  TF1* myFit = new TF1("myFit",threePartFit,0,4000,0);
+//  myFit->Draw();
+//
   drawer->CreateCanvas();
   TF1* myWeight = new TF1("myWeight",totalMultiplicityWeight,0,4000,0);
   myWeight->Draw();
