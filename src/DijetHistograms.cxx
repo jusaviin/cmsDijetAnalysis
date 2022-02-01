@@ -54,6 +54,11 @@ DijetHistograms::DijetHistograms() :
     fhQvectorNormDijet[i] = NULL;
     fhEventPlaneMultDijet[i] = NULL;
   }
+  
+  for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
+    fhJetEventPlane[iEventPlane] = NULL;
+    fhJetEventPlaneDifference[iEventPlane] = NULL;
+  }
 }
 
 /*
@@ -100,6 +105,11 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
     fhQvectorNormDijet[i] = NULL;
     fhEventPlaneMultDijet[i] = NULL;
   }
+  
+  for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
+    fhJetEventPlane[iEventPlane] = NULL;
+    fhJetEventPlaneDifference[iEventPlane] = NULL;
+  }
 }
 
 /*
@@ -145,6 +155,11 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
     fhQvectorDijet[i] = in.fhQvectorDijet[i];
     fhQvectorNormDijet[i] = in.fhQvectorNormDijet[i];
     fhEventPlaneMultDijet[i] = in.fhEventPlaneMultDijet[i];
+  }
+  
+  for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
+    fhJetEventPlane[iEventPlane] = in.fhJetEventPlane[iEventPlane];
+    fhJetEventPlaneDifference[iEventPlane] = in.fhJetEventPlaneDifference[iEventPlane];
   }
 }
 
@@ -196,6 +211,11 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
     fhEventPlaneMultDijet[i] = in.fhEventPlaneMultDijet[i];
   }
   
+  for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
+    fhJetEventPlane[iEventPlane] = in.fhJetEventPlane[iEventPlane];
+    fhJetEventPlaneDifference[iEventPlane] = in.fhJetEventPlaneDifference[iEventPlane];
+  }
+  
   return *this;
 }
 
@@ -243,6 +263,12 @@ DijetHistograms::~DijetHistograms(){
     delete fhEventPlaneMultDijet[i];
   }
 
+  // Additional histograms for event plane study
+  for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
+    delete fhJetEventPlane[iEventPlane];
+    delete fhJetEventPlaneDifference[iEventPlane];
+  }
+  
 }
 
 /*
@@ -350,7 +376,22 @@ void DijetHistograms::CreateHistograms(){
   const Double_t maxQVector = 5;  // Maximum value for the magnitude of q-vector
   const Int_t nQVectorBins = 4;   // Number of q-vector magnitude bins
   
+  const Int_t nAxesAdditional = 3;
+  Int_t nBinsAdditional[nAxesAdditional];
+  Double_t lowBinBorderAdditional[nAxesAdditional];
+  Double_t highBinBorderAdditional[nAxesAdditional];
+  
   Bool_t doEventPlane = (fCard->Get("IncludeEventPlane") == 1);
+  
+  // Binning for multiplicity
+  const Double_t minMultiplicity = 0;
+  const Double_t maxMultiplicity = 5000;
+  const Double_t maxMultiplicityWeighted = 4000;
+  const Int_t nMultiplicityBins = 500;
+  const Int_t nMultiplicityBinsWeighted = 400;
+  const Int_t nWideMultiplicityBins = 20;
+  
+  const Double_t wideMultiplicityBins[21] = {0,400,600,800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3400,3600,3800,4000,5000};
   
   // Centrality bins for THnSparses (We run into memory issues, if have all the bins)
   const Int_t nWideCentralityBins = fCard->GetNBin("CentralityBinEdges");
@@ -805,6 +846,35 @@ void DijetHistograms::CreateHistograms(){
   
   // Set custom centrality bins for histograms
   fhJetPtClosure->SetBinEdges(4,wideCentralityBins);
+  
+  // ======== Extra THnSparses for additional event plane study ========
+  
+  // Axis 1 for the additional histogram: DeltaPhi between jet and event plane angle
+  nBinsAdditional[0] = nDeltaPhiBinsJetTrack;         // nBins for deltaPhi between jet and event plane
+  lowBinBorderAdditional[0] = minDeltaPhiJetTrack;    // low bin border for deltaPhi between jet and event plane
+  highBinBorderAdditional[0] = maxDeltaPhiJetTrack;   // high bin border for deltaPhi between jet and event plane
+  
+  // Axis 2 for the additional histogram: Multiplicity
+  nBinsAdditional[1] = nWideMultiplicityBins;                               // nBins for wide multiplicity bins
+  lowBinBorderAdditional[1] = wideMultiplicityBins[0];                      // low bin border for wide multiplicity
+  highBinBorderAdditional[1] = wideMultiplicityBins[nWideMultiplicityBins]; // high bin border for wide multiplicity
+  
+  // Axis 3 for the additional histogram: Centrality
+  nBinsAdditional[2] = nWideCentralityBins;           // nBins for centrality
+  lowBinBorderAdditional[2] = minCentrality;          // low bin border for centrality
+  highBinBorderAdditional[2] = maxCentrality;         // high bin border for centrality
+  
+  // Create additional histograms for event plane study
+  for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
+    fhJetEventPlane[iEventPlane] = new THnSparseF(Form("jetEventPlaneOrder%d", iEventPlane+2), Form("jetEventPlaneOrder%d", iEventPlane+2), nAxesAdditional, nBinsAdditional, lowBinBorderAdditional, highBinBorderAdditional); fhJetEventPlane[iEventPlane]->Sumw2();
+    fhJetEventPlaneDifference[iEventPlane] = new THnSparseF(Form("jetEventPlaneDifferenceOrder%d", iEventPlane+2), Form("jetEventPlaneDifferenceOrder%d", iEventPlane+2), nAxesAdditional, nBinsAdditional, lowBinBorderAdditional, highBinBorderAdditional); fhJetEventPlaneDifference[iEventPlane]->Sumw2();
+    
+    // Set custom centrality bins for histograms
+    fhJetEventPlane[iEventPlane]->SetBinEdges(1,wideMultiplicityBins);
+    fhJetEventPlaneDifference[iEventPlane]->SetBinEdges(1,wideMultiplicityBins);
+    fhJetEventPlane[iEventPlane]->SetBinEdges(2,wideCentralityBins);
+    fhJetEventPlaneDifference[iEventPlane]->SetBinEdges(2,wideCentralityBins);
+  }
 }
 
 /*
@@ -850,6 +920,12 @@ void DijetHistograms::Write() const{
     fhQvectorDijet[i]->Write();
     fhQvectorNormDijet[i]->Write();
     fhEventPlaneMultDijet[i]->Write();
+  }
+  
+  // Additional histgorams for the event plane study
+  for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
+    fhJetEventPlane[iEventPlane]->Write();
+    fhJetEventPlaneDifference[iEventPlane]->Write();
   }
   
 }
