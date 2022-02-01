@@ -12,31 +12,31 @@ void summaryGraphComparer(){
   
   // Input file name for data
   TString directoryName = "flowGraphs/";
-  const int nInputFiles = 3;
-  TString inputFileName[] =  {"summaryPlot_multiplicityScheme_2022-01-26.root", "summaryPlot_shiftToMatchV2Check_2022-01-27.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root",  "summaryPlot_multiplicitySchemeVnScale_2022-01-27.root", "summaryPlot_jetEventPlaneCheck_2022-01-27.root", "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
+  const int nInputFiles = 2;
+  TString inputFileName[] =  {"summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root", "summaryPlot_multiplicityScheme_2022-01-26.root", "summaryPlot_shiftToMatchV2Check_2022-01-27.root",   "summaryPlot_multiplicitySchemeVnScale_2022-01-27.root", "summaryPlot_jetEventPlaneCheck_2022-01-27.root", "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
   
   TString uncertaintyFileName = "systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
   
   // Text to be put into legend for the input graphs
-  TString legendText[] = {"Multiplicity match", "1.5% shift + scale", "Nominal (Q-cut)", "Correction centrality shift 4.5 %", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
+  TString legendText[] = {"Q-cut method", "Multiplicity match", "Nominal (Q-cut)", "Correction centrality shift 4.5 %", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 3;     // First drawn flow component
-  const int lastDrawnVn = 3;      // Last drawn flow component
+  const int firstDrawnVn = 4;     // First drawn flow component
+  const int lastDrawnVn = 4;      // Last drawn flow component
   
   // Define if previous results should be included in the plot
-  const bool drawAtlasJetV2 = false;
-  const bool drawCmsHigtPtV2 = false;
+  const bool drawAtlasJetV2 = true;
+  const bool drawCmsHigtPtV2 = true;
   const bool drawUncertaintyBand = false;
-  const bool drawRatio = true;
+  const bool drawRatio = false;
   
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "_scaleCheck";
-  TString figureFormat = "png";
+  const bool saveFigures = true;
+  TString saveComment = "_methodComparison";
+  TString figureFormat = "pdf";
   
   // =========== //
   // Read graphs //
@@ -158,8 +158,8 @@ void summaryGraphComparer(){
   drawer->SetLabelOffsetX(0.04);
   drawer->SetTitleOffsetY(1.6);
   
-  double minZoom[] = {0,0,-0.03,-0.2};
-  double maxZoom[] = {0.12,0.12,0.03,0.2};
+  double minZoom[] = {0,0,-0.03,-0.05};
+  double maxZoom[] = {0.12,0.12,0.03,0.05};
   double errorY;
   
   // Draw the graphs for selected flow components
@@ -167,7 +167,7 @@ void summaryGraphComparer(){
   const int markers[] = {kFullSquare, 89, kFullCross, kFullFourTrianglesPlus, kFullDoubleDiamond, kFullDiamond, kFullStar};
   const int colors[] = {kBlue, kRed, kGreen+3, kMagenta, kCyan, kBlack, kViolet};
   
-  const int markers2[] = {kFullSquare, kFullDiamond, kFullDoubleDiamond, kFullCross, kFullFourTrianglesPlus, kFullStar};
+  const int markers2[] = {kFullSquare, kFullCircle, kFullDiamond, kFullDoubleDiamond, kFullCross, kFullFourTrianglesPlus, kFullStar};
   const int colors2[] = {kBlack, kBlue, kRed, kGreen+3, kMagenta, kCyan, kBlack, kViolet};
   
   for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
