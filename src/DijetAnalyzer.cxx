@@ -50,7 +50,7 @@ double totalMultiplicityWeight(double *x, double *par){
   double base = 0;
   
   if(x[0] < 600){
-    weight = ((0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0685758+0.374178*TMath::Exp(x[0]*(-0.00550382)))) * 1.05;
+    weight = ((0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0685758+0.374178*TMath::Exp(x[0]*(-0.00550382))));
   } else {
     weight = (0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0309424+0.110670*TMath::Exp(x[0]*(-0.00138397)));
   }
@@ -275,8 +275,8 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   // Function for smearing the jet pT for systemtic uncertainties
   fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
   
-  // Function for generating fake v2. Currently set for 5 % v3
-  fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos(3*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
+  // Function for generating fake v2. Currently set for 5 % v2
+  fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos(2*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
   
   // Weight function derived for subleading jet
   //fDijetWeightFunction = new TF1("fDijetWeightFunction",jetPolyGauss,0,500,7);
@@ -860,7 +860,10 @@ void DijetAnalyzer::RunAnalysis(){
   Double_t jetEventPlaneDeltaPhiDifference = 0;       // DeltaPhi between jet and event plane angle determined from midrapidity
   Double_t eventPlaneAngle[nFlowComponentsEP] = {0};  // Manually calculated event plane angle
   Int_t centralityBin;
-  Double_t jetPhiForFakeV2;
+
+  // Possibility to fake jet v2
+  Double_t fakeJetV2Weight = 1;
+  Double_t jetPhiForFakeV2 = 0;
   
   // Variables for smearing
   Double_t smearingFactor;
@@ -1126,7 +1129,7 @@ void DijetAnalyzer::RunAnalysis(){
     
     Int_t maxEvent = 100;
     if(nEvents < maxEvent) maxEvent = nEvents;
-    for(Int_t iEvent = 0; iEvent < maxEvent; iEvent++){ // nEvents
+    for(Int_t iEvent = 0; iEvent < nEvents; iEvent++){ // nEvents
       
       //************************************************
       //         Read basic event information
@@ -1776,11 +1779,11 @@ void DijetAnalyzer::RunAnalysis(){
               while(jetEventPlaneDeltaPhi < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhi += 2*TMath::Pi();}
               while(jetEventPlaneDeltaPhiDifference < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += 2*TMath::Pi();}
               
-              //              // Currently faking jet v2
-              //              if(iFlow == 0){
-              //                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
-              //                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight
-              //              }
+//              // Currently faking jet v2
+//              if(iFlow == 0){
+//                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
+//                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight
+//              }
               
               // Fill the additional event plane histograms
               fillerEventPlane[0] = jetEventPlaneDeltaPhi;  // Axis 0: DeltaPhi between jet and event plane
