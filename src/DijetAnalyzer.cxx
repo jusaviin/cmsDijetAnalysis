@@ -287,23 +287,23 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   Double_t minQWeight = fCard->Get("MinQWeight");  // Minimum weight given to any Q-vector
   Double_t qWidth = fCard->Get("QWeightWidth");    // Width parameter for generalized Gaussian used for Q-weighing
   Double_t qShape = fCard->Get("QWeightShape");    // Shape parameter for generalized Gaussian used for Q-weighing
-  fQvectorWeightFunction[0] = new TF1("qVectorFun0",genGauss,0,5,5);
-  fQvectorWeightFunction[0]->SetParameters(0,qWidth,qShape,maxQWeight,minQWeight);
-  fQvectorWeightFunction[1] = new TF1("qVectorFun1",genGauss,0,5,5);
-  fQvectorWeightFunction[1]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
-  fQvectorWeightFunction[2] = new TF1("qVectorFun2",genGauss,0,5,5);
-  fQvectorWeightFunction[2]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
-  fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
-  fQvectorWeightFunction[3]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
+//  fQvectorWeightFunction[0] = new TF1("qVectorFun0",genGauss,0,5,5);
+//  fQvectorWeightFunction[0]->SetParameters(0,qWidth,qShape,maxQWeight,minQWeight);
+//  fQvectorWeightFunction[1] = new TF1("qVectorFun1",genGauss,0,5,5);
+//  fQvectorWeightFunction[1]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
+//  fQvectorWeightFunction[2] = new TF1("qVectorFun2",genGauss,0,5,5);
+//  fQvectorWeightFunction[2]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
+//  fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
+//  fQvectorWeightFunction[3]->SetParameters(5,qWidth,qShape,maxQWeight,minQWeight);
   
-//  fQvectorWeightFunction[0] = new TF1("qVectorFun0","pol2",0,5);
-//  fQvectorWeightFunction[0]->SetParameters(maxQWeight,0,-1*(maxQWeight-minQWeight)/25.0);
-//  fQvectorWeightFunction[1] = new TF1("qVectorFun1","pol2",0,5);
-//  fQvectorWeightFunction[1]->SetParameters(minQWeight,0,(maxQWeight-minQWeight)/25.0);
-//  fQvectorWeightFunction[2] = new TF1("qVectorFun2","pol2",0,5);
-//  fQvectorWeightFunction[2]->SetParameters(minQWeight,0,(maxQWeight-minQWeight)/25.0);
-//  fQvectorWeightFunction[3] = new TF1("qVectorFun3","pol2",0,5);
-//  fQvectorWeightFunction[3]->SetParameters(minQWeight,0,(maxQWeight-minQWeight)/25.0);
+  fQvectorWeightFunction[0] = new TF1("qVectorFun0",genGauss,0,5,5);
+  fQvectorWeightFunction[0]->SetParameters(0,2,2,100,0.5);      // This matches data and MC hadron v2 with centrality weighted scheme
+  fQvectorWeightFunction[1] = new TF1("qVectorFun1",genGauss,0,5,5);
+  fQvectorWeightFunction[1]->SetParameters(5,0.858,2,100,0.5);  // This matches data and MC hadron v2 with centrality weighted scheme
+  fQvectorWeightFunction[2] = new TF1("qVectorFun2",genGauss,0,5,5);
+  fQvectorWeightFunction[2]->SetParameters(5,0.937,5,1000,0.5);  // This matches data and MC hadron v2 with centrality weighted scheme
+  fQvectorWeightFunction[3] = new TF1("qVectorFun3",genGauss,0,5,5);
+  fQvectorWeightFunction[3]->SetParameters(5,2,2,100,0.5);  // Nobody cares
   
   // Find the correct folder for track correction tables based on data type
   fDataType = fCard->Get("DataType");
@@ -1264,8 +1264,8 @@ void DijetAnalyzer::RunAnalysis(){
           }
           
           // Apply Q-vector weight to the event
-          // qWeight = GetQvectorWeight(eventPlaneQ[0] / TMath::Sqrt(eventPlaneMultiplicity), centrality);
-          // fTotalEventWeight *= qWeight;
+          qWeight = GetQvectorWeight(eventPlaneQ[0], centrality);
+          fTotalEventWeight *= qWeight;
           
           fHistograms->fhQvector[centralityBin]->Fill(eventPlaneQ[0] * TMath::Sqrt(eventPlaneMultiplicity),fTotalEventWeight);
           fHistograms->fhEventPlaneMult[centralityBin]->Fill(eventPlaneMultiplicity,fTotalEventWeight);
