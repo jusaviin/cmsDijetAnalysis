@@ -6,7 +6,7 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_multWeight_jetEta1v3_improvisedMixing_preprocessed_2022-01-25_part0.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_multWeight_jetEta1v3_improvisedMixing_noCorrections_processed_2022-01-25_part0.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_GenGen_akCaloJet_dihadron_multWeight_subeNon0_jetEta1v3_improvisedMixing_preprocessed_2022-02-01_part0.root" "data/PbPbMC2018_GenGen_akCaloJet_dihadron_multWeight_subeNon0_jetEta1v3_improvisedMixing_noCorrections_processed_2022-02-01_part0.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA092B5Max1000_preprocessed_2021-06-29_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA092B5Max1000_noCorrections_processed_2021-06-29_test.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA094B5Max1000_preprocessed_2021-06-29_test.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_4pCentShift_subeNon0_improvisedMixing_qGaussA094B5Max1000_noCorrections_processed_2021-06-29_test.root" false false -1 "data/"
