@@ -273,8 +273,9 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fSmearingFunction = new TF1("fSmearingFunction","pol4",0,500);
   
   // Function for generating fake v2. Currently set for 5 % v2
-  fFakeV2Function = new TF1("fakeV2","1+2*0.05*TMath::Cos([0]*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
-  fFakeV2Function->SetParameter(0,2);
+  fFakeV2Function = new TF1("fakeV2","1+2*[1]*TMath::Cos([0]*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
+  fFakeV2Function->SetParameter(0,3);
+  fFakeV2Function->SetParameter(1,0.05);
   
   // Generic polynomial functions
   fGenericPol6 = new TF1("genericPol6","pol6",0,200);
@@ -1955,8 +1956,9 @@ void DijetAnalyzer::RunAnalysis(){
               while(jetEventPlaneDeltaPhi < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhi += 2*TMath::Pi();}
               while(jetEventPlaneDeltaPhiDifference < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += 2*TMath::Pi();}
               
-//              // Currently faking jet v2
-//              if(iFlow == 0){
+//              // Currently faking all flow orders
+//              if(iFlow < 666){
+//                fFakeV2Function->SetParameter(0,iFlow+2);
 //                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
 //                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight
 //              }
