@@ -274,7 +274,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Function for generating fake v2. Currently set for 5 % v2
   fFakeV2Function = new TF1("fakeV2","1+2*[1]*TMath::Cos([0]*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
-  fFakeV2Function->SetParameter(0,3);
+  fFakeV2Function->SetParameter(0,2);
   fFakeV2Function->SetParameter(1,0.05);
   
   // Generic polynomial functions
@@ -1240,11 +1240,11 @@ void DijetAnalyzer::RunAnalysis(){
             trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
             //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
             
-            if(TMath::Abs(trackEta) > 0.75) continue;
-            //if(TMath::Abs(trackEta) > 2) continue;
+            //if(TMath::Abs(trackEta) > 0.75) continue;  // For Q-vector cuts
+            if(TMath::Abs(trackEta) > 2) continue;  // For jet-event plane correlation
             if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
-            if(trackPt > 3) continue;
-            //if(trackPt > 5) continue;
+            //if(trackPt > 3) continue;  // For Q-vector cuts
+            if(trackPt > 5) continue;  // For jet-event plane correlation
             
             for(int iFlow = 0; iFlow < nFlowComponentsEP; iFlow++){
               eventPlaneQx[iFlow] += TMath::Cos((iFlow+2.0)*(trackPhi));
@@ -1275,10 +1275,11 @@ void DijetAnalyzer::RunAnalysis(){
           eventPlaneQ[iFlow] /= TMath::Sqrt(eventPlaneMultiplicity);
         }
         
-        //if(eventPlaneQ > 2) continue;  // 2.222 2.778 3.333
+        // Apply Q-vector cut to the analysis
+        // if(eventPlaneQ[0] < 3.3) continue;  // 1.5 1.8 2 2.2 2.5 2.8 3.3
         
         // Apply Q-vector weight to the event
-        //qWeight = GetQvectorWeight(eventPlaneQ, centrality);
+        //qWeight = GetQvectorWeight(eventPlaneQ[0], centrality);
         //fTotalEventWeight *= qWeight;
         
       }
@@ -1698,9 +1699,6 @@ void DijetAnalyzer::RunAnalysis(){
           dijetFound = false;
         }
         
-        // TODO: DEBUG Extra cut for testing purposes
-        if(subleadingJetPt > 200) dijetFound = false;
-        
         if(dijetFound) {
           dijetCounter++;
           
@@ -1956,8 +1954,8 @@ void DijetAnalyzer::RunAnalysis(){
               while(jetEventPlaneDeltaPhi < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhi += 2*TMath::Pi();}
               while(jetEventPlaneDeltaPhiDifference < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += 2*TMath::Pi();}
               
-//              // Currently faking all flow orders
-//              if(iFlow < 666){
+//              // Currently faking jet v2
+//              if(iFlow == 0){
 //                fFakeV2Function->SetParameter(0,iFlow+2);
 //                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
 //                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight

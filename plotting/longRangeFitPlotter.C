@@ -26,12 +26,12 @@ void longRangeFitPlotter(){
   
   // Configuration
   const bool drawJetHadron = true;  // Draw the jet hadron long range deltaPhi distribution
-  const bool drawDihadron = true;   // Draw the dihadron long range deltaPhi distribution
+  const bool drawDihadron = false;   // Draw the dihadron long range deltaPhi distribution
 
-  const bool drawOverallFit = true;  // Draw the overall Fourier fit to the distribution
-  const bool drawFitDecomposition = true;  // Draw different fit components seperately
+  const bool drawOverallFit = false;  // Draw the overall Fourier fit to the distribution
+  const bool drawFitDecomposition = false;  // Draw different fit components seperately
   
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "_mcWithFullFit";
   
   TString typeString[2] = {"Jet-hadron", "Dihadron"};
