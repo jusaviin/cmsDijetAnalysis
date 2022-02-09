@@ -1650,7 +1650,7 @@ TF1* DijetMethods::FourierFit(TH1D* backgroundDeltaPhi, const int maxVn, const b
   // Set limits such that the parameters must remain sensible
   fourier->SetParLimits(1,-1.0,1.0);
   for(int vn = 2; vn <= maxVn; vn++){
-    fourier->SetParLimits(vn,0,1.0);
+    fourier->SetParLimits(vn,-1.0,1.0);
   }
   
   // Do the fit!
