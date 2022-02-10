@@ -88,9 +88,6 @@ private:
   Int_t FindMixingHiBin(const Int_t hiBin) const; // Find a centrality bin from the mixing table for a given hiBin value
   Bool_t CheckForSameEvent(const Int_t sameEventIndex, const Int_t mixedEventIndex) const; // Check if mixed event is tha same as regular event
   Int_t GetCentralityBin(const Double_t centrality) const; // Getter for centrality bin
-  Double_t GetManualEtaStripScale(Double_t etaStripValue, const Double_t centrality, const Int_t type) const;  // Getter for reflected eta strip scaling
-  Double_t GetManualJetConeScale(Double_t jetConeValue, const Double_t centrality, const Int_t type) const;  // Getter for reflected eta jet cone scaling
-  Double_t GetManualJetPtCorrected(const Int_t jetIndex, const Double_t jetPt, const Double_t centrality, const Int_t jetType);  // Getter for manual jet energy correction
   Bool_t IsInHole(const Double_t eta, const Double_t phi, const Double_t minHoleEta = -1.8, const Double_t maxHoleEta = -0.9, const Double_t minHolePhi = 2.3, const Double_t maxHolePhi = 2.7) const; // TEST TEST Function checking if something hits a hole
   Double_t GetMultiplicity(); // Get the track multiplicity in the current event
   Double_t GetCentralityFromMultiplicity(const Double_t multiplicity) const; // Get the analysis centrality bin corresponding to the given multiplicity

@@ -48,22 +48,6 @@ DijetHistograms::DijetHistograms() :
   fCard(0)
 {
   // Default constructor
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-    for(int iType = 0; iType < 3; iType++){
-      fhEnergyInEtaStrip[iType][iCentrality] = NULL;
-      fhEnergyInCone[iType][iCentrality] = NULL;
-      fhManualJetCorrection[iType][iCentrality] = NULL;
-      fhManualJetCorrectionRatio[iType][iCentrality] = NULL;
-    }
-    fhEnergyInEtaStripAbove100GeV[iCentrality] = NULL;
-    fhEnergyInConeAbove100GeV[iCentrality] = NULL;
-    fhManualJetCorrectionAbove100GeV[iCentrality] = NULL;
-    fhManualJetCorrectionRatioAbove100GeV[iCentrality] = NULL;
-    fhEnergyInEtaStripFlipped[iCentrality] = NULL;
-    fhEnergyInConeFlipped[iCentrality] = NULL;
-    fhManualJetCorrectionFlipped[iCentrality] = NULL;
-    fhManualJetCorrectionRatioFlipped[iCentrality] = NULL;
-  }
   
   for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
     fhJetEventPlane[iEventPlane] = NULL;
@@ -110,22 +94,6 @@ DijetHistograms::DijetHistograms(ConfigurationCard *newCard) :
   fCard(newCard)
 {
   // Custom constructor
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-    for(int iType = 0; iType < 3; iType++){
-      fhEnergyInEtaStrip[iType][iCentrality] = NULL;
-      fhEnergyInCone[iType][iCentrality] = NULL;
-      fhManualJetCorrection[iType][iCentrality] = NULL;
-      fhManualJetCorrectionRatio[iType][iCentrality] = NULL;
-    }
-    fhEnergyInEtaStripAbove100GeV[iCentrality] = NULL;
-    fhEnergyInConeAbove100GeV[iCentrality] = NULL;
-    fhManualJetCorrectionAbove100GeV[iCentrality] = NULL;
-    fhManualJetCorrectionRatioAbove100GeV[iCentrality] = NULL;
-    fhEnergyInEtaStripFlipped[iCentrality] = NULL;
-    fhEnergyInConeFlipped[iCentrality] = NULL;
-    fhManualJetCorrectionFlipped[iCentrality] = NULL;
-    fhManualJetCorrectionRatioFlipped[iCentrality] = NULL;
-  }
   
   for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
     fhJetEventPlane[iEventPlane] = NULL;
@@ -171,22 +139,6 @@ DijetHistograms::DijetHistograms(const DijetHistograms& in) :
   fCard(in.fCard)
 {
   // Copy constructor
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-    for(int iType = 0; iType < 3; iType++){
-      fhEnergyInEtaStrip[iType][iCentrality] = in.fhEnergyInEtaStrip[iType][iCentrality];
-      fhEnergyInCone[iType][iCentrality] = in.fhEnergyInCone[iType][iCentrality];
-      fhManualJetCorrection[iType][iCentrality] = in.fhManualJetCorrection[iType][iCentrality];
-      fhManualJetCorrectionRatio[iType][iCentrality] = in.fhManualJetCorrectionRatio[iType][iCentrality];
-    }
-    fhEnergyInEtaStripAbove100GeV[iCentrality] = in.fhEnergyInEtaStripAbove100GeV[iCentrality];
-    fhEnergyInConeAbove100GeV[iCentrality] = in.fhEnergyInConeAbove100GeV[iCentrality];
-    fhManualJetCorrectionAbove100GeV[iCentrality] = in.fhManualJetCorrectionAbove100GeV[iCentrality];
-    fhManualJetCorrectionRatioAbove100GeV[iCentrality] = in.fhManualJetCorrectionRatioAbove100GeV[iCentrality];
-    fhEnergyInEtaStripFlipped[iCentrality] = in.fhEnergyInEtaStripFlipped[iCentrality];
-    fhEnergyInConeFlipped[iCentrality] = in.fhEnergyInConeFlipped[iCentrality];
-    fhManualJetCorrectionFlipped[iCentrality] = in.fhManualJetCorrectionFlipped[iCentrality];
-    fhManualJetCorrectionRatioFlipped[iCentrality] = in.fhManualJetCorrectionRatioFlipped[iCentrality];
-  }
   
   for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
     fhJetEventPlane[iEventPlane] = in.fhJetEventPlane[iEventPlane];
@@ -234,23 +186,6 @@ DijetHistograms& DijetHistograms::operator=(const DijetHistograms& in){
   fhTrackJetInclusivePtWeighted = in.fhTrackJetInclusivePtWeighted;
   fhJetPtClosure = in.fhJetPtClosure;
   fCard = in.fCard;
-  
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-    for(int iType = 0; iType < 3; iType++){
-      fhEnergyInEtaStrip[iType][iCentrality] = in.fhEnergyInEtaStrip[iType][iCentrality];
-      fhEnergyInCone[iType][iCentrality] = in.fhEnergyInCone[iType][iCentrality];
-      fhManualJetCorrection[iType][iCentrality] = in.fhManualJetCorrection[iType][iCentrality];
-      fhManualJetCorrectionRatio[iType][iCentrality] = in.fhManualJetCorrectionRatio[iType][iCentrality];
-    }
-    fhEnergyInEtaStripAbove100GeV[iCentrality] = in.fhEnergyInEtaStripAbove100GeV[iCentrality];
-    fhEnergyInConeAbove100GeV[iCentrality] = in.fhEnergyInConeAbove100GeV[iCentrality];
-    fhManualJetCorrectionAbove100GeV[iCentrality] = in.fhManualJetCorrectionAbove100GeV[iCentrality];
-    fhManualJetCorrectionRatioAbove100GeV[iCentrality] = in.fhManualJetCorrectionRatioAbove100GeV[iCentrality];
-    fhEnergyInEtaStripFlipped[iCentrality] = in.fhEnergyInEtaStripFlipped[iCentrality];
-    fhEnergyInConeFlipped[iCentrality] = in.fhEnergyInConeFlipped[iCentrality];
-    fhManualJetCorrectionFlipped[iCentrality] = in.fhManualJetCorrectionFlipped[iCentrality];
-    fhManualJetCorrectionRatioFlipped[iCentrality] = in.fhManualJetCorrectionRatioFlipped[iCentrality];
-  }
   
   for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
     fhJetEventPlane[iEventPlane] = in.fhJetEventPlane[iEventPlane];
@@ -301,24 +236,6 @@ DijetHistograms::~DijetHistograms(){
   for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
     delete fhJetEventPlane[iEventPlane];
     delete fhJetEventPlaneDifference[iEventPlane];
-  }
-  
-  // Additional histogram for manual energy correction study
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-    for(int iType = 0; iType < 3; iType++){
-      delete fhEnergyInEtaStrip[iType][iCentrality];
-      delete fhEnergyInCone[iType][iCentrality];
-      delete fhManualJetCorrection[iType][iCentrality];
-      delete fhManualJetCorrectionRatio[iType][iCentrality];
-    }
-    delete fhEnergyInEtaStripAbove100GeV[iCentrality];
-    delete fhEnergyInConeAbove100GeV[iCentrality];
-    delete fhManualJetCorrectionAbove100GeV[iCentrality];
-    delete fhManualJetCorrectionRatioAbove100GeV[iCentrality];
-    delete fhEnergyInEtaStripFlipped[iCentrality];
-    delete fhEnergyInConeFlipped[iCentrality];
-    delete fhManualJetCorrectionFlipped[iCentrality];
-    delete fhManualJetCorrectionRatioFlipped[iCentrality];
   }
   
 }
@@ -528,25 +445,6 @@ void DijetHistograms::CreateHistograms(){
   fhCentralityDijet = new TH1F("centralityDijet","centralityDijet",nCentralityBins,minCentrality,maxCentrality); fhCentralityDijet->Sumw2();
   fhPtHat = new TH1F("pthat","pthat",nPtHatBins,ptHatBins); fhPtHat->Sumw2();
   fhPtHatWeighted = new TH1F("pthatWeighted","pthatWeighted",nFinePtHatBins,minPtHat,maxPtHat); fhPtHatWeighted->Sumw2();
-  
-  // Histograms for manual energy correction study
-  TString typeString[3] = {"leading","subleading","inclusive"};
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-    for(int iType = 0; iType < 3; iType++){
-      fhEnergyInEtaStrip[iType][iCentrality] = new TH2F(Form("energyInEtaStrip_%s_C%d", typeString[iType].Data(), iCentrality), Form("energyInEtaStrip_%s_C%d", typeString[iType].Data(), iCentrality), 180, 0, 180, 180, 0, 180); fhEnergyInEtaStrip[iType][iCentrality]->Sumw2();
-      fhEnergyInCone[iType][iCentrality] = new TH2F(Form("energyInCone_%s_C%d", typeString[iType].Data(), iCentrality), Form("energyInCone_%s_C%d", typeString[iType].Data(), iCentrality), 220, 0, 220, 220, 0, 220); fhEnergyInCone[iType][iCentrality]->Sumw2();
-      fhManualJetCorrection[iType][iCentrality] = new TH2F(Form("manualJetCorrection_%s_C%d", typeString[iType].Data(), iCentrality), Form("manualJetCorrection_%s_C%d", typeString[iType].Data(), iCentrality), 200, -100, 100, 200, -100, 100); fhManualJetCorrection[iType][iCentrality]->Sumw2();
-      fhManualJetCorrectionRatio[iType][iCentrality] = new TH2F(Form("manualJetCorrectionRatio_%s_C%d", typeString[iType].Data(), iCentrality), Form("manualJetCorrectionRatio_%s_C%d", typeString[iType].Data(), iCentrality), 200, -1, 1, 200, -1, 1); fhManualJetCorrectionRatio[iType][iCentrality]->Sumw2();
-    }
-    fhEnergyInEtaStripAbove100GeV[iCentrality] = new TH2F(Form("energyInEtaStripAbove100GeV_C%d", iCentrality), Form("energyInEtaStripAbove100GeV_C%d", iCentrality), 180, 0, 180, 180, 0, 180); fhEnergyInEtaStripAbove100GeV[iCentrality]->Sumw2();
-    fhEnergyInConeAbove100GeV[iCentrality] = new TH2F(Form("energyInConeAbove100GeV_C%d", iCentrality), Form("energyInConeAbove100GeV_C%d", iCentrality), 220, 0, 220, 220, 0, 220); fhEnergyInConeAbove100GeV[iCentrality]->Sumw2();
-    fhManualJetCorrectionAbove100GeV[iCentrality] = new TH2F(Form("manualJetCorrectionAbove100GeV_C%d", iCentrality), Form("manualJetCorrectionAbove100GeV_C%d", iCentrality), 200, -100, 100, 200, -100, 100); fhManualJetCorrectionAbove100GeV[iCentrality]->Sumw2();
-    fhManualJetCorrectionRatioAbove100GeV[iCentrality] = new TH2F(Form("manualJetCorrectionRatioAbove100GeV_C%d", iCentrality), Form("manualJetCorrectionRatioAbove100GeV_C%d", iCentrality), 140, -0.7, 0.7, 140, -0.7, 0.7); fhManualJetCorrectionRatioAbove100GeV[iCentrality]->Sumw2();
-    fhEnergyInEtaStripFlipped[iCentrality] = new TH2F(Form("energyInEtaStripFlipped_C%d", iCentrality), Form("energyInEtaStripFlipped_C%d", iCentrality), 180, 0, 180, 180, 0, 180); fhEnergyInEtaStripFlipped[iCentrality]->Sumw2();
-    fhEnergyInConeFlipped[iCentrality] = new TH2F(Form("energyInConeFlipped_C%d", iCentrality), Form("energyInConeFlipped_C%d", iCentrality), 220, 0, 220, 220, 0, 220); fhEnergyInConeFlipped[iCentrality]->Sumw2();
-    fhManualJetCorrectionFlipped[iCentrality] = new TH2F(Form("manualJetCorrectionFlipped_C%d", iCentrality), Form("manualJetCorrectionFlipped_C%d", iCentrality), 200, -100, 100, 200, -100, 100); fhManualJetCorrectionFlipped[iCentrality]->Sumw2();
-    fhManualJetCorrectionRatioFlipped[iCentrality] = new TH2F(Form("manualJetCorrectionRatioFlipped_C%d", iCentrality), Form("manualJetCorrectionRatioFlipped_C%d", iCentrality), 140, -0.7, 0.7, 140, -0.7, 0.7); fhManualJetCorrectionRatioFlipped[iCentrality]->Sumw2();
-  }
   
   // For the event histogram, label each bin corresponding to an event cut
   for(Int_t i = 0; i < knEventTypes; i++){
@@ -1055,25 +953,6 @@ void DijetHistograms::Write() const{
   for(int iEventPlane = 0; iEventPlane < knEventPlanes; iEventPlane++){
     fhJetEventPlane[iEventPlane]->Write();
     fhJetEventPlaneDifference[iEventPlane]->Write();
-  }
-  
-  // Additional histograms for manual energy correction study
-  for(int iCentrality = 0; iCentrality < 4; iCentrality++){
-    for(int iType = 0; iType < 3; iType++){
-      fhEnergyInEtaStrip[iType][iCentrality]->Write();
-      fhEnergyInCone[iType][iCentrality]->Write();
-      fhManualJetCorrection[iType][iCentrality]->Write();
-      fhManualJetCorrectionRatio[iType][iCentrality]->Write();
-      
-    }
-    fhEnergyInEtaStripAbove100GeV[iCentrality]->Write();
-    fhEnergyInConeAbove100GeV[iCentrality]->Write();
-    fhManualJetCorrectionAbove100GeV[iCentrality]->Write();
-    fhManualJetCorrectionRatioAbove100GeV[iCentrality]->Write();
-    fhEnergyInEtaStripFlipped[iCentrality]->Write();
-    fhEnergyInConeFlipped[iCentrality]->Write();
-    fhManualJetCorrectionFlipped[iCentrality]->Write();
-    fhManualJetCorrectionRatioFlipped[iCentrality]->Write();
   }
   
 }

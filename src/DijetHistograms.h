@@ -49,18 +49,6 @@ public:
   TH1F *fhCentralityDijet;         // Centrality distribution in dijet events. -0.5 for pp or PYTHIA
   TH1F *fhPtHat;                   // pT hat for MC events (only meaningful for MC)
   TH1F *fhPtHatWeighted;           // Weighted pT hat distribution
-  TH2F *fhEnergyInEtaStrip[3][4];     // Energy in reflected eta strip versus eta strip
-  TH2F *fhEnergyInCone[3][4];         // Energy in reflected jet cone versus jet cone
-  TH2F *fhManualJetCorrection[3][4];  // Manual jet energy correction from reflected cone versus jet cone
-  TH2F *fhManualJetCorrectionRatio[3][4];  // Manual jet energy correction from reflected cone versus jet cone
-  TH2F *fhEnergyInEtaStripAbove100GeV[4];     // Energy in reflected eta strip versus eta strip for jets > 100 GeV
-  TH2F *fhEnergyInConeAbove100GeV[4];         // Energy in reflected jet cone versus jet cone for jets > 100 GeV
-  TH2F *fhManualJetCorrectionAbove100GeV[4];  // Manual jet energy correction from reflected cone versus jet cone for jets > 100 GeV
-  TH2F *fhManualJetCorrectionRatioAbove100GeV[4];  // Manual jet energy correction from reflected cone versus jet cone for jets > 100 GeV
-  TH2F *fhEnergyInEtaStripFlipped[4];     // Energy in reflected eta strip versus eta strip flipping 120 GeV
-  TH2F *fhEnergyInConeFlipped[4];         // Energy in reflected jet cone versus jet cone flipping 120 GeV
-  TH2F *fhManualJetCorrectionFlipped[4];  // Manual jet energy correction from reflected cone versus jet cone flipping 120 GeV
-  TH2F *fhManualJetCorrectionRatioFlipped[4];  // Manual jet energy correction from reflected cone versus jet cone flipping 120 GeV
   THnSparseF *fhMultiplicity;      // Track multiplicity from all events [multiplicity][centrality]
   THnSparseF *fhMultiplicityDijet; // Track multiplicity from dijet events [multiplicity][centrality]
   THnSparseF *fhLeadingJet;        // Leading jet without dijet requirement [l-pT][l-phi][l-eta][Ajj][cent]
