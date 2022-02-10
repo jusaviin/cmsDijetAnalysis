@@ -33,8 +33,8 @@ void longRangeFitComparer(){
   bool scaleToOne = true;  // To see more clearly the vn variation, we can scale the average of the histogram to one
   
   // Configuration
-  const bool drawJetHadron = true;  // Draw the jet hadron long range deltaPhi distribution
-  const bool drawDihadron = false;   // Draw the dihadron long range deltaPhi distribution
+  const bool drawJetHadron = false;  // Draw the jet hadron long range deltaPhi distribution
+  const bool drawDihadron = true;   // Draw the dihadron long range deltaPhi distribution
 
   const bool drawOverallFit = false;  // Draw the overall Fourier fit to the distribution
   const bool drawV1 = false;         // Draw different fit components seperately

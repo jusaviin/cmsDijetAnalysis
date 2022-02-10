@@ -274,7 +274,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   
   // Function for generating fake v2. Currently set for 5 % v2
   fFakeV2Function = new TF1("fakeV2","1+2*[1]*TMath::Cos([0]*x)",-TMath::Pi()/2, 3*TMath::Pi()/2);
-  fFakeV2Function->SetParameter(0,2);
+  fFakeV2Function->SetParameter(0,3);
   fFakeV2Function->SetParameter(1,0.05);
   
   // Generic polynomial functions
@@ -1279,8 +1279,8 @@ void DijetAnalyzer::RunAnalysis(){
         // if(eventPlaneQ[0] < 3.3) continue;  // 1.5 1.8 2 2.2 2.5 2.8 3.3
         
         // Apply Q-vector weight to the event
-        //qWeight = GetQvectorWeight(eventPlaneQ[0], centrality);
-        //fTotalEventWeight *= qWeight;
+        // qWeight = GetQvectorWeight(eventPlaneQ[0], centrality);
+        // fTotalEventWeight *= qWeight;
         
       }
       
@@ -1954,9 +1954,9 @@ void DijetAnalyzer::RunAnalysis(){
               while(jetEventPlaneDeltaPhi < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhi += 2*TMath::Pi();}
               while(jetEventPlaneDeltaPhiDifference < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += 2*TMath::Pi();}
               
-//              // Currently faking jet v2
-//              if(iFlow == 0){
-//                fFakeV2Function->SetParameter(0,iFlow+2);
+//              // Currently faking jet v3
+//              if(iFlow == 1){
+//                //fFakeV2Function->SetParameter(0,iFlow+2);
 //                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
 //                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight
 //              }
