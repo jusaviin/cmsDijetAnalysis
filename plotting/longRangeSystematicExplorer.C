@@ -13,7 +13,7 @@ void longRangeSystematicExplorer(){
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
   const int nFiles = 2;
-  TString uncertaintyFileName[] = {"systematicUncertainties_allSources_finalCorrection_2021-08-10.root", "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
+  TString uncertaintyFileName[] = {"systematicUncertainties_addMultiplicityMatch_testCorrection_2022-02-11.root", "systematicUncertainties_allSources_finalCorrection_2021-08-10.root", "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
   // systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   // systematicUncertainties_allSources_finalCorrection_2021-08-10.root
   
@@ -32,7 +32,7 @@ void longRangeSystematicExplorer(){
   const bool drawAbsoluteUncertainties = true;
   
   // Save the final plots
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "_uncertaintyComparison";
   TString fileFormat = "pdf";
   
