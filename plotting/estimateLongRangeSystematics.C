@@ -60,7 +60,7 @@ void estimateLongRangeSystematics(){
   
   // Results with Q-vector weight instead of cut
   TString qVectorWeightedFileName = "flowGraphs/summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root"; // Need to find the correct file to reproduce this file in order to add v4!!!
-  TString multiplicitySchemeFileName = "flowGraphs/summaryPlot_multiplicityScheme_2022-01-26.root";
+  TString multiplicitySchemeFileName = "flowGraphs/summaryPlot_multiplicityMatch_jetEta1v3_2022-02-11.root"; // This is the new nominal file!!!!
   
   // Results without tracking efficiency correction
   TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";
@@ -74,14 +74,14 @@ void estimateLongRangeSystematics(){
   
   // Flow component configuration
   const int maxVn = 4;      // Maximum number of flow components
-  const int firstFlow = 3;  // First analyzed flow component
+  const int firstFlow = 2;  // First analyzed flow component
   const int lastFlow = 3;   // Last analyzed flow component
   
   const bool printUncertainties = false;
   
   bool plotExample = false;
   
-  TString outputFileName = "";
+  TString outputFileName = "flowGraphs/systematicUncertainties_addMultiplicityMatch_testCorrection_2022-02-11.root";
   // flowGraphs/systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   
   // At the moment, the centrality shift uncertainty is not applied but instead a comparison with multiplicity matched results is used
@@ -421,6 +421,35 @@ void estimateLongRangeSystematics(){
       }
       
     } // Flow component loop
+  }
+  
+  // ========================================================= //
+  // Uncertainty coming from the error on the jet vn fit on MC //
+  // ========================================================= //
+  
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kMCFit]){
+    
+    double dummyX, dummyY;
+    
+    // These uncertainties are coming directly from the fit. They are not determined as the others.
+    //                         v1                 v2                            v3                           v4
+    double fitErrors[4][4] = {{0,    0.00127865/1.17521/0.977956,  0.00240578/1.17521/0.977956, 0.0162291/1.17521/0.977956},   // 0-10
+                              {0,    0.000831144/0.814646/1.00629, 0.00192973/0.814646/1.00629, 0.00982104/0.814646/1.00629},  // 10-30
+                              {0,    0.000930751/0.746073/0.94224, 0.00239374/0.746073/0.94224, 0.0084061/0.746073/0.94224},   // 30-50
+                              {0,    0,                         0,                               0}                            // 50-90
+    };
+    
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMCFit][iFlow][iCentrality] = fitErrors[iCentrality][iFlow];
+        correctionMethodGraph[iFlow][1]->GetPoint(iCentrality, dummyX, dummyY);
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = TMath::Abs(1 - dummyY/(dummyY+fitErrors[iCentrality][iFlow]));
+        statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kMCFit);
+        
+      } // Centrality loop
+    } // Flow component loop
+    
   }
   
   // ======================================================================================= //

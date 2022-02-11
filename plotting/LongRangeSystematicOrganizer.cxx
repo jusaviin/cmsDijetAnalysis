@@ -57,6 +57,11 @@ void LongRangeSystematicOrganizer::ReadInputFile(TFile *inputFile){
   TString graphName;
   double errorY;
   
+  const int nCentralityBins = 3;
+  double summaryXaxis[nCentralityBins] = {1,2,3};
+  double zeroArray[nCentralityBins] = {0,0,0};
+  double smallError[nCentralityBins] = {0.1,0.1,0.1};
+  
   for(int iFlow = 0; iFlow < knMaxFlow; iFlow++){
     for(int iAsymmetry = knMaxXj; iAsymmetry <= knMaxXj; iAsymmetry++){  // Asymmetry binning can be implemented easily from here
       for(int iUncertainty = 0; iUncertainty < knUncertaintySources; iUncertainty++){
@@ -70,6 +75,10 @@ void LongRangeSystematicOrganizer::ReadInputFile(TFile *inputFile){
             errorY = fLongRangeUncertaintyGraph[iUncertainty][iFlow][iAsymmetry]->GetErrorY(iCentrality);
             fLongRangeUncertaintyGraph[iUncertainty][iFlow][iAsymmetry]->SetPointError(iCentrality, 0.1, errorY);
           }
+        }  else {// If the graph does not exist, set the uncertainty to zero
+          
+          fLongRangeUncertaintyGraph[iUncertainty][iFlow][iAsymmetry] = new TGraphErrors(nCentralityBins, summaryXaxis, zeroArray, smallError, zeroArray);
+          
         }
         
       } // Uncertainty loop
