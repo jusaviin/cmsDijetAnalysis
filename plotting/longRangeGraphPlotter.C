@@ -54,13 +54,14 @@ void longRangeGraphPlotter(){
   // Main files from which the long range asymmetries are obtained
   const int maxFiles = 7;
   TString directoryName = "flowGraphs/";
-  TString graphFileName = "flowGraphs_PbPb2018_akPfCsJets_correctedJetHadron_correctedDihadronSmallStats_2021-05-13.root";
+  TString graphFileName = "flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root";
   // flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root
   // flowGraphs_PbPb2018_caloJets_cumulativePtBins_correctedJetHadron_correctedEventDihadron_2021-03-22.root
   // flowGraphs_PbPb2018_caloJets_fixedJEC_qualityCheck_correctedJetHadron_correctedDihadron_2021-08-30.root
   // flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2021-09-14.root
   // flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root
   // flowGraphs_PbPb2018_akPfCsJets_correctedJetHadron_correctedDihadronSmallStats_2021-05-13.root
+  // flowGraphs_PbPb2018_akPfCsJets_correctedJetHadron_correctedDihadronSmallStats_cumulativePtBins_2022-02-12.root
   // flowGraphs_PbPb2018_caloJets_angleSmear_correctedJetHadron_correctedDihadron_2021-02-26.root
   // flowGraphs_PbPb2018_caloJets_noTrackEff_correctedJetHadron_correctedDihadron_2021-07-13.root
   // flowGraphs_PbPb2018_caloJets_jetHadronJECminus_correctedJetHadron_correctedDihadron_2021-08-05.root
@@ -83,7 +84,7 @@ void longRangeGraphPlotter(){
   
   // Other files whose results can be compared with the nominal file
   int nComparisonFiles = 1;
-  TString comparisonFileName[] = { "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root", "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadronFromCaloDijet_2022-02-11.root",  "flowGraphs_PbPbMC2018_multWeight_caloJets_subeNon0_qVectorAbove2p2_correctedJetHadron_correctedDihadron_2022-02-10.root", "flowGraphs_PbPbMC2018_multWeight_caloJets_subeNon0_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2022-02-10.root", "flowGraphs_PbPbMC2018_multWeight_caloJets_subeNon0_qVectorAbove2p8_correctedJetHadron_correctedDihadron_2022-02-10.root", "flowGraphs_PbPbMC2018_multWeight_caloJets_subeNon0_qVectorAbove3p3_correctedJetHadron_correctedDihadron_2022-02-10.root", "flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018MC_caloJets_noCentShift_subeNon0_fakeV2_crossCheck_correctedJetHadron_correctedDihadron_2022-02-09.root", "flowGraphs_PbPb2018MC_genJets_noCentShift_subeNon0_fakeJetV2m5_correctedJetHadron_correctedDihadron_2022-02-09.root",  "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheckOldJetHadron_2022-02-08.root",  "flowGraphs_PbPb2018MC_genJets_multWeight_fakeJetV2m5_subeNon0_jetEta1v3_consistencyCheck_2022-02-08.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_consistencyCheck_2021-03-02.root",  "flowGraphs_PbPb2018MC_genJets_fakeJetV2_noCentShift_subeNon0_oldDataNewProcess_2022-02-04.root", "flowGraphs_PbPb2018MC_genJets_fakeJetV3_multiplicityWeight_subeNon0_onlyDihadronPart0_2022-02-02.root", "flowGraphs_PbPb2018MC_genJets_multiplicityWeight_subeNon0_onlyDihadronPart0_2022-02-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_onlyDihadron_multiplicityWeight_cumulativeBins_2022-01-26.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_2021-07-12.root",  "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root",  "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_cumulativeBins_2022-01-26.root",            "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadronWithoutTwoCuts_correctedDihadron_2021-08-30.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflect_correctedJetHadron_correctedDihadron_2021-08-13.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectNeutralScaled_correctedJetHadron_correctedDihadron_2021-08-23.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectDijet_correctedJetHadron_correctedDihadron_2021-08-26.root",  "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2to3v5_correctedJetHadron_correctedDihadron_2021-08-06.root", "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2v5to4_correctedJetHadron_correctedDihadron_2021-08-06.root",  "flowGraphs_PbPb2018_caloJets_jetHadronJECminus_correctedJetHadron_correctedDihadron_2021-08-05.root", "flowGraphs_PbPb2018_caloJets_jetHadronJECplus_correctedJetHadron_correctedDihadron_2021-08-05.root",    "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018_JECplus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018_JECminus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_25pMoreQuark_correctedJetHadron_correctedDihadron_2021-07-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-22.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-22.root",  "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root",   "flowGraphs_PbPbMC2018_5pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root"
+  TString comparisonFileName[] = { "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root", "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_cumulativePtBins_2022-02-12.root", "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_2022-02-12.root", "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadronFromCaloDijet_2022-02-11.root",   "flowGraphs_PbPbMC2018_multWeight_caloJets_subeNon0_qVectorAbove2p5_correctedJetHadron_correctedDihadron_2022-02-10.root", "flowGraphs_PbPbMC2018_multWeight_caloJets_subeNon0_qVectorAbove2p8_correctedJetHadron_correctedDihadron_2022-02-10.root", "flowGraphs_PbPbMC2018_multWeight_caloJets_subeNon0_qVectorAbove3p3_correctedJetHadron_correctedDihadron_2022-02-10.root", "flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018MC_caloJets_noCentShift_subeNon0_fakeV2_crossCheck_correctedJetHadron_correctedDihadron_2022-02-09.root", "flowGraphs_PbPb2018MC_genJets_noCentShift_subeNon0_fakeJetV2m5_correctedJetHadron_correctedDihadron_2022-02-09.root",  "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheckOldJetHadron_2022-02-08.root",  "flowGraphs_PbPb2018MC_genJets_multWeight_fakeJetV2m5_subeNon0_jetEta1v3_consistencyCheck_2022-02-08.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_consistencyCheck_2021-03-02.root",  "flowGraphs_PbPb2018MC_genJets_fakeJetV2_noCentShift_subeNon0_oldDataNewProcess_2022-02-04.root", "flowGraphs_PbPb2018MC_genJets_fakeJetV3_multiplicityWeight_subeNon0_onlyDihadronPart0_2022-02-02.root", "flowGraphs_PbPb2018MC_genJets_multiplicityWeight_subeNon0_onlyDihadronPart0_2022-02-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_onlyDihadron_multiplicityWeight_cumulativeBins_2022-01-26.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_2021-07-12.root",  "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root",  "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_cumulativeBins_2022-01-26.root",            "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadronWithoutTwoCuts_correctedDihadron_2021-08-30.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflect_correctedJetHadron_correctedDihadron_2021-08-13.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectNeutralScaled_correctedJetHadron_correctedDihadron_2021-08-23.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectDijet_correctedJetHadron_correctedDihadron_2021-08-26.root",  "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2to3v5_correctedJetHadron_correctedDihadron_2021-08-06.root", "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2v5to4_correctedJetHadron_correctedDihadron_2021-08-06.root",  "flowGraphs_PbPb2018_caloJets_jetHadronJECminus_correctedJetHadron_correctedDihadron_2021-08-05.root", "flowGraphs_PbPb2018_caloJets_jetHadronJECplus_correctedJetHadron_correctedDihadron_2021-08-05.root",    "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018_JECplus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018_JECminus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_25pMoreQuark_correctedJetHadron_correctedDihadron_2021-07-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-22.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-22.root",  "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root",   "flowGraphs_PbPbMC2018_5pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root"
   };
   
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
@@ -107,10 +108,16 @@ void longRangeGraphPlotter(){
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   const bool drawAtlasV2 = false;                     // Draw a line showing the v2 result from ATLAS
   const bool fitJetVn = true;                         // Fit a constant line to jet vn points
-  const bool doSummaryCorrection = false;              // Correct the jet vn summary plots based on fits
-  const bool manualSummaryCorrection = false;          // Do the correction manually based on tabulated values
-  const bool drawSummaryPlot = false;
+  const bool doSummaryCorrection = true;              // Correct the jet vn summary plots based on fits
+  const bool manualSummaryCorrection = true;          // Do the correction manually based on tabulated values
+  const bool drawSummaryPlot = true;
   const bool drawCorrection = false;                   // For jet vn plots, draw the correction instead of corrected data
+  
+  // If doing manual summary correction, define the MC configuration used to read the correction
+  const int manualCorrectionMultiplicityMode = 0;  // 0 = multiplcity matching, 1 = centrality matching
+  const int manualCorrectionMatchingMode = 0; // 0 = Match yield, 1 = Match hadron v2 with Q-cut, 2 = Match hadron v2 with Q-weight
+  const int manualCorrectionJetCollection = 0; // 0 = Calo jets. 1 = PFCS jets
+  const bool manualCorrectionTrueManual = false; // Do not use the selection above, but use manually input values. Usuful for example for some systematic uncertainty checks
   
   // Pre-defined points to be drawn to the summary plot
   const bool drawPreviousResults = true;              // Draw ATLAS jet v2 and CMS high pT v2 results to the summary plot
@@ -122,8 +129,8 @@ void longRangeGraphPlotter(){
   // Plots to be compared between files
   const bool drawJetHadronVnFileComparison = false;
   const bool drawDihadronVnFileComparison = false;
-  const bool drawHadronVnFileComparison = true;
-  const bool drawJetVnFileComparison = false;
+  const bool drawHadronVnFileComparison = false;
+  const bool drawJetVnFileComparison = true;
   const bool drawJetHadronYieldFileComparison = false;
   const bool drawDihadronYieldFileComparison = false;
   const bool drawFileComparison = drawJetHadronVnFileComparison || drawDihadronVnFileComparison || drawHadronVnFileComparison || drawJetVnFileComparison || drawJetHadronYieldFileComparison || drawDihadronYieldFileComparison;
@@ -132,7 +139,7 @@ void longRangeGraphPlotter(){
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool drawRatios = true;              // Draw ratio plots for file comparison
+  const bool drawRatios = false;              // Draw ratio plots for file comparison
   const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
   const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
@@ -142,7 +149,7 @@ void longRangeGraphPlotter(){
   
   // Saving summary file for final plotter macro
   const bool saveSummaryFile = false;
-  const char* outputFileName = "flowGraphs/summaryPlot_multiplicityMatch_jetEta1v3_2022-02-11.root";
+  const char* outputFileName = "flowGraphs/summaryPlot_multiplicityMatch_qVectors_jetEta1v3_2022-02-13.root";
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -240,245 +247,320 @@ void longRangeGraphPlotter(){
   }
   double fineTunedQ[nTrackPtBins][nAsymmetryBins+1][nCentralityBins][nFlowComponents];
   
-//  // Manual corrections for jet v2 values determined from Q-vector fits
-//  double manualCorrection[3][4] = {{0.0891, 0.0850, 0.0735, 0.1287},
-//                                   {0.0945, 0.0991, 0.1129, 0.1456},
-//                                   {0.0570, 0.0703, 0.0811, 0.1006}};
   
-//  // Manual corrections for jet v2 values determined from hadron v2 to jet v2 fits
-//  double manualCorrection[3][4] = {{0.0894, 0.0850, 0.0735, 0.1284},
-//                                   {0.0947, 0.0993, 0.1131, 0.1454},
-//                                   {0.0569, 0.0705, 0.0815, 0.1025}};
+  // Define the form for the manual correction
+  double manualCorrection[3][4] = {{0, 0, 0, 0},
+                                   {0, 0, 0, 0},
+                                   {0, 0, 0, 0}};
   
-//  // Manual corrections for jet v2 values determined from hadron v2 to jet v2 fits with only HYDJET particles
-//  double manualCorrection[3][4] = {{0.0829, 0.0784, 0.0584, 0.1201},
-//                                   {0.0886, 0.0923, 0.0957, 0.1160},
-//                                   {0.0546, 0.0556, 0.0475, 0.05}};
+  double jetVnForCorrection = 0;
   
-//  // Manual corrections for jet v2 values determined from hadron v2 and dihadron yield Q-vector tuning with only HYDJET
-//  double manualCorrection[3][4] = {{0.0791, 0.0773, 0.0713, 0.1171},
-//                                   {0.0886, 0.0923, 0.0957, 0.1160},
-//                                   {0.0546, 0.0556, 0.0475, 0.05}};
+  // True manual correction. Can select one of the commented out selections
+  if(manualCorrectionTrueManual){
   
-//  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and calo jets. This is the nominal correction.
-//  double manualCorrection[3][4] = {{0.0845, 0.0828, 0.0795, 0.0642},
-//                                   {0.0802, 0.0834, 0.0919, 0.0979},
-//                                   {0.0512, 0.0492, 0.0490, 0.0479}};
-  
-//  // Correction with 4 % centrality shift and calo jets. Q-vector cuts are taken as average between dihadron yield and hadron v2.
-//  double manualCorrection[3][4] = {{0.0874, 0.0879, 0.0878, 0.0749},
-//                                   {0.0791, 0.0823, 0.0904, 0.0973},
-//                                   {0.0540, 0.0530, 0.0535, 0.0505}};
-  
-//  // Variation to average yield and v2. 2:1 ratio towards v2 is used for these results.
-//  double manualCorrection[3][4] = {{0.0864, 0.0862, 0.0850, 0.0713},
-//                                   {0.0834, 0.0866, 0.0961, 0.0994},
-//                                   {0.0580, 0.0585, 0.0599, 0.0542}};
- 
-//    // Integrated pT bins. Done with 4 % centrality shift and calo jets. Correction from hadron v2, scale from subeNon0 yield
-//    double manualCorrection[3][4] = {{0.0845/1.004, 0.0828/1.004, 0.0795/1.004, 0.0642/1.004},
-//                                     {0.0920/1.010, 0.0952/1.010, 0.1074/1.010, 0.1037/1.010},
-//                                     {0.0661/1.176, 0.0693/1.176, 0.0728/1.176, 0.0616/1.176}};
-  
-//  // Integrated pT bins. Done with 4 % centrality shift and calo jets. Correction from hadron v2, scale from all yield. REAL NOMINAL CORRECTION!
-//  double manualCorrection[3][4] = {{0.0845/1.024, 0.0828/1.024, 0.0795/1.024, 0.0642/1.024},
-//                                   {0.0920/1.042, 0.0952/1.042, 0.1074/1.042, 0.1037/1.042},
-//                                   {0.0661/1.260, 0.0693/1.260, 0.0728/1.260, 0.0616/1.260}};
-  
-//    // Integrated pT bins. Done with 4 % centrality shift, calo jets and adjusted quark/gluon jet fraction. Correction from hadron v2, scale from all yield.
-//    double manualCorrection[3][4] = {{0.0845/1.024*1.025,  0.0828/1.024*1.015, 0.0795/1.024*1.023,  0.0642/1.024*1.016},
-//                                     {0.0920/1.042*0.9974, 0.0952/1.042*1.000, 0.1074/1.042*0.9917, 0.1037/1.042*1.015},
-//                                     {0.0661/1.260*1.033,  0.0693/1.260*1.003, 0.0728/1.260*0.9641, 0.0616/1.260*0.8799}};
-  
-//    // Integrated pT bins. Done with 4 % centrality shift and calo jets. Correction from Q-weighted hadron v2, scale from all yield
-//    double manualCorrection[3][4] = {{0.0810/1.02034, 0.0810/1.02034, 0.0810/1.02034, 0.0810/1.02034},
-//                                     {0.0990/1.04281, 0.0990/1.04281, 0.0990/1.04281, 0.0990/1.04281},
-//                                     {0.0712/1.23788, 0.0712/1.23788, 0.0712/1.23788, 0.0712/1.23788}};
-  
-//  // Done with 4 % centrality shift and calo jets. Correction for Q-weighted v3, scale from all yield
-//  double manualCorrection[3][4] = {{0.030537/1.02034, 0.030537/1.02034, 0.030537/1.02034, 0.030537/1.02034},
-//                                   {0.01/1.04281, 0.01/1.04281, 0.01/1.04281, 0.01/1.04281},
-//                                   {0.007642/1.23788, 0.007642/1.23788, 0.007642/1.23788, 0.007642/1.23788}};
-  
-//    // Done with 4 % centrality shift and calo jets. Correction for Q-weighted v4, scale from all yield
-//    double manualCorrection[3][4] = {{0.0372/1.02034, 0.0372/1.02034, 0.0372/1.02034, 0.0372/1.02034},
-//                                     {0.0115/1.04281, 0.0115/1.04281, 0.0115/1.04281, 0.0115/1.04281},
-//                                     {0.0488/1.23788, 0.0488/1.23788, 0.0488/1.23788, 0.0488/1.23788}};
-  
-//      // Done with 4 % centrality shift and tuned Q weights. Values from jet-event plane fit
-//      double manualCorrection[3][4] = {{0.082, 0.082, 0.082, 0.082},
-//                                       {0.1, 0.1, 0.1, 0.1},
-//                                       {0.07, 0.07, 0.07, 0.07}};
-  
-//  // Correctien for v2. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
-//  double manualCorrection[3][4] = {{0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444},
-//                                   {111, 111, 111, 111},
-//                                   {111, 111, 111, 111}};
-  
-//  // Correctien for v3. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
-//  double manualCorrection[3][4] = {{0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444},
-//                                   {111, 111, 111, 111},
-//                                   {111, 111, 111, 111}};
-//
-//  // Correctien for v3. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
-//  double manualCorrectionError[3][4] = {{0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444},
-//                                   {0, 0, 0, 0},
-//                                   {0, 0, 0, 0}};
-  
-//  // Integrated pT bins. Done with 4 % centrality shift and calo jets. Correction from Q-weighted hadron v2, scale from all yield
-//  double manualCorrection[3][4] = {{0.0817/1.02034, 0.0766/1.02034, 0.0764/1.02034, 0.0678/1.02034},
-//                                   {0.0947/1.04281, 0.0985/1.04281, 0.1096/1.04281, 0.0997/1.04281},
-//                                   {0.0661/0.001, 0.0693/0.001, 0.0728/0.001, 0.0616/0.001}};  // This row not tuned
+    //  // Manual corrections for jet v2 values determined from Q-vector fits
+    //  double manualManualCorrection[3][4] = {{0.0891, 0.0850, 0.0735, 0.1287},
+    //                                   {0.0945, 0.0991, 0.1129, 0.1456},
+    //                                   {0.0570, 0.0703, 0.0811, 0.1006}};
+      
+    //  // Manual corrections for jet v2 values determined from hadron v2 to jet v2 fits
+    //  double manualManualCorrection[3][4] = {{0.0894, 0.0850, 0.0735, 0.1284},
+    //                                   {0.0947, 0.0993, 0.1131, 0.1454},
+    //                                   {0.0569, 0.0705, 0.0815, 0.1025}};
+      
+    //  // Manual corrections for jet v2 values determined from hadron v2 to jet v2 fits with only HYDJET particles
+    //  double manualManualCorrection[3][4] = {{0.0829, 0.0784, 0.0584, 0.1201},
+    //                                   {0.0886, 0.0923, 0.0957, 0.1160},
+    //                                   {0.0546, 0.0556, 0.0475, 0.05}};
+      
+    //  // Manual corrections for jet v2 values determined from hadron v2 and dihadron yield Q-vector tuning with only HYDJET
+    //  double manualManualCorrection[3][4] = {{0.0791, 0.0773, 0.0713, 0.1171},
+    //                                   {0.0886, 0.0923, 0.0957, 0.1160},
+    //                                   {0.0546, 0.0556, 0.0475, 0.05}};
+      
+    //  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and calo jets. This is the nominal correction.
+    //  double manualManualCorrection[3][4] = {{0.0845, 0.0828, 0.0795, 0.0642},
+    //                                   {0.0802, 0.0834, 0.0919, 0.0979},
+    //                                   {0.0512, 0.0492, 0.0490, 0.0479}};
+      
+    //  // Correction with 4 % centrality shift and calo jets. Q-vector cuts are taken as average between dihadron yield and hadron v2.
+    //  double manualManualCorrection[3][4] = {{0.0874, 0.0879, 0.0878, 0.0749},
+    //                                   {0.0791, 0.0823, 0.0904, 0.0973},
+    //                                   {0.0540, 0.0530, 0.0535, 0.0505}};
+      
+    //  // Variation to average yield and v2. 2:1 ratio towards v2 is used for these results.
+    //  double manualManualCorrection[3][4] = {{0.0864, 0.0862, 0.0850, 0.0713},
+    //                                   {0.0834, 0.0866, 0.0961, 0.0994},
+    //                                   {0.0580, 0.0585, 0.0599, 0.0542}};
+     
+    //    // Integrated pT bins. Done with 4 % centrality shift and calo jets. Correction from hadron v2, scale from subeNon0 yield
+    //    double manualManualCorrection[3][4] = {{0.0845/1.004, 0.0828/1.004, 0.0795/1.004, 0.0642/1.004},
+    //                                     {0.0920/1.010, 0.0952/1.010, 0.1074/1.010, 0.1037/1.010},
+    //                                     {0.0661/1.176, 0.0693/1.176, 0.0728/1.176, 0.0616/1.176}};
+    
+        // Integrated pT bins. Done with 4 % centrality shift, calo jets and adjusted quark/gluon jet fraction. Correction from hadron v2, scale from all yield.
+        double manualManualCorrection[3][4] = {{0.0845/1.024*1.025,  0.0828/1.024*1.015, 0.0795/1.024*1.023,  0.0642/1.024*1.016},
+                                         {0.0920/1.042*0.9974, 0.0952/1.042*1.000, 0.1074/1.042*0.9917, 0.1037/1.042*1.015},
+                                         {0.0661/1.260*1.033,  0.0693/1.260*1.003, 0.0728/1.260*0.9641, 0.0616/1.260*0.8799}};
+    
+    //      // Done with 4 % centrality shift and tuned Q weights. Values from jet-event plane fit
+    //      double manualManualCorrection[3][4] = {{0.082, 0.082, 0.082, 0.082},
+    //                                       {0.1, 0.1, 0.1, 0.1},
+    //                                       {0.07, 0.07, 0.07, 0.07}};
+    
+    //  // Correctien for v2. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
+    //  double manualManualCorrection[3][4] = {{0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444, 0.0979126/0.981297/1.20444},
+    //                                   {111, 111, 111, 111},
+    //                                   {111, 111, 111, 111}};
+      
+    //  // Correctien for v3. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
+    //  double manualManualCorrection[3][4] = {{0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444, 0.0296575/0.773903/1.20444},
+    //                                   {111, 111, 111, 111},
+    //                                   {111, 111, 111, 111}};
+    //
+    //  // Correctien for v3. Integrated pT bins. Done with 1.5 % centrality shift and calo jets. Scaled to match v2 and multiplicity
+    //  double manualManualCorrectionError[3][4] = {{0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444, 0.00223971/0.773903/1.20444},
+    //                                   {0, 0, 0, 0},
+    //                                   {0, 0, 0, 0}};
+    
+    //  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and flow jets
+    //  double manualManualCorrection[3][4] = {{0.1087, 0.1128, 0.1180, 0.1022},
+    //                                   {0.0908, 0.0952, 0.0978, 0.0966},
+    //                                   {0.0340, 0.0351, 0.0358, 0.0286}};
+      
+    //    // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and pfcs jets
+    //    double manualManualCorrection[3][4] = {{0.1805, 0.1731, 0.1784, 0.1408},
+    //                                     {0.1909, 0.1975, 0.2028, 0.2006},
+    //                                     {0.1178, 0.1215, 0.1232, 0.1238}};
+      
+    //      // Manual corrections directly from 2.5 Q-cuts. Done with 4 % centrality shift and pfcs jets
+    //      double manualManualCorrection[3][4] = {{0.1784, 0.1716, 0.1811, 0.1528},
+    //                                       {0.1883, 0.1946, 0.1982, 0.2010},
+    //                                       {0.1182, 0.1190, 0.1209, 0.1257}};
+      
+    //    // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and flow jets requiring also calo dijet
+    //    double manualManualCorrection[3][4] = {{0.0722, 0.0743, 0.0855, 0.1055},
+    //                                     {0.0691, 0.0715, 0.0784, 0.1074},
+    //                                     {0.0423, 0.0451, 0.0532, 0.0911}};
+      
+    //  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and calo jets requiring also flow dijet
+    //  double manualManualCorrection[3][4] = {{0.0709, 0.0683, 0.0751, 0.0654},
+    //                                   {0.0639, 0.0656, 0.0657, 0.0652},
+    //                                   {0.0378, 0.0373, 0.0337, 0.0181}};
+      
+    //    // Integrated pT bins. Done with 4.5 % centrality shift and calo jets. Correction directly from hadron v2 value is used.
+    //    double manualManualCorrection[3][4] = {{0.0833/0.968, 0.0761/0.968, 0.0732/0.968, 0.0539/0.968},
+    //                                     {1, 1, 1, 1},
+    //                                     {1, 1, 1, 1}};
+      
+    //      // Integrated pT bins. Done with 4.5 % centrality shift and calo jets. Correction from average dihadron yield and hadron v2.
+    //      double manualManualCorrection[3][4] = {{0.0826, 0.0725, 0.0677, 0.0445},
+    //                                       {1, 1, 1, 1},
+    //                                       {1, 1, 1, 1}};
+      
+    //  // Testing corrections with Q from integrated bins, only 0-10 actually done. Done with 4.5 % centrality shift and flow jets
+    //  double manualManualCorrection[3][4] = {{0.1101, 0.1117, 0.1116, 0.0965},
+    //                                   {0.0872, 0.0923, 0.0948, 0.0941},
+    //                                   {0.0332, 0.0289, 0.0306, 0.0266}};
+      
+    //  // Integrated pT bins. Done with 5 % centrality shift and calo jets. Correction from hadron v2, scale from subeNon0 yield
+    //  double manualManualCorrection[3][4] = {{0.0755/0.930, 0.0685/0.930, 0.0637/0.930, 0.0641/0.930},
+    //                                   {0.0863/0.933, 0.0939/0.933, 0.1004/0.933, 0.1010/0.933},
+    //                                   {0.0536/1.057, 0.0576/1.057, 0.0684/1.057, 0.05/1.057}};
+      
+    //    // Integrated pT bins. Done with 5 % centrality shift and calo jets. Correction from hadron v2, scale from all yield
+    //    double manualManualCorrection[3][4] = {{0.0755/0.949, 0.0685/0.949, 0.0637/0.949, 0.0641/0.949},
+    //                                     {0.0863/0.964, 0.0939/0.964, 0.1004/0.964, 0.1010/0.964},
+    //                                     {0.0536/1.134, 0.0576/1.134, 0.0684/1.134, 0.05/1.134}};
+      
+    //  // Integrated pT bins. Done with 5 % centrality shift and calo jets. Correction from average dihadron yield and hadron v2.
+    //  double manualManualCorrection[3][4] = {{0.0657, 0.0483, 0.0385, 0.0274},
+    //                                   {0.0946, 0.1040, 0.1117, 0.1082},
+    //                                   {0.0497, 0.0505, 0.0576, 0.05}};
+      
+    //    // Integrated pT bins. Done with 3 % centrality shift and calo jets. Correction from hadron v2, scale from subeNon0 yield
+    //    double manualManualCorrection[3][4] = {{0.0927/1.071, 0.0879/1.071, 0.0913/1.071, 0.0707/1.071},
+    //                                     {0.0992/1.085, 0.1013/1.085, 0.1162/1.085, 0.1107/1.085},
+    //                                     {0.0682/1.300, 0.0718/1.300, 0.0742/1.300, 0.0611/1.300}};
+      
+    //      // Integrated pT bins. Done with 3 % centrality shift and calo jets. Correction from hadron v2, scale from all yield
+    //      double manualManualCorrection[3][4] = {{0.0927/1.087, 0.0879/1.087, 0.0913/1.087, 0.0707/1.087},
+    //                                       {0.0992/1.119, 0.1013/1.119, 0.1162/1.119, 0.1107/1.119},
+    //                                       {0.0682/1.387, 0.0718/1.387, 0.0742/1.387, 0.0611/1.387}};
 
-//  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and flow jets
-//  double manualCorrection[3][4] = {{0.1087, 0.1128, 0.1180, 0.1022},
-//                                   {0.0908, 0.0952, 0.0978, 0.0966},
-//                                   {0.0340, 0.0351, 0.0358, 0.0286}};
-  
-//    // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and pfcs jets
-//    double manualCorrection[3][4] = {{0.1805, 0.1731, 0.1784, 0.1408},
-//                                     {0.1909, 0.1975, 0.2028, 0.2006},
-//                                     {0.1178, 0.1215, 0.1232, 0.1238}};
-  
-//      // Manual corrections directly from 2.5 Q-cuts. Done with 4 % centrality shift and pfcs jets
-//      double manualCorrection[3][4] = {{0.1784, 0.1716, 0.1811, 0.1528},
-//                                       {0.1883, 0.1946, 0.1982, 0.2010},
-//                                       {0.1182, 0.1190, 0.1209, 0.1257}};
-  
-//    // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and flow jets requiring also calo dijet
-//    double manualCorrection[3][4] = {{0.0722, 0.0743, 0.0855, 0.1055},
-//                                     {0.0691, 0.0715, 0.0784, 0.1074},
-//                                     {0.0423, 0.0451, 0.0532, 0.0911}};
-  
-//  // Testing corrections with Q from integrated bins. Done with 4 % centrality shift and calo jets requiring also flow dijet
-//  double manualCorrection[3][4] = {{0.0709, 0.0683, 0.0751, 0.0654},
-//                                   {0.0639, 0.0656, 0.0657, 0.0652},
-//                                   {0.0378, 0.0373, 0.0337, 0.0181}};
-  
-//    // Integrated pT bins. Done with 4.5 % centrality shift and calo jets. Correction directly from hadron v2 value is used.
-//    double manualCorrection[3][4] = {{0.0833/0.968, 0.0761/0.968, 0.0732/0.968, 0.0539/0.968},
-//                                     {1, 1, 1, 1},
-//                                     {1, 1, 1, 1}};
-  
-//      // Integrated pT bins. Done with 4.5 % centrality shift and calo jets. Correction from average dihadron yield and hadron v2.
-//      double manualCorrection[3][4] = {{0.0826, 0.0725, 0.0677, 0.0445},
-//                                       {1, 1, 1, 1},
-//                                       {1, 1, 1, 1}};
-  
-//  // Testing corrections with Q from integrated bins, only 0-10 actually done. Done with 4.5 % centrality shift and flow jets
-//  double manualCorrection[3][4] = {{0.1101, 0.1117, 0.1116, 0.0965},
-//                                   {0.0872, 0.0923, 0.0948, 0.0941},
-//                                   {0.0332, 0.0289, 0.0306, 0.0266}};
-  
-//  // Integrated pT bins. Done with 5 % centrality shift and calo jets. Correction from hadron v2, scale from subeNon0 yield
-//  double manualCorrection[3][4] = {{0.0755/0.930, 0.0685/0.930, 0.0637/0.930, 0.0641/0.930},
-//                                   {0.0863/0.933, 0.0939/0.933, 0.1004/0.933, 0.1010/0.933},
-//                                   {0.0536/1.057, 0.0576/1.057, 0.0684/1.057, 0.05/1.057}};
-  
-//    // Integrated pT bins. Done with 5 % centrality shift and calo jets. Correction from hadron v2, scale from all yield
-//    double manualCorrection[3][4] = {{0.0755/0.949, 0.0685/0.949, 0.0637/0.949, 0.0641/0.949},
-//                                     {0.0863/0.964, 0.0939/0.964, 0.1004/0.964, 0.1010/0.964},
-//                                     {0.0536/1.134, 0.0576/1.134, 0.0684/1.134, 0.05/1.134}};
-  
-//  // Integrated pT bins. Done with 5 % centrality shift and calo jets. Correction from average dihadron yield and hadron v2.
-//  double manualCorrection[3][4] = {{0.0657, 0.0483, 0.0385, 0.0274},
-//                                   {0.0946, 0.1040, 0.1117, 0.1082},
-//                                   {0.0497, 0.0505, 0.0576, 0.05}};
-  
-//    // Integrated pT bins. Done with 3 % centrality shift and calo jets. Correction from hadron v2, scale from subeNon0 yield
-//    double manualCorrection[3][4] = {{0.0927/1.071, 0.0879/1.071, 0.0913/1.071, 0.0707/1.071},
-//                                     {0.0992/1.085, 0.1013/1.085, 0.1162/1.085, 0.1107/1.085},
-//                                     {0.0682/1.300, 0.0718/1.300, 0.0742/1.300, 0.0611/1.300}};
-  
-//      // Integrated pT bins. Done with 3 % centrality shift and calo jets. Correction from hadron v2, scale from all yield
-//      double manualCorrection[3][4] = {{0.0927/1.087, 0.0879/1.087, 0.0913/1.087, 0.0707/1.087},
-//                                       {0.0992/1.119, 0.1013/1.119, 0.1162/1.119, 0.1107/1.119},
-//                                       {0.0682/1.387, 0.0718/1.387, 0.0742/1.387, 0.0611/1.387}};
-
-//    // Integrated pT bins. Done with 3 % centrality shift and calo jets. Correction from average dihadron yield and hadron v2.
-//    double manualCorrection[3][4] = {{0.1013, 0.0994, 0.1143, 0.0970},
-//                                     {0.0543, 0.0603, 0.0558, 0.0948},
-//                                     {0.0501, 0.0501, 0.0509, 0.0510}};
-  
-//        // Integrated pT bins. Done with no centrality shift and calo jets. Correction from hadron v2, scale from all yield
-//        double manualCorrection[3][4] = {{0.1544/1.285, 0.1529/1.285, 0.1609/1.285, 0.1493/1.285},
-//                                         {0.1471/1.378, 0.1549/1.378, 0.1818/1.378, 0.1843/1.378},
-//                                         {0.0891/1.844, 0.1164/1.844, 0.1061/1.844, 0.0909/1.844}};
-  
-//        // Disable MC correction.
-//        double manualCorrection[3][4] = {{0, 0, 0, 0},
-//                                         {0, 0, 0, 0},
-//                                         {0, 0, 0, 0}};
+    //    // Integrated pT bins. Done with 3 % centrality shift and calo jets. Correction from average dihadron yield and hadron v2.
+    //    double manualManualCorrection[3][4] = {{0.1013, 0.0994, 0.1143, 0.0970},
+    //                                     {0.0543, 0.0603, 0.0558, 0.0948},
+    //                                     {0.0501, 0.0501, 0.0509, 0.0510}};
+      
+    //        // Integrated pT bins. Done with no centrality shift and calo jets. Correction from hadron v2, scale from all yield
+    //        double manualManualCorrection[3][4] = {{0.1544/1.285, 0.1529/1.285, 0.1609/1.285, 0.1493/1.285},
+    //                                         {0.1471/1.378, 0.1549/1.378, 0.1818/1.378, 0.1843/1.378},
+    //                                         {0.0891/1.844, 0.1164/1.844, 0.1061/1.844, 0.0909/1.844}};
+    
+    for(int iCentrality = 0; iCentrality < 3; iCentrality++){
+      for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++){
+        manualCorrection[iCentrality][iTrackPt] = manualManualCorrection[iCentrality][iTrackPt];
+      }
+    }
+    
+  } else {
+    
+    // Multiplicity matching mode with matched yields and scaled hadron v2 for calorimeter jets
+    if(manualCorrectionMatchingMode == 0 && manualCorrectionMultiplicityMode == 0 && manualCorrectionJetCollection == 0){
+      
+      // Correction for jet v2
+      if(firstDrawnVn == 2){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.101546/1.17521/0.977956;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.0774229/0.814646/1.00629; // Centrality 0-10
+          manualCorrection[2][iTrackPt] = 0.0340949/0.746073/0.94224; // Centrality 0-10
+        }
+      }
+      
+      // Correction for jet v3. Note: Hadron v3 differences: 0.862352, 0.788551, 0.810996
+      if(firstDrawnVn == 3){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.0327785/1.17521/0.977956;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.0215294/0.814646/1.00629; // Centrality 0-10
+          manualCorrection[2][iTrackPt] = 0.0128538/0.746073/0.94224; // Centrality 0-10
+        }
+      }
+      
+      // Correction for jet v4. Note: Hadron v4 differences: 0.210888, 0.22906, 0.325921
+      if(firstDrawnVn == 4){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.0321364/1.17521/0.977956;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.0188006/0.814646/1.00629; // Centrality 0-10
+          manualCorrection[2][iTrackPt] = 0.02082/0.746073/0.94224; // Centrality 0-10
+        }
+      }
+      
+    } // Multiplicity matching mode with matched yields and scaled hadron v2 for calorimeter jets
+    
+    // Multiplicity matching mode with matched hadron v2 using Q-vector cuts and scaled dihadron yield for calorimeter jets
+    if(manualCorrectionMatchingMode == 1 && manualCorrectionMultiplicityMode == 0 && manualCorrectionJetCollection == 0){
+      
+      // Correction for jet v2
+      if(firstDrawnVn == 2){
+        // Centrality 0-10
+        manualCorrection[0][0] = 0.0858/1.013;  // Track pT 0.7-1
+        manualCorrection[0][1] = 0.0839/1.013;  // Track pT 1-2
+        manualCorrection[0][2] = 0.0759/1.013;  // Track pT 2-3
+        manualCorrection[0][3] = 0.0822/1.013;  // Track pT 3-4
+        
+        //Centrality 10-30
+        manualCorrection[1][0] = 0.0948/1.038;  // Track pT 0.7-1
+        manualCorrection[1][1] = 0.1009/1.038;  // Track pT 1-2
+        manualCorrection[1][2] = 0.1195/1.038;  // Track pT 2-3
+        manualCorrection[1][3] = 0.1178/1.038;  // Track pT 3-4
+        
+        // Centrality 30-50
+        manualCorrection[2][0] = 0.0527/1.249;  // Track pT 0.7-1
+        manualCorrection[2][1] = 0.0536/1.249;  // Track pT 1-2
+        manualCorrection[2][2] = 0.0695/1.249;  // Track pT 2-3
+        manualCorrection[2][3] = 0.0732/1.249;  // Track pT 3-4
+      }
+      
+    } // Multiplicity matching mode with matched hadron v2 using Q-vector cuts and scaled dihadron yield for calorimeter jets
+       
+    // Multiplicity matching mode with matched yields and scaled hadron v2 for pfcs jets
+    if(manualCorrectionMatchingMode == 0 && manualCorrectionMultiplicityMode == 0 && manualCorrectionJetCollection == 1){
+      
+      // Correction for jet v2
+      if(firstDrawnVn == 2){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.204468/1.15692/0.977956;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.17523/0.799086/1.00629; // Centrality 0-10
+          manualCorrection[2][iTrackPt] = 0.0969208/0.733711/0.94224; // Centrality 0-10
+        }
+      }
+      
+      // Correction for jet v3. Note: Hadron v3 differences: 0.862352, 0.788551, 0.810996
+      if(firstDrawnVn == 3){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.0979955/1.15692/0.977956;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.079964/0.799086/1.00629; // Centrality 0-10
+          manualCorrection[2][iTrackPt] = 0.0508714/0.733711/0.94224; // Centrality 0-10
+        }
+      }
+      
+      // Correction for jet v4. Note: Hadron v4 differences: 0.210888, 0.22906, 0.325921
+      if(firstDrawnVn == 4){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.0195/1.17521/0.977956;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.034/0.814646/1.00629; // Centrality 0-10
+          manualCorrection[2][iTrackPt] = 0.01/0.746073/0.94224; // Centrality 0-10
+        }
+      }
+      
+    } // Multiplicity matching mode with matched yields and scaled hadron v2 for pfcs jets
+      
+    // Centrality matching mode with matched hadron v2 using Q-vector cuts and scaled dihadron yield for calorimeter jets. NOMINAL
+    if(manualCorrectionMatchingMode == 1 && manualCorrectionMultiplicityMode == 1 && manualCorrectionJetCollection == 0){
+      
+      // Correction for jet v2
+      if(firstDrawnVn == 2){
+        // Centrality 0-10
+        manualCorrection[0][0] = 0.0845/1.024;  // Track pT 0.7-1
+        manualCorrection[0][1] = 0.0828/1.024;  // Track pT 1-2
+        manualCorrection[0][2] = 0.0795/1.024;  // Track pT 2-3
+        manualCorrection[0][3] = 0.0642/1.024;  // Track pT 3-4
+        
+        //Centrality 10-30
+        manualCorrection[1][0] = 0.0920/1.042;  // Track pT 0.7-1
+        manualCorrection[1][1] = 0.0952/1.042;  // Track pT 1-2
+        manualCorrection[1][2] = 0.1074/1.042;  // Track pT 2-3
+        manualCorrection[1][3] = 0.1037/1.042;  // Track pT 3-4
+        
+        // Centrality 30-50
+        manualCorrection[2][0] = 0.0661/1.260;  // Track pT 0.7-1
+        manualCorrection[2][1] = 0.0693/1.260;  // Track pT 1-2
+        manualCorrection[2][2] = 0.0728/1.260;  // Track pT 2-3
+        manualCorrection[2][3] = 0.0616/1.260;  // Track pT 3-4
+      }
+      
+    } // Centrality matching mode with matched hadron v2 using Q-vector cuts and scaled dihadron yield for calorimeter jets
+    
+    // Centrality matching mode with matched hadron v2 using Q-vector weights and scaled dihadron yield for calorimeter jets
+    if(manualCorrectionMatchingMode == 2 && manualCorrectionMultiplicityMode == 1 && manualCorrectionJetCollection == 0){
+      
+      // Correction for jet v2
+      if(firstDrawnVn == 2){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.0810/1.02034;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.0990/1.04281; // Centrality 10-30
+          manualCorrection[2][iTrackPt] = 0.0712/1.23788; // Centrality 30-50
+        }
+      }
+      
+      // Correction for jet v3. Note: Hadron v3 differences: 0.862352, 0.788551, 0.810996
+      if(firstDrawnVn == 3){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.030537/1.02034;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.01/1.04281;      // Centrality 10-30
+          manualCorrection[2][iTrackPt] = 0.007642/1.23788;  // Centrality 30-50
+        }
+      }
+      
+      // Correction for jet v4. Note: Hadron v4 differences: 0.210888, 0.22906, 0.325921
+      if(firstDrawnVn == 4){
+        for(int iTrackPt = 0; iTrackPt < 4; iTrackPt++) {
+          manualCorrection[0][iTrackPt] = 0.0372/1.02034;  // Centrality 0-10
+          manualCorrection[1][iTrackPt] = 0.0115/1.04281; // Centrality 10-30
+          manualCorrection[2][iTrackPt] = 0.0488/1.23788; // Centrality 30-50
+        }
+      }
+      
+    } // Centrality matching mode with matched hadron v2 using Q-vector weights and scaled dihadron yield for calorimeter jets
+    
+  } // Setting up jet vn correction
   
   // Disable MC error
     double manualCorrectionError[3][4] = {{0, 0, 0, 0},
-                                               {0, 0, 0, 0},
-                                               {0, 0, 0, 0}};
+                                          {0, 0, 0, 0},
+                                          {0, 0, 0, 0}};
   
-//          // Correction for v2 using multiplicity matching scheme for calo jets
-//          double manualCorrection[3][4] = {{0.101546/1.17521/0.977956, 0.101546/1.17521/0.977956, 0.101546/1.17521/0.977956, 0.101546/1.17521/0.977956},
-//                                           {0.0774229/0.814646/1.00629, 0.0774229/0.814646/1.00629, 0.0774229/0.814646/1.00629, 0.0774229/0.814646/1.00629},
-//                                           {0.0340949/0.746073/0.94224, 0.0340949/0.746073/0.94224, 0.0340949/0.746073/0.94224, 0.0340949/0.746073/0.94224}};
-  
-//            // Correction for v2 using multiplicity matching scheme and Q-vector cuts.
-//            double manualCorrection[3][4] = {{0.0858/1.013, 0.0839/1.013, 0.0759/1.013, 0.0822/1.013},
-//                                             {0.0948/1.038, 0.1009/1.038, 0.1195/1.038, 0.1178/1.038},
-//                                             {0.0527/1.249, 0.0536/1.249, 0.0695/1.249, 0.0732/1.249}};
-  
-//            // Correction for v2 using multiplicity matching scheme for pfCs jets
-//            double manualCorrection[3][4] = {{0.207094/1.17521/0.977956, 0.207094/1.17521/0.977956, 0.207094/1.17521/0.977956, 0.207094/1.17521/0.977956},
-//                                             {0.176765/0.814646/1.00629, 0.176765/0.814646/1.00629, 0.176765/0.814646/1.00629, 0.176765/0.814646/1.00629},
-//                                             {0.0970723/0.746073/0.94224, 0.0970723/0.746073/0.94224, 0.0970723/0.746073/0.94224, 0.0970723/0.746073/0.94224}};
-  
-//  // Correction errors for v2 using multiplicity matching scheme
-//    double manualCorrectionError[3][4] = {{0.00127865/1.17521/0.977956, 0.00127865/1.17521/0.977956, 0.00127865/1.17521/0.977956, 0.00127865/1.17521/0.977956},
-//                                               {0.000831144/0.814646/1.00629, 0.000831144/0.814646/1.00629, 0.000831144/0.814646/1.00629, 0.000831144/0.814646/1.00629},
-//                                               {0.000930751/0.746073/0.94224, 0.000930751/0.746073/0.94224, 0.000930751/0.746073/0.94224, 0.000930751/0.746073/0.94224}};
-  
-//   // Correction for v3 using multiplicity matching scheme for calo jets. Hadron v3 differences: 0.862352, 0.788551, 0.810996
-//  double manualCorrection[3][4] = {{0.0327785/1.17521/0.977956, 0.0327785/1.17521/0.977956, 0.0327785/1.17521/0.977956, 0.0327785/1.17521/0.977956},
-//                                   {0.0215294/0.814646/1.00629, 0.0215294/0.814646/1.00629, 0.0215294/0.814646/1.00629, 0.0215294/0.814646/1.00629},
-//                                   {0.0128538/0.746073/0.94224, 0.0128538/0.746073/0.94224, 0.0128538/0.746073/0.94224, 0.0128538/0.746073/0.94224}};
-
-     // Correction for v3 using multiplicity matching scheme for pfCs jets. Hadron v3 differences: 0.862352, 0.788551, 0.810996
-    double manualCorrection[3][4] = {{0.0979514/1.17521/0.977956, 0.0979514/1.17521/0.977956, 0.0979514/1.17521/0.977956, 0.0979514/1.17521/0.977956},
-                                     {0.0803724/0.814646/1.00629, 0.0803724/0.814646/1.00629, 0.0803724/0.814646/1.00629, 0.0803724/0.814646/1.00629},
-                                     {0.0504621/0.746073/0.94224, 0.0504621/0.746073/0.94224, 0.0504621/0.746073/0.94224, 0.0504621/0.746073/0.94224}};
-  
-//  // Correction errors for v3 using multiplicity matching scheme
-//    double manualCorrectionError[3][4] = {{0.00240578/0.862352/0.977956, 0.00240578/0.862352/0.977956, 0.00240578/0.862352/0.977956, 0.00240578/0.862352/0.977956},
-//                                     {0.00192973/0.788551/1.00629, 0.00192973/0.788551/1.00629, 0.00192973/0.788551/1.00629, 0.00192973/0.788551/1.00629},
-//                                     {0.00239374/0.810996/0.94224, 0.00239374/0.810996/0.94224, 0.00239374/0.810996/0.94224, 0.00239374/0.810996/0.94224}};
-  
-//    // Correction for v4 using multiplicity matching scheme for calo jets. Hadron v4 differences: 0.210888, 0.22906, 0.325921
-//    double manualCorrection[3][4] = {{0.0321364/1.17521/0.977956, 0.0321364/1.17521/0.977956, 0.0321364/1.17521/0.977956, 0.0321364/1.17521/0.977956},
-//                                     {0.0188006/0.814646/1.00629, 0.0188006/0.814646/1.00629, 0.0188006/0.814646/1.00629, 0.0188006/0.814646/1.00629},
-//                                     {0.02082/0.746073/0.94224, 0.02082/0.746073/0.94224, 0.02082/0.746073/0.94224, 0.0128538/0.746073/0.94224}};
-
-//      // Correction for v4 using multiplicity matching scheme for calo jets. Hadron v4 differences: 0.210888, 0.22906, 0.325921
-//      double manualCorrection[3][4] = {{0.0195/1.17521/0.977956, 0.0195/1.17521/0.977956, 0.0195/1.17521/0.977956, 0.0195/1.17521/0.977956},
-//                                       {0.034/0.814646/1.00629, 0.034/0.814646/1.00629, 0.034/0.814646/1.00629, 0.034/0.814646/1.00629},
-//                                       {0.01/0.746073/0.94224, 0.01/0.746073/0.94224, 0.01/0.746073/0.94224, 0.01/0.746073/0.94224}};
-  
-//  // Correction errors for v4 using multiplicity matching scheme
-//    double manualCorrectionError[3][4] = {{0.0162291/0.210888/0.977956, 0.0162291/0.210888/0.977956, 0.0162291/0.210888/0.977956, 0.0162291/0.210888/0.977956},
-//                                     {0.00982104/0.22906/1.00629, 0.00982104/0.22906/1.00629, 0.00982104/0.22906/1.00629, 0.00982104/0.22906/1.00629},
-//                                     {0.0084061/0.325921/0.94224, 0.0084061/0.325921/0.94224, 0.0084061/0.325921/0.94224, 0.0084061/0.325921/0.94224}};
-  
-//            // Correction for v4 using multiplicity matching scheme
-//  double manualCorrection[3][4] = {{0.0120075, 0.0120075, 0.0120075, 0.0120075},
-//                                   {0.0093932, 0.0093932, 0.0093932, 0.0093932},
-//                                   {0.00454397, 0.00454397, 0.00454397, 0.00454397}};
-  
-//  // Correction for v3 using 4% centrality shift and jet-event plane correlation
-//double manualCorrection[3][4] = {{0.0324425, 0.0324425, 0.0324425, 0.0324425},
-//                         {0.0224845, 0.0224845, 0.0224845, 0.0224845},
-//                         {0.010166, 0.010166, 0.010166, 0.010166}};
-  
-//  // Correction for v4 using 4% centrality shift and jet-event plane correlation
-//double manualCorrection[3][4] = {{0.0117986, 0.0117986, 0.0117986, 0.0117986},
-//                         {0.00936528, 0.00936528, 0.00936528, 0.00936528},
-//                         {0.00449385, 0.00449385, 0.00449385, 0.00449385}};
   
   // For x-axis, set the Q-vector value from the file. This can be decoded from the filename
   TObjArray *nameContents;
