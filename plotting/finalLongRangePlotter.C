@@ -12,14 +12,12 @@ void finalLongRangePlotter(){
   
   // Input file name for data
   TString directoryName = "flowGraphs/";
-  TString inputFileName = "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root";
-  // summaryPlot_akCaloJet_nominalCorrection_2021-05-20.root
-  // summaryPlot_akCaloJet_averageCorrection_2021-06-01.root
+  TString inputFileName = "summaryPlot_multiplicityMatch_jetEta1v3_2022-02-13.root";
+  // summaryPlot_multiplicityMatch_jetEta1v3_2022-02-13.root
   // summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root
-  TString uncertaintyFileName = "systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
-  // systematicUncertainties_justTesting.root
-  // systematicUncertainties_justTesting_averageCorrection.root
-  // systematicUncertainties_justTesting_finalCorrection.root
+  TString uncertaintyFileName = "systematicUncertainties_addMultiplicityMatch_updateCentralValue_2022-02-14.root";
+  // systematicUncertainties_addMultiplicityMatch_updateCentralValue_2022-02-14.root
+  // systematicUncertainties_allSources_finalCorrection_2021-08-10.root
   
   // Text to be put into legend for the input graphs
   const char* legendText = "This analysis";
@@ -29,15 +27,15 @@ void finalLongRangePlotter(){
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
   const int firstDrawnVn = 2;     // First drawn flow component
-  const int lastDrawnVn = 3;      // Last drawn flow component
+  const int lastDrawnVn = 4;      // Last drawn flow component
   
   // Define if previous results should be included in the plot
-  const bool drawAtlasJetV2 = true;
+  const bool drawAtlasJetV2 = false;
   const bool drawCmsHigtPtV2 = true;
   
   // Save the final plots
-  const bool saveFigures = true;
-  TString saveComment = "_allUncertainties";
+  const bool saveFigures = false;
+  TString saveComment = "_multiplicityMatch";
   
   // =========== //
   // Read graphs //
@@ -125,8 +123,8 @@ void finalLongRangePlotter(){
   TLegend *legend;
   double errorY;
   
-  double minZoom[] = {0,0,-0.03,0};
-  double maxZoom[] = {0.1,0.1,0.03,0.1};
+  double minZoom[] = {0,0,-0.04,-0.05};
+  double maxZoom[] = {0.1,0.1,0.04,0.05};
   
   TLine *zeroLine = new TLine(0.75,0,3.25,0);
   zeroLine->SetLineStyle(2);
