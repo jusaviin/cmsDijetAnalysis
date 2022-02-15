@@ -61,6 +61,7 @@ void estimateLongRangeSystematics(){
   // Results with Q-vector weight instead of cut
   TString qVectorWeightedFileName = "flowGraphs/summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root"; // Need to find the correct file to reproduce this file in order to add v4!!!
   TString multiplicitySchemeFileName = "flowGraphs/summaryPlot_multiplicityMatch_jetEta1v3_2022-02-11.root"; // This is the new nominal file!!!!
+  TString multiplicitySchemeQcutFileName = "flowGraphs/summaryPlot_multiplicityMatch_qVectors_jetEta1v3_2022-02-13.root";
   
   // Results without tracking efficiency correction
   TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";
@@ -81,7 +82,7 @@ void estimateLongRangeSystematics(){
   
   bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_addMultiplicityMatch_testCorrection_2022-02-11.root";
+  TString outputFileName = "flowGraphs/systematicUncertainties_addMultiplicityMatch_updateCentralValue_2022-02-14.root";
   // flowGraphs/systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   
   // At the moment, the centrality shift uncertainty is not applied but instead a comparison with multiplicity matched results is used
@@ -121,6 +122,7 @@ void estimateLongRangeSystematics(){
   TFile* quarkGluonFractionFile = TFile::Open(quarkGluonFractionFileName);
   TFile* jecUncertaintySmearedFile = TFile::Open(jecUncertaintySmearedFileName);
   TFile* jetResolutionSmearedFile = TFile::Open(jetResolutionSmearedFileName);
+  TFile* multiplicitySchemeQcutFile = TFile::Open(multiplicitySchemeQcutFileName);
   
   // Result graphs
   TGraphErrors* nominalResultGraph[maxVn];
@@ -138,6 +140,7 @@ void estimateLongRangeSystematics(){
   TGraphErrors* quarkGluonFractionGraph[maxVn];
   TGraphErrors* jecUncertaintySmearedGraph[maxVn];
   TGraphErrors* jetResolutionSmearedGraph[maxVn];
+  TGraphErrors* multiplicityMatchGraph[maxVn];
   
   TString graphName;
   
@@ -161,12 +164,13 @@ void estimateLongRangeSystematics(){
     finalResultGraph[iFlow] = (TGraphErrors*) finalResultFile->Get(graphName);
     shiftedResultGraph[iFlow][0] = (TGraphErrors*) shiftedResultFile1->Get(graphName);
     shiftedResultGraph[iFlow][1] = (TGraphErrors*) shiftedResultFile2->Get(graphName);
-    correctionMethodGraph[iFlow][0] = (TGraphErrors*) qVectorWeightedFile->Get(graphName);
-    correctionMethodGraph[iFlow][1] = (TGraphErrors*) multiplicitySchemeFile->Get(graphName);
+    correctionMethodGraph[iFlow][0] = (TGraphErrors*) multiplicitySchemeQcutFile->Get(graphName);
+    correctionMethodGraph[iFlow][1] = (TGraphErrors*) multiplicitySchemeQcutFile->Get(graphName); // TODO: Need Q-weight here if can get it working
     noTrackEfficiencyGraph[iFlow] = (TGraphErrors*) noTrackEfficiencyFile->Get(graphName);
     quarkGluonFractionGraph[iFlow] = (TGraphErrors*) quarkGluonFractionFile->Get(graphName);
     jecUncertaintySmearedGraph[iFlow] = (TGraphErrors*) jecUncertaintySmearedFile->Get(graphName);
     jetResolutionSmearedGraph[iFlow] = (TGraphErrors*) jetResolutionSmearedFile->Get(graphName);
+    multiplicityMatchGraph[iFlow] = (TGraphErrors*) multiplicitySchemeFile->Get(graphName);
     
   }
   
@@ -405,7 +409,7 @@ void estimateLongRangeSystematics(){
     for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         
-        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], correctionMethodGraph[iFlow], 2, iCentrality);
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(multiplicityMatchGraph[iFlow], correctionMethodGraph[iFlow], 2, iCentrality);
         
         absoluteUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = absoluteUncertainty;
         relativeUncertaintyTable[LongRangeSystematicOrganizer::kMCMethod][iFlow][iCentrality] = relativeUncertainty;
@@ -417,7 +421,7 @@ void estimateLongRangeSystematics(){
       if(plotExample){
         legendNames[0] = "Q-vector weight";
         legendNames[1] = "Multiplicity match";
-        drawIllustratingPlots(drawer, finalResultGraph[iFlow], correctionMethodGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCMethod));
+        drawIllustratingPlots(drawer, multiplicityMatchGraph[iFlow], correctionMethodGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCMethod));
       }
       
     } // Flow component loop
@@ -611,7 +615,8 @@ void estimateLongRangeSystematics(){
     for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
       graphName = Form("systematicUncertainty_v%d_%s", iFlow+1, uncertaintyNameString.Data());
       //systematicUncertaintyGraph[iUncertainty][iFlow] = (TGraphErrors*) nominalResultGraph[iFlow]->Clone(graphName);
-      systematicUncertaintyGraph[iUncertainty][iFlow] = (TGraphErrors*) finalResultGraph[iFlow]->Clone(graphName);
+      //systematicUncertaintyGraph[iUncertainty][iFlow] = (TGraphErrors*) finalResultGraph[iFlow]->Clone(graphName);
+      systematicUncertaintyGraph[iUncertainty][iFlow] = (TGraphErrors*) multiplicityMatchGraph[iFlow]->Clone(graphName);
       
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         systematicUncertaintyGraph[iUncertainty][iFlow]->SetPointError(iCentrality, 0, absoluteUncertaintyTable[iUncertainty][iFlow][iCentrality]);
