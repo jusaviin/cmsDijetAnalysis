@@ -21,7 +21,7 @@ private:
 public:
   
   enum enumLongRangeUncertaintySources{kDeltaEtaRegion, kDeltaEtaRegionDihadron, kDeltaEtaSide, kVz, kAngleSmear, kJetCollection, kMCTuning, kMCMethod, kMCFit, kMinBias, kTracking, kQuarkGluonFraction, kJEC, kJER, kAll, knUncertaintySources};
-  enum enumGroupedLongRangeUncertaintySources{kAcceptanceCorrection, kLongRangeExtraction, kVertexZ, kAngleSmearing, kJetReconstructionBias, kMinimumBias, kTrackingGroups, kQuarkGluonFractionGroups, kJetEnergyCorrection, kJetEnergyResolution, kAllGroups, knGroupedUncertaintySources};
+  enum enumGroupedLongRangeUncertaintySources{kAcceptanceCorrection, kLongRangeExtraction, kVertexZ, kAngleSmearing, kJetReconstructionBias, kMinimumBias, kTrackingGroups, kJetEnergyCorrection, kJetEnergyResolution, kAllGroups, knGroupedUncertaintySources};
 
   
   LongRangeSystematicOrganizer();                       // Default constructor
@@ -45,8 +45,8 @@ private:
   
   TString fLongRangeUncertaintyName[knUncertaintySources] = {"deltaEtaRegion", "deltaEtaRegionDihadron", "deltaEtaSide", "vz", "angleSmear", "jetCollection", "mcTuning", "mcMethod", "mcFit", "minBias", "tracking", "quarkGluonFraction", "jetEnergyCorrection", "jetEnergyResolution", "all"};
   TString fUncertaintyAxisName[knUncertaintySources] = {"#Delta#eta region", "#Delta#eta region hh", "#Delta#eta side", "v_{z}", "Angle smear", "Jet collection", "MC C-shift", "MC method", "MC Fit", "MinBias", "Tracking", "q/g fraction", "JEC", "JER", "all"};
-  TString fGroupedUncertaintyName[knGroupedUncertaintySources] = {"Acceptance correction", "Long range extraction", "vz", "Angle smear", "Jet reconstruction bias", "MinBias", "Tracking", "q/g fraction", "JEC", "JER", "Total"};
-  TString fGroupedUncertaintyAxisName[knGroupedUncertaintySources] = {"Acceptance", "Long range", "v_{z}", "Angle smear", "Jet reco bias", "MinBias", "Tracking", "q/g fraction", "JEC", "JER", "Total"};
+  TString fGroupedUncertaintyName[knGroupedUncertaintySources] = {"Acceptance correction", "Long range extraction", "vz", "Jet axis resolution", "Jet reconstruction bias", "Dijet bias for dihadron", "Tracking", "JEC", "JER", "Total"};
+  TString fGroupedUncertaintyAxisName[knGroupedUncertaintySources] = {"Acceptance", "Long range", "v_{z}", "Angle smear", "Jet reco bias", "MinBias", "Tracking", "JEC", "JER", "Total"};
 
   // Systematic uncertainty for long range correlations
   TGraphErrors* fLongRangeUncertaintyGraph[knUncertaintySources][knMaxFlow][knMaxXj+1];

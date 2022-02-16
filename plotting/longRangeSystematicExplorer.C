@@ -25,7 +25,7 @@ void longRangeSystematicExplorer(){
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
   const int firstDrawnVn = 2;     // First drawn flow component
-  const int lastDrawnVn = 2;      // Last drawn flow component
+  const int lastDrawnVn = 4;      // Last drawn flow component
   
   // Choose which histograms to draw
   const bool drawRelativeUncertainties = false;

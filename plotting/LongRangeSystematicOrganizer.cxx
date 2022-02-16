@@ -101,7 +101,7 @@ void LongRangeSystematicOrganizer::ReadInputFile(TFile *inputFile){
 void LongRangeSystematicOrganizer::GroupUncertaintyHistograms(){
   
   // Define the grouping
-  const int maxGroupSize = 4;
+  const int maxGroupSize = 5;
   int groupMap[knGroupedUncertaintySources][maxGroupSize+1] = {{0}};
   
   // Acceptance correction is read directly from deltaEtaSide
@@ -122,11 +122,12 @@ void LongRangeSystematicOrganizer::GroupUncertaintyHistograms(){
   groupMap[kAngleSmearing][1] = kAngleSmear;
   
   // For jet reconstruction bias, combine all MC based correction related sources
-  groupMap[kJetReconstructionBias][0] = 4;
+  groupMap[kJetReconstructionBias][0] = 5;
   groupMap[kJetReconstructionBias][1] = kJetCollection;
   groupMap[kJetReconstructionBias][2] = kMCTuning;
   groupMap[kJetReconstructionBias][3] = kMCMethod;
   groupMap[kJetReconstructionBias][4] = kMCFit;
+  groupMap[kJetReconstructionBias][5] = kQuarkGluonFraction;
   
   // For minimum bias, do not combine anything
   groupMap[kMinimumBias][0] = 1;
@@ -135,10 +136,6 @@ void LongRangeSystematicOrganizer::GroupUncertaintyHistograms(){
   // For tracking, do not combine anything
   groupMap[kTrackingGroups][0] = 1;
   groupMap[kTrackingGroups][1] = kTracking;
-  
-  // For q/g fraction, do not combine anything
-  groupMap[kQuarkGluonFractionGroups][0] = 1;
-  groupMap[kQuarkGluonFractionGroups][1] = kQuarkGluonFraction;
   
   // For jet energy correction, do not combine anything
   groupMap[kJetEnergyCorrection][0] = 1;
