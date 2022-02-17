@@ -67,7 +67,7 @@ void estimateLongRangeSystematics(){
   TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";
   
   // Results with varied quark/gluon fraction
-  TString quarkGluonFractionFileName = "flowGraphs/summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root";
+  TString quarkGluonFractionFileName = "flowGraphs/summaryPlot_multiplicityMatch_25pMoreQuark_jetEta1v3_2022-02-16.root";
   
   // Results where jet energy correction is altered by its uncertainties or by resolution
   TString jecUncertaintySmearedFileName = "flowGraphs/summaryPlot_akCaloJet_smearedJECmostStats_2021-08-09.root";
@@ -82,7 +82,7 @@ void estimateLongRangeSystematics(){
   
   bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_addMultiplicityMatch_updateCentralValue_2022-02-14.root";
+  TString outputFileName = "flowGraphs/systematicUncertainties_multiplicityMatch_updateQGfraction_noVz_2022-02-16.root";
   // flowGraphs/systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   
   // At the moment, the centrality shift uncertainty is not applied but instead a comparison with multiplicity matched results is used
@@ -91,6 +91,7 @@ void estimateLongRangeSystematics(){
     skipUncertaintySource[iUncertainty] = false;
   }
   skipUncertaintySource[LongRangeSystematicOrganizer::kMCTuning] = true;
+  skipUncertaintySource[LongRangeSystematicOrganizer::kVz] = true;
   
   
   // ==================================================================
@@ -514,7 +515,7 @@ void estimateLongRangeSystematics(){
     for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         
-        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], iCentrality);
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(multiplicityMatchGraph[iFlow], quarkGluonFractionGraph[iFlow], iCentrality);
         
         absoluteUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = absoluteUncertainty;
         relativeUncertaintyTable[LongRangeSystematicOrganizer::kQuarkGluonFraction][iFlow][iCentrality] = relativeUncertainty;
@@ -525,7 +526,7 @@ void estimateLongRangeSystematics(){
       // Draw example plots on how the uncertainty is obtained
       if(plotExample){
         legendNames[0] = "Adjusted q/g fraction";
-        drawIllustratingPlots(drawer, finalResultGraph[iFlow], quarkGluonFractionGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kQuarkGluonFraction));
+        drawIllustratingPlots(drawer, multiplicityMatchGraph[iFlow], quarkGluonFractionGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kQuarkGluonFraction));
       }
       
     } // Flow component loop
