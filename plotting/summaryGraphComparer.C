@@ -12,20 +12,20 @@ void summaryGraphComparer(){
   
   // Input file name for data
   TString directoryName = "flowGraphs/";
-  const int nInputFiles = 3;
-  TString inputFileName[] =  {"summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root", "summaryPlot_multiplicityMatch_jetEta1v3_2022-02-13.root", "summaryPlot_multiplicityMatch_qVectors_jetEta1v3_2022-02-13.root", "summaryPlot_multiplicityMatch_qWeight_jetEta1v3_2022-02-13.root",  "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root",  "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
+  const int nInputFiles = 2;
+  TString inputFileName[] =  {"summaryPlot_akPfCsJet_correctionOnlyQcut2p5_2021-05-20.root", "summaryPlot_4pCentShift_olfPfCsCrossCheck_2022-02-16.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root", "summaryPlot_multiplicityMatch_jetEta1v3_2022-02-13.root", "summaryPlot_multiplicityMatch_25pMoreQuark_jetEta1v3_2022-02-16.root", "summaryPlot_multiplicityMatch_qWeight_jetEta1v3_2022-02-13.root",  "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root",  "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
   
   TString uncertaintyFileName = "systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
   
   // Text to be put into legend for the input graphs
-  TString legendText[] = {"Q-cut method", "Multiplicity match", "MultiMatch+Q-cut", "MultiMatch+Q-weight", "MultiMatch PfCsJets", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
+  TString legendText[] = {"PFCS", "Cross check", "MultiMatch+q/g adjust", "MultiMatch+Q-weight", "MultiMatch PfCsJets", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
-  const int firstDrawnVn = 4;     // First drawn flow component
-  const int lastDrawnVn = 4;      // Last drawn flow component
+  const int firstDrawnVn = 2;     // First drawn flow component
+  const int lastDrawnVn = 2;      // Last drawn flow component
   
   // Define if previous results should be included in the plot
   const bool drawAtlasJetV2 = false;

@@ -13,11 +13,11 @@ void longRangeSystematicExplorer(){
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
   const int nFiles = 1;
-  TString uncertaintyFileName[] = { "systematicUncertainties_addMultiplicityMatch_updateMCMethod_2022-02-14.root", "systematicUncertainties_allSources_finalCorrection_2021-08-10.root",    "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
+  TString uncertaintyFileName[] = { "systematicUncertainties_multiplicityMatch_updateQGfraction_noVz_2022-02-16.root", "systematicUncertainties_addMultiplicityMatch_updateMCMethod_2022-02-14.root",     "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
   // systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   // systematicUncertainties_allSources_finalCorrection_2021-08-10.root
   
-  TString legendComment[] = {"Centrality shift", "Multiplicity match", "Dummy", "Dummy"};
+  TString legendComment[] = {"Multiplicity shift", "Update q/g fraction", "Dummy", "Dummy"};
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
