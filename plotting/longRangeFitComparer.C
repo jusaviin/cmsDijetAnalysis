@@ -8,12 +8,14 @@ void longRangeFitComparer(){
   // File from which the long range distributions are plotted
   TString directoryName = "flowGraphs/";
   const int nFiles = 2;
-  TString fileName[] = {"flowGraphs_PbPbMC2018_genJets_fakeV2_correctedJetHadron_correctedDihadronFromRegular_2021-05-05.root", "flowGraphs_PbPb2018MC_genJets_noCentShift_fakeJetV2_subeNon0_jetEta1v3_consistencyCheck_2022-02-08.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root"};
-  // "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root" "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root"
+  TString fileName[] = {"flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018_akPfCsJets_correctedJetHadron_correctedDihadronSmallStats_2021-05-13.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root",  "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_2022-02-12.root",   "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root"};
+  // "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root"
+  // "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root"
+  //  flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root
   
-  TString legendComment[] = {"Old file", "New file"};
+  TString legendComment[] = {"Calo dijet", "PFCS dijet"};
   
-  TString systemAndEnergy = "Pythia+Hydjet 5.02 TeV";
+  TString systemAndEnergy = "PbPb 5.02 TeV";
   
   // Open the file
   TFile *longRangeFile[nFiles];
@@ -33,8 +35,8 @@ void longRangeFitComparer(){
   bool scaleToOne = true;  // To see more clearly the vn variation, we can scale the average of the histogram to one
   
   // Configuration
-  const bool drawJetHadron = false;  // Draw the jet hadron long range deltaPhi distribution
-  const bool drawDihadron = true;   // Draw the dihadron long range deltaPhi distribution
+  const bool drawJetHadron = true;  // Draw the jet hadron long range deltaPhi distribution
+  const bool drawDihadron = false;   // Draw the dihadron long range deltaPhi distribution
 
   const bool drawOverallFit = false;  // Draw the overall Fourier fit to the distribution
   const bool drawV1 = false;         // Draw different fit components seperately
@@ -46,8 +48,9 @@ void longRangeFitComparer(){
   
   const bool drawRatio = true;
   
-  const bool saveFigures = false;
-  TString saveComment = "_mcWithFullFit";
+  const bool saveFigures = true;
+  TString saveComment = "_jetCollectionData";
+  TString figureFormat = "png";
   
   TString typeString[2] = {"Jet-hadron", "Dihadron"};
   TString saveTypeString[2] = {"JetHadron", "Dihadron"};
@@ -100,7 +103,7 @@ void longRangeFitComparer(){
           for(int iType = 0; iType < 2; iType++){
             
             longRangeDeltaPhiRatio[iFile-1][iType][iCentrality][iTrackPt] = (TH1D*) longRangeDeltaPhi[iFile][iType][iCentrality][iTrackPt]->Clone(Form("%sRatio%d%d%d", saveTypeString[iType].Data(), iFile, iCentrality, iTrackPt));
-            longRangeDeltaPhiRatio[iFile-1][iType][iCentrality][iTrackPt]->Divide(longRangeDeltaPhi[0][0][iCentrality][iTrackPt]);
+            longRangeDeltaPhiRatio[iFile-1][iType][iCentrality][iTrackPt]->Divide(longRangeDeltaPhi[0][iType][iCentrality][iTrackPt]);
             TF1 *fourierFit = longRangeDeltaPhiRatio[iFile-1][iType][iCentrality][iTrackPt]->GetFunction("fourier");
             fourierFit->SetLineWidth(0);
             
@@ -138,8 +141,8 @@ void longRangeFitComparer(){
         }
         
         // Set the y-axis scaling so that there is some room for legend
-        maxYscale = longRangeDeltaPhi[0][iType][iCentrality][iTrackPt]->GetMaximum();
-        minYscale = longRangeDeltaPhi[0][iType][iCentrality][iTrackPt]->GetMinimum();
+        maxYscale = longRangeDeltaPhi[1][iType][iCentrality][iTrackPt]->GetMaximum();
+        minYscale = longRangeDeltaPhi[1][iType][iCentrality][iTrackPt]->GetMinimum();
         yDifference = maxYscale - minYscale;
         maxYscale = maxYscale + 0.5 * yDifference;
         minYscale = minYscale - 0.12 * yDifference;
@@ -180,7 +183,8 @@ void longRangeFitComparer(){
               fitComponents[iFlow] = new TF1(Form("fv%d", iFlow+1), Form("[0]+[0]*[1]*2.0*TMath::Cos(%d.0*x)", iFlow+1), -TMath::Pi()/2.0, 3.0*TMath::Pi()/2.0);
               fitComponents[iFlow]->SetParameter(0,fourierFit->GetParameter(0));
               fitComponents[iFlow]->SetParameter(1,fourierFit->GetParameter(iFlow+1));
-              fitComponents[iFlow]->SetLineColor(componentColors[iFlow]);
+              //fitComponents[iFlow]->SetLineColor(componentColors[iFlow]);
+              fitComponents[iFlow]->SetLineColor(lineColors[iFile]);
               fitComponents[iFlow]->Draw("same");
               
             }
@@ -191,7 +195,7 @@ void longRangeFitComparer(){
         
         // Save the figures to file
         if(saveFigures){
-            gPad->GetCanvas()->SaveAs(Form("figures/longRangeDistributionComparison%s%s_C=%.0f-%.0f_T=%.0f-%.0f.pdf", saveTypeString[iType].Data(), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1]));
+            gPad->GetCanvas()->SaveAs(Form("figures/longRangeDistributionComparison%s%s_C=%.0f-%.0f_T=%.0f-%.0f.%s", saveTypeString[iType].Data(), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1], figureFormat.Data()));
         } // Saving figures
         
         if(drawRatio){
@@ -214,6 +218,11 @@ void longRangeFitComparer(){
           } // Loop over files
           
           legend->Draw();
+          
+          // Save the figures to file
+          if(saveFigures){
+              gPad->GetCanvas()->SaveAs(Form("figures/longRangeDistributionRatio%s%s_C=%.0f-%.0f_T=%.0f-%.0f.%s", saveTypeString[iType].Data(), saveComment.Data(), centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], trackPtBinBorders[iTrackPt], trackPtBinBorders[iTrackPt+1], figureFormat.Data()));
+          } // Saving figures
           
         } // Drawing ratio
         
