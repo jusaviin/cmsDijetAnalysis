@@ -6,7 +6,7 @@ void fitJetEventPlaneVn(){
   // Open the data files
   const int nFiles = 1;
   TFile *inputFile[nFiles];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_fakeJetV3_multWeight_updatedEventPlanes_jetEta1v3_2022-02-09.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_fake3pJetV2_jetEta1v6_2022-02-21.root");
   if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_subeNon0_multiplicityWeight_allEventPlanes_jetEta1v3_2022-01-30.root");
   if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_4pCentShift_tunedQweights_manualEventPlane_jetEta1v3_2022-01-21.root");
   if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_genJets_manualEventPlane_dijetEvents_2021-05-05.root");
@@ -32,7 +32,7 @@ void fitJetEventPlaneVn(){
   // Read the histograms from the data files
   const int nCentralityBins = 4;
   const int nQvectorBins = 4;
-  const int eventPlaneOrder = 3;
+  const int eventPlaneOrder = 2;
   TH1D *jetEventPlaneMidRapidity[nFiles][nQvectorBins][nCentralityBins];
   TF1 *fitFunctionMidRapidity[nFiles][nQvectorBins][nCentralityBins];
   TH1D *jetEventPlaneDifference[nQvectorBins][nCentralityBins];

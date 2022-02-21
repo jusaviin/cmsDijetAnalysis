@@ -12,13 +12,13 @@ void summaryGraphComparer(){
   
   // Input file name for data
   TString directoryName = "flowGraphs/";
-  const int nInputFiles = 2;
-  TString inputFileName[] =  {"summaryPlot_akPfCsJet_correctionOnlyQcut2p5_2021-05-20.root", "summaryPlot_4pCentShift_olfPfCsCrossCheck_2022-02-16.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root", "summaryPlot_multiplicityMatch_jetEta1v3_2022-02-13.root", "summaryPlot_multiplicityMatch_25pMoreQuark_jetEta1v3_2022-02-16.root", "summaryPlot_multiplicityMatch_qWeight_jetEta1v3_2022-02-13.root",  "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root",  "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
+  const int nInputFiles = 4;
+  TString inputFileName[] =  {"summaryPlot_multiplicityMatch_jetEta1v3_2022-02-11.root", "summaryPlot_multiplicityMatch_minBiasScale_caloJets_jetEta1v3_2022-02-17.root", "summaryPlot_multiplicityMatch_pfCsJetsWithCaloCorrection_jetEta1v6_2022-02-21.root", "summaryPlot_multiplicityMatch_pfCsJetsWithMinBiasCaloCorrection_jetEta1v6_2022-02-21.root", "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root", "summaryPlot_multiplicityMatch_minBiasScale_pfCsJets_jetEta1v3_2022-02-17.root", "summaryPlot_multiplicityMatch_25pMoreQuark_jetEta1v3_2022-02-16.root", "summaryPlot_multiplicityMatch_qWeight_jetEta1v3_2022-02-13.root",  "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root",  "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
   
   TString uncertaintyFileName = "systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
   
   // Text to be put into legend for the input graphs
-  TString legendText[] = {"PFCS", "Cross check", "MultiMatch+q/g adjust", "MultiMatch+Q-weight", "MultiMatch PfCsJets", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
+  TString legendText[] = {"Nominal correction, calo", "MinBias v_{2} scale, calo", "Scaled calo correction, PFCS", "Calo MinBias v_{2} scale, PFCS", "MultiMatch PfCsJets", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
@@ -35,8 +35,8 @@ void summaryGraphComparer(){
   
   // Save the final plots
   const bool saveFigures = false;
-  TString saveComment = "_shiftVsMatch";
-  TString figureFormat = "pdf";
+  TString saveComment = "_scalingCheck";
+  TString figureFormat = "png";
   
   // =========== //
   // Read graphs //
@@ -158,9 +158,10 @@ void summaryGraphComparer(){
   drawer->SetLabelOffsetX(0.04);
   drawer->SetTitleOffsetY(1.6);
   
-  double minZoom[] = {0,0,-0.03,-0.05};
+  double minZoom[] = {-0.05,0.0,-0.03,-0.05};
   double maxZoom[] = {0.12,0.12,0.03,0.05};
   double errorY;
+  double pointX, pointY;
   
   // Draw the graphs for selected flow components
   TLegend *legend;
@@ -186,7 +187,7 @@ void summaryGraphComparer(){
     if(drawUncertaintyBand){
       
       // Set the style for uncertainties
-      for(int iCentrality; iCentrality < jetVnUncertainty[iFlow]->GetN(); iCentrality++){
+      for(int iCentrality = 0; iCentrality < jetVnUncertainty[iFlow]->GetN(); iCentrality++){
         errorY = jetVnUncertainty[iFlow]->GetErrorY(iCentrality);
         jetVnUncertainty[iFlow]->SetPointError(iCentrality, 0.1, errorY);
       }
@@ -195,6 +196,12 @@ void summaryGraphComparer(){
       
       jetVnGraph[0][iFlow]->Draw("p,same");
     } else {
+      
+//      // Print some values
+//      for(int iCentrality = 0; iCentrality < jetVnGraph[1][iFlow]->GetN(); iCentrality++){
+//        jetVnGraph[1][iFlow]->GetPoint(iCentrality, pointX, pointY);
+//        cout << pointY << endl;
+//      }
       drawer->DrawGraphCustomAxes(jetVnGraph[0][iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
     }
     

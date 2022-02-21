@@ -12,7 +12,7 @@ ForestType 0 # 0 = High Forest, 1 = Skim Forest
 ReadMode 2019   # 0 = Regular forest, 1 = PYTHIA8 forest, 2018 = 2018 High forest syntax, no trigger 2019 = 2018 High forest syntax using trigger
 
 # Select which histograms to save. Checked bit by bit. Needed for memory issues.
-FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
+FilledHistograms 7 # Bit 0 = Event information histograms      (to set: 1)
                     # Bit 1 = Jet histograms                    (to set: 2)
                     # Bit 2 = Track histograms                  (to set: 4)
                     # Bit 3 = Regular jet-track correlation     (to set: 8)
@@ -26,7 +26,7 @@ FilledHistograms 15 # Bit 0 = Event information histograms      (to set: 1)
 # Cuts for dijets
 JetType 0                  # 0 = Calo jets, 1 = PF CS jets, 2 = PF PU jets, 3 = PF flow CS jets
 JetAxis 0                  # 0 = Anti-kt axis, 1 = Leading Pf candidate axis, 2 = WTA
-JetEtaCut 1.6              # Region in eta around midrapidity taken into account in analysis
+JetEtaCut 1.3              # Region in eta around midrapidity taken into account in analysis
 SearchEtaCut 2.0           # Region accepted when searching for dijet events
 MaxPtCut 5020              # Maximum pT of a leading jet accepted in the analysis
 MinPtCut 120               # Minimum pT of a leading jet accepted in the analysis
@@ -51,7 +51,7 @@ SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
 ZVertexCut 15       # Maximum vz value for accepted tracks
 LowPtHatCut -1      # Minimum accepted pT hat
 HighPtHatCut 1      # Maximum accepted pT hat
-IncludeEventPlane 0 # 0 = No event plane info. 1 = Read event plane branches.
+IncludeEventPlane 1 # 0 = No event plane info. 1 = Read event plane branches.
 MultiplicityMode 0 # 0 = Weight MC centrality to match data. 1 = Weight multiplicity to match
 
 # Binning for THnSparses
