@@ -1276,7 +1276,7 @@ void DijetAnalyzer::RunAnalysis(){
         }
         
         // Apply Q-vector cut to the analysis
-        // if(eventPlaneQ[0] < 3.3) continue;  // 1.5 1.8 2 2.2 2.5 2.8 3.3
+        // if(eventPlaneQ[0] < 2) continue;  // 1.5 1.8 2 2.2 2.5 2.8 3.3
         
         // Apply Q-vector weight to the event
         // qWeight = GetQvectorWeight(eventPlaneQ[0], centrality);
