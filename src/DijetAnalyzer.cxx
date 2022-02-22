@@ -393,7 +393,7 @@ DijetAnalyzer::DijetAnalyzer(std::vector<TString> fileNameVector, ConfigurationC
   fFillPtWeightedJetTrackCorrelation = bitChecker.test(kFillPtWeightedJetTrackCorrelation);
   fFillInclusiveJetTrackCorrelation = bitChecker.test(kFillInclusiveJetTrackCorrelation);
   fFillJetPtClosure = bitChecker.test(kFillJetPtClosure);
-  fFillDijetJetTrackCorrelation = (fFillRegularJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation || fFillTrackHistograms);
+  fFillDijetJetTrackCorrelation = (fFillRegularJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation || fFillPtWeightedJetTrackCorrelation);
   
   // Do a sanity check for given bin widths for mixing pool
   if(fMaximumMixingHiBin >= kMaxMixingHiBins){
@@ -1230,9 +1230,11 @@ void DijetAnalyzer::RunAnalysis(){
               trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
               //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
               
-              if(TMath::Abs(trackEta) > 0.75) continue;
+              //if(TMath::Abs(trackEta) > 0.75) continue;  // Used with Q-vector cuts
+              if(TMath::Abs(trackEta) > 2) continue;  // Used for jet-event plane correlation. Much more accurate
               if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackSubevent(iTrack) == 0) continue;
-              if(trackPt > 3) continue;
+              // if(trackPt > 3) continue; // Used with Q-vector cuts
+              if(trackPt > 5) continue; // User for jet-event plane correlation. Much more accurate
               
               for(Int_t iFlow = 0; iFlow < nFlowComponentsEP; iFlow++){
                 eventPlaneQx[iFlow] += TMath::Cos((iFlow+2.0)*(trackPhi));
@@ -1255,6 +1257,9 @@ void DijetAnalyzer::RunAnalysis(){
             eventPlaneQ[0] = fJetReader->GetEventPlaneQ(8);  // 8 is second order event plane from both sides of HF
             eventPlaneQ[1] = fJetReader->GetEventPlaneQ(15); // 15 is third order event plane from both sides of HF
             eventPlaneQ[2] = fJetReader->GetEventPlaneQ(21); // 21 is fourth order event plane from both sides of HF
+            eventPlaneAngle[0] = fJetReader->GetEventPlaneAngle(8);  // 8 is second order event plane from both sides of HF
+            eventPlaneAngle[1] = fJetReader->GetEventPlaneAngle(15); // 15 is third order event plane from both sides of HF
+            eventPlaneAngle[2] = fJetReader->GetEventPlaneAngle(21); // 21 is fourth order event plane from both sides of HF
             eventPlaneMultiplicity = fJetReader->GetEventPlaneMultiplicity(8);
           }
           
@@ -1328,7 +1333,7 @@ void DijetAnalyzer::RunAnalysis(){
           
           partonFlavor = fJetReader->GetPartonFlavor(jetIndex);
           if(partonFlavor == -999) nonSensicalPartonIndex++;
-          if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21) || partonFlavor == 0) continue;
+          //if(partonFlavor < -6 || partonFlavor > 21 || (partonFlavor > 6 && partonFlavor < 21) || partonFlavor == 0) continue;
           if(TMath::Abs(partonFlavor) == 21) jetFlavor = 1; // 1 = Gluon jet
           
         }
@@ -1756,49 +1761,61 @@ void DijetAnalyzer::RunAnalysis(){
             // Get the track multiplicity from all tracks
             trackMultiplicity = GetMultiplicity();
             
-            for(Int_t iFloww = 0; iFloww < nFlowComponentsEP; iFloww++){
+            // Loop over all track in the event
+            nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
+            for(Int_t iTrack = 0; iTrack < nTracks; iTrack++){
+                            
+              // Check that all the track cuts are passed
+              if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent,true)) continue;
+                            
+              // Only look at tracks below 4 GeV, as these are the ones used in the correlation analysis
+              if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack) > 4) continue;
+              trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
               
-              Int_t iFlow = myOrder[iFloww];
-              
-              // Calculate deltaPhi between the jet and the event planes determined with different detectors
-              jetPhiForFakeV2 = leadingJetPhi;
-              //if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
-              //  jetPhiForFakeV2 = fJetReader->GetMatchedPhi(highestIndex);
-              //}
-              
-              
-              //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
-              //jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
-              
-              jetEventPlaneDeltaPhi = jetPhiForFakeV2 - eventPlaneAngle[iFlow];
-              jetEventPlaneDeltaPhiDifference = eventPlaneAngle[iFlow] - fJetReader->GetEventPlaneAngle(referencePlane[iFlow]);  // Diff between manual and forest
-              
-              // Transform deltaPhis to interval [-pi/2,3pi/2]
-              while(jetEventPlaneDeltaPhi > (1.5*TMath::Pi())){jetEventPlaneDeltaPhi += -2*TMath::Pi();}
-              while(jetEventPlaneDeltaPhiDifference > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += -2*TMath::Pi();}
-              while(jetEventPlaneDeltaPhi < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhi += 2*TMath::Pi();}
-              while(jetEventPlaneDeltaPhiDifference < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += 2*TMath::Pi();}
-              
-//              // Currently faking jet v2
-//              if(iFlow == 0){
-//                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
-//                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight
-//              }
-              
-              // Fill the additional event plane histograms
-              fillerEventPlane[0] = jetEventPlaneDeltaPhi;  // Axis 0: DeltaPhi between jet and event plane
-              fillerEventPlane[1] = trackMultiplicity;                      // Axis 1: Normalized event plane Q-vector
-              //fillerEventPlane[1] = fJetReader->GetEventPlaneQ(8) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(8));                      // Axis 1: Normalized event plane Q-vector
-              fillerEventPlane[2] = centrality;                       // Axis 2: centrality
-              
-              fHistograms->fhJetEventPlane[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight);
-              
-              fillerEventPlane[0] = jetEventPlaneDeltaPhiDifference;  // Axis 0: DeltaPhi between jet and event plane
-              fillerEventPlane[1] = trackMultiplicity;  // Axis 1: Normalized event plane Q-vector
-              
-              
-              fHistograms->fhJetEventPlaneDifference[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight);
-            }
+              for(Int_t iFloww = 0; iFloww < nFlowComponentsEP; iFloww++){
+                
+                Int_t iFlow = myOrder[iFloww];
+                
+                // Calculate deltaPhi between the jet and the event planes determined with different detectors
+                jetPhiForFakeV2 = trackPhi;
+                //if(fMcCorrelationType == kRecoGen || fMcCorrelationType == kRecoReco){
+                //  jetPhiForFakeV2 = fJetReader->GetMatchedPhi(highestIndex);
+                //}
+                
+                
+                //jetEventPlaneDeltaPhiForwardRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(8);
+                //jetEventPlaneDeltaPhiMidRap = jetPhiForFakeV2 - fJetReader->GetEventPlaneAngle(9);
+                
+                jetEventPlaneDeltaPhi = jetPhiForFakeV2 - eventPlaneAngle[iFlow];
+                jetEventPlaneDeltaPhiDifference = eventPlaneAngle[iFlow] - fJetReader->GetEventPlaneAngle(referencePlane[iFlow]);  // Diff between manual and forest
+                
+                // Transform deltaPhis to interval [-pi/2,3pi/2]
+                while(jetEventPlaneDeltaPhi > (1.5*TMath::Pi())){jetEventPlaneDeltaPhi += -2*TMath::Pi();}
+                while(jetEventPlaneDeltaPhiDifference > (1.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += -2*TMath::Pi();}
+                while(jetEventPlaneDeltaPhi < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhi += 2*TMath::Pi();}
+                while(jetEventPlaneDeltaPhiDifference < (-0.5*TMath::Pi())){jetEventPlaneDeltaPhiDifference += 2*TMath::Pi();}
+                
+                //              // Currently faking jet v2
+                //              if(iFlow == 0){
+                //                fakeJetV2Weight = fFakeV2Function->Eval(jetEventPlaneDeltaPhi);  // Faking vn for get jets
+                //                fTotalEventWeight = fTotalEventWeight*fakeJetV2Weight;           // Include this number into total event weight
+                //              }
+                
+                // Fill the additional event plane histograms
+                fillerEventPlane[0] = jetEventPlaneDeltaPhi;  // Axis 0: DeltaPhi between jet and event plane
+                fillerEventPlane[1] = trackMultiplicity;                      // Axis 1: Normalized event plane Q-vector
+                //fillerEventPlane[1] = fJetReader->GetEventPlaneQ(8) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(8));                      // Axis 1: Normalized event plane Q-vector
+                fillerEventPlane[2] = centrality;                       // Axis 2: centrality
+                
+                fHistograms->fhJetEventPlane[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight);
+                
+                //fillerEventPlane[0] = jetEventPlaneDeltaPhiDifference;  // Axis 0: DeltaPhi between jet and event plane
+                //fillerEventPlane[1] = trackMultiplicity;  // Axis 1: Normalized event plane Q-vector
+                
+                
+                //fHistograms->fhJetEventPlaneDifference[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight);
+              } // Flow component loop
+            } // Track loop
           }
         }
         
@@ -3133,7 +3150,7 @@ Double_t DijetAnalyzer::GetMultiplicity(){
   // Loop over all track in the event
   Int_t nTracks = fTrackReader[DijetHistograms::kSameEvent]->GetNTracks();
   Double_t trackMultiplicity = 0;
-  //trackMultiplicityWeighted = 0;
+  Double_t trackEfficiencyCorrection = 0;
   
   // Disable subevent cut while determining the total multiplicity
   Int_t originalCut = fSubeventCut;
@@ -3145,10 +3162,10 @@ Double_t DijetAnalyzer::GetMultiplicity(){
     if(!PassTrackCuts(iTrack,fHistograms->fhTrackCutsInclusive,DijetHistograms::kSameEvent,true)) continue;
     
     // Get the efficiency correction
-    //trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
+    trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
     
-    trackMultiplicity += 1;
-    //trackMultiplicityWeighted += trackEfficiencyCorrection;
+    //trackMultiplicity += 1;
+    trackMultiplicity += trackEfficiencyCorrection;
     
   } // Track loop
   
