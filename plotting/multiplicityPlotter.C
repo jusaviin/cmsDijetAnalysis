@@ -64,7 +64,7 @@ void multiplicityPlotter(){
   
   // File from which the long range distributions are plotted
   TString directoryName = "data/";
-  TString fileName = "dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root";
+  TString fileName = "PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_multiplicityWeight_jetEta1v3_processed_2022-01-24.root";
   // dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root
   // PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_jetEta1v3_reprocessed_2022-01-19.root
   // PbPbMC2018_RecoReco_akCaloJet_onlyJets_noCentShift_withTrackEff_jetEta1v3_processed_2022-01-20.root
@@ -146,8 +146,11 @@ void multiplicityPlotter(){
   TLegend *legend;
   TString saveName;
   
-  // Draw the distributions
+  const int nMultiplicityBins = 20;
+  double multiplicityBinBorders[] = {0,400,600,800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3400,3600,3800,4000,5000};
+  int lowBin, highBin;
   
+  // Draw the distributions
   for(int iType = 0; iType < 4; iType++){
     
     if(!drawMultiplicityArray[iType]) continue;
@@ -175,6 +178,16 @@ void multiplicityPlotter(){
         gPad->GetCanvas()->SaveAs(Form("figures/%s.%s", saveName.Data(), figureFormat.Data()));
       } // Saving figures
       
+      if(iCentrality == nCentralityBins){
+        
+        for(int iMultiplicity = 0; iMultiplicity < nMultiplicityBins; iMultiplicity++){
+          lowBin = multiplicity[iType][iCentrality]->GetXaxis()->FindBin(multiplicityBinBorders[iMultiplicity]+0.1);
+          highBin = multiplicity[iType][iCentrality]->GetXaxis()->FindBin(multiplicityBinBorders[iMultiplicity+1]-0.1);
+          multiplicity[iType][iCentrality]->GetXaxis()->SetRange(lowBin,highBin);
+          cout << "Multiplicity bin " << multiplicityBinBorders[iMultiplicity] << "-" << multiplicityBinBorders[iMultiplicity+1] << "  Mean: " << multiplicity[iType][iCentrality]->GetMean(1) << endl;
+        }
+        multiplicity[iType][iCentrality]->GetXaxis()->SetRange(0,0);
+      }
     } // Centrality loop
   } // Drawing track multiplicity
   
@@ -205,7 +218,7 @@ void multiplicityPlotter(){
         } else {
           legend->AddEntry(multiplicity[iType][iCentrality], "Total", "l");
         }
-
+        
       } // Centrality loop
 
       legend->Draw();
