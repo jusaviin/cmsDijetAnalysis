@@ -1268,6 +1268,9 @@ void DijetAnalyzer::RunAnalysis(){
             eventPlaneQ[iFlow] /= TMath::Sqrt(eventPlaneMultiplicity);
           }
           
+          // Apply Q-vector cut
+          // if(eventPlaneQ[0] < 2.5) continue;
+          
           // Apply Q-vector weight to the event
           //qWeight = GetQvectorWeight(eventPlaneQ[0], centrality);
           //fTotalEventWeight *= qWeight;
