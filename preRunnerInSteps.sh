@@ -6,8 +6,8 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_multWeight_hadronEventPlane_jetEta1v3_2022-02-21.root" "data/PbPbMC2018_RecoGen_akCaloJet_dihadron_multWeight_hadronEventPlane_jetEta1v3_processed_2022-02-21.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akPfCsJet_dihadron_multWeight_hadronEventPlane_jetEta1v6_2022-02-21.root" "data/PbPbMC2018_RecoGen_akPfCsJet_dihadron_multWeight_hadronEventPlane_jetEta1v6_processed_2022-02-21.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v3_2022-02-23.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v3_processed_2022-02-23.root" false false -1 "data/"
+./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v6_2022-02-23.root" "data/PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v6_processed_2022-02-23.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"
