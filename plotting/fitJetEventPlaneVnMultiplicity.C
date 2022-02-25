@@ -1,5 +1,6 @@
 #include "DijetMethods.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "JDrawer.h"
+#include "DijetHistogramManager.h"
 
 void fitJetEventPlaneVnMultiplicity(){
 
@@ -7,19 +8,45 @@ void fitJetEventPlaneVnMultiplicity(){
   const int nFiles = 2;
   TFile *inputFile[nFiles];
   inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_jetEta1v3_2022-02-21.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_allEventPlanes_jetEta1v3_2022-02-17.root");
-  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_forestEventPlanes_jetEta1v3_2022-02-18.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_updateMultWeight_jetEta1v3_2022-02-23.root");
+  if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_qVectorAbove2p5_jetEta1v6_2022-02-22.root");
   if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlaneV4_jetEta1v3_2022-01-26.root");
+ 
   // jetEventPlaneDeltaPhi_PbPb2018_caloJets_forestEventPlanes_jetEta1v3_2022-02-18.root
-  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_allEventPlanes_jetEta1v3_2022-02-17.root
   // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_forestEventPlanes_jetEta1v3_2022-02-18.root
-  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_jetEta1v3_2022-02-21.root
+  
   // jetEventPlaneDeltaPhi_PbPb2018_pfCsJets_forestEventPlanes_jetEta1v6_2022-02-18.root
-  // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_allEventPlanes_jetEta1v6_2022-02-17.root
   // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_forestEventPlanes_jetEta1v6_2022-02-18.root
+  
+  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_updateMultWeight_jetEta1v3_2022-02-23.root
+  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_jetEta1v3_2022-02-21.root
+  
+  // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_updateMultWeight_jetEta1v6_2022-02-23.root
   // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_jetEta1v6_2022-02-21.root
   
-  TString jetTypeString[4] = {"Calo jets","PFCS jets","Calo tuned Q","Gen jet"};
+  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_qVectorAbove2_jetEta1v3_2022-02-22.root
+  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_qVectorAbove2p5_jetEta1v3_2022-02-22.root
+  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_qVectorAbove2_jetEta1v3_2022-02-22.root
+  // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_qVectorAbove2p5_jetEta1v3_2022-02-22.root
+  
+  // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_qVectorAbove2_jetEta1v6_2022-02-22.root
+  // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_qVectorAbove2p5_jetEta1v6_2022-02-22.root
+  // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_qVectorAbove2_jetEta1v6_2022-02-22.root
+  // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_qVectorAbove2p5_jetEta1v6_2022-02-22.root
+  
+  TFile *multiplicityFile = TFile::Open("data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_eventPlanes_jetEta1v3_processed_2022-02-23.root");
+  // PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_eventPlanes_jetEta1v3_processed_2022-02-23.root
+  // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_eventPlanes_jetEta1v6_processed_2022-02-23.root
+  
+  // Create a histogram manager to deal with multiplicity histograms
+  DijetHistogramManager *multiplicityManager = new DijetHistogramManager(multiplicityFile);
+  multiplicityManager->SetLoadEventInformation(true);
+  multiplicityManager->LoadProcessedHistograms();
+  
+  // Find the relevant multiplicity histogram from the histogram manager
+  TH1D *multiplicityHistogram = multiplicityManager->GetHistogramMultiplicityDijet(multiplicityManager->GetNCentralityBins());
+  
+  TString jetTypeString[4] = {"PFCS jets","Q > 2","Q > 2.5","Gen jet"};
   //TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
   
   int eventPlaneOrder = 2; // The vn component that is plotted
@@ -37,11 +64,13 @@ void fitJetEventPlaneVnMultiplicity(){
   
   bool printVs = false;    // True = Print the jet vn values to the console. False = Do not do that
   bool printSlides = true; // True = Print slides summarizing multiplicities and vns
-  bool printSlidesUsingDifference = true;  // True = Use difference for delta. False = Use ratio for delta.
+  bool printSlidesUsingDifference = false;  // True = Use difference for delta. False = Use ratio for delta.
   bool smoothJetV2 = true;  // Smooth the v2 values for the jet with second order polynomial
   
+  const bool drawMultiplicityScaleFactors = true;
+  
   bool saveFigures = false;
-  TString saveComment = "_jetV2Smoothing";
+  TString saveComment = "_pfcsJets";
   TString figureFormat = "pdf";
   
   // Read the histograms from the data files
@@ -57,8 +86,11 @@ void fitJetEventPlaneVnMultiplicity(){
   double multiplicityDeltas[nMultiplicityBins] = {0};
   double hadronV2deltas[nMultiplicityBins] = {0};
   double jetV2deltas[nMultiplicityBins] = {0};
+  double multiplicityScaleFactors[nMultiplicityBins-1] = {0};
+  double multiplicityScaleAxis[] = {600,800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3400};
   
-  double xValues[16] = {501.018, 700.478, 901.016, 1101.64, 1301.44, 1501.33, 1701.07, 1900.85, 2101.17, 2301.97, 2500.19, 2700.93, 2900.64, 3093.29, 3278.72, 3465.86};
+  double xValues[16] = {501.6680, 700.6463, 901.0786, 1101.7435, 1301.0029, 1501.1398, 1701.5657, 1900.8402, 2101.0117, 2301.4069, 2500.8577, 2700.5630, 2899.4207, 3090.2760, 3277.1113, 3463.4320}; // Calo jet values
+  //double xValues[16] = {501.4839, 700.8465, 900.9339, 1101.8138, 1300.5644, 1500.9114, 1701.4491, 1899.9954, 2101.0163, 2300.3646, 2500.6878, 2700.7071, 2899.2929, 3089.7419, 3276.7922, 3463.2348}; // PFCS jet values
   double xErrors[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   double yValues[nFiles][16];
   double yErrors[nFiles][16];
@@ -195,7 +227,7 @@ void fitJetEventPlaneVnMultiplicity(){
   double highYrange[] = {0.2,0.2,0.25,0.06,0.03,0.02,0.02};
   
   // Draw the multiplicity graphs
-  drawer->DrawGraph(multiplicityGraph[0], 400, 3600, 0.0, highYrange[eventPlaneOrder], "Multiplicity", Form("Jet v_{%d}", eventPlaneOrder), " ", "p");
+  drawer->DrawGraph(multiplicityGraph[0], 400, 3600, 0.0, highYrange[eventPlaneOrder], "Multiplicity", Form("Hadron v_{%d}", eventPlaneOrder), " ", "p");
   for(int iFile = 1; iFile < nFiles; iFile++){
     multiplicityGraph[iFile]->Draw("same,p");
   }
@@ -206,10 +238,18 @@ void fitJetEventPlaneVnMultiplicity(){
       multiplicityGraph[iFile]->Fit("pol2");
       multiplicityGraph[iFile]->GetFunction("pol2")->SetLineColor(markerColors[iFile]);
     }
+    
+    // Calculate the ratio from smoothed values
+    for(int iFile = 1; iFile < nFiles; iFile++){
+      for(int iPoint = 0; iPoint < multiplicityRatio[iFile-1]->GetN(); iPoint++){
+        multiplicityRatio[iFile-1]->SetPointY(iPoint, multiplicityGraph[iFile]->GetFunction("pol2")->Eval(xValues[iPoint]) / multiplicityGraph[iFile-1]->GetFunction("pol2")->Eval(xValues[iPoint]));
+        multiplicityRatio[iFile-1]->SetPointError(iPoint,0,0.0001);
+      }
+    }
   }
   
   // Add a legend to the plot
-  legend = new TLegend(0.3,0.2,0.5,0.4);
+  legend = new TLegend(0.3,0.7,0.5,0.9);
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   //legend->SetHeader("PFCS jets");
   for(int iFile = 0; iFile < nFiles; iFile++){
@@ -218,19 +258,19 @@ void fitJetEventPlaneVnMultiplicity(){
   legend->Draw();
   
   if(saveFigures){
-    gPad->GetCanvas()->SaveAs(Form("figures/jetV%dvsMultiplicity%s.%s", eventPlaneOrder, saveComment.Data(), figureFormat.Data()));
+    gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dvsMultiplicity%s.%s", eventPlaneOrder, saveComment.Data(), figureFormat.Data()));
   }
   
   // If there is a ratio file, draw it
   if(nFiles > 1){
-    drawer->DrawGraph(multiplicityRatio[0], 400, 3600, 0.95, 1.05, "Multiplicity", Form("Jet v_{%d} ratio", eventPlaneOrder), " ", "p");
+    drawer->DrawGraph(multiplicityRatio[0], 400, 3600, 0.95, 1.3, "Multiplicity", Form("Hadron v_{%d} ratio", eventPlaneOrder), " ", "p");
     for(int iFile = 2; iFile < nFiles; iFile++){
       multiplicityRatio[iFile-1]->Draw("same,p");
     }
   }
   
   // Add a legend to the ratio plot
-  legend = new TLegend(0.23,0.2,0.43,0.4);
+  legend = new TLegend(0.3,0.7,0.5,0.9);
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
   for(int iFile = 1; iFile < nFiles; iFile++){
     legend->AddEntry(multiplicityRatio[iFile-1], Form("%s / %s", jetTypeString[iFile].Data(), jetTypeString[0].Data()), "p");
@@ -238,7 +278,7 @@ void fitJetEventPlaneVnMultiplicity(){
   legend->Draw();
   
   if(saveFigures){
-    gPad->GetCanvas()->SaveAs(Form("figures/jetV%dvsMultiplicityRatio%s.%s", eventPlaneOrder, saveComment.Data(), figureFormat.Data()));
+    gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dvsMultiplicityRatio%s.%s", eventPlaneOrder, saveComment.Data(), figureFormat.Data()));
   }
   
   
@@ -295,9 +335,9 @@ void fitJetEventPlaneVnMultiplicity(){
         deltaHadronV2 = tableHadronV2 - previousHadronV2;
         deltaJetV2 = tableJetV2 - previousJetV2;
       } else {
-        deltaMultiplicity = 1.0 - previousMultiplicity / tableMultiplicity;
-        deltaHadronV2 = 1.0 - previousHadronV2 / tableHadronV2;
-        deltaJetV2 = 1.0 - previousJetV2 / tableJetV2;
+        deltaMultiplicity = tableMultiplicity / previousMultiplicity - 1.0 ;
+        deltaHadronV2 = tableHadronV2 / previousHadronV2 - 1.0 ;
+        deltaJetV2 = tableJetV2 / previousJetV2 - 1.0 ;
       }
       
       // Collect the deltas to an array for the next step
@@ -306,7 +346,9 @@ void fitJetEventPlaneVnMultiplicity(){
       jetV2deltas[iMultiplicity] = deltaJetV2;
       
       // Print this line to the console
+      cout << fixed << setprecision(2);
       cout << "    $" << tableMultiplicity << "$";
+      cout << fixed << setprecision(4);
       cout << " & $" << tableHadronV2 << "$";
       cout << " & $" << tableJetV2 << "$";
       cout << " & $" << deltaMultiplicity << "$";
@@ -326,6 +368,8 @@ void fitJetEventPlaneVnMultiplicity(){
     // After the first slide is printed, calculate scaling factors from different bins assuming linear dependency on hadron v2 and multiplicity
     // X Delta(hadron v2) + Y Delta(Multiplicity) = Delta(jet v2)
     // Use two adjacent lines in the table above to calculate this
+    // We have determined from other sources that if multiplicity stays constant and hadron v2 changes, jet v2 follows this change 1:1.
+    // Taking this as a given, we calculate how the changes in multiplicity
     
     cout << endl;
     sprintf(namer,"\\frametitle{Multiplicity and hadron $v_{%d}$ scaling}", eventPlaneOrder);
@@ -345,10 +389,21 @@ void fitJetEventPlaneVnMultiplicity(){
       // Read the values from this line
       tableMultiplicity = xValues[iMultiplicity - firstPlottedBin];
       
-      // Calculate the scale from the deltas
-      if(iMultiplicity > firstPlottedBin && iMultiplicity < lastPlottedBin){
-        hadronV2scale = (jetV2deltas[iMultiplicity+1] - multiplicityDeltas[iMultiplicity+1] * jetV2deltas[iMultiplicity] / multiplicityDeltas[iMultiplicity]) / (hadronV2deltas[iMultiplicity+1] - multiplicityDeltas[iMultiplicity+1] * hadronV2deltas[iMultiplicity] / multiplicityDeltas[iMultiplicity]);
+      // Scale calculation from two adjacent multiplicity bins
+//      // Calculate the scale from the deltas
+//      if(iMultiplicity > firstPlottedBin && iMultiplicity < lastPlottedBin){
+//        hadronV2scale = (jetV2deltas[iMultiplicity+1] - multiplicityDeltas[iMultiplicity+1] * jetV2deltas[iMultiplicity] / multiplicityDeltas[iMultiplicity]) / (hadronV2deltas[iMultiplicity+1] - multiplicityDeltas[iMultiplicity+1] * hadronV2deltas[iMultiplicity] / multiplicityDeltas[iMultiplicity]);
+//        multiplicityScale = (jetV2deltas[iMultiplicity] - hadronV2deltas[iMultiplicity] * hadronV2scale) / multiplicityDeltas[iMultiplicity];
+//      } else {
+//        hadronV2scale = 0;
+//        multiplicityScale = 0;
+//      }
+      
+      // Scale calculation assuming 1:1 scaling for hadron v2
+      if(iMultiplicity > firstPlottedBin){
+        hadronV2scale = 1;
         multiplicityScale = (jetV2deltas[iMultiplicity] - hadronV2deltas[iMultiplicity] * hadronV2scale) / multiplicityDeltas[iMultiplicity];
+        multiplicityScaleFactors[iMultiplicity - firstPlottedBin - 1] = multiplicityScale;
       } else {
         hadronV2scale = 0;
         multiplicityScale = 0;
@@ -356,15 +411,17 @@ void fitJetEventPlaneVnMultiplicity(){
       
       
       // Print this line to the console
+      cout << fixed << setprecision(2);
       cout << "    $" << tableMultiplicity << "$";
+      cout << fixed << setprecision(4);
       cout << " & $" << multiplicityDeltas[iMultiplicity] << "$";
       cout << " & $" << hadronV2deltas[iMultiplicity] << "$";
       cout << " & $" << jetV2deltas[iMultiplicity] << "$";
-      cout << fixed << setprecision(6);
       cout << " & $" << multiplicityScale << "$";
-      cout << fixed << setprecision(4);
+      cout << fixed << setprecision(1);
       cout << " & $" << hadronV2scale << "$";
       cout << " \\\\" << endl;
+      cout << fixed << setprecision(4);
       
     } // Multiplicity loop
     
@@ -376,6 +433,65 @@ void fitJetEventPlaneVnMultiplicity(){
     cout << endl;
     
   } // Printing slides about multiplicity vs. v2
+  
+  // Drawing for multiplicity scaling factors. TODO: Error propagation for scaling factors
+  if(drawMultiplicityScaleFactors){
+    TGraph *multiplicityScaleGraph = new TGraph(lastPlottedBin-firstPlottedBin, multiplicityScaleAxis, multiplicityScaleFactors);
+    multiplicityScaleGraph->SetMarkerStyle(markerStyles[0]);
+    multiplicityScaleGraph->SetMarkerColor(markerColors[0]);
+    drawer->DrawGraph(multiplicityScaleGraph, 400, 3600, 0.5, 3.5, "Multiplicity", "Multiplicity scaling factor", " ", "p");
+    
+    TLine *oneLine = new TLine(400,1,3600,1);
+    oneLine->SetLineStyle(2);
+    oneLine->Draw();
+    
+    // Add a legend to the figure
+    legend = new TLegend(0.25,0.7,0.45,0.9);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry((TObject*)0, jetTypeString[0], "");
+    legend->Draw();
+    
+    // Dave the figure
+    if(saveFigures){
+      gPad->GetCanvas()->SaveAs(Form("figures/multiplicityScalingFactor%s.%s", saveComment.Data(), figureFormat.Data()));
+    }
+  }
+  
+  // Calculate the multiplicity scaling factors in each analysis centrality bin as the weighted average from finer multiplicity bins
+  int lowBinBorder, highBinBorder;
+  double analysisBinBorder0 = 340;
+  double analysisBinBorder1 = 980;
+  double analysisBinBorder2 = 2225;
+  double multiplicityWeights[nMultiplicityBins-1] = {0};
+  double totalMultiplicityWeight = 0;
+  double totalMultiplicityScale = 0;
+  
+  int nBinsPerCentrality[3] = {7,9,3};
+  int firstMultiplicityBin[3] = {8,1,0};
+  double lowBinBorders[3][9] = {{analysisBinBorder2, analysisBinBorder2, 2400, 2600, 2800, 3000, 3200,0,0},
+                                 {analysisBinBorder1, analysisBinBorder1, 1000, 1200, 1400, 1600, 1800, 2000, 2200},
+                                 {analysisBinBorder0, 600, 800, 0,0,0,0,0,0}};
+  
+  double highBinBorders[3][9] = {{2400, 2600, 2800, 3000, 3200, 3400, 3600,0,0},
+                                  {1000, 1200, 1400, 1600, 1800, 2000, 2200, analysisBinBorder2, analysisBinBorder2},
+                                  {800, analysisBinBorder1, analysisBinBorder1, 0,0,0,0,0,0}};
+  
+  // Scaling factor calculation
+  for(int iCentrality = 0; iCentrality < 3; iCentrality++){
+    totalMultiplicityWeight = 0;
+    totalMultiplicityScale = 0;
+    for(int iMultiplicity = firstMultiplicityBin[iCentrality]; iMultiplicity < firstMultiplicityBin[iCentrality] + nBinsPerCentrality[iCentrality]; iMultiplicity++){
+      lowBinBorder = multiplicityHistogram->FindBin(lowBinBorders[iCentrality][iMultiplicity-firstMultiplicityBin[iCentrality]]+0.01);
+      highBinBorder = multiplicityHistogram->FindBin(highBinBorders[iCentrality][iMultiplicity-firstMultiplicityBin[iCentrality]]-0.01);
+      multiplicityWeights[iMultiplicity] = multiplicityHistogram->Integral(lowBinBorder,highBinBorder);
+      totalMultiplicityWeight += multiplicityWeights[iMultiplicity];
+      totalMultiplicityScale += multiplicityWeights[iMultiplicity] * multiplicityScaleFactors[iMultiplicity];
+    }
+    
+    cout << fixed << setprecision(3);
+    cout << "Multiplicity scaling factor for " << centralityBinBorders[iCentrality] << "-" << centralityBinBorders[iCentrality+1] << " = " << totalMultiplicityScale / totalMultiplicityWeight << endl;
+    
+  }
   
   // Draw the jet-event plane fits
   drawer->Reset();
