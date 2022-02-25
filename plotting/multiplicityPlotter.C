@@ -64,7 +64,8 @@ void multiplicityPlotter(){
   
   // File from which the long range distributions are plotted
   TString directoryName = "data/";
-  TString fileName = "PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_multiplicityWeight_jetEta1v3_processed_2022-01-24.root";
+  const int nFiles = 3;
+  TString fileName[] = {"PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_eventPlanes_jetEta1v6_processed_2022-02-23.root", "PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2_eventPlanes_jetEta1v6_processed_2022-02-23.root", "PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v6_processed_2022-02-23.root"};
   // dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root
   // PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_jetEta1v3_reprocessed_2022-01-19.root
   // PbPbMC2018_RecoReco_akCaloJet_onlyJets_noCentShift_withTrackEff_jetEta1v3_processed_2022-01-20.root
@@ -72,25 +73,39 @@ void multiplicityPlotter(){
   // PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_noCentWeight_jetEta1v3_processed_2022-01-21.root
   // PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_multiplicityWeight_jetEta1v3_processed_2022-01-24.root
   
+  // PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_eventPlanes_jetEta1v3_processed_2022-02-23.root
+  // PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_qVectorAbove2_eventPlanes_jetEta1v3_processed_2022-02-23.root
+  // PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v3_processed_2022-02-23.root
+  
+  // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_eventPlanes_jetEta1v6_processed_2022-02-23.root
+  // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2_eventPlanes_jetEta1v6_processed_2022-02-23.root
+  // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v6_processed_2022-02-23.root
+  
+  TString fileLegend[] = {"PFCS jets", "Q > 2", "Q > 2.5"};
+  
   TString systemString = "Data";  // System to be put on a label
   
-  // Open the file
-  TFile *multiplicityFile = TFile::Open(directoryName+fileName);
-  
-  // Create a histogram manager for the histograms in the file
-  DijetHistogramManager *manager = new DijetHistogramManager(multiplicityFile);
-  manager->SetLoadEventInformation(true);
-  manager->LoadProcessedHistograms();
+  // Open the files and create a histogram manager to reaf the histograms
+  TFile *multiplicityFile[nFiles];
+  DijetHistogramManager *manager[nFiles];
+  for(int iFile = 0; iFile < nFiles; iFile++){
+    multiplicityFile[iFile] = TFile::Open(directoryName+fileName[iFile]);
+    manager[iFile] = new DijetHistogramManager(multiplicityFile[iFile]);
+    manager[iFile]->SetLoadEventInformation(true);
+    manager[iFile]->LoadProcessedHistograms();
+  }
   
   // Binning information
   const int nCentralityBins = 4;
   const int nTrackPtBins = 4;
   const int nAsymmetryBins = 3;
   const int nFlowComponents = 4;
+  const int firstDrawnCentralityBin = nCentralityBins;
+  const int lastDrawnCentralityBin = nCentralityBins;
   double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
-  int maxCentralityBin = manager->GetNCentralityBins();
+  int maxCentralityBin = manager[0]->GetNCentralityBins();
   
   const bool drawMultiplicity = false;             // Draw multiplicity in each centrality bin
   const bool drawMultiplicityWeighted = false;     // Draw efficiency weighted multiplicity in each centrality bin
@@ -102,38 +117,42 @@ void multiplicityPlotter(){
   const bool drawMultiplicityMapDijet = false;          // Draw multiplicity vs. centrality map in dijet events
   const bool drawMultiplicityMapWeightedDijet = false;   // Draw efficiency weighted multiplicity vs. centrality map in dijet events
   
-  const bool drawAllToSameFigure = true;
+  const bool drawAllToSameFigure = false;
+  
+  const bool printMeanSlide = true;
   
   const bool saveFigures = false;
-  TString saveComment = "_data";
-  TString figureFormat = "png";
+  TString saveComment = "_qComparisonPfCs";
+  TString figureFormat = "pdf";
   
   // Define histograms
-  TH1D *multiplicity[4][nCentralityBins+1];  // First bin: multiplicity, weighted, dijet, dijet weighted
-  TH2D *multiplicityMap[4];                // First bin: multiplicity, weighted, dijet, dijet weighted
+  TH1D *multiplicity[nFiles][4][nCentralityBins+1];  // Second bin: multiplicity, weighted, dijet, dijet weighted
+  TH2D *multiplicityMap[nFiles][4];                  // Second bin: multiplicity, weighted, dijet, dijet weighted
   
   // Read the histograms from the histogram manager
-  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-    multiplicity[0][iCentrality] = manager->GetHistogramMultiplicity(iCentrality);
-    multiplicity[1][iCentrality] = manager->GetHistogramMultiplicityWeighted(iCentrality);
-    multiplicity[2][iCentrality] = manager->GetHistogramMultiplicityDijet(iCentrality);
-    multiplicity[3][iCentrality] = manager->GetHistogramMultiplicityDijetWeighted(iCentrality);
-  } // centrality loop
-  
-  // Load multiplicity histograms without centrality binning
-  multiplicity[0][nCentralityBins] = manager->GetHistogramMultiplicity(maxCentralityBin);
-  multiplicity[1][nCentralityBins] = manager->GetHistogramMultiplicityWeighted(maxCentralityBin);
-  multiplicity[2][nCentralityBins] = manager->GetHistogramMultiplicityDijet(maxCentralityBin);
-  multiplicity[3][nCentralityBins] = manager->GetHistogramMultiplicityDijetWeighted(maxCentralityBin);
-  
-  // Load multiplicity map histograms
-  multiplicityMap[0] = manager->GetHistogramMultiplicityMap();
-  multiplicityMap[1] = manager->GetHistogramWeightedMultiplicityMap();
-  multiplicityMap[2] = manager->GetHistogramMultiplicityMapDijet();
-  multiplicityMap[3] = manager->GetHistogramWeightedMultiplicityMapDijet();
+  for(int iFile = 0; iFile < nFiles; iFile++){
+    for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+      multiplicity[iFile][0][iCentrality] = manager[iFile]->GetHistogramMultiplicity(iCentrality);
+      multiplicity[iFile][1][iCentrality] = manager[iFile]->GetHistogramMultiplicityWeighted(iCentrality);
+      multiplicity[iFile][2][iCentrality] = manager[iFile]->GetHistogramMultiplicityDijet(iCentrality);
+      multiplicity[iFile][3][iCentrality] = manager[iFile]->GetHistogramMultiplicityDijetWeighted(iCentrality);
+    } // centrality loop
+    
+    // Load multiplicity histograms without centrality binning
+    multiplicity[iFile][0][nCentralityBins] = manager[iFile]->GetHistogramMultiplicity(maxCentralityBin);
+    multiplicity[iFile][1][nCentralityBins] = manager[iFile]->GetHistogramMultiplicityWeighted(maxCentralityBin);
+    multiplicity[iFile][2][nCentralityBins] = manager[iFile]->GetHistogramMultiplicityDijet(maxCentralityBin);
+    multiplicity[iFile][3][nCentralityBins] = manager[iFile]->GetHistogramMultiplicityDijetWeighted(maxCentralityBin);
+    
+    // Load multiplicity map histograms
+    multiplicityMap[iFile][0] = manager[iFile]->GetHistogramMultiplicityMap();
+    multiplicityMap[iFile][1] = manager[iFile]->GetHistogramWeightedMultiplicityMap();
+    multiplicityMap[iFile][2] = manager[iFile]->GetHistogramMultiplicityMapDijet();
+    multiplicityMap[iFile][3] = manager[iFile]->GetHistogramWeightedMultiplicityMapDijet();
+  } // File loop
   
   TString saveString[] = {"", "Weighted", "Dijet", "WeightedDijet"};
-  TString legendString[] = {"", "", "Dijet events", "Dijet events"};
+  TString legendString[] = {"", "", "PFCS dijet events", "PFCS dijet events"};
   TString centralityString[] = {"C = 0-10", "C = 10-30", "C = 30-50", ""};
   TString saveCentralityString[] = {"C=0-10", "C=10-30", "C=30-50", ""};
   bool drawMultiplicityArray[] = {drawMultiplicity, drawMultiplicityWeighted, drawMultiplicityDijet, drawMultiplicityWeightedDijet};
@@ -147,18 +166,31 @@ void multiplicityPlotter(){
   TString saveName;
   
   const int nMultiplicityBins = 20;
+  const int firstPlottedBin = 1;
+  const int lastPlottedBin = 16;
   double multiplicityBinBorders[] = {0,400,600,800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200,3400,3600,3800,4000,5000};
+  double deltaQone, deltaQtwo;
   int lowBin, highBin;
+  int fileColors[] = {kBlue, kRed, kGreen+3, kMagenta};
+  
+  // Define array for mean values within bins
+  double meanArray[nFiles][4][nMultiplicityBins] = {{{0}}};
   
   // Draw the distributions
   for(int iType = 0; iType < 4; iType++){
     
     if(!drawMultiplicityArray[iType]) continue;
     
-    for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
+    for(int iCentrality = firstDrawnCentralityBin; iCentrality <= lastDrawnCentralityBin; iCentrality++){
       
       // Draw the histogram to the canvas
-      drawer->DrawHistogram(multiplicity[iType][iCentrality], "Track multiplicity", "counts", " ");
+      multiplicity[0][iType][iCentrality]->SetLineColor(fileColors[0]);
+      drawer->DrawHistogram(multiplicity[0][iType][iCentrality], "Track multiplicity", "counts", " ");
+      
+      for(int iFile = 1; iFile < nFiles; iFile++){
+        multiplicity[iFile][iType][iCentrality]->SetLineColor(fileColors[iFile]);
+        multiplicity[iFile][iType][iCentrality]->Draw("same");
+      }
       
       // Draw a legend for the histogram
       legend = new TLegend(0.17,0.7,0.37,0.9);
@@ -166,6 +198,9 @@ void multiplicityPlotter(){
       
       if(iCentrality < nCentralityBins) legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
       if(legendString[iType] != "") legend->AddEntry((TObject*) 0, legendString[iType], "");
+      for(int iFile = 1; iFile < nFiles; iFile++){
+        legend->AddEntry(multiplicity[iFile][iType][iCentrality], fileLegend[iFile], "l");
+      }
       legend->Draw();
       
       // Save the figures to file
@@ -180,14 +215,59 @@ void multiplicityPlotter(){
       
       if(iCentrality == nCentralityBins){
         
-        for(int iMultiplicity = 0; iMultiplicity < nMultiplicityBins; iMultiplicity++){
-          lowBin = multiplicity[iType][iCentrality]->GetXaxis()->FindBin(multiplicityBinBorders[iMultiplicity]+0.1);
-          highBin = multiplicity[iType][iCentrality]->GetXaxis()->FindBin(multiplicityBinBorders[iMultiplicity+1]-0.1);
-          multiplicity[iType][iCentrality]->GetXaxis()->SetRange(lowBin,highBin);
-          cout << "Multiplicity bin " << multiplicityBinBorders[iMultiplicity] << "-" << multiplicityBinBorders[iMultiplicity+1] << "  Mean: " << multiplicity[iType][iCentrality]->GetMean(1) << endl;
+        for(int iFile = 0; iFile < nFiles; iFile++){
+          for(int iMultiplicity = 0; iMultiplicity < nMultiplicityBins; iMultiplicity++){
+            lowBin = multiplicity[iFile][iType][iCentrality]->GetXaxis()->FindBin(multiplicityBinBorders[iMultiplicity]+0.1);
+            highBin = multiplicity[iFile][iType][iCentrality]->GetXaxis()->FindBin(multiplicityBinBorders[iMultiplicity+1]-0.1);
+            multiplicity[iFile][iType][iCentrality]->GetXaxis()->SetRange(lowBin,highBin);
+            meanArray[iFile][iType][iMultiplicity] = multiplicity[iFile][iType][iCentrality]->GetMean();
+          }
+          multiplicity[iFile][iType][iCentrality]->GetXaxis()->SetRange(0,0);
         }
-        multiplicity[iType][iCentrality]->GetXaxis()->SetRange(0,0);
-      }
+        
+        if(printMeanSlide){
+                    
+          cout << endl;
+          cout << "\\begin{frame}" << endl;
+          cout << "\\frametitle{Mean multiplicity values}" << endl;
+          cout << "\\small{" << endl;
+          cout << "\\begin{center}" << endl;
+          cout << "  \\begin{tabular}{cccccc}" << endl;
+          cout << "    \\toprule" << endl;
+          cout << "    Bin & $\\langle M \\rangle$ & $Q > 2$ & $Q > 2.5$ & $\\Delta(Q > 2)$ & $\\Delta(Q > 2.5)$ \\\\" << endl;
+          cout << "    \\midrule" << endl;
+          
+          // Set the correct precision for printing floating point numbers
+          
+          for(int iMultiplicity = firstPlottedBin; iMultiplicity <= lastPlottedBin; iMultiplicity++){
+            
+            // Calculate the deltas from default
+            deltaQone = meanArray[1][iType][iMultiplicity] / meanArray[0][iType][iMultiplicity] - 1;
+            deltaQtwo = meanArray[2][iType][iMultiplicity] / meanArray[0][iType][iMultiplicity] - 1;
+            
+            // Print this line to the console
+            cout << fixed << setprecision(0);
+            cout << "    $" << multiplicityBinBorders[iMultiplicity] << "-" << multiplicityBinBorders[iMultiplicity+1] << "$";
+            cout << fixed << setprecision(4);
+            cout << " & $" << meanArray[0][iType][iMultiplicity] << "$";
+            cout << " & $" << meanArray[1][iType][iMultiplicity] << "$";
+            cout << " & $" << meanArray[2][iType][iMultiplicity] << "$";
+            cout << fixed << setprecision(4);
+            cout << " & $" << deltaQone*100 << "\\%" << "$";
+            cout << " & $" << deltaQtwo*100 << "\\%" << "$";
+            cout << " \\\\" << endl;
+            
+          } // Multiplicity loop
+          
+          cout << "    \\bottomrule" << endl;
+          cout << "  \\end{tabular}" << endl;
+          cout << "\\end{center}" << endl;
+          cout << "}" << endl;
+          cout << "\\end{frame}" << endl;
+          cout << endl;
+        } // Printing slide for mean values
+        
+      } // Stuff for the integrated centrality bin
     } // Centrality loop
   } // Drawing track multiplicity
   
@@ -200,23 +280,23 @@ void multiplicityPlotter(){
 
       for(int iCentrality = 0; iCentrality <= nCentralityBins; iCentrality++){
 
-        multiplicity[iType][iCentrality]->SetLineColor(centralityColors[iCentrality]);
+        multiplicity[0][iType][iCentrality]->SetLineColor(centralityColors[iCentrality]);
 
         // Draw the histogram to the canvas
         if(iCentrality == 0){
-          drawer->DrawHistogram(multiplicity[iType][iCentrality], "Track multiplicity", "counts", " ");
+          drawer->DrawHistogram(multiplicity[0][iType][iCentrality], "Track multiplicity", "counts", " ");
           // Draw a legend for the histogram
           legend = new TLegend(0.17,0.6,0.37,0.9);
           legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
           if(legendString[iType] != "") legend->AddEntry((TObject*) 0, legendString[iType], "");
         } else {
-          multiplicity[iType][iCentrality]->Draw("same");
+          multiplicity[0][iType][iCentrality]->Draw("same");
         }
 
         if(iCentrality < nCentralityBins){
-          legend->AddEntry(multiplicity[iType][iCentrality], Form("C = %.0f-%.0f", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "l");
+          legend->AddEntry(multiplicity[0][iType][iCentrality], Form("C = %.0f-%.0f", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "l");
         } else {
-          legend->AddEntry(multiplicity[iType][iCentrality], "Total", "l");
+          legend->AddEntry(multiplicity[0][iType][iCentrality], "Total", "l");
         }
         
       } // Centrality loop
@@ -244,11 +324,11 @@ void multiplicityPlotter(){
     if(!drawMultiplicityMapArray[iType]) continue;
     
     // Possibility to zoom to axes
-    multiplicityMap[iType]->GetYaxis()->SetRangeUser(0,20);
-    multiplicityMap[iType]->GetXaxis()->SetRangeUser(0,4000);
+    multiplicityMap[0][iType]->GetYaxis()->SetRangeUser(0,20);
+    multiplicityMap[0][iType]->GetXaxis()->SetRangeUser(0,4000);
     
     // Draw the histogram to the canvas
-    drawer->DrawHistogram(multiplicityMap[iType], "Track multiplicity", "Centrality", " ", "colz");
+    drawer->DrawHistogram(multiplicityMap[0][iType], "Track multiplicity", "Centrality", " ", "colz");
     
     // Draw a legend for the histogram
     legend = new TLegend(0.67,0.7,0.87,0.9);
@@ -285,7 +365,7 @@ void multiplicityPlotter(){
   cout << "600 match: " << myExpWeightF->Eval(600) << endl;
  
   // Test the weight function
-  TH1D *testMultiplicity = (TH1D*) multiplicity[2][nCentralityBins]->Clone("myClone");
+  TH1D *testMultiplicity = (TH1D*) multiplicity[0][2][nCentralityBins]->Clone("myClone");
   
   double currentContent;
   double binCenter;
