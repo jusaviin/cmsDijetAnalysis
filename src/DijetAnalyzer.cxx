@@ -49,7 +49,7 @@ double totalMultiplicityWeight(double *x, double *par){
   double base = 0;
   
   if(x[0] < 600){
-    weight = ((0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0685758+0.374178*TMath::Exp(x[0]*(-0.00550382)))) * 1.05;
+    weight = (0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0685758+0.374178*TMath::Exp(x[0]*(-0.00550382)));
   } else {
     weight = (0.0309424+0.110670*TMath::Exp(3000*(-0.00138397))) / (0.0309424+0.110670*TMath::Exp(x[0]*(-0.00138397)));
   }
@@ -1276,7 +1276,7 @@ void DijetAnalyzer::RunAnalysis(){
         }
         
         // Apply Q-vector cut to the analysis
-        // if(eventPlaneQ[0] < 2) continue;  // 1.5 1.8 2 2.2 2.5 2.8 3.3
+        // if(eventPlaneQ[0] < 2.5) continue;  // 1.5 1.8 2 2.2 2.5 2.8 3.3
         
         // Apply Q-vector weight to the event
         // qWeight = GetQvectorWeight(eventPlaneQ[0], centrality);
