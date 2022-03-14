@@ -7,7 +7,7 @@ void longRangeFitPlotter(){
 
   // File from which the long range distributions are plotted
   TString directoryName = "flowGraphs/";
-  TString fileName = "flowGraphs_PbPb2018MC_genJets_multWeight_subeNon0_fakeJetV3_adjustGlue_correctedJetHadron_correctedDihadron_2022-02-09.root";
+  TString fileName = "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root";
   // "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root" "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root"
   
   TString systemAndEnergy = "Pythia+Hydjet 5.02 TeV";
@@ -28,8 +28,8 @@ void longRangeFitPlotter(){
   const bool drawJetHadron = true;  // Draw the jet hadron long range deltaPhi distribution
   const bool drawDihadron = false;   // Draw the dihadron long range deltaPhi distribution
 
-  const bool drawOverallFit = false;  // Draw the overall Fourier fit to the distribution
-  const bool drawFitDecomposition = false;  // Draw different fit components seperately
+  const bool drawOverallFit = true;  // Draw the overall Fourier fit to the distribution
+  const bool drawFitDecomposition = true;  // Draw different fit components seperately
   
   const bool saveFigures = false;
   TString saveComment = "_mcWithFullFit";

@@ -8,12 +8,12 @@ void longRangeFitComparer(){
   // File from which the long range distributions are plotted
   TString directoryName = "flowGraphs/";
   const int nFiles = 2;
-  TString fileName[] = {"flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018_akPfCsJets_correctedJetHadron_correctedDihadronSmallStats_2021-05-13.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root",  "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_2022-02-12.root",   "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root"};
+  TString fileName[] = {"flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018_caloJets_jetEta1v3_noGlueJetHadron_correctedJetHadron_correctedDihadron_2022-03-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root",  "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_2022-02-12.root",   "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root"};
   // "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root"
   // "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root"
   //  flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root
   
-  TString legendComment[] = {"Calo dijet", "PFCS dijet"};
+  TString legendComment[] = {"Calo dijet, glue", "Calo dijet, no glue"};
   
   TString systemAndEnergy = "PbPb 5.02 TeV";
   
@@ -40,16 +40,16 @@ void longRangeFitComparer(){
 
   const bool drawOverallFit = false;  // Draw the overall Fourier fit to the distribution
   const bool drawV1 = false;         // Draw different fit components seperately
-  const bool drawV2 = true;
-  const bool drawV3 = false;
+  const bool drawV2 = false;
+  const bool drawV3 = true;
   const bool drawV4 = false;
   const bool drawFitDecomposition = drawV1 || drawV2 || drawV3 || drawV4;
   bool drawVn[4] = {drawV1, drawV2, drawV3, drawV4};
   
-  const bool drawRatio = true;
+  const bool drawRatio = false;
   
   const bool saveFigures = true;
-  TString saveComment = "_jetCollectionData";
+  TString saveComment = "_glueCompare";
   TString figureFormat = "png";
   
   TString typeString[2] = {"Jet-hadron", "Dihadron"};

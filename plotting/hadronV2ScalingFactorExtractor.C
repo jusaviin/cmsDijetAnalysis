@@ -7,9 +7,9 @@ void hadronV2ScalingFactorExtractor(){
   const int nFiles = 3;
   const int nCorrelationTypes = 2;  // 0 = Jet-event plane correlation. 1 = hadron-event plane correlation
   TFile *inputFile[nCorrelationTypes][nFiles];
-  inputFile[0][0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_updateMultWeight_jetEta1v6_2022-02-23.root");
-  if(nFiles > 1) inputFile[0][1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_qVectorAbove2_updateMultWeight_jetEta1v6_2022-02-23.root");
-  if(nFiles > 2) inputFile[0][2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_qVectorAbove2p5_updateMultWeight_jetEta1v6_2022-02-23.root");
+  inputFile[0][0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_updateMultWeight_jetEta1v3_2022-02-23.root");
+  if(nFiles > 1) inputFile[0][1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_qVectorAbove2_updateMultWeight_jetEta1v3_2022-02-23.root");
+  if(nFiles > 2) inputFile[0][2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_qVectorAbove2p5_updateMultWeight_jetEta1v3_2022-02-23.root");
   if(nFiles > 3) inputFile[0][3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlaneV4_jetEta1v3_2022-01-26.root");
   
   // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_updateMultWeight_jetEta1v3_2022-02-23.root
@@ -20,9 +20,9 @@ void hadronV2ScalingFactorExtractor(){
   // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_qVectorAbove2_updateMultWeight_jetEta1v6_2022-02-23.root
   // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_qVectorAbove2p5_updateMultWeight_jetEta1v6_2022-02-23.root
   
-  inputFile[1][0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_jetEta1v6_2022-02-21.root");
-  if(nFiles > 1) inputFile[1][1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_qVectorAbove2_jetEta1v6_2022-02-22.root");
-  if(nFiles > 2) inputFile[1][2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_qVectorAbove2p5_jetEta1v6_2022-02-22.root");
+  inputFile[1][0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_jetEta1v3_2022-02-21.root");
+  if(nFiles > 1) inputFile[1][1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_qVectorAbove2_jetEta1v3_2022-02-22.root");
+  if(nFiles > 2) inputFile[1][2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_qVectorAbove2p5_jetEta1v3_2022-02-22.root");
   if(nFiles > 3) inputFile[1][3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multiplicityBins_manualEventPlaneV4_jetEta1v3_2022-01-26.root");
   
   // jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_jetEta1v3_2022-02-21.root
@@ -33,7 +33,8 @@ void hadronV2ScalingFactorExtractor(){
   // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_qVectorAbove2_jetEta1v6_2022-02-22.root
   // jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_hadronEventPlane_qVectorAbove2p5_jetEta1v6_2022-02-22.root
   
-  TString jetTypeString[4] = {"PFCS jets","Q > 2","Q > 2.5","Gen jet"};
+  TString legendHeader = "Calo jets";
+  TString jetTypeString[4] = {"All dijets","Q > 2","Q > 2.5","Gen jet"};
   //TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
   
   int eventPlaneOrder = 2; // The vn component that is plotted
@@ -52,8 +53,8 @@ void hadronV2ScalingFactorExtractor(){
   bool smoothJetV2 = false;  // Smooth the v2 values for the jet with second order polynomial
   bool fitDoubleRatio = true;  // Fit a pol0 to the double ratio
   
-  bool saveFigures = false;
-  TString saveComment = "_qVectorComparisonPFCSJet";
+  bool saveFigures = true;
+  TString saveComment = "_qVectorComparisonCaloJet";
   TString figureFormat = "pdf";
   
   // Read the histograms from the data files
@@ -206,9 +207,9 @@ void hadronV2ScalingFactorExtractor(){
     } // File loop
     
     // Add a legend to the plot
-    legend = new TLegend(0.3,0.7,0.5,0.9);
+    legend = new TLegend(0.3,0.65,0.5,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    //legend->SetHeader("PFCS jets");
+    legend->SetHeader(legendHeader);
     for(int iFile = 0; iFile < nFiles; iFile++){
       legend->AddEntry(multiplicityGraph[iCorrelationType][iFile], jetTypeString[iFile], "p");
     }
@@ -250,6 +251,7 @@ void hadronV2ScalingFactorExtractor(){
       // Add a legend to the ratio plot
       legend = new TLegend(0.3,0.7,0.5,0.9);
       legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->SetHeader(legendHeader);
       for(int iFile = 1; iFile < nFiles; iFile++){
         legend->AddEntry(multiplicityRatio[iCorrelationType][iFile-1], Form("%s / %s", jetTypeString[iFile].Data(), jetTypeString[0].Data()), "p");
       }
@@ -276,6 +278,7 @@ void hadronV2ScalingFactorExtractor(){
     // Add a legend to the ratio plot
     legend = new TLegend(0.3,0.7,0.5,0.9);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->SetHeader(legendHeader);
     for(int iFile = 1; iFile < nFiles; iFile++){
       legend->AddEntry(multiplicityDoubleRatio[iFile-1], Form("%s / %s", jetTypeString[iFile].Data(), jetTypeString[0].Data()), "p");
       if(fitDoubleRatio){

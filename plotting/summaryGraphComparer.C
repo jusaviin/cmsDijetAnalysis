@@ -12,20 +12,20 @@ void summaryGraphComparer(){
   
   // Input file name for data
   TString directoryName = "flowGraphs/";
-  const int nInputFiles = 3;
-  TString inputFileName[] =  {"summaryPlot_multiplicityMatch_caloJets_updatedScaling_jetEta1v3_2022-02-24.root", "summaryPlot_multiplicityMatch_pfCsJetsMinBiasHadronScaledCaloCorrection_jetEta1v6_2022-02-24.root", "summaryPlot_multiplicityMatch_pfCsJetsScaledCaloCorrection_jetEta1v6_2022-02-24.root", "summaryPlot_multiplicityMatch_jetEta1v3_2022-02-11.root", "summaryPlot_multiplicityMatch_minBiasScale_caloJets_jetEta1v3_2022-02-17.root", "summaryPlot_multiplicityMatch_pfCsJetsWithCaloCorrection_jetEta1v6_2022-02-21.root", "summaryPlot_multiplicityMatch_pfCsJetsWithMinBiasCaloCorrection_jetEta1v6_2022-02-21.root", "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root", "summaryPlot_multiplicityMatch_minBiasScale_pfCsJets_jetEta1v3_2022-02-17.root", "summaryPlot_multiplicityMatch_25pMoreQuark_jetEta1v3_2022-02-16.root", "summaryPlot_multiplicityMatch_qWeight_jetEta1v3_2022-02-13.root",  "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root",  "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
+  const int nInputFiles = 2;
+  TString inputFileName[] =  {"summaryPlot_multiplicityMatch_caloJets_updatedScaling_jetEta1v3_2022-02-28.root", "summaryPlot_multiplicityMatch_caloJets_integratedBinsUpTo3_nominalCorrection_jetEta1v3_2022-03-04.root",  "summaryPlot_multiplicityMatch_caloJets_integratedBinsUpTo3_jetEta1v3_2022-03-04.root",  "summaryPlot_centShift_caloJets_qVectorTuning_updatedScaling_jetEta1v6_2022-02-28.root", "summaryPlot_centShift_caloJets_qVectorWeights_updatedScaling_jetEta1v6_2022-03-04.root",  "summaryPlot_4pCentShift_qVectorTuning_pfCsJets_minBias_jetEta1v6_2022-02-28.root", "summaryPlot_multiplicityMatch_qVectors_jetEta1v3_2022-02-13.root",  "summaryPlot_multiplicityMatch_pfCsJetsMinBiasHadronScaledCaloCorrection_jetEta1v6_2022-02-24.root",  "summaryPlot_multiplicityMatch_minBiasScale_caloJets_jetEta1v3_2022-02-17.root", "summaryPlot_multiplicityMatch_pfCsJetsWithCaloCorrection_jetEta1v6_2022-02-21.root", "summaryPlot_multiplicityMatch_pfCsJetsWithMinBiasCaloCorrection_jetEta1v6_2022-02-21.root", "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root", "summaryPlot_multiplicityMatch_minBiasScale_pfCsJets_jetEta1v3_2022-02-17.root",  "summaryPlot_multiplicityMatch_qWeight_jetEta1v3_2022-02-13.root",  "summaryPlot_multiplicityMatch_pfCsJets_jetEta1v6_2022-02-13.root",  "summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root",  "summaryPlot_akCaloJet_smearedJER_lowStatDihadron_2021-08-16.root", "summaryPlot_akCaloJet_dihadronDeltaEta2to3v5_2021-08-06.root", "summaryPlot_akCaloJet_dihadronDeltaEta2v5to4_2021-08-06.root", "summaryPlot_akCaloJet_correctionWith25pMoreQuarkJets_2021-07-26.root",  "summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root",  "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4v5pCentShift_2021-06-03.root", "summaryPlot_akCaloJet_averageCorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_averageCorrection_2021-06-01.root",  "summaryPlot_akCaloJet_averageCorrectionWith4v5pCentShift_2021-06-02.root",  "summaryPlot_akCaloJet_averageCorrectionWith5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith3pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith4v5pCentShift_2021-06-02.root", "summaryPlot_akCaloJet_matchHadronV2CorrectionWith5pCentShift_2021-06-02.root"};
   
   TString uncertaintyFileName = "systematicUncertainties_allSources_finalCorrection_2021-08-10.root";
   
   // Text to be put into legend for the input graphs
-  TString legendText[] = {"Nominal correction, calo jets", "PFCS jets, scaled calo correction", "Scaled calo correction, PFCS", "Calo MinBias v_{2} scale, PFCS", "MultiMatch PfCsJets", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
+  TString legendText[] = {"Jet v_{n} from fit", "Jet v_{n} from bin sum", "Integrated bins for data and MC", "MultiMatch PfCsJets", "Extrapolate to hadron v_{2} , 3 %", "Extrapolate to hadron v_{2} , 4 %", "Extrapolate to hadron v_{2} , 4.5 %", "Extrapolate to hadron v_{2} , 5 %"};
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   
   const int maxVn = 4;            // Maximum defined vn. Plots are made upto v4.
   const int firstDrawnVn = 2;     // First drawn flow component
-  const int lastDrawnVn = 2;      // Last drawn flow component
+  const int lastDrawnVn = 4;      // Last drawn flow component
   
   // Define if previous results should be included in the plot
   const bool drawAtlasJetV2 = false;
@@ -34,9 +34,9 @@ void summaryGraphComparer(){
   const bool drawRatio = false;
   
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "_scalingCheck";
-  TString figureFormat = "png";
+  const bool saveFigures = true;
+  TString saveComment = "_integratedBinCheck";
+  TString figureFormat = "pdf";
   
   // =========== //
   // Read graphs //
@@ -248,7 +248,7 @@ void summaryGraphComparer(){
         legend->AddEntry(jetVnRatioGraph[iFile][iFlow], Form("%s / %s", legendText[iFile].Data(), legendText[0].Data()), "p");
       }
       
-      drawer->DrawGraphCustomAxes(jetVnRatioGraph[1][iFlow], 0, 4, 0.75, 1.25, "Centrality", Form("Jet v_{%d} ratio", iFlow+1), " ", "ap");
+      drawer->DrawGraphCustomAxes(jetVnRatioGraph[1][iFlow], 0, 4, 0, 2.5, "Centrality", Form("Jet v_{%d} ratio", iFlow+1), " ", "ap");
       
       // Draw the rest of the graphs to the same canvas
       for(int iFile = 2; iFile < nInputFiles; iFile++){
