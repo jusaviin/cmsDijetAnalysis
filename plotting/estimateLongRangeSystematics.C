@@ -53,36 +53,37 @@ void estimateLongRangeSystematics(){
   // Results with minimum bias dihadron
   TString minBiasDihadronResultFileName = "flowGraphs/summaryPlot_akCaloJet_minBiasDihadron_nominalCorrection_2021-05-26.root";
   
-  // Results with final correction TODO: This is the actual nominal correction.
+  // Results with final correction, this is still not the nominal correction
   TString finalResultFileName = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root";
   TString shiftedResultFileName1 = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith3pCentShift_2021-06-03.root";
   TString shiftedResultFileName2 = "flowGraphs/summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith5pCentShift_2021-06-03.root";
   
   // Results with Q-vector weight instead of cut
-  TString qVectorWeightedFileName = "flowGraphs/summaryPlot_akCaloJet_qVectorWeight_2021-08-10.root"; // Need to find the correct file to reproduce this file in order to add v4!!!
-  TString multiplicitySchemeFileName = "flowGraphs/summaryPlot_multiplicityMatch_jetEta1v3_2022-02-11.root"; // This is the new nominal file!!!!
-  TString multiplicitySchemeQcutFileName = "flowGraphs/summaryPlot_multiplicityMatch_qVectors_jetEta1v3_2022-02-13.root";
+  TString qVectorWeightedFileName = "flowGraphs/summaryPlot_centShift_caloJets_qVectorWeights_updatedScaling_jetEta1v6_2022-03-04.root";
+  TString qVectorCutFileName = "flowGraphs/summaryPlot_centShift_caloJets_qVectorTuning_updatedScaling_jetEta1v6_2022-02-28.root";
+  TString multiplicitySchemeFileName = "flowGraphs/summaryPlot_multiplicityMatch_caloJets_updatedScaling_jetEta1v3_2022-02-28.root"; // This is the new nominal file!!!!
   
   // Results without tracking efficiency correction
   TString noTrackEfficiencyFileName = "flowGraphs/summaryPlot_akCaloJet_noTrackEfficiency_2021-07-14.root";
   
   // Results with varied quark/gluon fraction
-  TString quarkGluonFractionFileName = "flowGraphs/summaryPlot_multiplicityMatch_25pMoreQuark_jetEta1v3_2022-02-16.root";
+  TString quarkGluonFractionFileName = "flowGraphs/summaryPlot_multiplicityMatch_updatedScaling_25pMoreQuark_jetEta1v3_2022-03-04.root";
   
   // Results where jet energy correction is altered by its uncertainties or by resolution
   TString jecUncertaintySmearedFileName = "flowGraphs/summaryPlot_akCaloJet_smearedJECmostStats_2021-08-09.root";
   TString jetResolutionSmearedFileName = "flowGraphs/summaryPlot_akCaloJet_smearedJER_2021-08-09.root";
-  
+    
   // Flow component configuration
   const int maxVn = 4;      // Maximum number of flow components
   const int firstFlow = 2;  // First analyzed flow component
-  const int lastFlow = 3;   // Last analyzed flow component
+  const int lastFlow = 4;   // Last analyzed flow component
   
   const bool printUncertainties = false;
+  const bool useFitForMcUncertainty = true;  // True: Uncertainty from fit. False: Uncertainty from the error 0.7 < pT < 3 GeV integrated pT bin.
   
   bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_multiplicityMatch_updateQGfraction_noVz_2022-02-16.root";
+  TString outputFileName = "flowGraphs/systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root";
   // flowGraphs/systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   
   // At the moment, the centrality shift uncertainty is not applied but instead a comparison with multiplicity matched results is used
@@ -91,8 +92,8 @@ void estimateLongRangeSystematics(){
     skipUncertaintySource[iUncertainty] = false;
   }
   skipUncertaintySource[LongRangeSystematicOrganizer::kMCTuning] = true;
+  skipUncertaintySource[LongRangeSystematicOrganizer::kJetCollection] = true;
   skipUncertaintySource[LongRangeSystematicOrganizer::kVz] = true;
-  
   
   // ==================================================================
   // ====================== Configuration done ========================
@@ -118,12 +119,12 @@ void estimateLongRangeSystematics(){
   TFile* shiftedResultFile1 = TFile::Open(shiftedResultFileName1);
   TFile* shiftedResultFile2 = TFile::Open(shiftedResultFileName2);
   TFile* qVectorWeightedFile = TFile::Open(qVectorWeightedFileName);
+  TFile* qVectorCutFile = TFile::Open(qVectorCutFileName);
   TFile* multiplicitySchemeFile = TFile::Open(multiplicitySchemeFileName);
   TFile* noTrackEfficiencyFile = TFile::Open(noTrackEfficiencyFileName);
   TFile* quarkGluonFractionFile = TFile::Open(quarkGluonFractionFileName);
   TFile* jecUncertaintySmearedFile = TFile::Open(jecUncertaintySmearedFileName);
   TFile* jetResolutionSmearedFile = TFile::Open(jetResolutionSmearedFileName);
-  TFile* multiplicitySchemeQcutFile = TFile::Open(multiplicitySchemeQcutFileName);
   
   // Result graphs
   TGraphErrors* nominalResultGraph[maxVn];
@@ -165,8 +166,8 @@ void estimateLongRangeSystematics(){
     finalResultGraph[iFlow] = (TGraphErrors*) finalResultFile->Get(graphName);
     shiftedResultGraph[iFlow][0] = (TGraphErrors*) shiftedResultFile1->Get(graphName);
     shiftedResultGraph[iFlow][1] = (TGraphErrors*) shiftedResultFile2->Get(graphName);
-    correctionMethodGraph[iFlow][0] = (TGraphErrors*) multiplicitySchemeQcutFile->Get(graphName);
-    correctionMethodGraph[iFlow][1] = (TGraphErrors*) multiplicitySchemeQcutFile->Get(graphName); // TODO: Need Q-weight here if can get it working
+    correctionMethodGraph[iFlow][0] = (TGraphErrors*) qVectorCutFile->Get(graphName);
+    correctionMethodGraph[iFlow][1] = (TGraphErrors*) qVectorWeightedFile->Get(graphName);
     noTrackEfficiencyGraph[iFlow] = (TGraphErrors*) noTrackEfficiencyFile->Get(graphName);
     quarkGluonFractionGraph[iFlow] = (TGraphErrors*) quarkGluonFractionFile->Get(graphName);
     jecUncertaintySmearedGraph[iFlow] = (TGraphErrors*) jecUncertaintySmearedFile->Get(graphName);
@@ -420,8 +421,8 @@ void estimateLongRangeSystematics(){
       
       // Draw example plots on how the uncertainty is obtained
       if(plotExample){
-        legendNames[0] = "Q-vector weight";
-        legendNames[1] = "Multiplicity match";
+        legendNames[0] = "Q-vector cut";
+        legendNames[1] = "Q-vector weight";
         drawIllustratingPlots(drawer, multiplicityMatchGraph[iFlow], correctionMethodGraph[iFlow], 2, legendNames, iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kMCMethod));
       }
       
@@ -438,11 +439,31 @@ void estimateLongRangeSystematics(){
     
     // These uncertainties are coming directly from the fit. They are not determined as the others.
     //                         v1                 v2                            v3                           v4
-    double fitErrors[4][4] = {{0,    0.00127865/1.17521/0.977956,  0.00240578/1.17521/0.977956, 0.0162291/1.17521/0.977956},   // 0-10
-                              {0,    0.000831144/0.814646/1.00629, 0.00192973/0.814646/1.00629, 0.00982104/0.814646/1.00629},  // 10-30
-                              {0,    0.000930751/0.746073/0.94224, 0.00239374/0.746073/0.94224, 0.0084061/0.746073/0.94224},   // 30-50
+    double fitErrors[4][4] = {{0,    0.00127865/1.17521/(1-(1-0.977956)*1.613),  0.00240578/1.17521/(1-(1-0.977956)*1.613), 0.0162291/1.17521/(1-(1-0.977956)*1.613)},   // 0-10
+                              {0,    0.000831144/0.814646/(1-(1-1.00629)*1.172), 0.00192973/0.814646/(1-(1-1.00629)*1.172), 0.00982104/0.814646/(1-(1-1.00629)*1.172)},  // 10-30
+                              {0,    0.000930751/0.746073/(1-(1-0.94224)*1.248), 0.00239374/0.746073/(1-(1-0.94224)*1.248), 0.0084061/0.746073/(1-(1-0.94224)*1.248)},   // 30-50
                               {0,    0,                         0,                               0}                            // 50-90
     };
+    
+    // If we use integrated pT bins instead of fits for uncertainty, update the uncertainty values
+    if(!useFitForMcUncertainty){
+      
+      // Jet v2
+      fitErrors[0][1] = 0.00137456/1.17521/(1-(1-0.977956)*1.613);  // C: 0-10
+      fitErrors[1][1] = 0.00089043/0.814646/(1-(1-1.00629)*1.172);  // C: 10-30
+      fitErrors[2][1] = 0.000994763/0.746073/(1-(1-0.94224)*1.248); // C: 30-50
+      
+      // Jet v3
+      fitErrors[0][2] = 0.00264121/1.17521/(1-(1-0.977956)*1.613);  // C: 0-10
+      fitErrors[1][2] = 0.00212031/0.814646/(1-(1-1.00629)*1.172);  // C: 10-30
+      fitErrors[2][2] = 0.00260271/0.746073/(1-(1-0.94224)*1.248); // C: 30-50
+      
+      // Jet v4
+      fitErrors[0][3] = 0.0190307/1.17521/(1-(1-0.977956)*1.613);  // C: 0-10
+      fitErrors[1][3] = 0.0128293/0.814646/(1-(1-1.00629)*1.172);  // C: 10-30
+      fitErrors[2][3] = 0.0116036/0.746073/(1-(1-0.94224)*1.248); // C: 30-50
+      
+    }
     
     for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
@@ -822,8 +843,8 @@ void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphEr
   const int colors[] = { kBlue, kRed, kGreen+3, kMagenta, kCyan, kBlack, kViolet};
   
   // Zooming ranges for different flow components
-  double minZoom[] = {0,0,-0.03,0};
-  double maxZoom[] = {0.1,0.1,0.03,0.1};
+  double minZoom[] = {0,0,-0.03,-0.04};
+  double maxZoom[] = {0.1,0.1,0.03,0.04};
   
   TLine *zeroLine = new TLine(0.75,0,3.25,0);
   zeroLine->SetLineStyle(2);
