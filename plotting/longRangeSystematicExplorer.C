@@ -13,11 +13,11 @@ void longRangeSystematicExplorer(){
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
   const int nFiles = 1;
-  TString uncertaintyFileName[] = { "systematicUncertainties_multiplicityMatch_updateQGfraction_noVz_2022-02-16.root", "systematicUncertainties_addMultiplicityMatch_updateMCMethod_2022-02-14.root",     "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
+  TString uncertaintyFileName[] = { "systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root", "systematicUncertainties_multiplicityMatch_updateQGfraction_noVz_2022-02-16.root", "systematicUncertainties_addMultiplicityMatch_updateMCMethod_2022-02-14.root",     "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
   // systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   // systematicUncertainties_allSources_finalCorrection_2021-08-10.root
   
-  TString legendComment[] = {"Multiplicity shift", "Update q/g fraction", "Dummy", "Dummy"};
+  TString legendComment[] = {"Updated scaling", "No Q-weight", "Dummy", "Dummy"};
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
@@ -31,10 +31,11 @@ void longRangeSystematicExplorer(){
   const bool drawRelativeUncertainties = false;
   const bool drawAbsoluteUncertainties = true;
   const bool groupUncertainties = true; // Group different uncertainty sources based on similarity
+  const int groupStrategy = 0;  // Strategy used to group the uncertainty histograms. 0 = Paper. 1 = AN.
   
   // Save the final plots
   const bool saveFigures = false;
-  TString saveComment = "_multiCentUncertainty";
+  TString saveComment = "_scalingUpdate";
   TString fileFormat = "pdf";
   
   // Print the uncertainties to a slide
@@ -51,6 +52,7 @@ void longRangeSystematicExplorer(){
   for(int iFile = 0; iFile < nFiles; iFile++){
     uncertaintyFile[iFile] = TFile::Open(directoryName+uncertaintyFileName[iFile]);
     uncertaintyOrganizer[iFile] = new LongRangeSystematicOrganizer(uncertaintyFile[iFile]);
+    uncertaintyOrganizer[iFile]->SetGroupingStrategy(groupStrategy);
   }
   
   // Determine the number of uncertainty sources from the file
@@ -254,6 +256,7 @@ void longRangeSystematicExplorer(){
           systematicIllustrationRelative[iFile][iFlow][iCentrality]->Draw("same");
         }
         
+        legend->AddEntry((TObject*) 0, Form("Jet v_{%d}", iFlow+1), "");
         legend->AddEntry((TObject*) 0, Form("Cent: %.0f-%.0f%%", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
         if(nFiles > 1){
           for(int iFile = 0; iFile < nFiles; iFile++){
@@ -293,6 +296,7 @@ void longRangeSystematicExplorer(){
           systematicIllustrationAbsolute[iFile][iFlow][iCentrality]->Draw("same");
         }
         
+        legend->AddEntry((TObject*) 0, Form("Jet v_{%d}", iFlow+1), "");
         legend->AddEntry((TObject*) 0, Form("Cent: %.0f-%.0f%%", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
         if(nFiles > 1){
           for(int iFile = 0; iFile < nFiles; iFile++){
