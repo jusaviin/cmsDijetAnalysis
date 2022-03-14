@@ -64,8 +64,8 @@ void multiplicityPlotter(){
   
   // File from which the long range distributions are plotted
   TString directoryName = "data/";
-  const int nFiles = 3;
-  TString fileName[] = {"PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_eventPlanes_jetEta1v6_processed_2022-02-23.root", "PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2_eventPlanes_jetEta1v6_processed_2022-02-23.root", "PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v6_processed_2022-02-23.root"};
+  const int nFiles = 1;
+  TString fileName[] = {"dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root", "PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_noCentWeight_jetEta1v3_processed_2022-01-21.root", "PbPbMC2018_RecoGen_akCaloJet_onlyJets_multWeight_eventPlanes_jetEta1v3_processed_2022-02-23.root"};
   // dijetPbPb2018_akCaloJet_onlyJets_jet100TriggerEta1v3_withTrackEff_processed_2022-01-19.root
   // PbPbMC2018_RecoGen_akCaloJet_onlyJets_noCentShift_jetEta1v3_reprocessed_2022-01-19.root
   // PbPbMC2018_RecoReco_akCaloJet_onlyJets_noCentShift_withTrackEff_jetEta1v3_processed_2022-01-20.root
@@ -81,7 +81,7 @@ void multiplicityPlotter(){
   // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2_eventPlanes_jetEta1v6_processed_2022-02-23.root
   // PbPbMC2018_RecoGen_akPfCsJet_onlyJets_multWeight_qVectorAbove2p5_eventPlanes_jetEta1v6_processed_2022-02-23.root
   
-  TString fileLegend[] = {"PFCS jets", "Q > 2", "Q > 2.5"};
+  TString fileLegend[] = {"PbPb Data", "Raw P+H", "Weighted P+H"};
   
   TString systemString = "Data";  // System to be put on a label
   
@@ -100,7 +100,7 @@ void multiplicityPlotter(){
   const int nTrackPtBins = 4;
   const int nAsymmetryBins = 3;
   const int nFlowComponents = 4;
-  const int firstDrawnCentralityBin = nCentralityBins;
+  const int firstDrawnCentralityBin = 0;
   const int lastDrawnCentralityBin = nCentralityBins;
   double centralityBinBorders[] = {0,10,30,50,90};  // Bin borders for centrality
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
@@ -112,14 +112,15 @@ void multiplicityPlotter(){
   const bool drawMultiplicityMap = false;          // Draw multiplicity vs. centrality map
   const bool drawMultiplicityMapWeighted = false;   // Draw efficiency weighted multiplicity vs. centrality map
   
-  const bool drawMultiplicityDijet = true;             // Draw multiplicity in each centrality bin in dijet events
-  const bool drawMultiplicityWeightedDijet = false;     // Draw efficiency weighted multiplicity in each centrality bin in dijet events
+  const bool drawMultiplicityDijet = false;             // Draw multiplicity in each centrality bin in dijet events
+  const bool drawMultiplicityWeightedDijet = true;     // Draw efficiency weighted multiplicity in each centrality bin in dijet events
   const bool drawMultiplicityMapDijet = false;          // Draw multiplicity vs. centrality map in dijet events
   const bool drawMultiplicityMapWeightedDijet = false;   // Draw efficiency weighted multiplicity vs. centrality map in dijet events
   
-  const bool drawAllToSameFigure = false;
+  const bool drawAllToSameFigure = true;
+  const bool matchYields = false;  // Normalize the integrals of all the drawn distributions to one
   
-  const bool printMeanSlide = true;
+  const bool printMeanSlide = false;
   
   const bool saveFigures = false;
   TString saveComment = "_qComparisonPfCs";
@@ -136,6 +137,13 @@ void multiplicityPlotter(){
       multiplicity[iFile][1][iCentrality] = manager[iFile]->GetHistogramMultiplicityWeighted(iCentrality);
       multiplicity[iFile][2][iCentrality] = manager[iFile]->GetHistogramMultiplicityDijet(iCentrality);
       multiplicity[iFile][3][iCentrality] = manager[iFile]->GetHistogramMultiplicityDijetWeighted(iCentrality);
+      
+      if(matchYields){
+        for(int iType = 0; iType < 4; iType++){
+          multiplicity[iFile][iType][iCentrality]->Scale(1.0 / multiplicity[iFile][iType][iCentrality]->Integral());
+        }
+      }
+      
     } // centrality loop
     
     // Load multiplicity histograms without centrality binning
@@ -143,6 +151,12 @@ void multiplicityPlotter(){
     multiplicity[iFile][1][nCentralityBins] = manager[iFile]->GetHistogramMultiplicityWeighted(maxCentralityBin);
     multiplicity[iFile][2][nCentralityBins] = manager[iFile]->GetHistogramMultiplicityDijet(maxCentralityBin);
     multiplicity[iFile][3][nCentralityBins] = manager[iFile]->GetHistogramMultiplicityDijetWeighted(maxCentralityBin);
+    
+    if(matchYields){
+      for(int iType = 0; iType < 4; iType++){
+        multiplicity[iFile][iType][nCentralityBins]->Scale(1.0 / multiplicity[iFile][iType][nCentralityBins]->Integral());
+      }
+    }
     
     // Load multiplicity map histograms
     multiplicityMap[iFile][0] = manager[iFile]->GetHistogramMultiplicityMap();
@@ -152,7 +166,7 @@ void multiplicityPlotter(){
   } // File loop
   
   TString saveString[] = {"", "Weighted", "Dijet", "WeightedDijet"};
-  TString legendString[] = {"", "", "PFCS dijet events", "PFCS dijet events"};
+  TString legendString[] = {"", "", "Calo dijet events", "Calo dijet events"};
   TString centralityString[] = {"C = 0-10", "C = 10-30", "C = 30-50", ""};
   TString saveCentralityString[] = {"C=0-10", "C=10-30", "C=30-50", ""};
   bool drawMultiplicityArray[] = {drawMultiplicity, drawMultiplicityWeighted, drawMultiplicityDijet, drawMultiplicityWeightedDijet};
@@ -185,12 +199,16 @@ void multiplicityPlotter(){
       
       // Draw the histogram to the canvas
       multiplicity[0][iType][iCentrality]->SetLineColor(fileColors[0]);
+      //multiplicity[0][iType][iCentrality]->GetYaxis()->SetRangeUser(0,0.012);
       drawer->DrawHistogram(multiplicity[0][iType][iCentrality], "Track multiplicity", "counts", " ");
       
       for(int iFile = 1; iFile < nFiles; iFile++){
         multiplicity[iFile][iType][iCentrality]->SetLineColor(fileColors[iFile]);
         multiplicity[iFile][iType][iCentrality]->Draw("same");
+        //multiplicity[0][iType-1][iCentrality]->SetLineColor(fileColors[iFile]);
+        //multiplicity[0][iType-1][iCentrality]->Draw("same");
       }
+      
       
       // Draw a legend for the histogram
       legend = new TLegend(0.17,0.7,0.37,0.9);
@@ -198,8 +216,9 @@ void multiplicityPlotter(){
       
       if(iCentrality < nCentralityBins) legend->AddEntry((TObject*) 0, Form("C = %.0f-%.0f", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), "");
       if(legendString[iType] != "") legend->AddEntry((TObject*) 0, legendString[iType], "");
-      for(int iFile = 1; iFile < nFiles; iFile++){
-        legend->AddEntry(multiplicity[iFile][iType][iCentrality], fileLegend[iFile], "l");
+      for(int iFile = 0; iFile < nFiles; iFile++){
+        if(iFile == 0) legend->AddEntry(multiplicity[iFile][iType][iCentrality], fileLegend[iFile], "l");
+        if(iFile == 1) legend->AddEntry(multiplicity[0][iType-1][iCentrality], "No tracking efficiency", "l");
       }
       legend->Draw();
       
