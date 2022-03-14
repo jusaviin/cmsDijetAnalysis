@@ -46,7 +46,7 @@ void fitJetEventPlaneVnMultiplicity(){
   // Find the relevant multiplicity histogram from the histogram manager
   TH1D *multiplicityHistogram = multiplicityManager->GetHistogramMultiplicityDijet(multiplicityManager->GetNCentralityBins());
   
-  TString jetTypeString[4] = {"PFCS jets","Q > 2","Q > 2.5","Gen jet"};
+  TString jetTypeString[4] = {"Hadron v_{2}","Jet v_{2}","Q > 2.5","Gen jet"};
   //TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
   
   int eventPlaneOrder = 2; // The vn component that is plotted
@@ -69,8 +69,8 @@ void fitJetEventPlaneVnMultiplicity(){
   
   const bool drawMultiplicityScaleFactors = true;
   
-  bool saveFigures = false;
-  TString saveComment = "_pfcsJets";
+  bool saveFigures = true;
+  TString saveComment = "_jetHadronComparisonCaloCent";
   TString figureFormat = "pdf";
   
   // Read the histograms from the data files
@@ -227,14 +227,14 @@ void fitJetEventPlaneVnMultiplicity(){
   double highYrange[] = {0.2,0.2,0.25,0.06,0.03,0.02,0.02};
   
   // Draw the multiplicity graphs
-  drawer->DrawGraph(multiplicityGraph[0], 400, 3600, 0.0, highYrange[eventPlaneOrder], "Multiplicity", Form("Hadron v_{%d}", eventPlaneOrder), " ", "p");
+  drawer->DrawGraph(multiplicityGraph[0], 400, 3600, 0.0, highYrange[eventPlaneOrder], "Multiplicity", Form("v_{%d}", eventPlaneOrder), " ", "p");
   for(int iFile = 1; iFile < nFiles; iFile++){
     multiplicityGraph[iFile]->Draw("same,p");
   }
   
   // Fit the graphs with pol2 function
   if(smoothJetV2){
-    for(int iFile = 0; iFile < nFiles; iFile++){
+    for(int iFile = 1; iFile < nFiles; iFile++){
       multiplicityGraph[iFile]->Fit("pol2");
       multiplicityGraph[iFile]->GetFunction("pol2")->SetLineColor(markerColors[iFile]);
     }
@@ -242,7 +242,7 @@ void fitJetEventPlaneVnMultiplicity(){
     // Calculate the ratio from smoothed values
     for(int iFile = 1; iFile < nFiles; iFile++){
       for(int iPoint = 0; iPoint < multiplicityRatio[iFile-1]->GetN(); iPoint++){
-        multiplicityRatio[iFile-1]->SetPointY(iPoint, multiplicityGraph[iFile]->GetFunction("pol2")->Eval(xValues[iPoint]) / multiplicityGraph[iFile-1]->GetFunction("pol2")->Eval(xValues[iPoint]));
+        multiplicityRatio[iFile-1]->SetPointY(iPoint, multiplicityGraph[iFile]->GetFunction("pol2")->Eval(xValues[iPoint]) / multiplicityGraph[iFile-1]->Eval(xValues[iPoint]));
         multiplicityRatio[iFile-1]->SetPointError(iPoint,0,0.0001);
       }
     }
@@ -251,14 +251,14 @@ void fitJetEventPlaneVnMultiplicity(){
   // Add a legend to the plot
   legend = new TLegend(0.3,0.7,0.5,0.9);
   legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-  //legend->SetHeader("PFCS jets");
+  legend->SetHeader("Calo jets");
   for(int iFile = 0; iFile < nFiles; iFile++){
     legend->AddEntry(multiplicityGraph[iFile], jetTypeString[iFile], "p");
   }
   legend->Draw();
   
   if(saveFigures){
-    gPad->GetCanvas()->SaveAs(Form("figures/hadronV%dvsMultiplicity%s.%s", eventPlaneOrder, saveComment.Data(), figureFormat.Data()));
+    gPad->GetCanvas()->SaveAs(Form("figures/jetV%dvsMultiplicity%s.%s", eventPlaneOrder, saveComment.Data(), figureFormat.Data()));
   }
   
   // If there is a ratio file, draw it
@@ -434,29 +434,6 @@ void fitJetEventPlaneVnMultiplicity(){
     
   } // Printing slides about multiplicity vs. v2
   
-  // Drawing for multiplicity scaling factors. TODO: Error propagation for scaling factors
-  if(drawMultiplicityScaleFactors){
-    TGraph *multiplicityScaleGraph = new TGraph(lastPlottedBin-firstPlottedBin, multiplicityScaleAxis, multiplicityScaleFactors);
-    multiplicityScaleGraph->SetMarkerStyle(markerStyles[0]);
-    multiplicityScaleGraph->SetMarkerColor(markerColors[0]);
-    drawer->DrawGraph(multiplicityScaleGraph, 400, 3600, 0.5, 3.5, "Multiplicity", "Multiplicity scaling factor", " ", "p");
-    
-    TLine *oneLine = new TLine(400,1,3600,1);
-    oneLine->SetLineStyle(2);
-    oneLine->Draw();
-    
-    // Add a legend to the figure
-    legend = new TLegend(0.25,0.7,0.45,0.9);
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    legend->AddEntry((TObject*)0, jetTypeString[0], "");
-    legend->Draw();
-    
-    // Dave the figure
-    if(saveFigures){
-      gPad->GetCanvas()->SaveAs(Form("figures/multiplicityScalingFactor%s.%s", saveComment.Data(), figureFormat.Data()));
-    }
-  }
-  
   // Calculate the multiplicity scaling factors in each analysis centrality bin as the weighted average from finer multiplicity bins
   int lowBinBorder, highBinBorder;
   double analysisBinBorder0 = 340;
@@ -465,6 +442,7 @@ void fitJetEventPlaneVnMultiplicity(){
   double multiplicityWeights[nMultiplicityBins-1] = {0};
   double totalMultiplicityWeight = 0;
   double totalMultiplicityScale = 0;
+  double multiplicityScalingFactors[3] = {0};
   
   int nBinsPerCentrality[3] = {7,9,3};
   int firstMultiplicityBin[3] = {8,1,0};
@@ -488,9 +466,44 @@ void fitJetEventPlaneVnMultiplicity(){
       totalMultiplicityScale += multiplicityWeights[iMultiplicity] * multiplicityScaleFactors[iMultiplicity];
     }
     
+    multiplicityScalingFactors[2-iCentrality] = totalMultiplicityScale / totalMultiplicityWeight;
     cout << fixed << setprecision(3);
-    cout << "Multiplicity scaling factor for " << centralityBinBorders[iCentrality] << "-" << centralityBinBorders[iCentrality+1] << " = " << totalMultiplicityScale / totalMultiplicityWeight << endl;
+    cout << "Multiplicity scaling factor for " << centralityBinBorders[iCentrality] << "-" << centralityBinBorders[iCentrality+1] << " = " << multiplicityScalingFactors[2-iCentrality] << endl;
+  }
+  
+  // Drawing for multiplicity scaling factors. TODO: Error propagation for scaling factors
+  if(drawMultiplicityScaleFactors){
+    TGraph *multiplicityScaleGraph = new TGraph(lastPlottedBin-firstPlottedBin, multiplicityScaleAxis, multiplicityScaleFactors);
+    multiplicityScaleGraph->SetMarkerStyle(markerStyles[0]);
+    multiplicityScaleGraph->SetMarkerColor(markerColors[0]);
     
+    double wideXaxis[] = {(analysisBinBorder1+400)/2, (analysisBinBorder2+analysisBinBorder1) / 2, (3600 + analysisBinBorder2) / 2};
+    double wideXaxisError[] = {(analysisBinBorder1-400)/2, (analysisBinBorder2-analysisBinBorder1) / 2, (3600 - analysisBinBorder2) / 2};
+    double wideYErrors[] = {0,0,0};
+    
+    TGraph *wideMultiplicityScaleGraph = new TGraphErrors(3, wideXaxis, multiplicityScalingFactors, wideXaxisError, wideYErrors);
+    wideMultiplicityScaleGraph->SetMarkerStyle(markerStyles[1]);
+    wideMultiplicityScaleGraph->SetMarkerColor(markerColors[1]);
+    
+    drawer->DrawGraph(multiplicityScaleGraph, 400, 3600, 0.5, 3.5, "Multiplicity", "Multiplicity scaling factor", " ", "p");
+    wideMultiplicityScaleGraph->Draw("same,p");
+    
+    TLine *oneLine = new TLine(400,1,3600,1);
+    oneLine->SetLineStyle(2);
+    oneLine->Draw();
+    
+    // Add a legend to the figure
+    legend = new TLegend(0.25,0.65,0.45,0.9);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    legend->AddEntry((TObject*)0, jetTypeString[0], "");
+    legend->AddEntry(multiplicityScaleGraph, "Narrow bins", "p");
+    legend->AddEntry(wideMultiplicityScaleGraph, "Analysis centrality bins", "p");
+    legend->Draw();
+    
+    // Dave the figure
+    if(saveFigures){
+      gPad->GetCanvas()->SaveAs(Form("figures/multiplicityScalingFactor%s.%s", saveComment.Data(), figureFormat.Data()));
+    }
   }
   
   // Draw the jet-event plane fits
