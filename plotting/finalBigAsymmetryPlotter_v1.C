@@ -27,7 +27,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   const bool drawExtraRatio = false;           // Draw illustration of third jet effects to the ratio
   const bool saveHistogramsForHepData = false; // Save the plotted histograms to a file for HepData submission
   
-  const bool smallFormat = false;     // Make the plot in a more concise format that is better for presentations
+  const bool smallFormat = true;     // Make the plot in a more concise format that is better for presentations
   const char* figureFormat = "pdf";  // Format given to the figures
   const int smallRatioCentralityBin = 0; // Centrality bin drawn for ratio in small format. 0 = 0-10, 1 = 10-30, 2 = 30-50, 3 = 50-90
   
@@ -356,6 +356,8 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     TLegend *smallPtLegend5;
     TLegend *smallPtLegend6;
     
+    TLine *myLine = new TLine();
+    
     for(int iAsymmetry = 0; iAsymmetry < 3; iAsymmetry++){
       for(int iCentrality = 0; iCentrality < 2; iCentrality++){
         
@@ -480,7 +482,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     if(addPreliminaryTag){
       mainTitle->DrawLatexNDC(0.615, 0.927, "CMS-PAS-HIN-19-013");
     } else {
-      mainTitle->DrawLatexNDC(0.635, 0.943, "arXiv:2101.04720");
+      mainTitle->DrawLatexNDC(0.635, 0.943, "JHEP 05 (2021) 116");
     }
     
     mainTitle->SetTextFont(42);
@@ -496,7 +498,9 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     mainTitle->DrawLatex(0.562, 0.0511, "0");
     mainTitle->DrawLatex(0.97, 0.0511, "1");
     
-    bigCanvas->SaveAs(Form("figures/finalJetShape_%s_smallCanvas_presentation.%s", jetShapeSaveName[iJetTrack/3], figureFormat));
+    myLine->DrawLine(0.98,0.09,0.98,0.8);
+    
+    bigCanvas->SaveAs(Form("figures/final%s_%s_smallCanvas.%s", saveString, jetShapeSaveName[iJetTrack/3], figureFormat));
     
   } else {
     
@@ -780,10 +784,10 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     
     ratioUncertainty[smallRatioCentralityBin][0]->SetMarkerStyle(20);
-    ratioUncertainty[smallRatioCentralityBin][0]->SetMarkerSize(1.8);
+    ratioUncertainty[smallRatioCentralityBin][0]->SetMarkerSize(2.8);
     ratioHistogram[smallRatioCentralityBin][0]->SetMarkerStyle(20);
-    ratioHistogram[smallRatioCentralityBin][0]->SetMarkerSize(1.8);
-    ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerSize(1.8);
+    ratioHistogram[smallRatioCentralityBin][0]->SetMarkerSize(2.8);
+    ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerSize(2.8);
     
     ratioUncertainty[smallRatioCentralityBin][0]->SetFillColorAlpha(kRed+2, 0.4);
     ratioUncertainty[smallRatioCentralityBin][0]->SetLineColor(kRed+2);
@@ -794,11 +798,13 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     ratioUncertainty[smallRatioCentralityBin][2]->SetFillColorAlpha(kAzure+2, 0.4);
     ratioUncertainty[smallRatioCentralityBin][2]->SetLineColor(kAzure+2);
     ratioUncertainty[smallRatioCentralityBin][2]->SetMarkerColor(kAzure+2);
+    ratioUncertainty[smallRatioCentralityBin][2]->SetMarkerSize(2.2);
     ratioHistogram[smallRatioCentralityBin][2]->SetMarkerColor(kAzure+2);
     ratioHistogram[smallRatioCentralityBin][2]->SetLineColor(kAzure+2);
+    ratioHistogram[smallRatioCentralityBin][2]->SetMarkerSize(2.2);
     
     ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetLineColor(kBlack);
-    ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerSize(1.3);
+    ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerSize(2.8);
     ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerColor(kBlack);
     ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerStyle(24);
     ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->SetFillColorAlpha(kWhite, 0);
@@ -806,7 +812,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     ratioUncertainty[smallRatioCentralityBin][nAsymmetryBins]->SetFillColorAlpha(kGray+2, 0.3);
     ratioUncertainty[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerColor(kWhite);
     ratioUncertainty[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerStyle(20);
-    ratioUncertainty[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerSize(1.1);
+    ratioUncertainty[smallRatioCentralityBin][nAsymmetryBins]->SetMarkerSize(2.8);
     
     ratioUncertainty[smallRatioCentralityBin][0]->SetTitle("");
     ratioUncertainty[smallRatioCentralityBin][0]->Draw("same e2");
@@ -815,7 +821,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     ratioHistogram[smallRatioCentralityBin][0]->Draw("same");
     ratioHistogram[smallRatioCentralityBin][2]->Draw("same");
     ratioHistogram[smallRatioCentralityBin][nAsymmetryBins]->Draw("same");
-    auxi_hist[smallRatioCentralityBin]->Draw("same e2");
+    //auxi_hist[smallRatioCentralityBin]->Draw("same e2");
     
     if(drawExtraRatio){
       extraRatio[smallRatioCentralityBin]->SetLineColor(kRed+2);
@@ -865,7 +871,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     if(addPreliminaryTag){
       mainTitle->DrawLatexNDC(0.085, 0.925, "CMS");
     } else {
-      mainTitle->DrawLatexNDC(0.134, 0.925, "CMS");
+      mainTitle->DrawLatexNDC(0.114, 0.925, "CMS");
     }
     
     mainTitle->SetTextFont(52);
@@ -873,7 +879,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     if(addPreliminaryTag){
       mainTitle->DrawLatexNDC(0.235, 0.926, "Preliminary");
     } else {
-      mainTitle->DrawLatexNDC(0.284, 0.926, "Supplementary");
+      mainTitle->DrawLatexNDC(0.264, 0.926, "Supplementary");
     }
     
     mainTitle->SetTextFont(42);
@@ -881,7 +887,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     if(addPreliminaryTag){
       mainTitle->DrawLatexNDC(0.615, 0.927, "CMS-PAS-HIN-19-013");
     } else {
-      mainTitle->DrawLatexNDC(0.684, 0.927, "arXiv:2101.04720");
+      mainTitle->DrawLatexNDC(0.654, 0.927, "JHEP 05 (2021) 116");
     }
     
     
@@ -904,7 +910,7 @@ void plotJetShapeBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     mainTitle->DrawLatex(0.537, 0.073, "0");
     mainTitle->DrawLatex(0.963, 0.073, "1");*/
     
-    ratioCanvas->SaveAs(Form("figures/final%s_%s_ratio_smallCanvas_central.%s", saveString, jetShapeSaveName[iJetTrack/3], figureFormat));
+    ratioCanvas->SaveAs(Form("figures/final%s_%s_ratio_smallCanvas.%s", saveString, jetShapeSaveName[iJetTrack/3], figureFormat));
     
   } else {
   

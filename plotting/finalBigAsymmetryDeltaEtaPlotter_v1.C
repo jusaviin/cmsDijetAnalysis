@@ -23,12 +23,12 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
   
   const bool drawInclusive = false;
   const bool addPreliminaryTag = false;
-  const bool smallFormat = false;  // Make the plot in a more concise format that is better for presentations
-  const bool sameScale = false;    // Draw leading and subleading histograms with same y-axis scale
+  const bool smallFormat = true;  // Make the plot in a more concise format that is better for presentations
+  const bool sameScale = true;    // Draw leading and subleading histograms with same y-axis scale
   
   if(sameScale) deltaEtaZoom[0] = deltaEtaZoom[1];
   
-  const bool saveHistogramsForHepData = true;
+  const bool saveHistogramsForHepData = false;
   
   // Open a file to include results from inclusive jet analysis HIN-16-020
   //  TFile *inclusiveResultFile = TFile::Open("data/publishedResults/officialHist_py_deta_16_020.root");
@@ -459,12 +459,13 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     
     mainTitle->SetTextFont(52);
     mainTitle->SetTextSize(0.055);
-    mainTitle->DrawLatexNDC(0.235, 0.941, "Preliminary");
-    //mainTitle->DrawLatexNDC(0.235, 0.941, "Supplementary");
+    //mainTitle->DrawLatexNDC(0.235, 0.941, "Preliminary");
+    mainTitle->DrawLatexNDC(0.235, 0.941, "Supplementary");
     
     mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.04);
-    mainTitle->DrawLatexNDC(0.615, 0.942, "CMS-PAS-HIN-19-013");
+    //mainTitle->DrawLatexNDC(0.615, 0.942, "CMS-PAS-HIN-19-013");
+    mainTitle->DrawLatexNDC(0.635, 0.942, "JHEP 05 (2021) 116");
     
     mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.04);
@@ -479,7 +480,7 @@ void plotDeltaEtaBigAsymmetry(DijetHistogramManager *ppHistograms, DijetHistogra
     mainTitle->DrawLatex(0.562, 0.0511, "0");
     mainTitle->DrawLatex(0.95, 0.0511, "1.5");
     
-    bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_smallCanvas_subleadingScale_presentation.pdf", deltaEtaSaveName[iJetTrack/3]));
+    bigCanvas->SaveAs(Form("figures/finalDeltaEta%s_smallCanvas_subleadingScale.pdf", deltaEtaSaveName[iJetTrack/3]));
     
   } else {
     
