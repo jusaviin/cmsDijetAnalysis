@@ -39,10 +39,11 @@ void finalLongRangePlotter(){
   // Drawing for preliminary tag
   const bool drawBigCanvas = true;
   const bool drawPreliminaryTag = false;
+  const bool leadSubTitles = false; // true: Use lead and sub instead of 1 and 2 in the figure legend
   
   // Save the final plots
   const bool saveFigures = true;
-  TString saveComment = "_initialStyle";
+  TString saveComment = "_initialUpdate";
   
   // =========== //
   // Read graphs //
@@ -204,6 +205,7 @@ void finalLongRangePlotter(){
     // Draw all the distributions to big canvases
     auxi_canvas *bigCanvas;
     TLatex *mainTitle;
+    TLegend *anotherLegend;
     
     // Draw a big canvas and put all the plots in it
     bigCanvas = new auxi_canvas("bigCanvas", "", 1500, 550);
@@ -252,11 +254,15 @@ void finalLongRangePlotter(){
       // Create a legend for the plot division
       if(iFlow > 1) {
         legend = new TLegend(0.06,0.89,0.7,0.98);
+        anotherLegend = new TLegend(0.23,0.7,0.73,0.85);
       } else {
-        legend = new TLegend(0.23,0.8,0.73,0.98);
+        legend = new TLegend(0.23,0.89,0.73,0.98);
+        anotherLegend = new TLegend(0.23,0.77,0.73,0.89);
       }
       
-      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.054);legend->SetTextFont(62);
+      anotherLegend->SetFillStyle(0);anotherLegend->SetBorderSize(0);anotherLegend->SetTextSize(0.054);anotherLegend->SetTextFont(62);
+      
       if(iFlow > 1) legend->SetTextSize(0.06);  // Need to increase text size for smaller divisions
       
       legend->AddEntry(jetVnUncertainty[iFlow], Form("Dijet v_{%d}", iFlow+1), "pf");
@@ -270,12 +276,15 @@ void finalLongRangePlotter(){
       if(iFlow == 1 && drawCmsHigtPtV2){
         cmsHighPtV2->SetMarkerSize(2);
         cmsHighPtV2->Draw("p,same");
-        legend->AddEntry(cmsHighPtV2, "CMS hadron v_{2} , p_{T} > 20 GeV", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
+        anotherLegend->AddEntry(cmsHighPtV2, "CMS charged hadron v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
+        anotherLegend->AddEntry((TObject*)0, "p_{T} > 20 GeV, |#eta| < 1", "");
       }
       
       legend->Draw();
       
       zeroLine->Draw();
+      
+      if(iFlow == 1) anotherLegend->Draw();
       
     } // Flow component loop
     
@@ -294,9 +303,15 @@ void finalLongRangePlotter(){
     mainTitle->DrawLatexNDC(0.72, 0.76, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.7 nb^{-1}");
     mainTitle->DrawLatexNDC(0.54, 0.92, "anti-k_{T} R = 0.4");
     mainTitle->DrawLatexNDC(0.54, 0.84, "|#eta_{jet}| < 1.3");
-    mainTitle->DrawLatexNDC(0.54, 0.76, "p_{T,1} > 120 GeV");
-    mainTitle->DrawLatexNDC(0.54, 0.68, "p_{T,2} > 50 GeV");
-    mainTitle->DrawLatexNDC(0.54, 0.60, "#Delta#varphi_{1,2} > #frac{5#pi}{6}");
+    if(leadSubTitles){
+    mainTitle->DrawLatexNDC(0.54, 0.76, "p_{T}^{lead} > 120 GeV");
+    mainTitle->DrawLatexNDC(0.54, 0.68, "p_{T}^{sub} > 50 GeV");
+    mainTitle->DrawLatexNDC(0.54, 0.60, "#Delta#varphi > #frac{5#pi}{6}");
+    } else {
+      mainTitle->DrawLatexNDC(0.54, 0.76, "p_{T,1} > 120 GeV");
+      mainTitle->DrawLatexNDC(0.54, 0.68, "p_{T,2} > 50 GeV");
+      mainTitle->DrawLatexNDC(0.54, 0.60, "#Delta#varphi_{1,2} > #frac{5#pi}{6}");
+    }
     mainTitle->DrawLatexNDC(0.13, 0.33, "Factorization region:");
     mainTitle->DrawLatexNDC(0.13, 0.25, "0.7 < Hadron p_{T} < 3 GeV");
     
