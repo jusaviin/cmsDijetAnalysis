@@ -93,7 +93,7 @@ void prepareFinalLongRangeGraphs(){
   double trackPtBinBorders[] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   double xjBinBorders[] = {0,0.6,0.8,1}; // Bin borders for xj
   
-  const bool cumulativePtBins = true; // True = Combine pT bins from below, False = Separate pT bins
+  const bool cumulativePtBins = false; // True = Combine pT bins from below, False = Separate pT bins
   
   const int firstAsymmetryBin = nAsymmetryBins;  // Set this to nAsymmetryBins to disable asymmetry binning (useful for quick tests)
   
@@ -129,10 +129,10 @@ void prepareFinalLongRangeGraphs(){
   const int nCentralityBinsReader = useDifferentFilesForDifferentCentralities ? nCentralityBins : 1;
   
   // Correlation type is kTrackInclusiveJet for minimum bias and kTrackLeadingJet for all else
-  const int correlationTypeJetHadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet  kTrackInclusiveJet
+  const int correlationTypeJetHadron = DijetHistogramManager::kTrackSubleadingJet; // kTrackLeadingJet kTrackSubleadingJet kTrackInclusiveJet
   const int correlationTypeDihadron = DijetHistogramManager::kTrackLeadingJet; // kTrackLeadingJet kTrackInclusiveJet
   
-  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_cumulativePtBins_2022-03-04.root";
+  TString outputFileName = "flowGraphs/flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_shiftLeading_2022-03-18.root";
   // flowGraphs/flowGraphs_PbPb2018MC_genJets_4pCentShift_subeNon0_dihadronFromRecoJets_correctedJetHadron_correctedDihadron_2021-07-27.root
   // Form("flowGraphs/flowGraphs_PbPbMC2018_3pCentShift_caloJets%s_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-03-22.root", qVectorTag)
   // flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectNeutralScaled_correctedJetHadron_correctedDihadron_2021-08-23.root

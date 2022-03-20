@@ -8,12 +8,12 @@ void longRangeFitComparer(){
   // File from which the long range distributions are plotted
   TString directoryName = "flowGraphs/";
   const int nFiles = 2;
-  TString fileName[] = {"flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018_caloJets_jetEta1v3_noGlueJetHadron_correctedJetHadron_correctedDihadron_2022-03-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root",  "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_2022-02-12.root",   "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root"};
+  TString fileName[] = {"flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_shiftLeading_2022-03-18.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root",  "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_2022-02-12.root",   "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root"};
   // "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadron_correctedDihadron_2021-02-26.root"
   // "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root"
   //  flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root
   
-  TString legendComment[] = {"Calo dijet, glue", "Calo dijet, no glue"};
+  TString legendComment[] = {"Calo dijet, nominal", "Calo dijet, shift leading"};
   
   TString systemAndEnergy = "PbPb 5.02 TeV";
   
@@ -48,7 +48,7 @@ void longRangeFitComparer(){
   
   const bool drawRatio = false;
   
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "_glueCompare";
   TString figureFormat = "png";
   
