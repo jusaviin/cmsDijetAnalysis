@@ -846,9 +846,12 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               //fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
-              fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," ");
+              //fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," "); // Nominal axis naming
+              fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","B(#Delta#varphi) (A.U.)"," ");
               legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-              SetupLegend(legend,centralityString,trackPtString,asymmetryString);
+              //SetupLegend(legend,centralityString,trackPtString,asymmetryString); // Nominal legend setup
+              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              legend->AddEntry(drawnHistogram, "#Delta#varphi projection", "l");
               
               
               // In case of background histogram, draw the selected additional components
@@ -860,6 +863,9 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                   additionalHistogram->SetLineColor(kRed);
                   additionalHistogram->Draw("same");
                 }
+                
+                //TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
+                //legend->AddEntry(fourierFit, "Fourier fit", "l");
                 
                 // If we want to draw a decomposition of the fourier fit, do it
                 if(fBackgroundDrawStyle[kDrawFitComposition]){
@@ -893,10 +899,10 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                   
                   TLegend *vLegend = new TLegend(0.56,0.7,0.76,0.9);
                   vLegend->SetFillStyle(0);vLegend->SetBorderSize(0);vLegend->SetTextSize(0.045);vLegend->SetTextFont(62);
-                  vLegend->AddEntry(fourierV1,"v_{1}","l");
-                  vLegend->AddEntry(fourierV2,"v_{2}","l");
-                  vLegend->AddEntry(fourierV3,"v_{3}","l");
-                  vLegend->AddEntry(fourierV4,"v_{4}","l");
+                  vLegend->AddEntry(fourierV1,"V_{1}","l");
+                  vLegend->AddEntry(fourierV2,"V_{2}","l");
+                  vLegend->AddEntry(fourierV3,"V_{3}","l");
+                  vLegend->AddEntry(fourierV4,"V_{4}","l");
                   vLegend->Draw();
                   
                 }

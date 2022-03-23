@@ -38,12 +38,12 @@ void finalLongRangePlotter(){
   
   // Drawing for preliminary tag
   const bool drawBigCanvas = true;
-  const bool drawPreliminaryTag = false;
-  const bool leadSubTitles = false; // true: Use lead and sub instead of 1 and 2 in the figure legend
+  const bool drawPreliminaryTag = true;
+  const bool leadSubTitles = true; // true: Use lead and sub instead of 1 and 2 in the figure legend
   
   // Save the final plots
-  const bool saveFigures = true;
-  TString saveComment = "_initialUpdate";
+  const bool saveFigures = false;
+  TString saveComment = "_preliminaryUpdate";
   
   // =========== //
   // Read graphs //
