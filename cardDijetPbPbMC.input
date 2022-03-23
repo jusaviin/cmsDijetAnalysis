@@ -53,7 +53,7 @@ CalorimeterSignalLimitPt 20 # Require signal in calorimeters for all track above
 HighPtEtFraction 0.5        # For high pT tracks, require Et to be at least this fraction of pT
 Chi2QualityCut 0.15         # Maximum accepted chi2/(nDof*nHits) for tracks
 MinimumTrackHits 11         # Require this many hits for each track 
-SubeventCut 1               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
+SubeventCut 2               # Cut on subevent index. 0 = 0, 1 = (>0), 2 = no cut
 
 # Cuts for event selection
 ZVertexCut 15       # Maximum vz value for accepted tracks
