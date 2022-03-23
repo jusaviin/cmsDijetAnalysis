@@ -2608,8 +2608,15 @@ Double_t DijetAnalyzer::GetSmearingFactor(Double_t jetPt, const Double_t central
     }
   }
   
+  // Calculation for resolution worsening: we assume the jet energy resolution is a Gassian distribution with some certain sigma, if you would like to add a Gassian noise to make it worse, the sigma getting larger, then it obeys the random variable rule that X=Y+Z, where Y~N(y, sigmay) and Z~N(z,sigmaz), then X~N(y+z, sqrt(sigmay^2+sigmaz^2))). In this case, we assume that noise and the resolution are independent.
+  // So let assume the sigmay is the jet energy resolution, then you want the sigmax = 1.2sigmay
+  // which means that the sigmaz = sigmay * sqrt(1.2^2-1)
+  
   // After the smearing function is set, read the value to return
-  return fSmearingFunction->Eval(jetPt)*0.666;
+  // Worsening resolution by 20%: 0.663
+  // Worsening resolution by 10%: 0.458
+  // Worsening resolution by 30%: 0.831
+  return fSmearingFunction->Eval(jetPt)*0.663;
   
 }
 
