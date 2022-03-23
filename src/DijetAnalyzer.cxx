@@ -1774,6 +1774,7 @@ void DijetAnalyzer::RunAnalysis(){
               // Only look at tracks below 4 GeV, as these are the ones used in the correlation analysis
               if(fTrackReader[DijetHistograms::kSameEvent]->GetTrackPt(iTrack) > 4) continue;
               trackPhi = fTrackReader[DijetHistograms::kSameEvent]->GetTrackPhi(iTrack);
+              trackEfficiencyCorrection = GetTrackEfficiencyCorrection(DijetHistograms::kSameEvent,iTrack);
               
               for(Int_t iFloww = 0; iFloww < nFlowComponentsEP; iFloww++){
                 
@@ -1810,7 +1811,7 @@ void DijetAnalyzer::RunAnalysis(){
                 //fillerEventPlane[1] = fJetReader->GetEventPlaneQ(8) / TMath::Sqrt(fJetReader->GetEventPlaneMultiplicity(8));                      // Axis 1: Normalized event plane Q-vector
                 fillerEventPlane[2] = centrality;                       // Axis 2: centrality
                 
-                fHistograms->fhJetEventPlane[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*jetPtWeight);
+                fHistograms->fhJetEventPlane[iFlow]->Fill(fillerEventPlane, fTotalEventWeight*trackEfficiencyCorrection);
                 
                 //fillerEventPlane[0] = jetEventPlaneDeltaPhiDifference;  // Axis 0: DeltaPhi between jet and event plane
                 //fillerEventPlane[1] = trackMultiplicity;  // Axis 1: Normalized event plane Q-vector
