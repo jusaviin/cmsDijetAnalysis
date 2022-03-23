@@ -4,14 +4,14 @@
 void fitJetEventPlaneVn(){
 
   // Open the data files
-  const int nFiles = 4;
+  const int nFiles = 2;
   TFile *inputFile[nFiles];
-  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_matchedJets_jetEta1v6_2022-02-24.root");
-  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_fakeJetV2p3_jetEta1v6_2022-02-24.root");
+  inputFile[0] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_recoTracks_jetEta1v3_2022-03-23.root");
+  if(nFiles > 1) inputFile[1] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_genParticles_jetEta1v3_2022-03-23.root");
   if(nFiles > 2) inputFile[2] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_fakeJetV2p5_jetEta1v6_2022-02-24.root");
   if(nFiles > 3) inputFile[3] = TFile::Open("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_fakeJetV2p8_jetEta1v6_2022-02-24.root");
   
-  TString jetTypeString[4] = {"PFCS jets","3% fake v_{2}","5% fake v_{2}","8% fake v_{2}"};
+  TString jetTypeString[4] = {"Reco tracks","Gen particles","5% fake v_{2}","8% fake v_{2}"};
   //TString jetTypeString[4] = {"Whole #eta","#eta strip","reflected #eta strip","Gen jet"};
   
   double centralityBinBorders[] = {0,10,30,50,90};

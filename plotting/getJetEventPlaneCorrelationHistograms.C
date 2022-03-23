@@ -1,7 +1,7 @@
 void getJetEventPlaneCorrelationHistograms(){
 
   // Open the data file
-  TFile *inputFile = TFile::Open("data/PbPbMC2018_RecoGen_akPfCsJet_onlyRegular_multWeight_subeNon0_fakeJetV2p8_jetEta1v6_2022-02-21.root");
+  TFile *inputFile = TFile::Open("data/PbPbMC2018_RecoGen_akCaloJet_dihadron_multWeight_hadronEvtPlane_forestEP_jetEta1v3_2022-03-23.root");
   
   // Configuration
   const int nEventPlaneOrder = 3;
@@ -75,7 +75,7 @@ void getJetEventPlaneCorrelationHistograms(){
   }
   
   // Save the histogram to a file
-  TFile *outputFile = new TFile("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_pfCsJets_multWeight_fakeJetV2p8_jetEta1v6_2022-02-24.root","UPDATE");
+  TFile *outputFile = new TFile("eventPlaneCorrelation/jetEventPlaneDeltaPhi_PbPbMC2018_caloJets_multWeight_hadronEventPlane_genParticles_jetEta1v3_2022-03-23.root","UPDATE");
   for(int iOrder = 0; iOrder < nEventPlaneOrder; iOrder++){
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       jetEventPlaneCentrality[iOrder][iCentrality]->Write("",TObject::kOverwrite);
