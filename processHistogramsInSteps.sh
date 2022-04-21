@@ -43,10 +43,10 @@ done
 #done
 
 # Jet pT closure plots have centrality and asymmetry binning
-#for i in `seq 0 3`;
-#do
+for i in `seq 0 3`;
+do
 #  for j in `seq 0 2`;
 #  do
-#    root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION',-1,'$i','$j')' # Jet pT closure histograms
+    root -l -b -q 'plotting/plotDijet.C("'${INPUT}'","'${OUTPUT}'",9,'$JFFCORRECTION','$SPILLOVERCORRECTION',-1,'$i',3)' # Jet pT closure histograms
 #  done
-#done 
+done 

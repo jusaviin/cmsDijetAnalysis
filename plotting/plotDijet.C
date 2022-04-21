@@ -118,7 +118,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
   bool drawBackground = true;
-  int backgroundStyle = 12; // Drawing style for background deltaPhi. The following options are currently implemented:
+  int backgroundStyle = 4; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
                            // Bit 2 = Draw background fit (int = 4)
@@ -220,8 +220,8 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   //double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {4.5,14.5,34.5,54.5,94.5};  // Bin borders for centrality
-  //double centralityBinBorders[nCentralityBins+1] = {4,14,34,54,94};  // Bin borders for centrality
-  double centralityBinBorders[nCentralityBins+1] = {4,34,54,74,94};  // Bin borders for centrality
+  double centralityBinBorders[nCentralityBins+1] = {4,14,34,54,94};  // Bin borders for centrality
+  //double centralityBinBorders[nCentralityBins+1] = {4,34,54,74,94};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
   double lowDeltaPhiBinBorders[] = {-TMath::Pi()/2,-1,TMath::Pi()-1,1.5}; // Low bin borders for deltaPhi (2017 pp set for 1.5, wide peak)

@@ -148,7 +148,7 @@ void constructJetPtClosures(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  TString closureFileName = "data/PbPbMC2018_GenGen_akCaloJet_onlyJets_5pCentShift_jetPtClosure_processed_2021-02-05.root";  // File from which the RecoGen histograms are read for the correction
+  TString closureFileName = "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear30p_jetEta1v3_processed_2022-03-23.root";  // File from which the RecoGen histograms are read for the correction
   // data/PbPbMC2018_GenGen_akCaloJet_onlyJets_5pCentShift_jetPtClosure_processed_2021-02-05.root
   // data/PbPbMC2018_GenGen_akFlowJet_onlyJets_5pCentShift_smearCheck_jetPtClosure_processed_2020-05-14.root
   // data/PbPbMC2018_RecoReco_akFlowJet_onlyJets_5pCentShift_jetClosuresWithXj_processed_2020-04-16.root
@@ -171,7 +171,7 @@ void constructJetPtClosures(){
   
   bool closureSelector[DijetHistograms::knClosureTypes] = {drawLeadingClosure,drawSubleadingClosure,drawInclusiveClosure};
   
-  bool fitResolution = true;  // Fit the jet pT resolution histograms
+  bool fitResolution = false;  // Fit the jet pT resolution histograms
   
   bool saveFigures = false;  // Save the figures to file
   
@@ -328,7 +328,7 @@ void constructJetPtClosures(){
   char centralitySaveName[100];
   
   // Create the output file
-  TFile *outputFile = new TFile("closureLul.root","UPDATE");
+  TFile *outputFile = new TFile("closureSmear30.root","UPDATE");
   
   for(int iClosureType = 0; iClosureType < DijetHistograms::knClosureTypes; iClosureType++){
     if(!closureSelector[iClosureType]) continue;
