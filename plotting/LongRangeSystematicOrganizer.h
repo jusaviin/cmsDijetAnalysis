@@ -34,6 +34,7 @@ public:
   TString GetLongRangeUncertaintyName(const int iUncertainty, const bool groupedUncertainty = false) const;
   TString GetUncertaintyAxisName(const int iUncertainty, const bool groupedUncertainty = false) const;
   TGraphErrors* GetLongRangeSystematicUncertainty(const int iFlow, const int iUncertainty = kAll, int iAsymmetry = knMaxXj, const bool groupedUncertainty = false) const;
+  double GetLongRangeSystematicUncertaintyValue(const int iFlow, const int iCentrality, const int iUncertainty = kAll, int iAsymmetry = knMaxXj) const;
   
   int GetNUncertaintySources(const bool groupedUncertainty = false) const;
   

@@ -308,6 +308,16 @@ TGraphErrors* LongRangeSystematicOrganizer::GetLongRangeSystematicUncertainty(co
   return fLongRangeUncertaintyGraph[iUncertainty][iFlow][iAsymmetry];
 }
 
+// Getter for absolute systematic uncertainty value for long range correlations
+double LongRangeSystematicOrganizer::GetLongRangeSystematicUncertaintyValue(const int iFlow, const int iCentrality, const int iUncertainty, int iAsymmetry) const{
+  
+  // If asymmetry bin is outside of the asymmetry bin range, return asymmetry integrated uncertainty
+  if(iAsymmetry < 0 || iAsymmetry >= knMaxXj) iAsymmetry = knMaxXj;
+  
+  // Return the uncertainty in the selected bin
+  return fLongRangeUncertaintyGraph[iUncertainty][iFlow][iAsymmetry]->GetErrorY(iCentrality);
+}
+
 // Getter for a name for the source of long range uncertainty
 TString LongRangeSystematicOrganizer::GetLongRangeUncertaintyName(const int iUncertainty, const bool groupedUncertainty) const{
   
