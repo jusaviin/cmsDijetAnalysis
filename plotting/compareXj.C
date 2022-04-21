@@ -10,9 +10,9 @@ void compareXj(){
   // ========================= Configuration ==========================
   // ==================================================================
   
-  const int nFilesToCompare = 3;
+  const int nFilesToCompare = 5;
   
-  TString fileNames[] = {"data/dijetPbPb2018_akCaloJet_onlyJets_morePeripheralBins_jetEta1v3_processed_2022-03-23.root", "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_morePeripheralBins_jetEta1v3_processed_2022-03-23.root","data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_morePeripheralBins_smear20p_jetEta1v3_processed_2022-03-23.root"};
+  TString fileNames[] = {"data/dijetPbPb2018_akCaloJet_onlyJets_morePeripheralBins_jetEta1v3_processed_2022-03-23.root", "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_morePeripheralBins_jetEta1v3_processed_2022-03-23.root", "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_morePeripheralBins_smear10p_jetEta1v3_processed_2022-03-23.root", "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_morePeripheralBins_smear20p_jetEta1v3_processed_2022-03-23.root", "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_morePeripheralBins_smear30p_jetEta1v3_processed_2022-03-23.root"};
   
   // Open all the files for the comparison
   TFile *files[nFilesToCompare];
@@ -27,7 +27,7 @@ void compareXj(){
   }
   
   // Choose if you want to write the figures to pdf file
-  bool saveFigures = false;
+  bool saveFigures = true;
   TString figureFormat = "pdf";
   
   // Get the number of asymmetry bins
@@ -64,6 +64,7 @@ void compareXj(){
     for(int iFile = 0; iFile < nFilesToCompare; iFile++){
       
       xjArray[iFile][iCentrality] = histograms[iFile]->GetHistogramDijetXj(iCentrality);
+      xjArray[iFile][iCentrality]->Rebin(2);
       
       if(normalizeToOne){
         xjArray[iFile][iCentrality]->Scale(1.0 / xjArray[iFile][iCentrality]->Integral());
@@ -88,8 +89,11 @@ void compareXj(){
   TString compactCentralityString;
   
   TString figureName;
-  int veryNiceColors[] = {kBlue,kRed,kGreen+3,kMagenta,kCyan,kBlack};
-  const char* labels[] = {"Data","MC","MC smear 20%","MC smear 10%"};
+  int veryNiceColors[] = {kBlack,kRed,kBlue,kMagenta,kCyan,kBlack};
+  const char* labels[] = {"Data","MC","MC smear 10%","MC smear 20%","MC smear 30%"};
+  
+  TLine *oneLine = new TLine(0,1,1,1);
+  oneLine->SetLineStyle(2);
   
   for(int iCentrality = 0; iCentrality < maxCentralityBin; iCentrality++){
     
@@ -97,20 +101,21 @@ void compareXj(){
       centralityString = "Yield";
       compactCentralityString = "_pp";
     } else {
-      centralityString = Form("C = %.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
+      centralityString = Form("C = %.0f-%.0f%%",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
       compactCentralityString = Form("_C=%.0f-%.0f",centralityBinBorders[iCentrality],centralityBinBorders[iCentrality+1]);
     }
     
     drawer->CreateSplitCanvas();
     
     xjArray[0][iCentrality]->GetXaxis()->SetRangeUser(0,1);
+    xjArray[0][iCentrality]->SetLineColor(veryNiceColors[0]);
     drawer->DrawHistogramToUpperPad(xjArray[0][iCentrality],"x_{j}","A.U."," ");
     for(int iFile = 1; iFile < nFilesToCompare; iFile++){
       xjArray[iFile][iCentrality]->SetLineColor(veryNiceColors[iFile]);
       xjArray[iFile][iCentrality]->Draw("same");
     }
     
-    legend = new TLegend(0.27,0.57,0.47,0.8);
+    legend = new TLegend(0.6,0.1,0.8,0.4);
     legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
     legend->AddEntry((TObject*) 0,centralityString.Data(),"");
     for(int iFile = 0; iFile < nFilesToCompare; iFile++){
@@ -128,6 +133,7 @@ void compareXj(){
       xjRatio[iFile][iCentrality]->SetLineColor(veryNiceColors[iFile+1]);
       xjRatio[iFile][iCentrality]->Draw("same");
     }
+    oneLine->Draw();
     
     // Save the figures into a file
     if(saveFigures){
