@@ -123,9 +123,9 @@ void longRangeGraphPlotter(){
   const bool drawSummaryPlot = false;
   const bool drawCorrection = false;                   // For jet vn plots, draw the correction instead of corrected data
   
-  const bool drawBigCanvas = true;           // If graph vn comparison is drawn, draw also a big canvas plot
-  const bool drawPreliminaryTag = true;      // Draw preliminary tag to the big canvas plot
-  const bool leadSubTitles = true;           // true: Use lead and sub instead of 1 and 2 in the figure legend
+  const bool drawBigCanvas = false;           // If graph vn comparison is drawn, draw also a big canvas plot
+  const bool drawPreliminaryTag = false;      // Draw preliminary tag to the big canvas plot
+  const bool leadSubTitles = false;           // true: Use lead and sub instead of 1 and 2 in the figure legend
   
   // If doing manual summary correction, define the MC configuration used to read the correction
   const int manualCorrectionMultiplicityMode = 0;  // 0 = multiplcity matching, 1 = centrality matching
@@ -139,7 +139,7 @@ void longRangeGraphPlotter(){
   const bool drawPfCsJetResults = false;              // Draw PfCs jet results using defualt Q-vector configuration
   const bool drawFlowDoubleDijetResults = false;       // Draw flow jet results requiring also calo dijet in the event
   const bool drawCaloDoubleDijetResults = false;      // Draw calo jet results requiring also flow dijet in the event
-  const bool drawCmsHadronResult = true;              // Draw CMS hadron v2 results from arXiv:1702.00630
+  const bool drawCmsHadronResult = false;              // Draw CMS hadron v2 results from arXiv:1702.00630
   
   // Plots to be compared between files
   const bool drawJetHadronVnFileComparison = false;
@@ -158,13 +158,16 @@ void longRangeGraphPlotter(){
   const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
   const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
-  const bool saveFigures = true;                     // Save the figures in a file
+  const bool saveFigures = false;                     // Save the figures in a file
   TString saveComment = "_preliminaryBarUpdate";              // String to be added to saved file names
   TString figureFormat = "pdf";
   
   // Saving summary file for final plotter macro
   const bool saveSummaryFile = false;
   const char* outputFileName = "flowGraphs/summaryPlot_multiplicityMatch_caloJets_integratedBinsUpTo3_nominalCorrectoin_jetEta1v3_2022-03-04.root";
+  
+  const bool saveFileVnAsFunctionOfPt = true;
+  const char* anotherOutputFileName = "flowGraphs/vnAsFunctionOfPt_multiplicityMatch_caloJets_nominalCorrection_jetEta1v3_2022-04-21.root";
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -1334,7 +1337,6 @@ void longRangeGraphPlotter(){
     
     drawer->SetTitleOffsetY(1.6);
     drawer->SetTitleOffsetX(1.15);
-    
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
         
@@ -1518,7 +1520,25 @@ void longRangeGraphPlotter(){
         gPad->GetCanvas()->SaveAs(Form("figures/finalBigCanvasJetVnVsHadronPt%s.pdf", saveComment.Data()));
       }
       
-    }
+    } // Big canvas drawing
+    
+    // Save the summary plots so that they can be used with the final graph plotter
+    if(saveFileVnAsFunctionOfPt){
+      
+      // Create the output file
+      TFile *outputFile = new TFile(anotherOutputFileName,"UPDATE");
+      char histogramNamer[100];
+      
+      for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+        for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+          for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->Write(Form("v%dVsPt_C%d%s", iFlow+1, iCentrality, compactAsymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+          }
+        }
+      }
+      
+      outputFile->Close();
+    } // Saving the vn as a function of pT plots
     
   } // Draw flow component comparison graphs
   

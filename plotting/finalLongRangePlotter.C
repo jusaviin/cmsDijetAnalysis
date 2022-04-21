@@ -19,8 +19,8 @@ void finalLongRangePlotter(){
   // summaryPlot_multiplicityMatch_jetEta1v3_2022-02-13.root
   // summaryPlot_akCaloJet_matchHadronV2ScaleYieldWith4pCentShift_2021-06-03.root
   TString uncertaintyFileName = "systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root";
-  // systematicUncertainties_addMultiplicityMatch_updateCentralValue_2022-02-14.root
-  // systematicUncertainties_allSources_finalCorrection_2021-08-10.root
+  // systematicUncertainties_multiMatchNominal_addPtBinVariation_2022-04-21.root
+  // systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
@@ -34,7 +34,7 @@ void finalLongRangePlotter(){
   const bool drawCmsHigtPtV2 = true;
   
   // Drawing for preliminary tag
-  const bool drawBigCanvas = false;
+  const bool drawBigCanvas = true;
   const bool drawPreliminaryTag = true;
   const bool leadSubTitles = true; // true: Use lead and sub instead of 1 and 2 in the figure legend
   

@@ -107,7 +107,7 @@ void LongRangeSystematicOrganizer::GroupUncertaintyHistograms(){
   if(fGroupingStrategy == 0){
     // Group similar sources together. Good for producing tables for paper
     
-    fnGroupedUncertaintySources = 10; // In this grouping scheme, there will be 10 different groups
+    fnGroupedUncertaintySources = 11; // In this grouping scheme, there will be 10 different groups
     
     // Acceptance correction is read directly from deltaEtaSide
     fGroupedUncertaintyName[0] = "Acceptance correction";
@@ -168,16 +168,22 @@ void LongRangeSystematicOrganizer::GroupUncertaintyHistograms(){
     groupMap[8][0] = 1;
     groupMap[8][1] = kJER;
     
-    // For total uncertainty sum, do not combine anything
-    fGroupedUncertaintyName[9] = "Total";
-    fGroupedUncertaintyAxisName[9] = "Total";
+    // For pT variation, do not combine anything
+    fGroupedUncertaintyName[9] = "p_{T} variation";
+    fGroupedUncertaintyAxisName[9] = "p_{T} variation";
     groupMap[9][0] = 1;
-    groupMap[9][1] = kAll;
+    groupMap[9][1] = kPtVariation;
+    
+    // For total uncertainty sum, do not combine anything
+    fGroupedUncertaintyName[10] = "Total";
+    fGroupedUncertaintyAxisName[10] = "Total";
+    groupMap[10][0] = 1;
+    groupMap[10][1] = kAll;
     
   } else {
     // Group things such that old obsolete sources are removed. Good for suppressing zero histograms if closer source inspection if needed
     
-    fnGroupedUncertaintySources = 12; // In this grouping scheme, there will be 12 different groups
+    fnGroupedUncertaintySources = 13; // In this grouping scheme, there will be 12 different groups
     
     // Acceptance correction is read directly from deltaEtaSide
     fGroupedUncertaintyName[0] = "deltaEtaSide";
@@ -249,10 +255,16 @@ void LongRangeSystematicOrganizer::GroupUncertaintyHistograms(){
     groupMap[10][1] = kJER;
     
     // For total uncertainty sum, do not combine anything
-    fGroupedUncertaintyName[11] = "Total";
-    fGroupedUncertaintyAxisName[11] = "Total";
+    fGroupedUncertaintyName[11] = "p_{T} variation";
+    fGroupedUncertaintyAxisName[11] = "p_{T} variation";
     groupMap[11][0] = 1;
-    groupMap[11][1] = kAll;
+    groupMap[11][1] = kPtVariation;
+    
+    // For total uncertainty sum, do not combine anything
+    fGroupedUncertaintyName[12] = "Total";
+    fGroupedUncertaintyAxisName[12] = "Total";
+    groupMap[12][0] = 1;
+    groupMap[12][1] = kAll;
     
   }
   

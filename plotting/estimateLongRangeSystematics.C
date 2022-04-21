@@ -1,7 +1,10 @@
 #include "LongRangeSystematicOrganizer.h" R__LOAD_LIBRARY(plotting/DrawingClasses.so)
 #include "JDrawer.h"
 
+const int kMaxPtBins = 6; // Maximum number of pT bins that is used to extract the pT variation uncertainty
+
 // Function definitions. Implementations after the main macro.
+std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, double comparisonPoints[kMaxPtBins], double comparisonErrors[kMaxPtBins], const int nPoints, const int iPoint);
 std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, const int iPoint);
 std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph, const int iPoint);
 void drawIllustratingPlots(JDrawer *drawer, TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, TString comparisonLegend[], const int iFlow, TString plotName);
@@ -72,18 +75,24 @@ void estimateLongRangeSystematics(){
   // Results where jet energy correction is altered by its uncertainties or by resolution
   TString jecUncertaintySmearedFileName = "flowGraphs/summaryPlot_akCaloJet_smearedJECmostStats_2021-08-09.root";
   TString jetResolutionSmearedFileName = "flowGraphs/summaryPlot_akCaloJet_smearedJER_2021-08-09.root";
+  
+  // Results with nominal correction as a function of pT
+  TString nominalResultWithPtFileName = "flowGraphs/vnAsFunctionOfPt_multiplicityMatch_caloJets_nominalCorrection_jetEta1v3_2022-04-21.root";
     
   // Flow component configuration
-  const int maxVn = 4;      // Maximum number of flow components
-  const int firstFlow = 2;  // First analyzed flow component
-  const int lastFlow = 4;   // Last analyzed flow component
+  const int maxVn = 4;             // Maximum number of flow components
+  const int firstFlow = 2;         // First analyzed flow component
+  const int lastFlow = 4;          // Last analyzed flow component
+  const int maxCentralityBins = 4; // Maximum number of centrality bins
+  const int nUsedPtBins = 3;       // Three lowest pT bins are used in the final results
   
   const bool printUncertainties = false;
   const bool useFitForMcUncertainty = true;  // True: Uncertainty from fit. False: Uncertainty from the error 0.7 < pT < 3 GeV integrated pT bin.
   
   bool plotExample = false;
   
-  TString outputFileName = "flowGraphs/systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root";
+  TString outputFileName = "flowGraphs/systematicUncertainties_multiMatchNominal_addPtBinVariation_2022-04-21.root";
+  // flowGraphs/systematicUncertainties_multiMatchNominal_addPtBinVariation_2022-04-21.root
   // flowGraphs/systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   
   // At the moment, the centrality shift uncertainty is not applied but instead a comparison with multiplicity matched results is used
@@ -125,6 +134,7 @@ void estimateLongRangeSystematics(){
   TFile* quarkGluonFractionFile = TFile::Open(quarkGluonFractionFileName);
   TFile* jecUncertaintySmearedFile = TFile::Open(jecUncertaintySmearedFileName);
   TFile* jetResolutionSmearedFile = TFile::Open(jetResolutionSmearedFileName);
+  TFile* nominalResultWithPtFile = TFile::Open(nominalResultWithPtFileName);
   
   // Result graphs
   TGraphErrors* nominalResultGraph[maxVn];
@@ -143,6 +153,7 @@ void estimateLongRangeSystematics(){
   TGraphErrors* jecUncertaintySmearedGraph[maxVn];
   TGraphErrors* jetResolutionSmearedGraph[maxVn];
   TGraphErrors* multiplicityMatchGraph[maxVn];
+  TGraphErrors* nominalResultWithPtGraph[maxVn][maxCentralityBins];
   
   TString graphName;
   
@@ -174,8 +185,18 @@ void estimateLongRangeSystematics(){
     jetResolutionSmearedGraph[iFlow] = (TGraphErrors*) jetResolutionSmearedFile->Get(graphName);
     multiplicityMatchGraph[iFlow] = (TGraphErrors*) multiplicitySchemeFile->Get(graphName);
     
+    // Load the graphs as a function of pT
+    for(int iCentrality = 0; iCentrality < maxCentralityBins; iCentrality++){
+      
+      graphName = Form("v%dVsPt_C%d", iFlow+1, iCentrality);
+      
+      nominalResultWithPtGraph[iFlow][iCentrality] = (TGraphErrors*) nominalResultWithPtFile->Get(graphName);
+      
+    }
+    
   }
   
+  // Find the number of centrality bins
   const int nCentralityBins = nominalResultGraph[firstFlow-1]->GetN();
   
   // Histogram showing if difference between nominal and uncertainty is less than the statistical uncertainties
@@ -205,6 +226,8 @@ void estimateLongRangeSystematics(){
   
   // Helper variables for reading points from the graphs
   double nominalX, nominalY;
+  double pointValues[kMaxPtBins];
+  double pointErrors[kMaxPtBins];
   
   // Helper variables for uncertainties
   double absoluteUncertainty, relativeUncertainty;
@@ -603,6 +626,38 @@ void estimateLongRangeSystematics(){
     } // Flow component loop
   }
   
+  // =============================================================== //
+  // Uncertainty coming from variation of points as a function of pT //
+  // =============================================================== //
+  
+  if(!skipUncertaintySource[LongRangeSystematicOrganizer::kPtVariation]){
+    for(int iFlow = firstFlow-1; iFlow <= lastFlow-1; iFlow++){
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        
+        // Read the pT dependent values into an array
+        for(int iPt = 0; iPt < nUsedPtBins; iPt++){
+          nominalResultWithPtGraph[iFlow][iCentrality]->GetPoint(iPt, nominalX, nominalY);
+          pointValues[iPt] = nominalY;
+          pointErrors[iPt] = nominalResultWithPtGraph[iFlow][iCentrality]->GetErrorY(iPt);
+        }
+        
+        std::tie(absoluteUncertainty, relativeUncertainty, isInsignificant) = findTheDifference(multiplicityMatchGraph[iFlow], pointValues, pointErrors, nUsedPtBins, iCentrality);
+        
+        absoluteUncertaintyTable[LongRangeSystematicOrganizer::kPtVariation][iFlow][iCentrality] = absoluteUncertainty;
+        relativeUncertaintyTable[LongRangeSystematicOrganizer::kPtVariation][iFlow][iCentrality] = relativeUncertainty;
+        if(isInsignificant) statisticallyInsignificant[iFlow][iCentrality]->Fill(LongRangeSystematicOrganizer::kJER);
+        
+      } // Centrality loop
+      
+      // Draw example plots on how the uncertainty is obtained
+      //if(plotExample){
+      //  legendNames[0] = "pT variation";
+      //  drawIllustratingPlots(drawer, finalResultGraph[iFlow], jetResolutionSmearedGraph[iFlow], legendNames[0], iFlow, nameGiver->GetLongRangeUncertaintyName(LongRangeSystematicOrganizer::kJER));
+      //}
+      
+    } // Flow component loop
+  }
+  
   // ========================================= //
   // Add all uncertainty sources in quadrature //
   // ========================================= //
@@ -758,7 +813,57 @@ bool isWithinStatisticalErrors(double nominalValue, double comparisonValue, doub
 }
 
 /*
- * Function for finding the realtive and absolute difference of points in two graphs
+ * Function for finding the relative and absolute difference of double array and graphs
+ *
+ *  TGraphErrors *nominalGraph = Graph containing nominal values
+ *  double comparisonPoints[kMaxPtBins] = Array of points used in comparison
+ *  double comparisonErrors[kMaxPtBins] = Array of errors used in comparison
+ *  const int nPoints = Number of comparison graphs in the array
+ *  const int iPoint = Index of the point that is compared
+ *
+ *  return: Tuple containing the absolute uncertainty, the relative uncertainty and information if the difference in within statistical uncertainites
+ *
+ */
+std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, double comparisonPoints[kMaxPtBins], double comparisonErrors[kMaxPtBins], const int nPoints, const int iPoint){
+  
+  // Helper variables for reading points from graphs
+  double nominalX, nominalY, nominalYerror;
+  double comparisonX, comparisonY, comparisonYerror;
+  double currentUncertainty, relativeUncertainty;
+  double absoluteUncertainty = 0;
+  int maxErrorIndex;
+  bool isInsignificant;
+  
+  for(int iComparison = 0; iComparison < nPoints; iComparison++){
+    
+    nominalGraph->GetPoint(iPoint, nominalX, nominalY);
+    nominalYerror = nominalGraph->GetErrorY(iPoint);
+    comparisonY = comparisonPoints[iComparison];
+    comparisonYerror = comparisonErrors[iComparison];
+    
+    currentUncertainty = TMath::Abs(nominalY-comparisonY);
+    
+    if(currentUncertainty > absoluteUncertainty){
+      absoluteUncertainty = currentUncertainty;
+      relativeUncertainty = TMath::Abs(1 - comparisonY/nominalY);
+      maxErrorIndex = iComparison;
+    }
+    
+  } // Comparison graph loop
+  
+  comparisonY = comparisonPoints[maxErrorIndex];
+  comparisonYerror = comparisonErrors[maxErrorIndex];
+  
+  // Check if nominal and comparison vn are within statistical errors
+  isInsignificant = isWithinStatisticalErrors(nominalY, comparisonY, nominalYerror, comparisonYerror);
+  
+  // Return the uncertainties and the information whether the numbers are within statistical uncertainties
+  return std::make_tuple(absoluteUncertainty,relativeUncertainty,isInsignificant);
+  
+}
+
+/*
+ * Function for finding the relative and absolute difference of points in two graphs
  *
  *  TGraphErrors *nominalGraph = Graph containing nominal values
  *  TGraphErrors *comparisonGraph[] = Array of graphs containing comparison values
@@ -771,38 +876,20 @@ bool isWithinStatisticalErrors(double nominalValue, double comparisonValue, doub
 std::tuple<double,double,bool> findTheDifference(TGraphErrors *nominalGraph, TGraphErrors *comparisonGraph[], const int nComparisonGraphs, const int iPoint){
   
   // Helper variables for reading points from graphs
-  double nominalX, nominalY, nominalYerror;
-  double comparisonX, comparisonY, comparisonYerror;
-  double currentUncertainty, relativeUncertainty;
-  double absoluteUncertainty = 0;
-  int maxErrorIndex;
-  bool isInsignificant;
+  double comparisonX, comparisonY;
+  double pointValues[kMaxPtBins];
+  double pointErrors[kMaxPtBins];
   
   for(int iComparison = 0; iComparison < nComparisonGraphs; iComparison++){
     
-    nominalGraph->GetPoint(iPoint, nominalX, nominalY);
-    nominalYerror = nominalGraph->GetErrorY(iPoint);
     comparisonGraph[iComparison]->GetPoint(iPoint, comparisonX, comparisonY);
-    comparisonYerror = comparisonGraph[iComparison]->GetErrorY(iPoint);
-    
-    currentUncertainty = TMath::Abs(nominalY-comparisonY);
-    
-    if(currentUncertainty > absoluteUncertainty){
-      absoluteUncertainty = currentUncertainty;
-      relativeUncertainty = TMath::Abs(1 - comparisonY/nominalY);
-      maxErrorIndex = iComparison;
-    }
+    pointValues[iComparison] = comparisonY;
+    pointErrors[iComparison] = comparisonGraph[iComparison]->GetErrorY(iPoint);
     
   } // Comparison graph loop
   
-  comparisonGraph[maxErrorIndex]->GetPoint(iPoint, comparisonX, comparisonY);
-  comparisonYerror = comparisonGraph[maxErrorIndex]->GetErrorY(iPoint);
-  
-  // Check if nominal and comparisonv2 are within statistical errors
-  isInsignificant = isWithinStatisticalErrors(nominalY, comparisonY, nominalYerror, comparisonYerror);
-  
   // Return the uncertainties and the information whether the numbers are within statistical uncertainties
-  return std::make_tuple(absoluteUncertainty,relativeUncertainty,isInsignificant);
+  return findTheDifference(nominalGraph, pointValues, pointErrors, nComparisonGraphs, iPoint);
   
 }
 

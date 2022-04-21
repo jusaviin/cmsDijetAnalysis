@@ -12,12 +12,12 @@ void longRangeSystematicExplorer(){
   
   // Input file name for uncertainties
   TString directoryName = "flowGraphs/";
-  const int nFiles = 1;
-  TString uncertaintyFileName[] = { "systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root", "systematicUncertainties_multiplicityMatch_updateQGfraction_noVz_2022-02-16.root", "systematicUncertainties_addMultiplicityMatch_updateMCMethod_2022-02-14.root",     "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
+  const int nFiles = 2;
+  TString uncertaintyFileName[] = { "systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root", "systematicUncertainties_multiMatchNominal_addPtBinVariation_2022-04-21.root",    "systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root"};
   // systematicUncertainties_addMultiplicityMatch_noCentralityShift_finalCorrection_2022-28-01.root
   // systematicUncertainties_allSources_finalCorrection_2021-08-10.root
   
-  TString legendComment[] = {"Updated scaling", "No Q-weight", "Dummy", "Dummy"};
+  TString legendComment[] = {"Updated scaling", "Add pT bin variation", "Test2", "Dummy"};
   
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
@@ -30,7 +30,7 @@ void longRangeSystematicExplorer(){
   // Choose which histograms to draw
   const bool drawRelativeUncertainties = false;
   const bool drawAbsoluteUncertainties = true;
-  const bool groupUncertainties = true; // Group different uncertainty sources based on similarity
+  const bool groupUncertainties = false; // Group different uncertainty sources based on similarity
   const int groupStrategy = 0;  // Strategy used to group the uncertainty histograms. 0 = Paper. 1 = AN.
   
   // Save the final plots
@@ -39,7 +39,7 @@ void longRangeSystematicExplorer(){
   TString fileFormat = "pdf";
   
   // Print the uncertainties to a slide
-  const bool printUncertainties = true;
+  const bool printUncertainties = false;
   const int printUncertaintyType = 0; // 0 = Absolute uncertainties. 1 = Relative uncertainties
   
   // =========== //
