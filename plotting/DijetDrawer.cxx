@@ -847,6 +847,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               //fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
               //fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," "); // Nominal axis naming
+              fDrawer->SetLabelOffsetY(10);
+              fDrawer->SetTitleOffsetY(0.9);
               fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","B(#Delta#varphi) (A.U.)"," ");
               legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
               //SetupLegend(legend,centralityString,trackPtString,asymmetryString); // Nominal legend setup
@@ -864,8 +866,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                   additionalHistogram->Draw("same");
                 }
                 
-                //TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
-                //legend->AddEntry(fourierFit, "Fourier fit", "l");
+                TF1 *fourierFit = drawnHistogram->GetFunction("fourier");
+                legend->AddEntry(fourierFit, "Fourier fit", "l");
                 
                 // If we want to draw a decomposition of the fourier fit, do it
                 if(fBackgroundDrawStyle[kDrawFitComposition]){
