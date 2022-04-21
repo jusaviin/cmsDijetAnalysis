@@ -22,9 +22,6 @@ void finalLongRangePlotter(){
   // systematicUncertainties_addMultiplicityMatch_updateCentralValue_2022-02-14.root
   // systematicUncertainties_allSources_finalCorrection_2021-08-10.root
   
-  // Text to be put into legend for the input graphs
-  const char* legendText = "This analysis";
-  
   // Define the bins that are drawn
   const int nCentralityBins = 3;  // Number of drawn centrality bins
   
@@ -37,13 +34,24 @@ void finalLongRangePlotter(){
   const bool drawCmsHigtPtV2 = true;
   
   // Drawing for preliminary tag
-  const bool drawBigCanvas = true;
+  const bool drawBigCanvas = false;
   const bool drawPreliminaryTag = true;
   const bool leadSubTitles = true; // true: Use lead and sub instead of 1 and 2 in the figure legend
   
+  // Printing of values to console
+  const bool printCentralValues = false;  // Print the central vn values
+  
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "_preliminaryUpdate";
+  const bool saveFigures = true;
+  TString saveComment = "_preliminary";
+  
+  // Marker colors and styles
+  int bigCanvasColor[] = {kBlack, kBlue, kRed, kGreen+3};
+  int bigCanvasMarker[] = {kFullSquare, kFullCircle, kFullDiamond, kFullCross};
+  
+  // Zooming for y-axis
+  double minZoom[] = {0,-0.045,-0.045,-0.045};
+  double maxZoom[] = {0.1,0.085,0.085,0.085};
   
   // =========== //
   // Read graphs //
@@ -69,6 +77,12 @@ void finalLongRangePlotter(){
       cout << "Cannot do the plotting, mate! Be a good lad and make sure the graph is there next time, ok?" << endl;
       return;
     }
+    
+    // Set the style for the jet vn values
+    jetVnGraph[iFlow]->SetMarkerStyle(bigCanvasMarker[iFlow]);
+    jetVnGraph[iFlow]->SetMarkerColor(bigCanvasColor[iFlow]);
+    jetVnGraph[iFlow]->SetMarkerSize(2);
+    
   }
   
   // Read the systematic uncertainty graphs
@@ -84,6 +98,13 @@ void finalLongRangePlotter(){
       cout << "Hey dude! The file: " << directoryName.Data() << uncertaintyFileName.Data() << " does not contain uncertainties for " << Form("v%d", iFlow+1) <<  "." << endl;
       cout << "No uncertainties can be plotted." << endl;
     }
+    
+    // Set the style for the jet vn uncertainties
+    jetVnUncertainty[iFlow]->SetMarkerStyle(bigCanvasMarker[iFlow]);
+    jetVnUncertainty[iFlow]->SetLineColor(bigCanvasColor[iFlow]);
+    jetVnUncertainty[iFlow]->SetFillColorAlpha(bigCanvasColor[iFlow], 0.3);
+    jetVnUncertainty[iFlow]->SetMarkerColor(bigCanvasColor[iFlow]);
+    jetVnUncertainty[iFlow]->SetMarkerSize(2);
     
   }
   
@@ -132,20 +153,23 @@ void finalLongRangePlotter(){
   JDrawer *drawer = new JDrawer();
   drawer->SetDefaultAppearanceGraph();
   drawer->SetNDivisionsX(510);
-  drawer->SetBottomMargin(0.18);
-  drawer->SetTitleOffsetX(1.63);
-  drawer->SetLabelOffsetX(0.04);
-  drawer->SetTitleOffsetY(1.6);
+  drawer->SetNDivisionsY(510);
+  drawer->SetBottomMargin(0.16);
+  drawer->SetTitleOffsetX(1.3);
+  drawer->SetLabelOffsetX(0.02);
+  drawer->SetTitleOffsetY(1.77);
+  drawer->SetLabelOffsetY(0.01);
   
   // Draw the graphs for selected flow components
   TLegend *legend;
+  TLegend *anotherLegend;
   double errorY;
+  double cmsYPosition, cmsXPosition;
   
-  double minZoom[] = {0,-0.045,-0.045,-0.045};
-  double maxZoom[] = {0.1,0.085,0.085,0.085};
-  
-  TLine *zeroLine = new TLine(0.75,0,3.5,0);
+  TLine *zeroLine = new TLine(0.75,0,3.35,0);
   zeroLine->SetLineStyle(2);
+  
+  TLatex *preliminaryText = new TLatex();
   
   // =======================================================================
   // == Drawing style, where each histogram is drawn into it's own canvas ==
@@ -153,11 +177,17 @@ void finalLongRangePlotter(){
   
   for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
     legend = new TLegend(0.2,0.7,0.5,0.9);
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
     
-    // Set the style for the jet vn values
-    jetVnGraph[iFlow]->SetMarkerStyle(kFullCircle);
-    jetVnGraph[iFlow]->SetMarkerColor(kBlue);
+    // Create legends for the plot
+    if(iFlow == 1){
+      legend = new TLegend(0.2,0.83,0.7,0.92);
+    } else {
+      legend = new TLegend(0.21,0.82,0.71,0.91);
+    }
+    anotherLegend = new TLegend(0.2,0.71,0.7,0.83);
+    
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+    anotherLegend->SetFillStyle(0);anotherLegend->SetBorderSize(0);anotherLegend->SetTextSize(0.05);anotherLegend->SetTextFont(62);
     
     if(jetVnUncertainty[iFlow] != NULL){
       
@@ -166,17 +196,20 @@ void finalLongRangePlotter(){
         errorY = jetVnUncertainty[iFlow]->GetErrorY(iCentrality);
         jetVnUncertainty[iFlow]->SetPointError(iCentrality, 0.1, errorY);
       }
-      jetVnUncertainty[iFlow]->SetFillColorAlpha(kBlue, 0.3);
-      drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "a,e2");
+      
+      //jetVnUncertainty[iFlow]->GetYaxis()->SetNdivisions(510);
+      drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "a,e2");
       
       jetVnGraph[iFlow]->Draw("p,same");
+      
+      legend->AddEntry(jetVnUncertainty[iFlow], Form("Dijet v_{%d}", iFlow+1), "pf");
+      
     } else {
-      drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Jet v_{%d}", iFlow+1), " ", "ap");
+      drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "ap");
+      legend->AddEntry(jetVnGraph[iFlow], Form("Dijet v_{%d}", iFlow+1), "p");
     }
     
     zeroLine->Draw();
-    
-    legend->AddEntry(jetVnGraph[iFlow], legendText, "p");
     
     if(iFlow == 1 && drawAtlasJetV2){
       atlasJetV2graph->Draw("p,same");
@@ -185,10 +218,26 @@ void finalLongRangePlotter(){
     
     if(iFlow == 1 && drawCmsHigtPtV2){
       cmsHighPtV2->Draw("p,same");
-      legend->AddEntry(cmsHighPtV2, "CMS high p_{T} v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
+      //legend->AddEntry(cmsHighPtV2, "CMS high p_{T} v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
+      anotherLegend->AddEntry(cmsHighPtV2, "CMS charged hadron v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
+      anotherLegend->AddEntry((TObject*)0, "p_{T} > 20 GeV, |#eta| < 1", "");
+      anotherLegend->Draw();
     }
     
     legend->Draw();
+    
+    preliminaryText->SetTextFont(62);
+    preliminaryText->SetTextSize(0.065);
+    cmsYPosition = 0.32; cmsXPosition = 0.48;
+    if(iFlow > 1){
+      cmsYPosition = 0.83; cmsXPosition = 0.67;
+    }
+    preliminaryText->DrawLatexNDC(cmsXPosition, cmsYPosition, "CMS");
+    
+    preliminaryText->SetTextFont(42);
+    preliminaryText->SetTextSize(0.055);
+    preliminaryText->DrawLatexNDC(cmsXPosition-0.053, cmsYPosition-0.055, "Preliminary");
+    
     
     // Save the figures to file
     if(saveFigures){
@@ -205,7 +254,6 @@ void finalLongRangePlotter(){
     // Draw all the distributions to big canvases
     auxi_canvas *bigCanvas;
     TLatex *mainTitle;
-    TLegend *anotherLegend;
     
     // Draw a big canvas and put all the plots in it
     bigCanvas = new auxi_canvas("bigCanvas", "", 1500, 550);
@@ -214,11 +262,9 @@ void finalLongRangePlotter(){
     
     mainTitle = new TLatex();
     
-    int bigCanvasColor[] = {kBlack, kBlue, kRed, kGreen+3};
-    int bigCanvasMarker[] = {kFullSquare, kFullCircle, kFullDiamond, kFullCross};
-    
     for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
       bigCanvas->CD(iFlow);
+      
       
       // Adjust the number of divisions
       jetVnUncertainty[iFlow]->GetYaxis()->SetNdivisions(510);
@@ -238,16 +284,7 @@ void finalLongRangePlotter(){
         jetVnUncertainty[iFlow]->GetXaxis()->SetLabelOffset(0.02);
       }
       
-      // Set consistent marker style with data
-      jetVnUncertainty[iFlow]->SetMarkerSize(2);
-      jetVnUncertainty[iFlow]->SetMarkerStyle(bigCanvasMarker[iFlow]);
-      jetVnUncertainty[iFlow]->SetLineColor(bigCanvasColor[iFlow]);
-      jetVnUncertainty[iFlow]->SetFillColorAlpha(bigCanvasColor[iFlow], 0.3);
-      jetVnUncertainty[iFlow]->SetMarkerColor(bigCanvasColor[iFlow]);
-      jetVnGraph[iFlow]->SetMarkerStyle(bigCanvasMarker[iFlow]);
-      jetVnGraph[iFlow]->SetMarkerColor(bigCanvasColor[iFlow]);
-      jetVnGraph[iFlow]->SetMarkerSize(2);
-      
+      // Draw the graphs
       jetVnUncertainty[iFlow]->Draw("a,e2");
       jetVnGraph[iFlow]->Draw("same,p");
       
@@ -293,7 +330,7 @@ void finalLongRangePlotter(){
     
     mainTitle->SetTextFont(62);
     mainTitle->SetTextSize(0.065);
-    double cmsYPosition = 0.89;
+    cmsYPosition = 0.89;
     if(drawPreliminaryTag) cmsYPosition = 0.91;
     mainTitle->DrawLatexNDC(0.9, cmsYPosition, "CMS");
     
@@ -320,5 +357,21 @@ void finalLongRangePlotter(){
       gPad->GetCanvas()->SaveAs(Form("figures/finalBigCanvasJetVn%s.pdf", saveComment.Data()));
     }
     
+  }
+  
+  // Print the central values of the points to the console
+  if(printCentralValues){
+    
+    double vnValue;
+    int centralityBinBorders[] = {0, 10, 30, 50, 90};
+    
+    for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+      
+      for(int iPoint = 0; iPoint < 3; iPoint++){
+        vnValue = jetVnGraph[iFlow]->GetPointY(iPoint);
+        cout << "Dijet v" << iFlow+1 << " C: " << centralityBinBorders[iPoint] << "-" << centralityBinBorders[iPoint+1] << " = " << vnValue << endl;
+      }
+      
+    }
   }
 }
