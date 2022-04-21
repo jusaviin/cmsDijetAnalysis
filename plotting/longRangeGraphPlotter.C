@@ -4,6 +4,7 @@
 #include "JDrawer.h"
 #include "JffCorrector.h"
 #include "xCanvas.h"
+#include "LongRangeSystematicOrganizer.h"
 
 // Function definition for fit range optimization
 std::tuple<double,double> getFitRange(const int iFile, const int iFlow, const int iCentrality);
@@ -87,13 +88,18 @@ void longRangeGraphPlotter(){
   graphFile[0] = TFile::Open(directoryName+graphFileName);
   
   // Other files whose results can be compared with the nominal file
-  int nComparisonFiles = 0;
+  int nComparisonFiles = 1;
   TString comparisonFileName[] = { "flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_shiftLeading_2022-03-18.root", "flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_cumulativePtBins_2022-03-04.root", "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2v5to4_correctedJetHadron_correctedDihadron_2021-08-06.root",  "qVectorCuts/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfCsJets_qVectorBelow1p8_correctedJetHadron_correctedDihadron_2022-02-25.root",  "qVectorCuts/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfCsJets_qVectorBelow2_correctedJetHadron_correctedDihadron_2022-02-25.root", "qVectorCuts/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfCsJets_qVectorBelow2p2_correctedJetHadron_correctedDihadron_2022-02-25.root",  "qVectorCuts/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfCsJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2022-02-25.root",  "qVectorCuts/flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfCsJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2022-02-25.root", "qVectorCuts/flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2p8_correctedJetHadron_correctedDihadron_2021-03-04.root",  "flowGraphs_PbPb2018_pfcsJets_jetEta1v6_minBiasDihadron_correctedJetHadron_correctedDihadron_2022-02-18.root", "qVectorCuts/flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_qVectorBelow2p5_correctedJetHadron_correctedDihadron_2021-03-04.root",  "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_pfCsJets_qVectorAbove3p3_correctedJetHadron_correctedDihadron_2022-02-25.root", "flowGraphs_PbPb2018_pfcsJets_jetEta1v6_minBiasDihadron_correctedJetHadron_correctedDihadron_2022-02-18.root",  "flowGraphs_PbPbMC2018_pfCsJets_multWeight_subeNon0_jetEta1v6_correctedJetHadron_correctedDihadron_2022-02-12.root", "flowGraphs_PbPb2018_pfcsJets_jetEta1v6_minBiasDihadron_correctedJetHadron_correctedDihadron_2022-02-18.root",  "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root",    "flowGraphs_PbPb2018_caloJets_jetEta1v3_correctedJetHadron_correctedDihadron_2022-02-11.root", "flowGraphs_PbPb2018MC_caloJets_noCentShift_subeNon0_fakeV2_crossCheck_correctedJetHadron_correctedDihadron_2022-02-09.root", "flowGraphs_PbPb2018MC_genJets_noCentShift_subeNon0_fakeJetV2m5_correctedJetHadron_correctedDihadron_2022-02-09.root",  "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_jetEta1v6_consistencyCheck_2022-02-08.root",  "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_consistencyCheck_2021-03-02.root",  "flowGraphs_PbPb2018MC_genJets_fakeJetV2_noCentShift_subeNon0_oldDataNewProcess_2022-02-04.root", "flowGraphs_PbPb2018MC_genJets_fakeJetV3_multiplicityWeight_subeNon0_onlyDihadronPart0_2022-02-02.root", "flowGraphs_PbPb2018MC_genJets_multiplicityWeight_subeNon0_onlyDihadronPart0_2022-02-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_2022-01-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_onlyDihadron_multiplicityWeight_cumulativeBins_2022-01-26.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_2021-07-12.root",  "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root",  "flowGraphs_PbPbMC2018_4pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_multiplicityWeight_cumulativeBins_2022-01-26.root",            "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_pfCsJets_noQcut_correctedJetHadron_correctedDihadronFromCalo_2021-06-04.root", "flowGraphs_PbPb2018_caloJets_fixedJEC_correctedJetHadronWithoutTwoCuts_correctedDihadron_2021-08-30.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflect_correctedJetHadron_correctedDihadron_2021-08-13.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectNeutralScaled_correctedJetHadron_correctedDihadron_2021-08-23.root", "flowGraphs_PbPbMC2018_pfCsJets_4pCentShift_subeNon0_manualJECconeReflectDijet_correctedJetHadron_correctedDihadron_2021-08-26.root",  "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2to3v5_correctedJetHadron_correctedDihadron_2021-08-06.root", "flowGraphs_PbPb2018_caloJets_dihadronDeltaEta2v5to4_correctedJetHadron_correctedDihadron_2021-08-06.root",  "flowGraphs_PbPb2018_caloJets_jetHadronJECminus_correctedJetHadron_correctedDihadron_2021-08-05.root", "flowGraphs_PbPb2018_caloJets_jetHadronJECplus_correctedJetHadron_correctedDihadron_2021-08-05.root",    "flowGraphs_PbPbMC2018_subeNon0_4pCentShift_caloJets_noQcut_correctedJetHadron_correctedDihadron_2021-03-04.root", "flowGraphs_PbPb2018_JECplus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018_JECminus_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-29.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_25pMoreQuark_correctedJetHadron_correctedDihadron_2021-07-26.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_quarkJets_correctedJetHadron_correctedDihadron_2021-07-22.root", "flowGraphs_PbPb2018MC_caloJets_4pCentShift_subeNon0_gluonJets_correctedJetHadron_correctedDihadron_2021-07-22.root",  "flowGraphs_PbPbMC2018_1v5pCentShift_subeNon0_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root", "flowGraphs_PbPbMC2018_1v5pCentShift_onlyDihadron_caloJets_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-12.root",   "flowGraphs_PbPbMC2018_5pCentShift_subeNon0_caloJets_onlyDihadron_correctedJetHadron_correctedDihadron_cumulativePtBins_2021-07-02.root"
   };
   
   for(int iFile = 0; iFile < nComparisonFiles; iFile++){
     graphFile[iFile+1] = TFile::Open(directoryName+comparisonFileName[iFile]);
   }
+  
+  // Systematic uncertainty file, used to draw uncertainty band to big canvas figure
+  TString uncertaintyFileName = "systematicUncertainties_multiMatchNominal_scalingUpdates_2022-03-04.root";
+  TFile *uncertaintyFile = TFile::Open(directoryName+uncertaintyFileName);
+  LongRangeSystematicOrganizer *uncertaintyOrganizer = new LongRangeSystematicOrganizer(uncertaintyFile);
   
   // Legend text given to each compared file
   TString fileLegend[] = {"Nominal", "Shift leading side", "2.5 < |#eta| < 4", "MC, Q < 2", "MC, Q < 2.2", "MC, Q < 2.5", "MC, Q < 2.8", "Flow MC", "MC+5% Q < 2.8"};
@@ -118,8 +124,8 @@ void longRangeGraphPlotter(){
   const bool drawCorrection = false;                   // For jet vn plots, draw the correction instead of corrected data
   
   const bool drawBigCanvas = true;           // If graph vn comparison is drawn, draw also a big canvas plot
-  const bool drawPreliminaryTag = false;      // Draw preliminary tag to the big canvas plot
-  const bool leadSubTitles = false;           // true: Use lead and sub instead of 1 and 2 in the figure legend
+  const bool drawPreliminaryTag = true;      // Draw preliminary tag to the big canvas plot
+  const bool leadSubTitles = true;           // true: Use lead and sub instead of 1 and 2 in the figure legend
   
   // If doing manual summary correction, define the MC configuration used to read the correction
   const int manualCorrectionMultiplicityMode = 0;  // 0 = multiplcity matching, 1 = centrality matching
@@ -133,6 +139,7 @@ void longRangeGraphPlotter(){
   const bool drawPfCsJetResults = false;              // Draw PfCs jet results using defualt Q-vector configuration
   const bool drawFlowDoubleDijetResults = false;       // Draw flow jet results requiring also calo dijet in the event
   const bool drawCaloDoubleDijetResults = false;      // Draw calo jet results requiring also flow dijet in the event
+  const bool drawCmsHadronResult = true;              // Draw CMS hadron v2 results from arXiv:1702.00630
   
   // Plots to be compared between files
   const bool drawJetHadronVnFileComparison = false;
@@ -147,12 +154,12 @@ void longRangeGraphPlotter(){
   
   const bool drawSystematicUncertainties = false;     // Include systematic uncertainties in the plots
   
-  const bool drawRatios = true;              // Draw ratio plots for file comparison
+  const bool drawRatios = false;              // Draw ratio plots for file comparison
   const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
   const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
   const bool saveFigures = true;                     // Save the figures in a file
-  TString saveComment = "_initialUpdate";              // String to be added to saved file names
+  TString saveComment = "_preliminaryBarUpdate";              // String to be added to saved file names
   TString figureFormat = "pdf";
   
   // Saving summary file for final plotter macro
@@ -853,6 +860,7 @@ void longRangeGraphPlotter(){
   // Helper variables for drawing figures
   TLegend *legend;
   TLegend *vLegend;
+  double legendX1, legendX2, legendY1, legendY2;
   int fullMarkers[] = {kFullSquare, kFullCircle, kFullDiamond, kFullCross, kFullStar, kFullFourTrianglesPlus, kFullDoubleDiamond};
   int secondMarkers[] = {kFullCircle, kFullCross, kFullSquare, kFullCircle, kFullFourTrianglesPlus};
   int colors[] = {kBlue,kRed,kGreen+2,kBlack, kMagenta};
@@ -1003,6 +1011,21 @@ void longRangeGraphPlotter(){
     } // Asymmetry loop
   } // Centrality loop
   
+  // Prepare the uncertainty graphs
+  TGraphErrors *uncertaintyGraph[nFlowComponents][nCentralityBins];
+  double flowComponentUncertaintyX[nFlowComponents][1] = {{0.26},{0.36},{0.46},{0.56}};
+  double flowComponentUncertaintyXError[1] = {0.05};
+  double flowComponentUncertaintyY[1] = {0};
+  double flowComponentUncertaintyYError[1] = {0};
+  
+  for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+    for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+      flowComponentUncertaintyYError[0] = uncertaintyOrganizer->GetLongRangeSystematicUncertaintyValue(iFlow, iCentrality);
+      uncertaintyGraph[iFlow][iCentrality] = new TGraphErrors(1, flowComponentUncertaintyX[iFlow], flowComponentUncertaintyY, flowComponentUncertaintyXError, flowComponentUncertaintyYError);
+      uncertaintyGraph[iFlow][iCentrality]->SetFillColorAlpha(fileColors[iFlow],0.3);
+    }
+  }
+  
   // Setup the drawer for graphs
   JDrawer *drawer = new JDrawer();
   drawer->SetDefaultAppearanceGraph();
@@ -1050,6 +1073,75 @@ void longRangeGraphPlotter(){
   double doubleDijetFlowJetNumber[] = {0.059872800, 0.029541000, 0.0026188000, 0.02}; // 4 % centrality shift, high subleading jet
   double doubleDijetFlowJetError[] = {0.00156909, 0.000762696, 0.000767619, 0.02}; // 4 % centrality shift, high subleading jet
 
+  // v2 from the v2{SP} method from the paper arXiv:1702.00630
+  
+  const int nCMShadronCentralityBins = 6;
+  const int nCMShadronPtBins = 11;
+  
+  double flowCMS5TeVHadron[6][11] = {
+// pT  1.1    1.4    1.7    2.2    2.7    3.2    3.7    4.4    5.4    6.4    7.4
+    {0.0381,0.0441,0.0512,0.0603,0.0674,0.0712,0.0710,0.0656,0.0513,0.0381,0.0353},   // Centrality = 0-5 %
+    {0.0645,0.0748,0.0876,0.1036,0.1160,0.1234,0.1242,0.1156,0.0914,0.0690,0.0543},   // Centrality = 5-10 %
+    {0.0945,0.1095,0.1278,0.1503,0.1669,0.1748,0.1742,0.1609,0.1282,0.1033,0.0831},   // Centrality = 10-20 %
+    {0.1250,0.1445,0.1677,0.1949,0.2125,0.2187,0.2149,0.1957,0.1571,0.1254,0.1052},   // Centrality = 20-30 %
+    {0.1454,0.1675,0.1929,0.2205,0.2357,0.2383,0.2295,0.2069,0.1667,0.1357,0.1140},   // Centrality = 30-40 %
+    {0.1570,0.1799,0.2049,0.2294,0.2402,0.2376,0.2251,0.2017,0.1650,0.1367,0.1190}    // Centrality = 40-50 %
+  };
+  
+  double errorCMS5TeVHadron[6][11] = {
+// pT 1.1    1.4    1.7    2.2    2.7    3.2    3.7    4.4    5.4    6.4    7.4
+    {0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.002, 0.002},  // Centrality = 0-5 %
+    {0.002, 0.002, 0.002, 0.002, 0.002, 0.003, 0.003, 0.003, 0.003, 0.003, 0.003},  // Centrality = 5-10 %
+    {0.002, 0.002, 0.003, 0.003, 0.003, 0.004, 0.004, 0.003, 0.003, 0.003, 0.003},  // Centrality = 10-20 %
+    {0.003, 0.003, 0.003, 0.004, 0.004, 0.004, 0.004 ,0.004, 0.004, 0.004, 0.004},  // Centrality = 20-30 %
+    {0.003, 0.003, 0.004, 0.004, 0.005, 0.005, 0.005, 0.005, 0.005, 0.004, 0.004},  // Centrality = 30-40 %
+    {0.003, 0.004, 0.004, 0.005, 0.005, 0.005, 0.005, 0.005, 0.004, 0.004, 0.004}   // Centrality = 40-50 %
+  };
+  
+  // v2 from the v2{4} method from the paper arXiv:1702.00630
+  double flowCMS5TeVCumulant[6][11] = {
+// pT  1.1    1.4    1.7    2.2    2.7    3.2    3.7    4.4    5.4    6.4    7.4
+    {   0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0},
+    {0.0525,0.0606,0.0708,0.083, 0.0927,0.0976,0.0966,0.0921,0.0743,0.0582,0.0485},   // Centrality = 5-10 %
+    {0.0814,0.094, 0.1094,0.128 ,0.1412,0.1472,0.1461,0.1345,0.1096,0.0863,0.0742},   // Centrality = 10-20 %
+    {0.1097,0.1265,0.1463,0.1689,0.1826,0.1869,0.182 ,0.1649,0.1331,0.1084,0.0907},   // Centrality = 20-30 %
+    {0.127 ,0.1459,0.1672,0.1894,0.2005,0.2006,0.1913,0.1721,0.1399,0.1139,0.0989},   // Centrality = 30-40 %
+    {0.1339,0.1531,0.1732,0.1916,0.1972,0.192 ,0.1803,0.1592,0.132 ,0.1128,0.1072}    // Centrality = 40-50 %
+  };
+  
+  double errorCMS5TeVCumulant[6][11] = {
+// pT 1.1    1.4    1.7    2.2    2.7    3.2    3.7    4.4    5.4    6.4    7.4
+    {   0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0},
+    {0.001, 0.001, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002},  // Centrality = 5-10 %
+    {0.002, 0.002, 0.002, 0.003, 0.003, 0.003, 0.003, 0.003, 0.002, 0.002, 0.002},  // Centrality = 10-20 %
+    {0.002, 0.003, 0.003, 0.003, 0.004, 0.004, 0.004 ,0.003, 0.003, 0.003, 0.003},  // Centrality = 20-30 %
+    {0.003, 0.003, 0.003, 0.004, 0.004, 0.004, 0.004, 0.004, 0.003, 0.003, 0.003},  // Centrality = 30-40 %
+    {0.003, 0.003, 0.004, 0.004, 0.004, 0.004, 0.004, 0.004, 0.004, 0.003, 0.004}   // Centrality = 40-50 %
+  };
+  
+  double cmsHadronXaxis[] = {1.1, 1.4, 1.7, 2.2, 2.7, 3.2, 3.7, 4.4, 5.4, 6.4, 7.4};
+  double cmsHadronXaxisError[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  
+  int cmsHadronFlowColors[] = {kRed, kBlue, kRed, kBlue, kRed, kBlue};
+  
+  // Graphs for the previous CMS hadron results
+  TGraphErrors *cmsHadronFlowSPGraph[nCMShadronCentralityBins];
+  for(int iGraph = 0 ; iGraph < nCMShadronCentralityBins; iGraph++){
+    cmsHadronFlowSPGraph[iGraph] = new TGraphErrors(nCMShadronPtBins, cmsHadronXaxis, flowCMS5TeVHadron[iGraph], cmsHadronXaxisError, errorCMS5TeVHadron[iGraph]);
+    cmsHadronFlowSPGraph[iGraph]->SetMarkerStyle(kFullDiamond);
+    cmsHadronFlowSPGraph[iGraph]->SetMarkerColor(cmsHadronFlowColors[iGraph]);
+    cmsHadronFlowSPGraph[iGraph]->SetMarkerSize(1.8);
+  }
+  
+  TGraphErrors *cmsHadronFlowCumulantGraph[nCMShadronCentralityBins];
+  for(int iGraph = 0 ; iGraph < nCMShadronCentralityBins; iGraph++){
+    cmsHadronFlowCumulantGraph[iGraph] = new TGraphErrors(nCMShadronPtBins, cmsHadronXaxis, flowCMS5TeVCumulant[iGraph], cmsHadronXaxisError, errorCMS5TeVCumulant[iGraph]);
+    cmsHadronFlowCumulantGraph[iGraph]->SetMarkerStyle(kFullCircle);
+    cmsHadronFlowCumulantGraph[iGraph]->SetMarkerColor(cmsHadronFlowColors[iGraph]);
+    cmsHadronFlowCumulantGraph[iGraph]->SetMarkerSize(1.4);
+  }
+  
+  TString cmsHadronCentralityString[] = {"C: 0-5","C: 5-10", "C: 10-20", "C: 20-30", "C: 30-40", "C: 40-50"};
   
   TString legendString;
   char namerY[100];
@@ -1261,6 +1353,7 @@ void longRangeGraphPlotter(){
               yError1 = flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetErrorY(iPoint);
               yError1 = TMath::Sqrt(yError1*yError1 + manualCorrectionError[iFlow][iCentrality][iPoint]*manualCorrectionError[iFlow][iCentrality][iPoint]);
               flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->SetPointError(iPoint, 0, yError1);
+              //cout << yPoint1-manualCorrection[iFlow][iCentrality][iPoint] << endl;  // Printing the values
             }
           }
         
@@ -1317,7 +1410,7 @@ void longRangeGraphPlotter(){
       auxi_canvas *bigCanvas;
       TLatex *mainTitle;
       
-      TLine *zeroLineBigCanvas = new TLine(0.3,0,2.9,0);
+      TLine *zeroLineBigCanvas = new TLine(0.3,0,3,0);
       zeroLineBigCanvas->SetLineStyle(2);
       
       // Draw a big canvas and put all the plots in it
@@ -1342,7 +1435,7 @@ void longRangeGraphPlotter(){
             flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->AddPoint(-1,0);
             flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->SetTitle("");
             flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetRangeUser(-0.045,0.085);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetRangeUser(0.3,2.9);
+            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetRangeUser(0.31,2.9);
             flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->SetMarkerSize(2);
             
             
@@ -1380,7 +1473,7 @@ void longRangeGraphPlotter(){
               legend->AddEntry(flowGraphJet[0][iAsymmetry][iCentrality][iFlow], Form("Dijet v_{%d}", iFlow+1), "p");
             }
             
-            
+            uncertaintyGraph[iFlow][iCentrality]->Draw("same,e2");
             
             
             
@@ -1434,7 +1527,7 @@ void longRangeGraphPlotter(){
     
     // TODO: Debug for nice drawing of super zoom
     //drawer->SetTitleOffsetY(1.7);
-    //drawer->SetTitleOffsetX(1.1);
+    drawer->SetTitleOffsetX(1.1);
     
     for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
       for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
@@ -1442,7 +1535,7 @@ void longRangeGraphPlotter(){
           
           if(drawJetHadronVnFileComparison){
           
-            drawer->SetTitleOffsetY(1.7);
+            //drawer->SetTitleOffsetY(1.7);
             
             sprintf(namerY,"Jet-hadron V_{%d}",iFlow+1);
             legend = new TLegend(0.2,0.6,0.5,0.9);
@@ -1612,7 +1705,7 @@ void longRangeGraphPlotter(){
           if(drawHadronVnFileComparison){
           
             sprintf(namerY,"Hadron v_{%d}",iFlow+1);
-            legend = new TLegend(0.2,0.6,0.5,0.9);
+            legend = new TLegend(0.2,0.75,0.5,0.9); //  0.2,0.6,0.5,0.9
             legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
             legend->SetHeader(Form("Cent: %.0f-%.0f%%%s", centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], asymmetryString[iAsymmetry].Data()));
             
@@ -1631,6 +1724,34 @@ void longRangeGraphPlotter(){
             } // File loop for hadron vn
             
             legend->Draw();
+            
+            if(drawCmsHadronResult && iFlow == 1){
+              
+              legendX1 = 0.5; legendX2 = 0.8; legendY1 = 0.7; legendY2 = 0.9;
+              if(iCentrality > 0){
+                legendY1 = 0.2; legendY2 = 0.45;
+              }
+              
+              vLegend = new TLegend(legendX1,legendY1,legendX2,legendY2);
+              vLegend->SetFillStyle(0);vLegend->SetBorderSize(0);vLegend->SetTextSize(0.05);vLegend->SetTextFont(62);
+              vLegend->SetHeader("arXiv:1702.00630");
+              
+              for(int iGraph = 2*iCentrality; iGraph < 2*iCentrality+2; iGraph++){
+                cmsHadronFlowSPGraph[iGraph]->Draw("p,same");
+                vLegend->AddEntry(cmsHadronFlowSPGraph[iGraph], Form("v_{2}{SP}, %s", cmsHadronCentralityString[iGraph].Data()), "p");
+              }
+              for(int iGraph = 2*iCentrality; iGraph < 2*iCentrality+2; iGraph++){
+                if(iGraph != 0) {
+                  cmsHadronFlowCumulantGraph[iGraph]->Draw("p,same");
+                  vLegend->AddEntry(cmsHadronFlowCumulantGraph[iGraph], Form("v_{2}{4}, %s", cmsHadronCentralityString[iGraph].Data()), "p");
+                }
+              }
+              
+              
+              vLegend->Draw();
+              
+            } // Previous CMS hadron v2 results
+            
             
             // Save the figures to file
             if(saveFigures){
