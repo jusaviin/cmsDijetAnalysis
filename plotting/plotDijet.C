@@ -112,12 +112,12 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   bool drawSameEvent = false;
   bool drawMixedEvent = false;
   bool drawNormalizedMixedEvent = false;
-  bool drawCorrected = false;
+  bool drawCorrected = true;
   bool drawSameMixedDeltaEtaRatio = false;
   
   // Draw the background subtracted jet-track correlations
   bool drawBackgroundSubtracted = false;
-  bool drawBackground = true;
+  bool drawBackground = false;
   int backgroundStyle = 4; // Drawing style for background deltaPhi. The following options are currently implemented:
                            // Bit 0 = Draw background overlap (int = 1)
                            // Bit 1 = Zoom to overlap region (int = 2)
@@ -217,10 +217,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   const int nCentralityBins = 4;
   const int nTrackPtBins = 7;
   const int nAsymmetryBins = 3;
-  //double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
+  double centralityBinBorders[nCentralityBins+1] = {0,10,30,50,90};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {5,15,35,55,95};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {4.5,14.5,34.5,54.5,94.5};  // Bin borders for centrality
-  double centralityBinBorders[nCentralityBins+1] = {4,14,34,54,94};  // Bin borders for centrality
+  //double centralityBinBorders[nCentralityBins+1] = {4,14,34,54,94};  // Bin borders for centrality
   //double centralityBinBorders[nCentralityBins+1] = {4,34,54,74,94};  // Bin borders for centrality
   double trackPtBinBorders[nTrackPtBins+1] = {0.7,1,2,3,4,8,12,300};  // Bin borders for track pT
   bool readTrackBinsFromFile = true;  // Disregard above track pT binning and use the binning directly from DijetCard
@@ -236,10 +236,10 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   }
   
   int firstDrawnCentralityBin = 0;
-  int lastDrawnCentralityBin = 2;
+  int lastDrawnCentralityBin = 0;
   
-  int firstDrawnTrackPtBin = 0;
-  int lastDrawnTrackPtBin = 3;
+  int firstDrawnTrackPtBin = 1;
+  int lastDrawnTrackPtBin = 1;
   
   int firstDrawnAsymmetryBin = nAsymmetryBins;
   int lastDrawnAsymmetryBin = nAsymmetryBins;
@@ -265,7 +265,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // Mixed event
   double mixedEventFitDeltaEtaRegion = 0.2;  // DeltaEta range used for normalizing the mixed event
   const int mixedEventNormalizationType = DijetMethods::kSingle; // How to normalize mixed event histogram, kSingle or kAverage
-  const bool smoothenMixing = false; // True = Smoothen event mixing in each eta slice. False = Do not do that.
+  const bool smoothenMixing = true; // True = Smoothen event mixing in each eta slice. False = Do not do that.
   bool avoidPeaks = false; // Option to disable smoothening for low pT bins because of peaks in mixed event distribution. Automatically set to true for PbPb
   bool improviseMixing = false; // Instead of using mixed event distribution from file, construct the mixed event distribution from the deltaPhi side band region of the same event distribution
   //if(inputFileName.Contains("sube0")) improviseMixing = true;
@@ -350,7 +350,7 @@ void plotDijet(TString inputFileName = "data/dijet_pp_highForest_2018-07-27.root
   // There are peaks visible only in PbPb mixed event distribution due to some detector effects.
   // Take this into account when normalizing the mixed event event distribution for PbPb
   if(collisionSystem.EqualTo("PbPb") && card->GetJetType() > 0){
-    avoidPeaks = true; // Smearing test comment
+    //avoidPeaks = true; // Smearing test comment
   }
   
   // Add the information about selected processing options to the card

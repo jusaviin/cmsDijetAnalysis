@@ -39,10 +39,10 @@ void finalLongRangePlotter(){
   const bool leadSubTitles = true; // true: Use lead and sub instead of 1 and 2 in the figure legend
   
   // Printing of values to console
-  const bool printCentralValues = false;  // Print the central vn values
+  const bool printCentralValues = true;  // Print the central vn values
   
   // Save the final plots
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "_preliminary";
   
   // Marker colors and styles

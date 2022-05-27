@@ -6,9 +6,12 @@
 #./processHistogramsInStepsAsymmetryPp.sh "data/" "data/" false false -1
 #./processHistogramsInStepsManual.sh "data/" "data/" false false -1 "data/"
 
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear10p_jetEta1v3_2022-03-23.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear10p_jetEta1v3_processed_2022-03-23.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear20p_jetEta1v3_2022-03-23.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear20p_jetEta1v3_processed_2022-03-23.root" false false -1 "data/"
-./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear30p_jetEta1v3_2022-03-23.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear30p_jetEta1v3_processed_2022-03-23.root" false false -1 "data/"
+./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akCaloJet_onlyRegular_jetEta1v3_bugFix_improvisedMixing_preprocessed_2022-02-09.root" "data/dijetPbPb2018_akCaloJet_onlyRegular_jetEta1v3_bugFix_improvisedMixing_oneTestBin_preprocessed_2022-02-09.root" false false -1 "data/"
+#./processHistogramsInStepsManual.sh "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_subleadingJffTuning_allCorrections_processed_2020-02-17.root" "data/dijetPbPb2018_akFlowPuCs4PFJets_noUncOrInc_25eveMix_100trig_JECv6_xjBins_wtaAxis_1DmixedEvent_allCorrections_processed_2020-02-17.root" false false -1 "data/"
+
+#./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear10p_jetEta1v3_2022-03-23.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear10p_jetEta1v3_processed_2022-03-23.root" false false -1 "data/"
+#./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear20p_jetEta1v3_2022-03-23.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear20p_jetEta1v3_processed_2022-03-23.root" false false -1 "data/"
+#./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear30p_jetEta1v3_2022-03-23.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyJets_4pCentShift_jetPtClosure_smear30p_jetEta1v3_processed_2022-03-23.root" false false -1 "data/"
 
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_quarkJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"
 #./processHistogramsInSteps.sh "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_preprocessed_2021-03-02.root" "data/PbPbMC2018_RecoGen_akCaloJet_onlyRegular_4pCentShift_subeNon0_improvisedMixing_gluonJets_noCorrections_processed_2021-03-02.root" false false -1 "data/"
