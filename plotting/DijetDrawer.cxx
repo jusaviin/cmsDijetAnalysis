@@ -798,10 +798,10 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // ===== Jet-track deltaPhi =====
             if(fDrawJetTrackDeltaPhi){
-              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
+              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion);
               // TODO: Check only analysis region for now (kWholeEta removed) kSignalEtaRegion
-              drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
-              drawnHistogram->Scale(1.0/2); // TODO: Remove temporary rebin
+              //drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
+              //drawnHistogram->Scale(1.0/2); // TODO: Remove temporary rebin
               //cout << "Integral of deltaPhi: " << drawnHistogram->Integral("width") << endl; // Can print integral for debug purposes
               
               // Move legend to different place for leading jet background figures
@@ -846,14 +846,14 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               //fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
-              //fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," "); // Nominal axis naming
-              fDrawer->SetLabelOffsetY(10);
-              fDrawer->SetTitleOffsetY(0.9);
-              fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","B(#Delta#varphi) (A.U.)"," ");
+              fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," "); // Nominal axis naming
+              //fDrawer->SetLabelOffsetY(10);
+              //fDrawer->SetTitleOffsetY(0.9);
+              //fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","B(#Delta#varphi) (A.U.)"," ");
               legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-              //SetupLegend(legend,centralityString,trackPtString,asymmetryString); // Nominal legend setup
-              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-              legend->AddEntry(drawnHistogram, "#Delta#varphi projection", "l");
+              SetupLegend(legend,centralityString,trackPtString,asymmetryString); // Nominal legend setup
+              //legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              //legend->AddEntry(drawnHistogram, "#Delta#varphi projection", "l");
               
               
               // In case of background histogram, draw the selected additional components
