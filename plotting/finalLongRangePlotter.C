@@ -39,7 +39,7 @@ void finalLongRangePlotter(){
   const bool leadSubTitles = true; // true: Use lead and sub instead of 1 and 2 in the figure legend
   
   // Printing of values to console
-  const bool printCentralValues = true;  // Print the central vn values
+  const bool printCentralValues = false;  // Print the central vn values
   
   // Save the final plots
   const bool saveFigures = false;
@@ -52,6 +52,9 @@ void finalLongRangePlotter(){
   // Zooming for y-axis
   double minZoom[] = {0,-0.045,-0.045,-0.045};
   double maxZoom[] = {0.1,0.085,0.085,0.085};
+  
+  // Save the final results for HepData
+  bool saveGraphsForHepData = true;
   
   // =========== //
   // Read graphs //
@@ -373,5 +376,18 @@ void finalLongRangePlotter(){
       }
       
     }
+  }
+  
+  // Save the histograms to a file for HepData submission
+  if(saveGraphsForHepData){
+    TString outputFileName = "hepdata/hepdata_dijetVnCentrality_hin-21-002_test.root";
+    TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
+    
+    for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+      jetVnGraph[iFlow]->Write(Form("dijetV%dCentrality", iFlow+1), TObject::kOverwrite);
+      jetVnUncertainty[iFlow]->Write(Form("dijetV%dCentralityError", iFlow+1), TObject::kOverwrite);
+    }
+    
+    outputFile->Close();
   }
 }

@@ -114,7 +114,7 @@ void longRangeGraphPlotter(){
 
   // Plots to be drawn from the main file
   const bool drawGraphAsymmetryComparison = false;    // Draw all selected asymmetry bins to the same graph
-  const bool drawGraphVnComparison = false;           // Draw selected flow components to the same graph
+  const bool drawGraphVnComparison = true;           // Draw selected flow components to the same graph
   const bool drawGraphStages = false;                 // Draw all intermediate steps leading to jet vn
   const bool drawAtlasV2 = false;                     // Draw a line showing the v2 result from ATLAS
   const bool fitJetVn = false;                         // Fit a constant line to jet vn points
@@ -142,7 +142,7 @@ void longRangeGraphPlotter(){
   const bool drawCmsHadronResult = false;              // Draw CMS hadron v2 results from arXiv:1702.00630
   
   // Plots to be compared between files
-  const bool drawJetHadronVnFileComparison = true;
+  const bool drawJetHadronVnFileComparison = false;
   const bool drawDihadronVnFileComparison = false;
   const bool drawHadronVnFileComparison = false;
   const bool drawJetVnFileComparison = false;
@@ -166,8 +166,8 @@ void longRangeGraphPlotter(){
   const bool saveSummaryFile = false;
   const char* outputFileName = "flowGraphs/summaryPlot_multiplicityMatch_caloJets_integratedBinsUpTo3_nominalCorrectoin_jetEta1v3_2022-03-04.root";
   
-  const bool saveFileVnAsFunctionOfPt = false;
-  const char* anotherOutputFileName = "flowGraphs/vnAsFunctionOfPt_multiplicityMatch_caloJets_nominalCorrection_jetEta1v3_2022-04-21.root";
+  // HepData
+  const bool saveGraphsForHepData = true;
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -201,7 +201,7 @@ void longRangeGraphPlotter(){
   int lastDrawnAsymmetryBin = nAsymmetryBins;
   
   int firstDrawnVn = 2;
-  int lastDrawnVn = 2;
+  int lastDrawnVn = 4;
   
   double maxTrackPt = 4.5;  // Nominal: 4.5
   int maxPtBin = 4;  // Nominal: 4
@@ -1522,18 +1522,20 @@ void longRangeGraphPlotter(){
       
     } // Big canvas drawing
     
-    // Save the summary plots so that they can be used with the final graph plotter
-    if(saveFileVnAsFunctionOfPt){
+    // Save the summary plots for hep data
+    if(saveGraphsForHepData){
       
       // Create the output file
-      TFile *outputFile = new TFile(anotherOutputFileName,"UPDATE");
+      TFile *outputFile = new TFile("hepdata/hepdata_dijetVnPt_hin-21-002_test.root","UPDATE");
       char histogramNamer[100];
       
       for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
         for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
           for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->Write(Form("v%dVsPt_C%d%s", iFlow+1, iCentrality, compactAsymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
+            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->RemovePoint(3);
+            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->Write(Form("dijetV%dVsPt_C%.0f-%.0f%s", iFlow+1, centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1], compactAsymmetryString[iAsymmetry].Data()), TObject::kOverwrite);
           }
+          uncertaintyGraph[iFlow][iCentrality]->Write(Form("dijetV%dVsPtError_C%.0f-%.0f", iFlow+1, centralityBinBorders[iCentrality], centralityBinBorders[iCentrality+1]), TObject::kOverwrite);
         }
       }
       

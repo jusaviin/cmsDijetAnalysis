@@ -43,7 +43,7 @@ nTrackPt = 7          # Number of track pT bins for jet shapes
 nTrackPtDeltaEta = 6  # Number of track pT bins for deltaEta yields
 
 # File for particle yields as a function of deltaEta For paper figures 1 and 2.
-deltaEtaReader = RootFileReader("/Users/jviinika/cms/development/dijet5TeV/hepdata/hepdata_deltaEta_update_hin-19-013.root")
+deltaEtaReader = RootFileReader("hepdata_deltaEta_update_hin-19-013.root")
 
 # Read the deltaEta yield histograms from the root file
 deltaEtaLeading = []
@@ -63,7 +63,7 @@ for iTrackPt in trackPtString:
             deltaEtaErrorSubleading.append(deltaEtaReader.read_hist_1d("deltaEtaError_trackSubleadingJet_" + iCentrality + iTrackPt + "_" + iXj))
 
 # File for jet radial momentum distributions. For paper figures 3 and 4.
-jetMomentumReader = RootFileReader("/Users/jviinika/cms/development/dijet5TeV/hepdata/hepdata_jetRadialMomentum_update_hin-19-013.root")
+jetMomentumReader = RootFileReader("hepdata_jetRadialMomentum_update_hin-19-013.root")
 
 # Read the jet radial momentum histograms from the root file
 jetMomentumLeading = []
@@ -91,7 +91,7 @@ for iTrackPt in trackPtString:
             jetMomentumRatioErrorSubleading.append(jetMomentumReader.read_hist_1d("jetRadialMomentumRatioError_trackSubleadingJet_" + iCentrality + iTrackPt + "_allXj"))
         
 # File for jet shapes. For paper figures 5, 6, 7 and 8.
-jetShapeReader = RootFileReader("/Users/jviinika/cms/development/dijet5TeV/hepdata/hepdata_jetShapes_update_hin-19-013.root")
+jetShapeReader = RootFileReader("hepdata_jetShapes_update_hin-19-013.root")
 
 # Read the jet shape histograms from the root file
 jetShapeLeading = []
@@ -119,7 +119,7 @@ for iTrackPt in trackPtString:
                 jetShapeRatioErrorSubleading.append(jetShapeReader.read_hist_1d("jetShapeRatioError_trackSubleadingJet_" + iCentrality + "_" + iXj))
 
 # File for asymmetry ratios. For paper figures 9 and 10.
-asymmetryRatioReader = RootFileReader("/Users/jviinika/cms/development/dijet5TeV/hepdata/hepdata_asymmetryRatio_update_hin-19-013.root")
+asymmetryRatioReader = RootFileReader("hepdata_asymmetryRatio_update_hin-19-013.root")
 
 # Read the asymmetry ratio histograms from the root file
 asymmetryRatioLeading = []
@@ -135,7 +135,7 @@ for iCentrality in centralityString:
         asymmetryRatioErrorSubleading.append(asymmetryRatioReader.read_hist_1d("asymmetryRatioError" + iAsymmetry + "_trackSubleadingJet_" + iCentrality)) 
 
 # File for xj matrices. For paper figures 11 and 12.
-xjMatrixReader = RootFileReader("/Users/jviinika/cms/development/dijet5TeV/hepdata/xjMatrix_hepdata.root")
+xjMatrixReader = RootFileReader("xjMatrix_hepdata.root")
 
 # Read the xj matrices from the root file
 xjMatrix = []
