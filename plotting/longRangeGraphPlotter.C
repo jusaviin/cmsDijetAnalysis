@@ -123,7 +123,7 @@ void longRangeGraphPlotter(){
   const bool drawSummaryPlot = false;
   const bool drawCorrection = false;                   // For jet vn plots, draw the correction instead of corrected data
   
-  const bool drawBigCanvas = false;           // If graph vn comparison is drawn, draw also a big canvas plot
+  const bool drawBigCanvas = true;           // If graph vn comparison is drawn, draw also a big canvas plot
   const bool drawPreliminaryTag = false;      // Draw preliminary tag to the big canvas plot
   const bool leadSubTitles = false;           // true: Use lead and sub instead of 1 and 2 in the figure legend
   
@@ -158,8 +158,8 @@ void longRangeGraphPlotter(){
   const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
   const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
-  const bool saveFigures = false;                     // Save the figures in a file
-  TString saveComment = "_preliminaryBarUpdate";              // String to be added to saved file names
+  const bool saveFigures = true;                     // Save the figures in a file
+  TString saveComment = "_cwrUpdates";              // String to be added to saved file names
   TString figureFormat = "pdf";
   
   // Saving summary file for final plotter macro
@@ -167,7 +167,7 @@ void longRangeGraphPlotter(){
   const char* outputFileName = "flowGraphs/summaryPlot_multiplicityMatch_caloJets_integratedBinsUpTo3_nominalCorrectoin_jetEta1v3_2022-03-04.root";
   
   // HepData
-  const bool saveGraphsForHepData = true;
+  const bool saveGraphsForHepData = false;
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -1016,8 +1016,8 @@ void longRangeGraphPlotter(){
   
   // Prepare the uncertainty graphs
   TGraphErrors *uncertaintyGraph[nFlowComponents][nCentralityBins];
-  double flowComponentUncertaintyX[nFlowComponents][1] = {{0.26},{0.36},{0.46},{0.56}};
-  double flowComponentUncertaintyXError[1] = {0.05};
+  double flowComponentUncertaintyX[nFlowComponents][1] = {{0.21},{0.33},{0.45},{0.57}}; // {{0.26},{0.36},{0.46},{0.56}};
+  double flowComponentUncertaintyXError[1] = {0.06};
   double flowComponentUncertaintyY[1] = {0};
   double flowComponentUncertaintyYError[1] = {0};
   
@@ -1412,7 +1412,7 @@ void longRangeGraphPlotter(){
       auxi_canvas *bigCanvas;
       TLatex *mainTitle;
       
-      TLine *zeroLineBigCanvas = new TLine(0.3,0,3,0);
+      TLine *zeroLineBigCanvas = new TLine(0.3,0,3.1,0);
       zeroLineBigCanvas->SetLineStyle(2);
       
       // Draw a big canvas and put all the plots in it
@@ -1421,6 +1421,39 @@ void longRangeGraphPlotter(){
       bigCanvas->divide(1,3);
       
       mainTitle = new TLatex();
+      
+      // Create asymmetrical error graphs in order to show the pT bin in the plot
+      TGraphAsymmErrors *bigCanvasJetGraph[nAsymmetryBins][nCentralityBins][nFlowComponents];
+      const int nGraphPtBins = flowGraphJet[0][firstDrawnAsymmetryBin][0][firstDrawnVn-1]->GetN();
+      double bigCanvasGraphX[nGraphPtBins], bigCanvasGraphY[nGraphPtBins];
+      double bigCanvasGraphErrorXHigh[nGraphPtBins], bigCanvasGraphErrorXLow[nGraphPtBins];
+      double bigCanvasGraphErrorYHigh[nGraphPtBins], bigCanvasGraphErrorYLow[nGraphPtBins];
+      double centralValue, upperBinLimit, lowerBinLimit;
+      for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
+        for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
+          for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
+            
+            // Read the values we need to create the asymmetric error graphs from the regular graps
+            for(int iBin = 0; iBin < nGraphPtBins; iBin++){
+              bigCanvasGraphX[iBin] = flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetPointX(iBin);
+              bigCanvasGraphY[iBin] = flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetPointY(iBin);
+              bigCanvasGraphErrorYHigh[iBin] = flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetErrorY(iBin);
+              bigCanvasGraphErrorYLow[iBin] = flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetErrorY(iBin);
+              bigCanvasGraphErrorXHigh[iBin] = trackPtBinBorders[iBin+1] - bigCanvasGraphX[iBin];
+              bigCanvasGraphErrorXLow[iBin] = bigCanvasGraphX[iBin] - trackPtBinBorders[iBin];
+            }
+
+            // Create a new graph with asymmetric errors in x-direction to represent the pT bin borders
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow] = new TGraphAsymmErrors(nGraphPtBins, bigCanvasGraphX, bigCanvasGraphY, bigCanvasGraphErrorXLow, bigCanvasGraphErrorXHigh, bigCanvasGraphErrorYLow, bigCanvasGraphErrorYHigh);
+            
+            // Set the style for the newly created graphs
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->SetMarkerStyle(fullMarkers[iFlow]);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->SetMarkerColor(fileColors[iFlow]);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->SetLineColor(fileColors[iFlow]);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->SetMarkerSize(1.3);
+          }
+        }
+      }
       
       for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
         bigCanvas->CD(iCentrality+1);
@@ -1434,45 +1467,45 @@ void longRangeGraphPlotter(){
         for(int iAsymmetry = firstDrawnAsymmetryBin; iAsymmetry <= lastDrawnAsymmetryBin; iAsymmetry++){
           for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
             
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->AddPoint(-1,0);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->SetTitle("");
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetRangeUser(-0.045,0.085);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetRangeUser(0.31,2.9);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->SetMarkerSize(2);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->AddPoint(-1,0);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->SetTitle("");
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetRangeUser(-0.045,0.085);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetRangeUser(0.31,3.05);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->SetMarkerSize(2);
             
             
             // Adjust the number of divisions
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetNdivisions(510);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetLabelOffset(0.01);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetLabelSize(0.05);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetTitle("Dijet v_{n}");
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetTitleOffset(1.5);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetTitleSize(0.06);
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitle("Hadron p_{T} (GeV)");
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetNdivisions(510);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetLabelOffset(0.01);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetLabelSize(0.05);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetTitle("Dijet v_{n}");
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetTitleOffset(1.5);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->SetTitleSize(0.06);
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitle("Hadron p_{T} (GeV)");
             
             // Adjust label and title sizes for all but the leftmost plot
             if(iCentrality > 0){
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleSize(0.069);
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleOffset(1.09);
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelSize(0.062);
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelOffset(0.008);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleSize(0.069);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleOffset(1.09);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelSize(0.062);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelOffset(0.008);
             } else {
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleSize(0.06);
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleOffset(1.25);
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelSize(0.055);
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelOffset(0.0135);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleSize(0.06);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetTitleOffset(1.25);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelSize(0.055);
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->SetLabelOffset(0.0135);
             }
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetYaxis()->CenterTitle();
-            flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->GetXaxis()->CenterTitle();
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetYaxis()->CenterTitle();
+            bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->GetXaxis()->CenterTitle();
             
             if(iFlow == firstDrawnVn-1){
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->Draw("ap");
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->Draw("ap");
             } else {
-              flowGraphJet[0][iAsymmetry][iCentrality][iFlow]->Draw("same,p");
+              bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow]->Draw("same,p");
             }
             
             if(iCentrality == 1){
-              legend->AddEntry(flowGraphJet[0][iAsymmetry][iCentrality][iFlow], Form("Dijet v_{%d}", iFlow+1), "p");
+              legend->AddEntry(bigCanvasJetGraph[iAsymmetry][iCentrality][iFlow], Form("Dijet v_{%d}", iFlow+1), "p");
             }
             
             uncertaintyGraph[iFlow][iCentrality]->Draw("same,e2");
@@ -1497,7 +1530,7 @@ void longRangeGraphPlotter(){
       mainTitle->SetTextFont(42);
       mainTitle->SetTextSize(0.055);
       if(drawPreliminaryTag)mainTitle->DrawLatexNDC(0.558, 0.86, "Preliminary");
-      mainTitle->DrawLatexNDC(0.72, 0.9, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.7 nb^{-1}");
+      mainTitle->DrawLatexNDC(0.715, 0.9, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.69 nb^{-1}");
       mainTitle->DrawLatexNDC(0.24, 0.92, "anti-k_{T} R = 0.4");
       mainTitle->DrawLatexNDC(0.24, 0.84, "|#eta_{jet}| < 1.3");
       if(leadSubTitles){

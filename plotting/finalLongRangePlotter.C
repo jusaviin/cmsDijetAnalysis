@@ -42,8 +42,8 @@ void finalLongRangePlotter(){
   const bool printCentralValues = false;  // Print the central vn values
   
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "_preliminary";
+  const bool saveFigures = true;
+  TString saveComment = "_cwrUpdates";
   
   // Marker colors and styles
   int bigCanvasColor[] = {kBlack, kBlue, kRed, kGreen+3};
@@ -145,8 +145,8 @@ void finalLongRangePlotter(){
   const double cmsHighPtV2Error[] = {0.0019, 0.0016, 0.0027, 0.04};
   TGraphErrors* cmsHighPtV2 = new TGraphErrors(nCentralityBins, summaryXaxis, cmsHighPtV2Number, summaryXaxisError, cmsHighPtV2Error);
   cmsHighPtV2->SetMarkerStyle(kFullStar);
-  cmsHighPtV2->SetMarkerColor(kAzure+9);
-  cmsHighPtV2->SetMarkerSize(1.8);
+  cmsHighPtV2->SetMarkerColor(kCyan+1);
+  cmsHighPtV2->SetMarkerSize(2.5);
   
   // ============== //
   // Draw the plots //
@@ -314,7 +314,6 @@ void finalLongRangePlotter(){
       }
       
       if(iFlow == 1 && drawCmsHigtPtV2){
-        cmsHighPtV2->SetMarkerSize(2);
         cmsHighPtV2->Draw("p,same");
         anotherLegend->AddEntry(cmsHighPtV2, "CMS charged hadron v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
         anotherLegend->AddEntry((TObject*)0, "p_{T} > 20 GeV, |#eta| < 1", "");
@@ -340,7 +339,7 @@ void finalLongRangePlotter(){
     mainTitle->SetTextFont(42);
     mainTitle->SetTextSize(0.055);
     if(drawPreliminaryTag)mainTitle->DrawLatexNDC(0.878, 0.86, "Preliminary");
-    mainTitle->DrawLatexNDC(0.72, 0.76, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.7 nb^{-1}");
+    mainTitle->DrawLatexNDC(0.715, 0.76, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.69 nb^{-1}");
     mainTitle->DrawLatexNDC(0.54, 0.92, "anti-k_{T} R = 0.4");
     mainTitle->DrawLatexNDC(0.54, 0.84, "|#eta_{jet}| < 1.3");
     if(leadSubTitles){

@@ -798,7 +798,7 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
             
             // ===== Jet-track deltaPhi =====
             if(fDrawJetTrackDeltaPhi){
-              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kBackgroundEtaRegion);
+              drawnHistogram = fHistograms->GetHistogramJetTrackDeltaPhi(iJetTrack,iCorrelationType,iAsymmetry,iCentrality,iTrackPt,DijetHistogramManager::kWholeEta);
               // TODO: Check only analysis region for now (kWholeEta removed) kSignalEtaRegion
               //drawnHistogram->Rebin(2); // XXXXXX Temporary rebin
               //drawnHistogram->Scale(1.0/2); // TODO: Remove temporary rebin
@@ -950,7 +950,8 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               // Possibility to zoom around the peak
               //drawnHistogram2D->GetXaxis()->SetRangeUser(-0.8,0.8);
               drawnHistogram2D->GetYaxis()->SetRangeUser(-3,3);
-              if(iCorrelationType == DijetHistogramManager::kBackground) drawnHistogram2D->GetZaxis()->SetRangeUser(44,59);
+              //if(iCorrelationType == DijetHistogramManager::kBackground) drawnHistogram2D->GetZaxis()->SetRangeUser(44,59); // Centrality 0-10 pT 1-2
+              if(iCorrelationType == DijetHistogramManager::kBackground) drawnHistogram2D->GetZaxis()->SetRangeUser(25,35); // Centrality 10-30 pT 1-2
               
               //sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               //sprintf(namerY,"%s #Delta#eta",fHistograms->GetJetTrackAxisName(iJetTrack));
@@ -958,15 +959,20 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               
               sprintf(namerX, "#Delta#varphi");
               sprintf(namerY, "#Delta#eta");
-              //->GetZaxis()->SetTitle(Form("%s   (A.U.)",zAxisName[iCorrelationType].Data()));
-              drawnHistogram2D->GetZaxis()->SetTitle(Form("%s",zAxisName[iCorrelationType].Data()));
+              fDrawer->SetLabelOffsetZ(10);
+              fDrawer->SetTitleOffsetZ(0.8);
+              drawnHistogram2D->GetZaxis()->SetTitle(Form("%s   (A.U.)",zAxisName[iCorrelationType].Data()));
+              //drawnHistogram2D->GetZaxis()->SetTitle(Form("%s",zAxisName[iCorrelationType].Data()));
               fDrawer->DrawHistogram(drawnHistogram2D, namerX, namerY , " ", drawingStyle);
               
               
               // Draw legend, but not for jet shape bin map
               if(iCorrelationType != DijetHistogramManager::kJetShapeBinMap){
-                legend = new TLegend(-0.05,0.82,0.30,0.99);
-                SetupLegend(legend,centralityString,trackPtString);
+                //legend = new TLegend(-0.05,0.82,0.30,0.99);
+                //SetupLegend(legend,centralityString,trackPtString);
+                legend = new TLegend(0.14,0.91,0.70,0.99);
+                legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.06);legend->SetTextFont(62);
+                legend->AddEntry((TObject*)0, "Leading jet-hadron correlation" ,"");
                 legend->Draw();
               }
               

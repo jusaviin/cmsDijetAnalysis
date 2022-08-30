@@ -733,6 +733,11 @@ public:
     fTitleOffsetY = offset;
   }
   
+  // Setter for z-axis title offset
+  void SetTitleOffsetZ(double offset){
+    fTitleOffsetZ = offset;
+  }
+  
   // Setter for x-axis title size
   void SetTitleSizeX(double size){
     fTitleSizeX = size;
@@ -741,6 +746,11 @@ public:
   // Setter for y-axis title size
   void SetTitleSizeY(double size){
     fTitleSizeY = size;
+  }
+  
+  // Setter for z-axis title size
+  void SetTitleSizeZ(double size){
+    fTitleSizeZ = size;
   }
   
   // Setter for x-axis label offset
@@ -753,6 +763,11 @@ public:
     fLabelOffsetY = offset;
   }
   
+  // Setter for z-axis label offset
+  void SetLabelOffsetZ(double offset){
+    fLabelOffsetZ = offset;
+  }
+  
   // Setter for x-axis label size
   void SetLabelSizeX(double size){
     fLabelSizeX = size;
@@ -761,6 +776,11 @@ public:
   // Setter for y-axis label size
   void SetLabelSizeY(double size){
     fLabelSizeY = size;
+  }
+  
+  // Setter for z-axis label size
+  void SetLabelSizeZ(double size){
+    fLabelSizeZ = size;
   }
   
   // Setter for number of divisions in x-axis
