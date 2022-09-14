@@ -36,7 +36,7 @@ nCentrality = 3       # Number of centrality bins in results
 nFlow = 3             # Number of vn components that are analyzed (2, 3 and 4)
 
 # File for dijet vn results as a function of hadron pT. For paper figure 1.
-vnVsPtReader = RootFileReader("hepdata_dijetVnPt_hin-21-002_test.root")
+vnVsPtReader = RootFileReader("hepdata_dijetVnPt_hin-21-002.root")
 
 # Read the dijet vn graphs as a function of hadron pT from the root file
 dijetVnHadronPt = []
@@ -49,7 +49,7 @@ for centralityLabel in centralityString:
         dijetVnHadronPtError.append(vnVsPtReader.read_graph("dijetV{0}VsPtError_C{1}".format(iFlow, centralityLabel)))
 
 # File for dijet vn results as a function of centrality. For paper figure 2.
-centralityReader = RootFileReader("hepdata_dijetVnCentrality_hin-21-002_test.root")
+centralityReader = RootFileReader("hepdata_dijetVnCentrality_hin-21-002.root")
 
 # Read the dijet vn graphs as a function of centrality from the root file
 dijetVnCentrality = []
@@ -80,7 +80,7 @@ def findVariables(valueGraph, errorGraph, centralityBin = -1):
 
     # Define reaction and centrality labels.
     pbpbReactionLabel = "PB PB --> DIJET CHARGED X"
-    pbpbEnergyLabel = "$\sqrt{s_{\mathrm{NN}}}$"
+    pbpbEnergyLabel = "SQRT(S)/NUCLEON"
     centralityLabel = ["0-10%", "10-30%", "30-50%"]
     trackPtBins = [(0.7,1),(1,2),(2,3)]
     centralityBins = [(0,10),(10,30),(30,50)]
@@ -108,7 +108,7 @@ def findVariables(valueGraph, errorGraph, centralityBin = -1):
         myVariable = Variable("Dijet $v_{{{}}}$".format(iFlow+2), is_independent=False, is_binned=False, units="")
         myVariable.values = valueGraph[iFlow]["y"]
         myVariable.add_qualifier(pbpbEnergyLabel,"5.02 TeV")
-        myVariable.add_qualifier("Reaction",pbpbReactionLabel)
+        myVariable.add_qualifier("RE",pbpbReactionLabel)
         if centralityBin >= 0:
             myVariable.add_qualifier("Centrality",centralityLabel[centralityBin])
         myVariable.add_qualifier("Jet algorithm", "Anti-k$_{\mathrm{T}}$ R = 0.4")

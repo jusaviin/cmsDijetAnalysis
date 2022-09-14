@@ -123,7 +123,7 @@ void longRangeGraphPlotter(){
   const bool drawSummaryPlot = false;
   const bool drawCorrection = false;                   // For jet vn plots, draw the correction instead of corrected data
   
-  const bool drawBigCanvas = true;           // If graph vn comparison is drawn, draw also a big canvas plot
+  const bool drawBigCanvas = false;           // If graph vn comparison is drawn, draw also a big canvas plot
   const bool drawPreliminaryTag = false;      // Draw preliminary tag to the big canvas plot
   const bool leadSubTitles = false;           // true: Use lead and sub instead of 1 and 2 in the figure legend
   
@@ -158,7 +158,7 @@ void longRangeGraphPlotter(){
   const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
   const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
-  const bool saveFigures = true;                     // Save the figures in a file
+  const bool saveFigures = false;                     // Save the figures in a file
   TString saveComment = "_cwrUpdates";              // String to be added to saved file names
   TString figureFormat = "pdf";
   
@@ -167,7 +167,7 @@ void longRangeGraphPlotter(){
   const char* outputFileName = "flowGraphs/summaryPlot_multiplicityMatch_caloJets_integratedBinsUpTo3_nominalCorrectoin_jetEta1v3_2022-03-04.root";
   
   // HepData
-  const bool saveGraphsForHepData = false;
+  const bool saveGraphsForHepData = true;
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -1559,7 +1559,7 @@ void longRangeGraphPlotter(){
     if(saveGraphsForHepData){
       
       // Create the output file
-      TFile *outputFile = new TFile("hepdata/hepdata_dijetVnPt_hin-21-002_test.root","UPDATE");
+      TFile *outputFile = new TFile("hepdata/hepdata_dijetVnPt_hin-21-002.root","UPDATE");
       char histogramNamer[100];
       
       for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){

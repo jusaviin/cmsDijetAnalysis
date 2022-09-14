@@ -42,7 +42,7 @@ void finalLongRangePlotter(){
   const bool printCentralValues = false;  // Print the central vn values
   
   // Save the final plots
-  const bool saveFigures = true;
+  const bool saveFigures = false;
   TString saveComment = "_cwrUpdates";
   
   // Marker colors and styles
@@ -379,7 +379,7 @@ void finalLongRangePlotter(){
   
   // Save the histograms to a file for HepData submission
   if(saveGraphsForHepData){
-    TString outputFileName = "hepdata/hepdata_dijetVnCentrality_hin-21-002_test.root";
+    TString outputFileName = "hepdata/hepdata_dijetVnCentrality_hin-21-002.root";
     TFile *outputFile = TFile::Open(outputFileName,"UPDATE");
     
     for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
