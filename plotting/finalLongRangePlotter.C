@@ -35,15 +35,15 @@ void finalLongRangePlotter(){
   
   // Drawing for preliminary tag
   const bool drawBigCanvas = true;
-  const bool drawPreliminaryTag = true;
-  const bool leadSubTitles = true; // true: Use lead and sub instead of 1 and 2 in the figure legend
+  const bool drawPreliminaryTag = false;
+  const bool leadSubTitles = false; // true: Use lead and sub instead of 1 and 2 in the figure legend
   
   // Printing of values to console
   const bool printCentralValues = false;  // Print the central vn values
   
   // Save the final plots
-  const bool saveFigures = false;
-  TString saveComment = "_cwrUpdates";
+  const bool saveFigures = true;
+  TString saveComment = "_frUpdates";
   
   // Marker colors and styles
   int bigCanvasColor[] = {kBlack, kBlue, kRed, kGreen+3};
@@ -54,7 +54,7 @@ void finalLongRangePlotter(){
   double maxZoom[] = {0.1,0.085,0.085,0.085};
   
   // Save the final results for HepData
-  bool saveGraphsForHepData = true;
+  bool saveGraphsForHepData = false;
   
   // =========== //
   // Read graphs //
@@ -145,8 +145,8 @@ void finalLongRangePlotter(){
   const double cmsHighPtV2Error[] = {0.0019, 0.0016, 0.0027, 0.04};
   TGraphErrors* cmsHighPtV2 = new TGraphErrors(nCentralityBins, summaryXaxis, cmsHighPtV2Number, summaryXaxisError, cmsHighPtV2Error);
   cmsHighPtV2->SetMarkerStyle(kFullStar);
-  cmsHighPtV2->SetMarkerColor(kCyan+1);
-  cmsHighPtV2->SetMarkerSize(2.5);
+  cmsHighPtV2->SetMarkerColor(kMagenta);
+  cmsHighPtV2->SetMarkerSize(2.8);
   
   // ============== //
   // Draw the plots //
