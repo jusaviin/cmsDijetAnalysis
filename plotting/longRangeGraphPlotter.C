@@ -123,7 +123,7 @@ void longRangeGraphPlotter(){
   const bool drawSummaryPlot = false;
   const bool drawCorrection = false;                   // For jet vn plots, draw the correction instead of corrected data
   
-  const bool drawBigCanvas = false;           // If graph vn comparison is drawn, draw also a big canvas plot
+  const bool drawBigCanvas = true;           // If graph vn comparison is drawn, draw also a big canvas plot
   const bool drawPreliminaryTag = false;      // Draw preliminary tag to the big canvas plot
   const bool leadSubTitles = false;           // true: Use lead and sub instead of 1 and 2 in the figure legend
   
@@ -158,8 +158,8 @@ void longRangeGraphPlotter(){
   const bool ratioToPrevious = false;         // Instead of taking ratio to the first file, take ratio to previous file in the list
   const bool useAlternativeMarkerSet = false; // Alternative marker set optimized for drawing several data and MC collections to the same plot
   
-  const bool saveFigures = false;                     // Save the figures in a file
-  TString saveComment = "_cwrUpdates";              // String to be added to saved file names
+  const bool saveFigures = true;                     // Save the figures in a file
+  TString saveComment = "_frUpdates";              // String to be added to saved file names
   TString figureFormat = "pdf";
   
   // Saving summary file for final plotter macro
@@ -167,7 +167,7 @@ void longRangeGraphPlotter(){
   const char* outputFileName = "flowGraphs/summaryPlot_multiplicityMatch_caloJets_integratedBinsUpTo3_nominalCorrectoin_jetEta1v3_2022-03-04.root";
   
   // HepData
-  const bool saveGraphsForHepData = true;
+  const bool saveGraphsForHepData = false;
   
   // Determine from the first comparison file name if we are making Q-cut below or above the threshold
   const char* qVectorType = "below";
@@ -1540,7 +1540,7 @@ void longRangeGraphPlotter(){
       } else {
         mainTitle->DrawLatexNDC(0.09, 0.92, "p_{T,1} > 120 GeV");
         mainTitle->DrawLatexNDC(0.09, 0.84, "p_{T,2} > 50 GeV");
-        mainTitle->DrawLatexNDC(0.09, 0.76, "#Delta#varphi_{1,2} > #frac{5#pi}{6}");
+        mainTitle->DrawLatexNDC(0.09, 0.76, "|#Delta#varphi_{1,2}| > #frac{5#pi}{6}");
       }
       
       mainTitle->SetTextFont(62);

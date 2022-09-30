@@ -349,7 +349,7 @@ void finalLongRangePlotter(){
     } else {
       mainTitle->DrawLatexNDC(0.54, 0.76, "p_{T,1} > 120 GeV");
       mainTitle->DrawLatexNDC(0.54, 0.68, "p_{T,2} > 50 GeV");
-      mainTitle->DrawLatexNDC(0.54, 0.60, "#Delta#varphi_{1,2} > #frac{5#pi}{6}");
+      mainTitle->DrawLatexNDC(0.54, 0.60, "|#Delta#varphi_{1,2}| > #frac{5#pi}{6}");
     }
     mainTitle->DrawLatexNDC(0.13, 0.33, "Factorization region:");
     mainTitle->DrawLatexNDC(0.13, 0.25, "0.7 < Hadron p_{T} < 3 GeV");
