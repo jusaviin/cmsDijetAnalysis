@@ -31,19 +31,25 @@ void finalLongRangePlotter(){
   
   // Define if previous results should be included in the plot
   const bool drawAtlasJetV2 = false;
-  const bool drawCmsHigtPtV2 = true;
+  const bool drawCmsHigtPtV2 = false;
   
   // Drawing for preliminary tag
-  const bool drawBigCanvas = true;
+  bool drawIndividualGraphs = true;
+  const bool drawSmallCanvas = false;
+  const bool drawBigCanvas = false;
   const bool drawPreliminaryTag = false;
   const bool leadSubTitles = false; // true: Use lead and sub instead of 1 and 2 in the figure legend
+  
+  // The correct style is set while drawing individual canvases. We must include that when doing big canvas
+  if(drawBigCanvas) drawIndividualGraphs = true;
   
   // Printing of values to console
   const bool printCentralValues = false;  // Print the central vn values
   
   // Save the final plots
   const bool saveFigures = true;
-  TString saveComment = "_frUpdates";
+  TString saveComment = "_supplementaryUpdates";
+  const char* figureFormat = "pdf";
   
   // Marker colors and styles
   int bigCanvasColor[] = {kBlack, kBlue, kRed, kGreen+3};
@@ -128,7 +134,7 @@ void finalLongRangePlotter(){
   double summaryXaxisError[nCentralityBins];
   double summaryYaxisError[nCentralityBins];
   for(int iCentrality = 0; iCentrality < nCentralityBins; iCentrality++){
-    summaryXaxis[iCentrality] = iCentrality+1;
+    summaryXaxis[iCentrality] = iCentrality+0.5;
     summaryXaxisError[iCentrality] = 0;
     summaryYaxisError[iCentrality] = 0;
   }
@@ -146,7 +152,7 @@ void finalLongRangePlotter(){
   TGraphErrors* cmsHighPtV2 = new TGraphErrors(nCentralityBins, summaryXaxis, cmsHighPtV2Number, summaryXaxisError, cmsHighPtV2Error);
   cmsHighPtV2->SetMarkerStyle(kFullStar);
   cmsHighPtV2->SetMarkerColor(kMagenta);
-  cmsHighPtV2->SetMarkerSize(2.8);
+  cmsHighPtV2->SetMarkerSize(2.8); // 2.8
   
   // ============== //
   // Draw the plots //
@@ -155,11 +161,13 @@ void finalLongRangePlotter(){
   // Setup the drawer for graphs
   JDrawer *drawer = new JDrawer();
   drawer->SetDefaultAppearanceGraph();
-  drawer->SetNDivisionsX(510);
+  drawer->SetRelativeCanvasSize(2,0.9);
+  drawer->SetNDivisionsX(5);
   drawer->SetNDivisionsY(510);
+  drawer->SetTopMargin(0.16);
   drawer->SetBottomMargin(0.16);
   drawer->SetTitleOffsetX(1.3);
-  drawer->SetLabelOffsetX(0.02);
+  drawer->SetLabelOffsetX(10);
   drawer->SetTitleOffsetY(1.77);
   drawer->SetLabelOffsetY(0.01);
   
@@ -168,8 +176,9 @@ void finalLongRangePlotter(){
   TLegend *anotherLegend;
   double errorY;
   double cmsYPosition, cmsXPosition;
+  double currentX;
   
-  TLine *zeroLine = new TLine(0.75,0,3.35,0);
+  TLine *zeroLine = new TLine(0.25,0,2.85,0);
   zeroLine->SetLineStyle(2);
   
   TLatex *preliminaryText = new TLatex();
@@ -178,81 +187,238 @@ void finalLongRangePlotter(){
   // == Drawing style, where each histogram is drawn into it's own canvas ==
   // =======================================================================
   
-  for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
-    legend = new TLegend(0.2,0.7,0.5,0.9);
+  if(drawIndividualGraphs){
     
-    // Create legends for the plot
-    if(iFlow == 1){
-      legend = new TLegend(0.2,0.83,0.7,0.92);
-    } else {
-      legend = new TLegend(0.21,0.82,0.71,0.91);
-    }
-    anotherLegend = new TLegend(0.2,0.71,0.7,0.83);
+    // Positioning of the selection information
+    //                                 v1     v2     v3     v4
+    double ptChargedPositionX[] =    {0.23,  0.23,  0.23,  0.23};
+    double ptChargedPositionY[] =    {0.34,  0.34,  0.77,  0.77};
+    double jetRadiusPositionX[] =    {0.23,  0.23,  0.23,  0.23};
+    double jetRadiusPositionY[] =    {0.275, 0.275, 0.705, 0.705};
+    double etaJetPositionX[] =       {0.23,  0.23,  0.23,  0.23};
+    double etaJetPositionY[] =       {0.21,  0.21,  0.64,  0.64};
+    double ptLeadingPositionX[] =    {0.58,  0.58,  0.58,  0.58};
+    double ptLeadingPositionY[] =    {0.34,  0.34,  0.77,  0.77};
+    double ptSubleadingPositionX[] = {0.58,  0.58,  0.58,  0.58};
+    double ptSubleadingPositionY[] = {0.275, 0.275, 0.705, 0.705};
+    double deltaPhiPositionX[] =     {0.58,  0.58,  0.58,  0.58};
+    double deltaPhiPositionY[] =     {0.21,  0.21,  0.64,  0.64};
     
-    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-    anotherLegend->SetFillStyle(0);anotherLegend->SetBorderSize(0);anotherLegend->SetTextSize(0.05);anotherLegend->SetTextFont(62);
+    // Positioning of the legend
+    //                    v1     v2     v3     v4
+    double legendX1[] = {0.2,   0.2,   0.2,   0.2};
+    double legendX2[] = {0.7,   0.7,   0.7,   0.7};
+    double legendY1[] = {0.73,  0.73,  0.53,  0.21};
+    double legendY2[] = {0.80,  0.80,  0.60,  0.28};
     
-    if(jetVnUncertainty[iFlow] != NULL){
+    for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
       
-      // Set the style for uncertainties
-      for(int iCentrality; iCentrality < jetVnUncertainty[iFlow]->GetN(); iCentrality++){
-        errorY = jetVnUncertainty[iFlow]->GetErrorY(iCentrality);
-        jetVnUncertainty[iFlow]->SetPointError(iCentrality, 0.1, errorY);
+      // Displace the points a bit in x-direction for nicer drawing result
+      for(int iPoint = 0; iPoint < jetVnUncertainty[iFlow]->GetN(); iPoint++){
+        currentX = jetVnUncertainty[iFlow]->GetPointX(iPoint);
+        jetVnUncertainty[iFlow]->SetPointX(iPoint, currentX-0.5);
+        jetVnGraph[iFlow]->SetPointX(iPoint, currentX-0.5);
       }
       
-      //jetVnUncertainty[iFlow]->GetYaxis()->SetNdivisions(510);
-      drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "a,e2");
+      // Create legends for the plot
+      if(iFlow == 1 && drawCmsHigtPtV2){
+        legend = new TLegend(0.68,0.75,1.1,0.82);
+        cmsHighPtV2->SetMarkerSize(4);
+      } else {
+        legend = new TLegend(legendX1[iFlow],legendY1[iFlow],legendX2[iFlow],legendY2[iFlow]);
+      }
+      anotherLegend = new TLegend(0.19,0.67,0.4,0.81);
       
-      jetVnGraph[iFlow]->Draw("p,same");
+      legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.045);legend->SetTextFont(62);
+      anotherLegend->SetFillStyle(0);anotherLegend->SetBorderSize(0);anotherLegend->SetTextSize(0.04);anotherLegend->SetTextFont(62);
       
+      if(drawCmsHigtPtV2) legend->SetTextSize(0.04);
+      
+      if(jetVnUncertainty[iFlow] != NULL){
+        
+        // Set the style for uncertainties
+        for(int iCentrality = 0; iCentrality < jetVnUncertainty[iFlow]->GetN(); iCentrality++){
+          errorY = jetVnUncertainty[iFlow]->GetErrorY(iCentrality);
+          jetVnUncertainty[iFlow]->SetPointError(iCentrality, 0.1, errorY);
+        }
+        
+        //jetVnUncertainty[iFlow]->GetYaxis()->SetNdivisions(510);
+        jetVnUncertainty[iFlow]->SetMarkerSize(4);
+        drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Dijet v_{%d}", iFlow+1), " ", "a,e2");
+        
+        jetVnGraph[iFlow]->SetMarkerSize(4);
+        jetVnGraph[iFlow]->Draw("p,same");
+        
+        legend->AddEntry(jetVnUncertainty[iFlow], Form("Dijet v_{%d}", iFlow+1), "pf");
+        
+      } else {
+        drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "ap");
+        legend->AddEntry(jetVnGraph[iFlow], Form("Dijet v_{%d}", iFlow+1), "p");
+      }
+      
+      zeroLine->Draw();
+      
+      if(iFlow == 1 && drawAtlasJetV2){
+        atlasJetV2graph->Draw("p,same");
+        legend->AddEntry(atlasJetV2graph, "ATLAS v_{2}", "p"); // (#scale[0.8]{HP 2020})
+      }
+      
+      if(iFlow == 1 && drawCmsHigtPtV2){
+        cmsHighPtV2->Draw("p,same");
+        //legend->AddEntry(cmsHighPtV2, "CMS high p_{T} v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
+        anotherLegend->AddEntry(cmsHighPtV2, "CMS charged hadron v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
+        anotherLegend->AddEntry((TObject*)0, "p_{T} > 20 GeV, |#eta| < 1", "");
+        anotherLegend->AddEntry((TObject*)0, "PLB 776 (2018) 195", "");
+        anotherLegend->Draw();
+      }
+      
+      legend->Draw();
+      
+      // Draw CMS supplementary tag
+      preliminaryText->SetTextFont(62);
+      preliminaryText->SetTextSize(0.06);
+      preliminaryText->DrawLatexNDC(0.08, 0.941, "CMS");
+      
+      preliminaryText->SetTextFont(52);
+      preliminaryText->SetTextSize(0.055);
+      preliminaryText->DrawLatexNDC(0.215, 0.941, "Supplementary");
+      
+      preliminaryText->SetTextFont(42);
+      preliminaryText->SetTextSize(0.05);
+      preliminaryText->DrawLatexNDC(0.625, 0.941, "arXiv:2210.08325");
+      
+      // Draw luminosity and selection information to the figure
+      preliminaryText->DrawLatexNDC(0.23, 0.87, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.69 nb^{-1}");
+      
+      preliminaryText->SetTextSize(0.04);
+      preliminaryText->DrawLatexNDC(ptChargedPositionX[iFlow], ptChargedPositionY[iFlow], "0.7 < p^{ch}_{T} < 3 GeV");
+      preliminaryText->DrawLatexNDC(jetRadiusPositionX[iFlow], jetRadiusPositionY[iFlow], "anti-k_{T} R = 0.4");
+      preliminaryText->DrawLatexNDC(etaJetPositionX[iFlow], etaJetPositionY[iFlow], "|#eta_{jet}| < 1.3");
+      preliminaryText->DrawLatexNDC(ptLeadingPositionX[iFlow], ptLeadingPositionY[iFlow], "p_{T}^{lead} > 120 GeV");
+      preliminaryText->DrawLatexNDC(ptSubleadingPositionX[iFlow], ptSubleadingPositionY[iFlow], "p_{T}^{sub} > 50 GeV");
+      preliminaryText->DrawLatexNDC(deltaPhiPositionX[iFlow], deltaPhiPositionY[iFlow], "#Delta#varphi > #frac{5#pi}{6}");
+      
+      // Draw labels to centrality axis
+      preliminaryText->SetTextSize(0.05);
+      preliminaryText->DrawLatexNDC(0.21, 0.1, "0#minus10%");
+      preliminaryText->DrawLatexNDC(0.47, 0.1, "10#minus30%");
+      preliminaryText->DrawLatexNDC(0.75, 0.1, "30#minus50%");
+      
+      // Save the figures to file
+      if(saveFigures){
+        gPad->GetCanvas()->SaveAs(Form("figures/finalJetV%d%s.%s", iFlow+1, saveComment.Data(), figureFormat));
+      }
+    } // Flow component loop
+  } // Drawing individual graphs
+  
+  // ========================================================================
+  // == Drawing style, where each histogram is drawn into one small canvas ==
+  // ========================================================================
+  
+  if(drawSmallCanvas){
+    
+    double xAdder[] = {-0.2,-0.65,-0.5,-0.35};
+    int flowOrder[] = {3,2,4};
+    int iFlow;
+    
+    // Only one legend for the plot
+    legend = new TLegend(0.2, 0.625, 0.7, 0.805);
+    legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.045);legend->SetTextFont(62);
+    
+    // Loop over flows in a funny order
+    for(int flowIndex = 0; flowIndex < 3; flowIndex++){
+      
+      iFlow = flowOrder[flowIndex]-1;
+      
+      // Displace the points a bit in x-direction for nicer drawing result
+      for(int iPoint = 0; iPoint < jetVnUncertainty[iFlow]->GetN(); iPoint++){
+        currentX = jetVnUncertainty[iFlow]->GetPointX(iPoint);
+        jetVnUncertainty[iFlow]->SetPointX(iPoint, currentX+xAdder[iFlow]);
+        jetVnGraph[iFlow]->SetPointX(iPoint, currentX+xAdder[iFlow]);
+      }
+      
+      if(jetVnUncertainty[iFlow] != NULL){
+        
+        // Set the style for uncertainties
+        for(int iCentrality = 0; iCentrality < jetVnUncertainty[iFlow]->GetN(); iCentrality++){
+          errorY = jetVnUncertainty[iFlow]->GetErrorY(iCentrality);
+          jetVnUncertainty[iFlow]->SetPointError(iCentrality, 0.075, errorY);
+        }
+        
+        //jetVnUncertainty[iFlow]->GetYaxis()->SetNdivisions(510);
+        jetVnUncertainty[iFlow]->SetMarkerSize(4);
+        if(flowIndex == 0){
+          drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "a,e2");
+        } else {
+          jetVnUncertainty[iFlow]->Draw("same,e2");
+        }
+        
+        jetVnGraph[iFlow]->SetMarkerSize(4);
+        jetVnGraph[iFlow]->Draw("p,same");
+                
+      } else {
+        if(flowIndex == 0){
+          drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "ap");
+        } else {
+          jetVnGraph[iFlow]->Draw("same,p");
+        }
+      }
+      
+    } // Flow component loop
+    
+    // Add legend to entry in different order
+    for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
       legend->AddEntry(jetVnUncertainty[iFlow], Form("Dijet v_{%d}", iFlow+1), "pf");
-      
-    } else {
-      drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "ap");
-      legend->AddEntry(jetVnGraph[iFlow], Form("Dijet v_{%d}", iFlow+1), "p");
     }
     
+    // Draw illustrative line and the legend
     zeroLine->Draw();
-    
-    if(iFlow == 1 && drawAtlasJetV2){
-      atlasJetV2graph->Draw("p,same");
-      legend->AddEntry(atlasJetV2graph, "ATLAS v_{2}", "p"); // (#scale[0.8]{HP 2020})
-    }
-    
-    if(iFlow == 1 && drawCmsHigtPtV2){
-      cmsHighPtV2->Draw("p,same");
-      //legend->AddEntry(cmsHighPtV2, "CMS high p_{T} v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
-      anotherLegend->AddEntry(cmsHighPtV2, "CMS charged hadron v_{2}", "p"); // (#scale[0.8]{PLB 776 (2018) 195})
-      anotherLegend->AddEntry((TObject*)0, "p_{T} > 20 GeV, |#eta| < 1", "");
-      anotherLegend->Draw();
-    }
-    
     legend->Draw();
     
+    // Draw CMS supplementary tag
     preliminaryText->SetTextFont(62);
-    preliminaryText->SetTextSize(0.065);
-    cmsYPosition = 0.32; cmsXPosition = 0.48;
-    if(iFlow > 1){
-      cmsYPosition = 0.83; cmsXPosition = 0.67;
-    }
-    preliminaryText->DrawLatexNDC(cmsXPosition, cmsYPosition, "CMS");
+    preliminaryText->SetTextSize(0.06);
+    preliminaryText->DrawLatexNDC(0.08, 0.941, "CMS");
+    
+    preliminaryText->SetTextFont(52);
+    preliminaryText->SetTextSize(0.055);
+    preliminaryText->DrawLatexNDC(0.215, 0.941, "Supplementary");
     
     preliminaryText->SetTextFont(42);
-    preliminaryText->SetTextSize(0.055);
-    preliminaryText->DrawLatexNDC(cmsXPosition-0.053, cmsYPosition-0.055, "Preliminary");
+    preliminaryText->SetTextSize(0.05);
+    preliminaryText->DrawLatexNDC(0.625, 0.941, "arXiv:2210.08325");
     
+    // Draw luminosity and selection information to the figure
+    preliminaryText->DrawLatexNDC(0.23, 0.87, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.69 nb^{-1}");
+    
+    preliminaryText->SetTextSize(0.04);
+    preliminaryText->DrawLatexNDC(0.57, 0.77, "0.7 < p^{ch}_{T} < 3 GeV");
+    preliminaryText->DrawLatexNDC(0.57, 0.705, "anti-k_{T} R = 0.4");
+    preliminaryText->DrawLatexNDC(0.57, 0.64, "|#eta_{jet}| < 1.3");
+    preliminaryText->DrawLatexNDC(0.23, 0.275, "p_{T}^{lead} > 120 GeV");
+    preliminaryText->DrawLatexNDC(0.23, 0.21, "p_{T}^{sub} > 50 GeV");
+    preliminaryText->DrawLatexNDC(0.57, 0.21, "#Delta#varphi > #frac{5#pi}{6}");
+    
+    // Draw labels to centrality axis
+    preliminaryText->SetTextSize(0.05);
+    preliminaryText->DrawLatexNDC(0.21, 0.1, "0#minus10%");
+    preliminaryText->DrawLatexNDC(0.47, 0.1, "10#minus30%");
+    preliminaryText->DrawLatexNDC(0.75, 0.1, "30#minus50%");
     
     // Save the figures to file
     if(saveFigures){
-      gPad->GetCanvas()->SaveAs(Form("figures/finalJetV%d%s.pdf", iFlow+1, saveComment.Data()));
+      gPad->GetCanvas()->SaveAs(Form("figures/smallCanvasJetVn%s.%s", saveComment.Data(), figureFormat));
     }
-  }
+    
+  } // Drawing everything in one small canvas
   
   // =============================================
   // ===== Drawing style with one big canvas =====
   // =============================================
   
   if(drawBigCanvas){
+    
+    cmsHighPtV2->SetMarkerSize(2.8);
     
     // Draw all the distributions to big canvases
     auxi_canvas *bigCanvas;
@@ -269,6 +435,10 @@ void finalLongRangePlotter(){
       bigCanvas->CD(iFlow);
       
       
+      // Adjust marker sizes
+      jetVnUncertainty[iFlow]->SetMarkerSize(2);
+      jetVnGraph[iFlow]->SetMarkerSize(2);
+      
       // Adjust the number of divisions
       jetVnUncertainty[iFlow]->GetYaxis()->SetNdivisions(510);
       jetVnUncertainty[iFlow]->GetYaxis()->SetLabelOffset(0.01);
@@ -281,10 +451,10 @@ void finalLongRangePlotter(){
         jetVnUncertainty[iFlow]->GetXaxis()->SetTitleSize(0.069);
         jetVnUncertainty[iFlow]->GetXaxis()->SetTitleOffset(1.09);
         jetVnUncertainty[iFlow]->GetXaxis()->SetLabelSize(0.058);
-        jetVnUncertainty[iFlow]->GetXaxis()->SetLabelOffset(0.0135);
+        jetVnUncertainty[iFlow]->GetXaxis()->SetLabelOffset(10);
       } else {
         jetVnUncertainty[iFlow]->GetXaxis()->SetTitleOffset(1.25);
-        jetVnUncertainty[iFlow]->GetXaxis()->SetLabelOffset(0.02);
+        jetVnUncertainty[iFlow]->GetXaxis()->SetLabelOffset(10);
       }
       
       // Draw the graphs
@@ -354,9 +524,22 @@ void finalLongRangePlotter(){
     mainTitle->DrawLatexNDC(0.13, 0.33, "Factorization region:");
     mainTitle->DrawLatexNDC(0.13, 0.25, "0.7 < Hadron p_{T} < 3 GeV");
     
+    // Print the centrality bins
+    mainTitle->SetTextFont(42);
+    mainTitle->SetTextSize(0.045);
+    preliminaryText->DrawLatexNDC(0.09, 0.1, "0#minus10%");
+    preliminaryText->DrawLatexNDC(0.2, 0.1, "10#minus30%");
+    preliminaryText->DrawLatexNDC(0.31, 0.1, "30#minus50%");
+    preliminaryText->DrawLatexNDC(0.395, 0.1, "0#minus10%");
+    preliminaryText->DrawLatexNDC(0.51, 0.1, "10#minus30%");
+    preliminaryText->DrawLatexNDC(0.615, 0.1, "30#minus50%");
+    preliminaryText->DrawLatexNDC(0.70, 0.1, "0#minus10%");
+    preliminaryText->DrawLatexNDC(0.81, 0.1, "10#minus30%");
+    preliminaryText->DrawLatexNDC(0.925, 0.1, "30#minus50%");
+    
     // Save the figures to file
     if(saveFigures){
-      gPad->GetCanvas()->SaveAs(Form("figures/finalBigCanvasJetVn%s.pdf", saveComment.Data()));
+      gPad->GetCanvas()->SaveAs(Form("figures/finalBigCanvasJetVn%s.%s", saveComment.Data(), figureFormat));
     }
     
   }
