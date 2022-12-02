@@ -39,6 +39,7 @@ void finalLongRangePlotter(){
   const bool drawBigCanvas = false;
   const bool drawPreliminaryTag = false;
   const bool leadSubTitles = false; // true: Use lead and sub instead of 1 and 2 in the figure legend
+  const bool physicsBriefingMode = true;
   
   // The correct style is set while drawing individual canvases. We must include that when doing big canvas
   if(drawBigCanvas) drawIndividualGraphs = true;
@@ -48,8 +49,8 @@ void finalLongRangePlotter(){
   
   // Save the final plots
   const bool saveFigures = true;
-  TString saveComment = "_supplementaryUpdates";
-  const char* figureFormat = "pdf";
+  TString saveComment = "_physicsBriefing";
+  const char* figureFormat = "png";
   
   // Marker colors and styles
   int bigCanvasColor[] = {kBlack, kBlue, kRed, kGreen+3};
@@ -211,6 +212,10 @@ void finalLongRangePlotter(){
     double legendY1[] = {0.73,  0.73,  0.53,  0.21};
     double legendY2[] = {0.80,  0.80,  0.60,  0.28};
     
+    // Title given for the x-axis
+    const char* xAxisTitle = "Centrality";
+    if(physicsBriefingMode) xAxisTitle = "Degree of overlap";
+    
     for(int iFlow = firstDrawnVn-1; iFlow <= lastDrawnVn-1; iFlow++){
       
       // Displace the points a bit in x-direction for nicer drawing result
@@ -244,7 +249,7 @@ void finalLongRangePlotter(){
         
         //jetVnUncertainty[iFlow]->GetYaxis()->SetNdivisions(510);
         jetVnUncertainty[iFlow]->SetMarkerSize(4);
-        drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", Form("Dijet v_{%d}", iFlow+1), " ", "a,e2");
+        drawer->DrawGraphCustomAxes(jetVnUncertainty[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], xAxisTitle, Form("Dijet v_{%d}", iFlow+1), " ", "a,e2");
         
         jetVnGraph[iFlow]->SetMarkerSize(4);
         jetVnGraph[iFlow]->Draw("p,same");
@@ -252,7 +257,7 @@ void finalLongRangePlotter(){
         legend->AddEntry(jetVnUncertainty[iFlow], Form("Dijet v_{%d}", iFlow+1), "pf");
         
       } else {
-        drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], "Centrality", "Dijet v_{n}", " ", "ap");
+        drawer->DrawGraphCustomAxes(jetVnGraph[iFlow], 0, 4, minZoom[iFlow], maxZoom[iFlow], xAxisTitle, "Dijet v_{n}", " ", "ap");
         legend->AddEntry(jetVnGraph[iFlow], Form("Dijet v_{%d}", iFlow+1), "p");
       }
       
@@ -277,32 +282,62 @@ void finalLongRangePlotter(){
       // Draw CMS supplementary tag
       preliminaryText->SetTextFont(62);
       preliminaryText->SetTextSize(0.06);
-      preliminaryText->DrawLatexNDC(0.08, 0.941, "CMS");
+      if(physicsBriefingMode){
+        preliminaryText->DrawLatexNDC(0.15, 0.88, "CMS");
+      } else {
+        preliminaryText->DrawLatexNDC(0.08, 0.941, "CMS");
+      }
       
-      preliminaryText->SetTextFont(52);
-      preliminaryText->SetTextSize(0.055);
-      preliminaryText->DrawLatexNDC(0.215, 0.941, "Supplementary");
-      
-      preliminaryText->SetTextFont(42);
-      preliminaryText->SetTextSize(0.05);
-      preliminaryText->DrawLatexNDC(0.625, 0.941, "arXiv:2210.08325");
+      if(!physicsBriefingMode){
+        preliminaryText->SetTextFont(52);
+        preliminaryText->SetTextSize(0.055);
+        preliminaryText->DrawLatexNDC(0.215, 0.941, "Supplementary");
+        
+        preliminaryText->SetTextFont(42);
+        preliminaryText->SetTextSize(0.05);
+        preliminaryText->DrawLatexNDC(0.625, 0.941, "arXiv:2210.08325");
+      }
       
       // Draw luminosity and selection information to the figure
-      preliminaryText->DrawLatexNDC(0.23, 0.87, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.69 nb^{-1}");
+      if(physicsBriefingMode){
+        preliminaryText->SetTextFont(42);
+        preliminaryText->SetTextSize(0.05);
+        preliminaryText->DrawLatexNDC(0.3, 0.88, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.69 nb^{-1}");
+      } else {
+        preliminaryText->DrawLatexNDC(0.23, 0.87, "PbPb #sqrt{s_{NN}} = 5.02 TeV, 1.69 nb^{-1}");
+      }
       
       preliminaryText->SetTextSize(0.04);
-      preliminaryText->DrawLatexNDC(ptChargedPositionX[iFlow], ptChargedPositionY[iFlow], "0.7 < p^{ch}_{T} < 3 GeV");
-      preliminaryText->DrawLatexNDC(jetRadiusPositionX[iFlow], jetRadiusPositionY[iFlow], "anti-k_{T} R = 0.4");
-      preliminaryText->DrawLatexNDC(etaJetPositionX[iFlow], etaJetPositionY[iFlow], "|#eta_{jet}| < 1.3");
-      preliminaryText->DrawLatexNDC(ptLeadingPositionX[iFlow], ptLeadingPositionY[iFlow], "p_{T}^{lead} > 120 GeV");
-      preliminaryText->DrawLatexNDC(ptSubleadingPositionX[iFlow], ptSubleadingPositionY[iFlow], "p_{T}^{sub} > 50 GeV");
-      preliminaryText->DrawLatexNDC(deltaPhiPositionX[iFlow], deltaPhiPositionY[iFlow], "#Delta#varphi > #frac{5#pi}{6}");
+      
+      if(!physicsBriefingMode){
+        preliminaryText->DrawLatexNDC(ptChargedPositionX[iFlow], ptChargedPositionY[iFlow], "0.7 < p^{ch}_{T} < 3 GeV");
+        preliminaryText->DrawLatexNDC(jetRadiusPositionX[iFlow], jetRadiusPositionY[iFlow], "anti-k_{T} R = 0.4");
+        preliminaryText->DrawLatexNDC(etaJetPositionX[iFlow], etaJetPositionY[iFlow], "|#eta_{jet}| < 1.3");
+        
+        if(leadSubTitles){
+          preliminaryText->DrawLatexNDC(ptLeadingPositionX[iFlow], ptLeadingPositionY[iFlow], "p_{T}^{lead} > 120 GeV");
+          preliminaryText->DrawLatexNDC(ptSubleadingPositionX[iFlow], ptSubleadingPositionY[iFlow], "p_{T}^{sub} > 50 GeV");
+          preliminaryText->DrawLatexNDC(deltaPhiPositionX[iFlow], deltaPhiPositionY[iFlow], "#Delta#varphi > #frac{5#pi}{6}");
+        } else {
+          preliminaryText->DrawLatexNDC(ptLeadingPositionX[iFlow], ptLeadingPositionY[iFlow], "p_{T,1} > 120 GeV");
+          preliminaryText->DrawLatexNDC(ptSubleadingPositionX[iFlow], ptSubleadingPositionY[iFlow], "p_{T,2} > 50 GeV");
+          preliminaryText->DrawLatexNDC(deltaPhiPositionX[iFlow], deltaPhiPositionY[iFlow], "|#Delta#varphi_{1,2}| > #frac{5#pi}{6}");
+        }
+      }
+      
+      
       
       // Draw labels to centrality axis
       preliminaryText->SetTextSize(0.05);
-      preliminaryText->DrawLatexNDC(0.21, 0.1, "0#minus10%");
-      preliminaryText->DrawLatexNDC(0.47, 0.1, "10#minus30%");
-      preliminaryText->DrawLatexNDC(0.75, 0.1, "30#minus50%");
+      if(physicsBriefingMode){
+        preliminaryText->DrawLatexNDC(0.23, 0.1, "Large");
+        preliminaryText->DrawLatexNDC(0.48, 0.1, "Medium");
+        preliminaryText->DrawLatexNDC(0.77, 0.1, "Small");
+      } else {
+        preliminaryText->DrawLatexNDC(0.21, 0.1, "0#minus10%");
+        preliminaryText->DrawLatexNDC(0.47, 0.1, "10#minus30%");
+        preliminaryText->DrawLatexNDC(0.75, 0.1, "30#minus50%");
+      }
       
       // Save the figures to file
       if(saveFigures){
@@ -395,9 +430,15 @@ void finalLongRangePlotter(){
     preliminaryText->DrawLatexNDC(0.57, 0.77, "0.7 < p^{ch}_{T} < 3 GeV");
     preliminaryText->DrawLatexNDC(0.57, 0.705, "anti-k_{T} R = 0.4");
     preliminaryText->DrawLatexNDC(0.57, 0.64, "|#eta_{jet}| < 1.3");
-    preliminaryText->DrawLatexNDC(0.23, 0.275, "p_{T}^{lead} > 120 GeV");
-    preliminaryText->DrawLatexNDC(0.23, 0.21, "p_{T}^{sub} > 50 GeV");
-    preliminaryText->DrawLatexNDC(0.57, 0.21, "#Delta#varphi > #frac{5#pi}{6}");
+    if(leadSubTitles){
+      preliminaryText->DrawLatexNDC(0.23, 0.275, "p_{T}^{lead} > 120 GeV");
+      preliminaryText->DrawLatexNDC(0.23, 0.21, "p_{T}^{sub} > 50 GeV");
+      preliminaryText->DrawLatexNDC(0.57, 0.21, "#Delta#varphi > #frac{5#pi}{6}");
+    } else {
+      preliminaryText->DrawLatexNDC(0.23, 0.275, "p_{T,1} > 120 GeV");
+      preliminaryText->DrawLatexNDC(0.23, 0.21, "p_{T,2} > 50 GeV");
+      preliminaryText->DrawLatexNDC(0.57, 0.21, "|#Delta#varphi_{1,2}| > #frac{5#pi}{6}");
+    }
     
     // Draw labels to centrality axis
     preliminaryText->SetTextSize(0.05);
