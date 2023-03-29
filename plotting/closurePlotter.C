@@ -278,13 +278,13 @@ void closurePlotter(){
   // Configuration //
   ///////////////////
   
-  bool saveFigures = true;          // Save the figures to a file
+  bool saveFigures = false;          // Save the figures to a file
   
   bool drawCentrality = false;        // Draw the QA plots for spillover correction
   bool drawVz = false;                // Draw the QA plots for seagull correction
-  bool drawTrackClosure = false;       // Draw the tracking closures
+  bool drawTrackClosure = true;       // Draw the tracking closures
   
-  bool drawJetKinematicsMcComparison = true;     // Draw the jet kinematics figures comparing data and simulation
+  bool drawJetKinematicsMcComparison = false;     // Draw the jet kinematics figures comparing data and simulation
   bool drawJetKinematicsAsymmerty = false;        // Draw the jet kinematics figures in different asymmetry bins
   bool drawJetKinematics = (drawJetKinematicsAsymmerty || drawJetKinematicsMcComparison);
   
@@ -323,11 +323,11 @@ void closurePlotter(){
   // Open files containing the QA histograms
   DijetHistogramManager *inputManager[knCollisionSystems][knDataTypes];
   TFile *inputFile[knCollisionSystems][knDataTypes];
-  inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_allCorrections_processed_2020-11-04.root");
+  //inputFile[kPp][kData] = TFile::Open("data/ppData2017_highForest_pfJets_fixedJEC_20EveMixed_wtaAxis_allCorrections_processed_2020-11-04.root");
   // data/ppData2017_highForest_pfJets_20eventsMixed_xjBins_JECv2_wtaAxis_allCorrections_noSmoothing_tightSideBand_processed_2019-08-13.root
   // data/ppData2017_highForest_pfJets_onlyJets_wtaAxis_processed_2019-08-05.root
   // data/dijet_pp_highForest_pfJets_noUncOrInc_allCorrections_wtaAxis_processed_2019-07-13.root
-  inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root");
+  //inputFile[kPbPb][kData] = TFile::Open("data/dijetPbPb2018_akPu4CaloJets_noUncIncOrPtw_20eveAverageMix_eschemeAxis_xjBins_onlySeagull_processed_2020-11-04.root");
   // data/dijetPbPb2018_highForest_akFlowPu4CsPFJets_JECv5b_onlyJets_processed_2019-08-28.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_onlyL2RelV4_wtaAxis_processed_2019-08-13.root
   // data/dijetPbPb2018_highForest_akFlowPuCs4PfJets_onlyJets_rawPt_wtaAxis_processed_2019-08-05.root
@@ -336,10 +336,10 @@ void closurePlotter(){
   // data/dijetPbPb_pfCsJets_xjBins_wtaAxis_noUncOrInc_improvisedMixing_allCorrections_processed_2019-07-05.root
   // data/dijetPbPb_pfCsJets_xj_noCorrelations_jetCountWTA_processed_2019-07-01.root
   // data/dijetPbPb_skims_pfJets_noUncorrected_10mixedEvents_smoothedMixing_noCorrections_processed_2019-01-07.root
-  inputFile[kPp][kMC] = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-12-04.root");
+  //inputFile[kPp][kMC] = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_xjBins_wtaAxis_noUncorr_20EventsMixed_JECv4_processed_2019-12-04.root");
   // data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
   // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
-  inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_5pCentShift_bigStats_improvisedMixing_xjBins_preprocessed_2020-11-16.root");
+  //inputFile[kPbPb][kMC] = TFile::Open("data/PbPbMC2018_RecoGen_akCaloJet_noUncIncOrPtw_5pCentShift_bigStats_improvisedMixing_xjBins_preprocessed_2020-11-16.root");
   // data/PbPbMC_RecoReco_akFlowPuCs4PfJets_onlyJets_JECv5b_processed_2019-08-28.root
   // data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_noCorrections_processed_2019-08-09.root
   // data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
@@ -347,27 +347,31 @@ void closurePlotter(){
   // data/PbPbMC_RecoReco_skims_pfJets_noMixing_processed_2019-01-04.root
   
   // Load the necessary histograms to histogram managers
-  for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
+  /*for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
     for(int iDataType = 0; iDataType < knDataTypes; iDataType++){
       inputManager[iSystem][iDataType] = new DijetHistogramManager(inputFile[iSystem][iDataType]);
       inputManager[iSystem][iDataType]->SetLoadEventInformation(true);
       inputManager[iSystem][iDataType]->SetLoadAllJets(true,true,true,true);
       inputManager[iSystem][iDataType]->LoadProcessedHistograms();
     }
-  }
+  }*/
   
   // Open files for the closure tests
   DijetHistogramManager *closureManager[knCollisionSystems][knMonteCarloTypes];
   TFile *closureFile[knCollisionSystems][knMonteCarloTypes];
-  closureFile[kPp][kRecoReco] = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_tunedSeagull_processed_2019-10-22.root");
+  // closureFile[kPp][kRecoReco] = TFile::Open("data/ppMC2017_RecoReco_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_allCorrections_tunedSeagull_processed_2019-10-22.root");
+  closureFile[kPp][kRecoReco] = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root");
   // data/dijet_ppMC_RecoReco_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
   // data/dijet_ppMC_RecoReco_Pythia6_pfCsJets_noUncOrInc_wtaAxis_onlySeagull_processed_2019-07-13.root
-  closureFile[kPp][kRecoGen] = TFile::Open("data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root");
+  closureFile[kPp][kRecoGen] = TFile::Open("data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_wtaAxis_JECv6_processed_2019-09-26.root");
+  //closureFile[kPp][kRecoGen] = TFile::Open("data/ppMC2017_RecoGen_Pythia8_pfJets_wtaAxis_noUncorr_20EventsMixed_JECv4_tweakSeagull_allCorrections_processed_2019-09-28.root");
   // data/dijet_ppMC_RecoGen_Pythia8_pfJets_wtaAxis_tracksAndJets_processed_2019-08-12.root
   // data/dijet_ppMC_RecoGen_Pythia6_pfCsJets_xjBins_wtaAxis_onlySeagull_processed_2019-07-13.root
-  closureFile[kPp][kGenReco] = TFile::Open("data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_allHistograms_improvisedMixing_processed_2019-09-26.root");
-  closureFile[kPp][kGenGen] = TFile::Open("data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_allHistograms_improvisedMixing_processed_2019-09-26.root");
-  closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncorr_xjBins_5eveMix_onlySeagull_processed_2019-10-07.root");
+  closureFile[kPp][kGenReco] = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root");
+  closureFile[kPp][kGenGen] = TFile::Open("data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_wtaAxis_JECv6_processed_2019-09-26.root");
+  //closureFile[kPp][kGenReco] = TFile::Open("data/ppMC2017_GenReco_Pythia8_pfJets_wtaAxis_allHistograms_improvisedMixing_processed_2019-09-26.root");
+  //closureFile[kPp][kGenGen] = TFile::Open("data/ppMC2017_GenGen_Pythia8_pfJets_wtaAxis_allHistograms_improvisedMixing_processed_2019-09-26.root");
+  closureFile[kPbPb][kRecoReco] = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root");
   // data/PbPbMC_RecoReco_akFlowPuCs4PFJet_noUncorr_improvisedMixing_wtaAxis_JECv5b_preprocessed_2019-09-10.root
   // data/PbPbMC_RecoReco_akFlowPuCsPfJets_noUncorr_improvisedMixing_JECv4_preprocessed_2019-08-09.root
   // data/PbPbMC_RecoReco_pfCsJets_xjBins_noUncOrInc_improvisedMixing_onlySeagull_wtaAxis_processed_2019-07-12.root
@@ -380,8 +384,10 @@ void closurePlotter(){
   // data/PbPbMC_RecoGen_pfCsJets_noUncorr_5eveStrictMix_xjBins_2019-06-12_onlySeagull_processed.root
   // data/PbPbMC_RecoGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
   // data/PbPbMC_RecoGen_skims_pfJets_noMixing_noJetLimit_noCorrelations_processed_2019-01-10.root
-  closureFile[kPbPb][kGenReco] = TFile::Open("data/PbPbMC_GenReco_akFlowPuCs4PFJet_xjBins_allHistograms_improvisedMixing_wtaAxis_finalTrack_noCorrections_processed_2019-09-28.root");
-  closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_JECv6_processed_2019-09-24.root");
+  closureFile[kPbPb][kGenReco] = TFile::Open("data/PbPbMC2018_RecoReco_akFlowPuCs4PFJet_noUncOrInc_5eveMix_allCorrections_processed_2019-10-07.root");
+  closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_RecoGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_noCorrections_wtaAxis_JECv6_processed_2019-09-26.root");
+  //closureFile[kPbPb][kGenReco] = TFile::Open("data/PbPbMC_GenReco_akFlowPuCs4PFJet_xjBins_allHistograms_improvisedMixing_wtaAxis_finalTrack_noCorrections_processed_2019-09-28.root");
+  //closureFile[kPbPb][kGenGen] = TFile::Open("data/PbPbMC_GenGen_akFlowPuCs4PFJet_noUncorr_improvisedMixing_xjBins_wtaAxis_JECv6_processed_2019-09-24.root");
   
   // Load the necessary histograms to histogram managers
   if(drawTrackClosure){
@@ -428,6 +434,7 @@ void closurePlotter(){
   // ******************************************
   
   for(int iSystem = 0; iSystem < knCollisionSystems; iSystem++){
+    /*
     for(int iDataType = 0; iDataType < knDataTypes; iDataType++){
       
       // Vz plots for both pp and PbPb
@@ -503,7 +510,7 @@ void closurePlotter(){
         } // Asymmetry bin loop
       } // Centrality loop
     } // Jet type loop (leading/subleading)
-    
+    */
     if(drawTrackClosure){
       // Read all the histograms needed for tracking closure plots
       for(int iInclusive = 0; iInclusive < 2; iInclusive++){
@@ -520,7 +527,8 @@ void closurePlotter(){
             jetPtNormalizer[iInclusive][iSystem][iMonteCarloType][iCentrality]->Scale(normalizationFactor);
             
             for(int iCorrection = 0; iCorrection < 2; iCorrection++){
-              
+              cout << "iSystem: " << iSystem << " iInclusive: " << iInclusive << " iMCType: " << iMonteCarloType << " iCentrality: " << iCentrality << " iCorrection: " << iCorrection << endl;
+ 
               // Read track pT histograms
               trackPt[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality] = closureManager[iSystem][iMonteCarloType]->GetHistogramTrackPt(iInclusive*2 + iCorrection, 0, iCentrality);
               trackPt[iInclusive][iCorrection][iSystem][iMonteCarloType][iCentrality]->Scale(normalizationFactor);

@@ -837,23 +837,28 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
               }
               
               // Set the y-axis scaling so that there is some room for legend
+              drawnHistogram->Rebin(2);
+              drawnHistogram->Scale(1.0/2);
               maxYscale = drawnHistogram->GetMaximum();
               minYscale = drawnHistogram->GetMinimum();
               yDifference = maxYscale - minYscale;
-              maxYscale = maxYscale + 0.5 * yDifference;
+              maxYscale = maxYscale + 0.14 * yDifference;
               minYscale = minYscale - 0.12 * yDifference;
               drawnHistogram->GetYaxis()->SetRangeUser(minYscale, maxYscale);
               
+              
               sprintf(namerX,"%s #Delta#varphi",fHistograms->GetJetTrackAxisName(iJetTrack));
               //fDrawer->DrawHistogram(drawnHistogram,namerX,"#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}",fHistograms->GetCorrelationTypeString(iCorrelationType));
-              fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," "); // Nominal axis naming
-              //fDrawer->SetLabelOffsetY(10);
-              //fDrawer->SetTitleOffsetY(0.9);
-              //fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","B(#Delta#varphi) (A.U.)"," ");
+              //fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","#frac{1}{N_{jet}} #frac{dN}{d#Delta#varphi}"," "); // Nominal axis naming
+              fDrawer->SetLabelOffsetY(10);
+              fDrawer->SetTitleOffsetY(0.9);
+              fDrawer->SetTopMargin(0.12);
+              fDrawer->SetRelativeCanvasSize(0.8,1.4);
+              fDrawer->DrawHistogram(drawnHistogram,"#Delta#varphi","LR(#Delta#varphi) (A.U.)"," ");
               legend = new TLegend(legendX1,legendY1,legendX2,legendY2);
-              SetupLegend(legend,centralityString,trackPtString,asymmetryString); // Nominal legend setup
-              //legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
-              //legend->AddEntry(drawnHistogram, "#Delta#varphi projection", "l");
+              //SetupLegend(legend,centralityString,trackPtString,asymmetryString); // Nominal legend setup
+              legend->SetFillStyle(0);legend->SetBorderSize(0);legend->SetTextSize(0.05);legend->SetTextFont(62);
+              legend->AddEntry(drawnHistogram, "#Delta#varphi projection", "l");
               
               
               // In case of background histogram, draw the selected additional components
@@ -910,7 +915,12 @@ void DijetDrawer::DrawJetTrackCorrelationHistograms(){
                 }
               }
               
-              legend->Draw();
+              //legend->Draw();
+              
+              TLegend *legend2 = new TLegend(0.14,0.93,0.70,1);
+              legend2->SetFillStyle(0);legend2->SetBorderSize(0);legend2->SetTextSize(0.065);legend2->SetTextFont(62);
+              legend2->AddEntry((TObject*)0, "Long-range correlation" ,"");
+              legend2->Draw();
               
               // Save the figure to a file
               sprintf(namerX,"%sDeltaPhi",fHistograms->GetJetTrackHistogramName(iJetTrack));

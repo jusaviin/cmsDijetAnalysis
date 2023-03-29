@@ -17,6 +17,8 @@
 #include "TChain.h"
 #include "TString.h"
 #include "TMath.h"
+#include "TObjString.h"
+#include "TObjArray.h"
 
 using namespace std;
 
